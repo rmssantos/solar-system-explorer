@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Cache
+.vite/
+node_modules/.vite_nocache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Local/dev files
+.claude/
+Screenshot*.png
+destroyed*.jpg
+escala.html
+src/assets/textures/
+
+# Duplicate mascot images (keep only PNG)
+public/mascot/*.jpeg

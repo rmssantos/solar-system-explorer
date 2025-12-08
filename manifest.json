@@ -1,0 +1,28 @@
+{
+  "name": "Sistema Solar Explorer",
+  "short_name": "Solar Explorer",
+  "description": "Explora o Sistema Solar em 3D! Uma aventura espacial educativa para crianças.",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#000011",
+  "theme_color": "#1a0a2e",
+  "lang": "pt-PT",
+  "categories": ["education", "games", "entertainment"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

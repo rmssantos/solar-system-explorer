@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Sistema Solar Interactivo 3D</title>
+    <meta name="description" content="Explora o Sistema Solar em 3D! Uma aventura espacial educativa para crianças.">
+    <meta name="theme-color" content="#1a0a2e">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/public/favicon.svg">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Solar Explorer">
+    
+    <link rel="stylesheet" href="styles/style.css">
+
+    <!-- Three.js CDN -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    
+    <!-- Service Worker Registration (disabled in development) -->
+    <script>
+        if ('serviceWorker' in navigator && !window.location.hostname.includes('localhost')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('✅ Service Worker registado:', reg.scope))
+                    .catch(err => console.log('❌ Service Worker falhou:', err));
+            });
+        } else if ('serviceWorker' in navigator) {
+            // Unregister SW in development to avoid cache issues
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(reg => reg.unregister());
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Main Window Container -->
+    <div id="app-window" class="window-container">
+        <!-- Window Body -->
+        <div class="window-body" id="window-body">
+            <!-- 3D Canvas Container -->
+            <div id="canvas-container">
+                <!-- HUD Instructions - Will be replaced by JS with translations -->
+                <div id="hud-panel">
+                    <h3 id="controls-title" data-i18n="controls_title">Controlos</h3>
+                    <div class="hud-section">
+                        <ul>
+                            <li>🖱️ <span data-i18n="drag_to_rotate">Arrastar: Rodar vista</span></li>
+                            <li>🔍 <span data-i18n="scroll_to_zoom">Roda/Pinça: Zoom</span></li>
+                            <li>👆 <span data-i18n="click_to_see">Clique: Ver info</span></li>
+                        </ul>
+                    </div>
+                    <button id="btn-recenter" class="modern-btn" data-i18n="recenter">Recentrar Vista</button>
+                </div>
+            </div>
+
+            <!-- Side Information Panel -->
+            <div id="info-panel" class="info-panel hidden">
+                <button id="close-info" class="close-info-btn">×</button>
+                <h2 id="info-title">Informações</h2>
+                <div id="info-content">
+                    <p class="placeholder-text">Seleccione um planeta ou lua para ver detalhes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modules -->
+    <script type="module" src="src/main.js"></script>
+</body>
+
+</html>
