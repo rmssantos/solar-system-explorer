@@ -1,19 +1,21 @@
 {
-    "name": "sistema-solar-3d",
+    "name": "solar-system-explorer",
     "version": "1.0.0",
-    "description": "Sistema Solar Interactivo 3D com Three.js e Hand Tracking",
+    "description": "Interactive 3D Solar System Explorer for kids - Educational game with Three.js",
     "scripts": {
         "dev": "vite --host",
         "build": "vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "start": "serve dist -l $PORT"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "keywords": ["solar-system", "education", "threejs", "3d", "kids", "astronomy"],
+    "author": "Ruben Santos",
+    "license": "MIT",
     "devDependencies": {
         "vite": "^5.0.0"
     },
     "dependencies": {
+        "serve": "^14.2.0",
         "three": "^0.160.0"
     }
 }
