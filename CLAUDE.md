@@ -70,3 +70,9 @@ This is a kids' educational app. Content should be:
 - Use comparisons to everyday objects (e.g., "If the Sun were a soccer ball...")
 - Avoid overly technical language
 - Simplified numbers when possible
+
+## Git Commits
+
+When making commits:
+- Do NOT add "Co-Authored-By" or "Generated with Claude" lines
+- Keep commit messages clean and descriptive
