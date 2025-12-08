@@ -1,0 +1,19 @@
+{
+    "name": "sistema-solar-3d",
+    "version": "1.0.0",
+    "description": "Sistema Solar Interactivo 3D com Three.js e Hand Tracking",
+    "scripts": {
+        "dev": "vite --host",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "vite": "^5.0.0"
+    },
+    "dependencies": {
+        "three": "^0.160.0"
+    }
+}

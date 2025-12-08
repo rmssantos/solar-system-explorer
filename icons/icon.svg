@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="70%" style="stop-color:#FFA500"/>
+      <stop offset="100%" style="stop-color:#FF4500"/>
+    </radialGradient>
+    <radialGradient id="planetBlue" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#4FC3F7"/>
+      <stop offset="100%" style="stop-color:#1565C0"/>
+    </radialGradient>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0a2e"/>
+      <stop offset="100%" style="stop-color:#0a1628"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" fill="url(#bgGradient)" rx="80"/>
+  
+  <!-- Stars -->
+  <circle cx="80" cy="100" r="2" fill="white" opacity="0.8"/>
+  <circle cx="430" cy="80" r="2" fill="white" opacity="0.6"/>
+  <circle cx="100" cy="400" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="400" cy="350" r="2" fill="white" opacity="0.5"/>
+  <circle cx="200" cy="50" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="350" cy="450" r="2" fill="white" opacity="0.7"/>
+  <circle cx="450" cy="200" r="1.5" fill="white" opacity="0.5"/>
+  <circle cx="60" cy="250" r="2" fill="white" opacity="0.6"/>
+  
+  <!-- Sun -->
+  <circle cx="150" cy="256" r="80" fill="url(#sunGlow)" filter="url(#glow)"/>
+  
+  <!-- Orbit ring -->
+  <ellipse cx="256" cy="256" rx="180" ry="60" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="10,5"/>
+  
+  <!-- Planet -->
+  <circle cx="380" cy="220" r="45" fill="url(#planetBlue)"/>
+  
+  <!-- Saturn ring effect on planet -->
+  <ellipse cx="380" cy="220" rx="70" ry="15" fill="none" stroke="rgba(200,180,150,0.6)" stroke-width="8"/>
+  
+  <!-- Moon -->
+  <circle cx="420" cy="180" r="12" fill="#DDD"/>
+  
+  <!-- Rocket -->
+  <g transform="translate(300, 350) rotate(-45)">
+    <path d="M0,0 L15,-40 L0,-35 L-15,-40 Z" fill="#FF6B35"/>
+    <circle cx="0" cy="-20" r="8" fill="#FFD700"/>
+    <path d="M-8,0 L-15,15 L0,5 L15,15 L8,0" fill="#FF4444"/>
+  </g>
+</svg>
