@@ -31,7 +31,8 @@ const TEXTURES = {
 };
 
 // NASA/ESA Real photos for info panel (LOCAL FILES)
-const REAL_PHOTOS = {
+// Exported for use in biblioteca.js
+export const REAL_PHOTOS = {
     // Sun & Planets
     sun: '/textures/real/sun.jpg',
     mercury: '/textures/real/mercury.jpg',

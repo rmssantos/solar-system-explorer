@@ -1,44 +1,17 @@
-// Imagens reais disponíveis (Corrigidas)
+// Import shared REAL_PHOTOS from main data file (avoid duplication!)
+import { REAL_PHOTOS as BASE_PHOTOS } from './objectsInfo.js';
+
+// Extend with biblioteca-specific photos (Apollo, missions, galleries)
 const REAL_PHOTOS = {
-    sun: '/textures/real/sun.jpg',
-    mercury: '/textures/real/mercury.jpg',
-    venus: '/textures/real/venus.jpg',
-    earth: '/textures/real/earth.jpg',
-    mars: '/textures/real/mars.png',
-    jupiter: '/textures/real/jupiter.jpg',
-    saturn: '/textures/real/saturn.jpg',
-    uranus: '/textures/real/uranus.png',
-    neptune: '/textures/real/neptune.jpg',
-    pluto: '/textures/real/pluto.jpg',
-    moon: '/textures/real/moon.jpg',
-    io: '/textures/real/io.jpg',
-    europa: '/textures/real/europa.jpg',
-    ganymede: '/textures/real/ganymede.png',
-    callisto: '/textures/real/callisto.jpg',
-    titan: '/textures/real/titan.jpg',
-    enceladus: '/textures/real/enceladus.jpg',
-    triton: '/textures/real/triton.jpg',
-    ceres: '/textures/real/ceres.jpg',
-    eris: '/textures/real/eris.jpg',
-    makemake: '/textures/real/makemake.jpg',
-    haumea: '/textures/real/haumea.jpg',
-    charon: '/textures/real/charon.jpg',
-    iss: '/textures/real/iss.jpg',
-    hubble: '/textures/real/hubble.jpeg',
-    voyager: '/textures/real/voyager.png', // Note: PNG
-    pioneer: '/textures/real/pioneer.jpg',
-    pioneer2: '/textures/real/pioneer2.jpg', // Extra for gallery
-    cassini: '/textures/real/cassini.jpg',
-    juno: '/textures/real/juno.jpg',
-    newhorizons: '/textures/real/newhorizons.jpg',
-    // Apollo
+    ...BASE_PHOTOS,
+    // Apollo mission photos
     aldrin: '/textures/apollo/aldrin.jpg',
     bootprint: '/textures/apollo/bootprint.jpg',
     rover: '/textures/apollo/rover.jpg',
-    // Missões (User provided)
+    // Mission gallery photos
     iss_2: '/textures/missions/iss_2.jpg',
     iss_interior: '/textures/missions/iss_interior.jpg',
-    voyager_launch: '/textures/missions/voyager_missions.png', // Updated to match user file
+    voyager_launch: '/textures/missions/voyager_missions.png',
     hubble_deploy: '/textures/missions/hubble_deploy.jpg',
     curiosity_selfie: '/textures/missions/curiosity_selfie.jpg',
     pale_blue_dot: '/textures/missions/pale_blue_dot.jpg'
