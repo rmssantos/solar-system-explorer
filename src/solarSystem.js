@@ -1287,15 +1287,8 @@ export class SolarSystem {
             }
         }
 
-        if (foundName) {
-            const hl = object.children.find(c => c.userData.isHighlight);
-            if (hl) {
-                hl.visible = true;
-                hl.material.opacity = 0.3 + Math.sin(Date.now() * 0.01) * 0.1;
-            }
-            return foundName;
-        }
-        return null;
+        // Return name but don't show glow highlight (disabled)
+        return foundName;
     }
 
     clearHighlights() {
