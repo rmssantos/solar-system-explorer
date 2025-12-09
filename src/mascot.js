@@ -393,10 +393,14 @@ export class Mascot {
 
         let finalPosition = position;
         if (position === 'auto' || position === 'center') {
-            // Check if info panel is visible - if so, position beside it
-            const infoPanel = document.querySelector('.info-panel:not(.hidden), #info-panel:not(.hidden)');
-            if (infoPanel && infoPanel.offsetParent !== null) {
-                finalPosition = 'beside-panel';
+            // Check if info panel is visible (it's position:fixed so offsetParent doesn't work)
+            const infoPanel = document.querySelector('.info-panel, #info-panel');
+            if (infoPanel && !infoPanel.classList.contains('hidden')) {
+                // Double-check it's actually visible on screen
+                const rect = infoPanel.getBoundingClientRect();
+                if (rect.width > 0 && rect.right > 0) {
+                    finalPosition = 'beside-panel';
+                }
             }
         }
 
