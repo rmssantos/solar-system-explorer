@@ -27,6 +27,9 @@ export class XPSystem {
         this.xpPanel = null;
         this.loadProgress();
         this.createUI();
+
+        // Listen for language changes
+        i18n.onLangChange(() => this.updateUI());
     }
 
     loadProgress() {

@@ -13,6 +13,14 @@ export class PlanetComparator {
         
         // Delay creation to ensure DOM is ready
         setTimeout(() => this.createUI(), 100);
+
+        // Listen for language changes
+        i18n.onLangChange(() => this.updateTranslations());
+    }
+
+    updateTranslations() {
+        const compareBtn = document.getElementById('compare-btn');
+        if (compareBtn) compareBtn.title = i18n.t('compare_planets');
     }
 
     createUI() {

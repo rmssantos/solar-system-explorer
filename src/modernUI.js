@@ -76,18 +76,18 @@ export class ModernUI {
         enBtn.title = 'English';
         enBtn.dataset.lang = 'en';
         
-        // Click handlers
+        // Click handlers - no reload, use event system
         [ptBtn, enBtn].forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const lang = e.currentTarget.dataset.lang;
                 i18n.setLang(lang);
-                
+
                 // Visual feedback
                 ptBtn.classList.toggle('active', lang === 'pt');
                 enBtn.classList.toggle('active', lang === 'en');
-                
-                // Reload to apply translations
-                setTimeout(() => location.reload(), 300);
+
+                // i18n.setLang() already calls updateAllTranslations() and notifies listeners
+                // No reload needed!
             });
         });
         
