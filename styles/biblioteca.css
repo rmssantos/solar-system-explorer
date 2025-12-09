@@ -114,15 +114,23 @@ header {
 header h1 {
     font-size: 2.5rem;
     margin-bottom: 10px;
-    background: linear-gradient(90deg, #ffd700, #ff8c00, #ffd700);
+    background: linear-gradient(90deg, #ffd700, #ff8c00, #ff6b6b, #ffd700);
+    background-size: 300% 100%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .subtitle {
-    color: #aaa;
+    color: #bbb;
     font-size: 1.2rem;
+    opacity: 0.9;
 }
 
 /* Search */
@@ -134,19 +142,20 @@ header h1 {
 
 .search-input {
     width: 100%;
-    padding: 15px 50px 15px 20px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 15px 50px 15px 24px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
     border-radius: 30px;
     background: rgba(255, 255, 255, 0.05);
     color: #fff;
     font-size: 1rem;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
 }
 
 .search-input:focus {
     outline: none;
     border-color: #4fc3f7;
     background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 20px rgba(79, 195, 247, 0.3), 0 0 40px rgba(79, 195, 247, 0.1);
 }
 
 .search-input::placeholder {
@@ -159,6 +168,12 @@ header h1 {
     top: 50%;
     transform: translateY(-50%);
     font-size: 1.2rem;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+}
+
+.search-input:focus + .search-icon {
+    transform: translateY(-50%) scale(1.1);
 }
 
 /* Category Tabs */
@@ -210,14 +225,34 @@ header h1 {
     border-radius: 20px;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     cursor: pointer;
+    position: relative;
+}
+
+.object-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(79, 195, 247, 0.1), rgba(118, 75, 162, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.object-card:hover::before {
+    opacity: 1;
 }
 
 .object-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(79, 195, 247, 0.15), 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-color: rgba(79, 195, 247, 0.3);
 }
 
 .object-card:focus-visible {
@@ -244,18 +279,49 @@ header h1 {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.object-card:hover .card-image img {
+    transform: scale(1.1);
 }
 
 .card-type-badge {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Category-specific badge colors */
+.object-card[data-category="star"] .card-type-badge {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.8), rgba(255, 152, 0, 0.8));
+    color: #000;
+}
+
+.object-card[data-category="planets"] .card-type-badge {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.8), rgba(79, 195, 247, 0.8));
+}
+
+.object-card[data-category="moons"] .card-type-badge {
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.8), rgba(186, 104, 200, 0.8));
+}
+
+.object-card[data-category="dwarfs"] .card-type-badge {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.8), rgba(239, 83, 80, 0.8));
+}
+
+.object-card[data-category="probes"] .card-type-badge {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.8), rgba(129, 199, 132, 0.8));
 }
 
 .card-body {
@@ -304,16 +370,31 @@ header h1 {
 }
 
 .card-fact {
-    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
-    border-left: 3px solid #ffc107;
-    padding: 10px 15px;
-    border-radius: 0 10px 10px 0;
-    font-size: 0.9rem;
-    line-height: 1.4;
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.1));
+    border-left: 4px solid #ffc107;
+    padding: 12px 16px;
+    border-radius: 0 12px 12px 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #e0e0e0;
+    position: relative;
+    overflow: hidden;
 }
 
 .card-fact::before {
     content: "💡 ";
+    font-size: 1rem;
+}
+
+.card-fact::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.05));
+    pointer-events: none;
 }
 
 /* Modal */
@@ -658,44 +739,35 @@ header h1 {
 }
 
 /* Animation */
-@keyframes fadeIn {
+@keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px) scale(0.95);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
 .object-card {
-    animation: fadeIn 0.5s ease-out forwards;
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
 }
 
-.object-card:nth-child(1) {
-    animation-delay: 0.05s;
-}
-
-.object-card:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
-.object-card:nth-child(3) {
-    animation-delay: 0.15s;
-}
-
-.object-card:nth-child(4) {
-    animation-delay: 0.2s;
-}
-
-.object-card:nth-child(5) {
-    animation-delay: 0.25s;
-}
-
-.object-card:nth-child(6) {
-    animation-delay: 0.3s;
+.object-card:nth-child(1) { animation-delay: 0.05s; }
+.object-card:nth-child(2) { animation-delay: 0.08s; }
+.object-card:nth-child(3) { animation-delay: 0.11s; }
+.object-card:nth-child(4) { animation-delay: 0.14s; }
+.object-card:nth-child(5) { animation-delay: 0.17s; }
+.object-card:nth-child(6) { animation-delay: 0.2s; }
+.object-card:nth-child(7) { animation-delay: 0.23s; }
+.object-card:nth-child(8) { animation-delay: 0.26s; }
+.object-card:nth-child(9) { animation-delay: 0.29s; }
+.object-card:nth-child(10) { animation-delay: 0.32s; }
+.object-card:nth-child(11) { animation-delay: 0.35s; }
+.object-card:nth-child(12) { animation-delay: 0.38s;
 }
 
 /* Hidden cards from filter */
