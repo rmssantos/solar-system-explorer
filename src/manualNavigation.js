@@ -7,7 +7,23 @@
 
 import * as THREE from 'three';
 import { i18n } from './i18n.js';
-import { SOLAR_SYSTEM_DATA } from './data/objectsInfo.js';
+import { SOLAR_SYSTEM_DATA as SOLAR_SYSTEM_DATA_PT } from './data/objectsInfo.js';
+import { SOLAR_SYSTEM_DATA as SOLAR_SYSTEM_DATA_EN } from './data/objectsInfoEN.js';
+
+// Get correct planet data based on language
+function getPlanetData() {
+    return i18n.lang === 'en' ? SOLAR_SYSTEM_DATA_EN : SOLAR_SYSTEM_DATA_PT;
+}
+
+// Get translated warp speed name
+function getWarpName(level) {
+    const lang = i18n.lang || 'pt';
+    const names = {
+        en: ['Impulse', 'Warp 1', 'Warp 2', 'Warp 3', 'Warp 4', 'Warp 5', 'Warp 6', 'Warp 7', 'Warp 9 (Light!)'],
+        pt: ['Impulso', 'Warp 1', 'Warp 2', 'Warp 3', 'Warp 4', 'Warp 5', 'Warp 6', 'Warp 7', 'Warp 9 (Luz!)']
+    };
+    return names[lang]?.[level - 1] || names.pt[level - 1];
+}
 
 export class ManualNavigation {
     constructor(app) {
@@ -1694,7 +1710,8 @@ export class ManualNavigation {
     updateWarpDisplay() {
         const warp = this.warpSpeeds[this.warpLevel - 1];
         if (this.warpNameDisplay) {
-            this.warpNameDisplay.textContent = warp.name;
+            // Use translated warp name
+            this.warpNameDisplay.textContent = getWarpName(this.warpLevel);
             this.warpNameDisplay.style.color = warp.color;
         }
         if (this.warpNumberDisplay) {
@@ -2494,7 +2511,7 @@ export class ManualNavigation {
         this.infoPanelVisible = true;
 
         // Get planet data (imported at top of file)
-        const planetData = SOLAR_SYSTEM_DATA[nearest.name];
+        const planetData = getPlanetData()[nearest.name];
 
         if (!planetData) return;
 
@@ -2700,11 +2717,13 @@ export class ManualNavigation {
      * Handle click to interact with targeted object
      */
     onClickInteract(e) {
-        // Only handle when manual nav is enabled and pointer is locked
+        // Only handle when manual nav is enabled
         if (!this.enabled) return;
-        if (!this.isPointerLocked && !this.isTouchDevice) return;
 
-        // If already showing info, close it
+        // Don't handle right-clicks (used for mouse look in fallback mode)
+        if (e.button === 2) return;
+
+        // If already showing info, close it on any left-click
         if (this.infoPanelVisible) {
             this.hidePlanetInfo();
             return;
@@ -2724,7 +2743,7 @@ export class ManualNavigation {
         this.infoPanelVisible = true;
 
         // Get planet data
-        const planetData = SOLAR_SYSTEM_DATA[planetName];
+        const planetData = getPlanetData()[planetName];
         if (!planetData) return;
 
         const panel = this.hud?.querySelector('.nav-planet-info');
