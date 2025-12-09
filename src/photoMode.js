@@ -13,6 +13,16 @@ export class PhotoMode {
         
         this.loadGallery();
         this.createUI();
+
+        // Listen for language changes
+        i18n.onLangChange(() => this.updateTranslations());
+    }
+
+    updateTranslations() {
+        const photoBtn = document.getElementById('photo-btn');
+        const galleryBtn = document.getElementById('gallery-btn');
+        if (photoBtn) photoBtn.title = i18n.t('take_photo');
+        if (galleryBtn) galleryBtn.title = i18n.t('gallery');
     }
 
     loadGallery() {

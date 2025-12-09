@@ -90,6 +90,16 @@ export class AchievementSystem {
         
         this.loadProgress();
         this.createUI();
+
+        // Listen for language changes
+        i18n.onLangChange(() => this.updateTranslations());
+    }
+
+    updateTranslations() {
+        const btn = document.getElementById('achievements-btn');
+        if (btn) {
+            btn.title = this.getTranslation('view_achievements');
+        }
     }
 
     getTranslation(key) {

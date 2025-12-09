@@ -30,6 +30,7 @@ export class MiniMap {
         this.animationFrame = null;
         this.zoomLevel = 1; // Zoom: 0.5 to 2
         this.orbitTime = 0; // Synchronized time for orbits
+        this.isMinimized = false;
 
         // Hover state
         this.mouseX = -1;
@@ -41,6 +42,18 @@ export class MiniMap {
 
         this.createUI();
         this.startAnimation();
+
+        // Listen for language changes
+        i18n.onLangChange(() => this.updateTranslations());
+    }
+
+    updateTranslations() {
+        const title = document.querySelector('.minimap-title');
+        const minBtn = document.querySelector('.minimap-minimize');
+        const toggleBtn = document.querySelector('.minimap-toggle');
+        if (title) title.textContent = `🗺️ ${i18n.t('map')}`;
+        if (minBtn) minBtn.title = this.isMinimized ? i18n.t('restore') : i18n.t('minimize');
+        if (toggleBtn) toggleBtn.title = this.isExpanded ? i18n.t('reduce') : i18n.t('expand');
     }
 
     createUI() {
