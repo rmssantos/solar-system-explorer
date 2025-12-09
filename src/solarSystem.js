@@ -1290,7 +1290,7 @@ export class SolarSystem {
         if (foundName) {
             const hl = object.children.find(c => c.userData.isHighlight);
             if (hl) {
-                hl.material.visible = true;
+                hl.visible = true;
                 hl.material.opacity = 0.3 + Math.sin(Date.now() * 0.01) * 0.1;
             }
             return foundName;
@@ -1301,7 +1301,7 @@ export class SolarSystem {
     clearHighlights() {
         for (const mesh of Object.values(this.objects)) {
             const hl = mesh.children.find(c => c.userData.isHighlight);
-            if (hl) hl.material.visible = false;
+            if (hl) hl.visible = false;
         }
     }
 }
