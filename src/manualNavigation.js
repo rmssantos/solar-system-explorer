@@ -1787,7 +1787,9 @@ export class ManualNavigation {
     }
 
     onMouseDown(event) {
-        if (!this.enabled || this.isTouchDevice) return;
+        if (!this.enabled) return;
+        // Note: Don't check isTouchDevice - mouse should work even on touch-capable devices
+        // Many corporate PCs have touch drivers even without actual touch screens
 
         // LEFT-click (button 0) for mouse look - consistent with exploration mode!
         // Use "I" key to interact with targeted objects
