@@ -287,14 +287,25 @@ export class Mascot {
      * Check if any blocking overlay is visible (celebration, quiz, etc.)
      */
     isOverlayBlocking() {
-        const blockingSelectors = [
-            '.celebration-overlay',
+        // Check for celebration overlay (fixed position, added/removed from DOM)
+        const celebration = document.querySelector('.celebration-overlay');
+        if (celebration) {
+            return true; // If it exists in DOM, it's blocking
+        }
+
+        // Check for achievement notification (fixed position)
+        const achievement = document.querySelector('.achievement-notification');
+        if (achievement && !achievement.classList.contains('fade-out')) {
+            return true;
+        }
+
+        // Check for other blocking elements
+        const otherBlockers = [
             '.quiz-panel:not(.hidden)',
-            '.level-up-modal',
-            '.achievement-notification'
+            '.level-up-modal'
         ];
 
-        for (const selector of blockingSelectors) {
+        for (const selector of otherBlockers) {
             const el = document.querySelector(selector);
             if (el && el.offsetParent !== null) {
                 return true;
@@ -449,25 +460,13 @@ export class Mascot {
     }
 
     onMissionComplete(mission) {
-        const messages = i18n.lang === 'pt' ? [
-            'Missão completa! És um verdadeiro explorador espacial!',
-            'Fantástico! Ganhaste XP!',
-            'Boa! Continua a explorar!'
-        ] : [
-            'Mission complete! You\'re a true space explorer!',
-            'Fantastic! You earned XP!',
-            'Great job! Keep exploring!'
-        ];
-
-        const msg = messages[Math.floor(Math.random() * messages.length)];
-        this.show(msg, 'celebrate', { duration: 4000, position: 'auto' });
+        // Don't show mascot - celebration overlay already handles this
+        // Avoid duplicate celebrations that overlap
     }
 
     onAchievement(achievement) {
-        const msg = i18n.lang === 'pt'
-            ? `Conquista desbloqueada! ${achievement?.name || ''}`
-            : `Achievement unlocked! ${achievement?.name || ''}`;
-        this.show(msg, 'celebrate', { duration: 5000, position: 'auto' });
+        // Don't show mascot - achievement notification already handles this
+        // Avoid duplicate notifications that overlap
     }
 
     onQuizCorrect() {
