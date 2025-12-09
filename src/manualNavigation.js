@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import { i18n } from './i18n.js';
 import { SOLAR_SYSTEM_DATA as SOLAR_SYSTEM_DATA_PT } from './data/objectsInfo.js';
-import { SOLAR_SYSTEM_DATA as SOLAR_SYSTEM_DATA_EN } from './data/objectsInfoEN.js';
+import { SOLAR_SYSTEM_DATA_EN } from './data/objectsInfoEN.js';
 
 // Get correct planet data based on language
 function getPlanetData() {
