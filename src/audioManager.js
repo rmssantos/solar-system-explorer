@@ -33,6 +33,9 @@ export class AudioManager {
         // Planet ambient state
         this.currentPlanetAmbient = null;
         this.planetAmbientNodes = [];
+
+        // Timer IDs for cleanup
+        this.planetTimers = [];
         
         // Define unique sound profiles for each celestial body
         this.planetSounds = {
@@ -430,23 +433,28 @@ export class AudioManager {
      */
     stopPlanetAmbient() {
         if (!this.currentPlanetAmbient) return;
-        
+
+        // Clear all planet-related timers first
+        this.planetTimers.forEach(id => clearTimeout(id));
+        this.planetTimers = [];
+
         const now = this.ctx.currentTime;
-        
+
         // Fade out all planet ambient nodes
         this.planetAmbientNodes.forEach(node => {
             if (node.gain) {
                 node.gain.gain.linearRampToValueAtTime(0, now + 0.5);
             }
-            setTimeout(() => {
+            const stopTimer = setTimeout(() => {
                 try {
                     if (node.osc) node.osc.stop();
                     if (node.lfo) node.lfo.stop();
                     if (node.noise) node.noise.stop();
                 } catch (e) { /* Already stopped */ }
             }, 600);
+            this.planetTimers.push(stopTimer);
         });
-        
+
         this.planetAmbientNodes = [];
         this.currentPlanetAmbient = null;
     }
@@ -492,35 +500,37 @@ export class AudioManager {
     addSolarFlares() {
         const flare = () => {
             if (this.currentPlanetAmbient !== 'sun') return;
-            
+
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
             const filter = this.ctx.createBiquadFilter();
-            
+
             osc.type = 'sawtooth';
             osc.frequency.value = 60 + Math.random() * 100;
-            
+
             filter.type = 'bandpass';
             filter.frequency.value = 200 + Math.random() * 300;
             filter.Q.value = 2;
-            
+
             const now = this.ctx.currentTime;
             gain.gain.setValueAtTime(0, now);
             gain.gain.linearRampToValueAtTime(0.15, now + 0.1);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-            
+
             osc.connect(filter);
             filter.connect(gain);
             gain.connect(this.planetAmbientGain);
-            
+
             osc.start(now);
             osc.stop(now + 0.6);
-            
-            // Next flare
-            setTimeout(flare, 3000 + Math.random() * 5000);
+
+            // Next flare - store timer for cleanup
+            const timerId = setTimeout(flare, 3000 + Math.random() * 5000);
+            this.planetTimers.push(timerId);
         };
-        
-        setTimeout(flare, 1000);
+
+        const timerId = setTimeout(flare, 1000);
+        this.planetTimers.push(timerId);
     }
     
     // Storm ambient (Jupiter) - deep rumbling with thunder
@@ -561,7 +571,7 @@ export class AudioManager {
     addThunder() {
         const thunder = () => {
             if (this.currentPlanetAmbient !== 'jupiter') return;
-            
+
             // White noise burst for thunder
             const bufferSize = this.ctx.sampleRate * 0.5;
             const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
@@ -569,29 +579,32 @@ export class AudioManager {
             for (let i = 0; i < bufferSize; i++) {
                 data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.1));
             }
-            
+
             const noise = this.ctx.createBufferSource();
             const gain = this.ctx.createGain();
             const filter = this.ctx.createBiquadFilter();
-            
+
             noise.buffer = buffer;
             filter.type = 'lowpass';
             filter.frequency.value = 150;
-            
+
             const now = this.ctx.currentTime;
             gain.gain.setValueAtTime(0.2, now);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-            
+
             noise.connect(filter);
             filter.connect(gain);
             gain.connect(this.planetAmbientGain);
-            
+
             noise.start(now);
-            
-            setTimeout(thunder, 4000 + Math.random() * 8000);
+
+            // Store timer for cleanup
+            const timerId = setTimeout(thunder, 4000 + Math.random() * 8000);
+            this.planetTimers.push(timerId);
         };
-        
-        setTimeout(thunder, 2000);
+
+        const timerId = setTimeout(thunder, 2000);
+        this.planetTimers.push(timerId);
     }
     
     // Majestic ambient (Saturn) - ethereal with shimmer
@@ -634,28 +647,30 @@ export class AudioManager {
     addRingShimmer() {
         const shimmer = () => {
             if (this.currentPlanetAmbient !== 'saturn') return;
-            
+
             const freq = 800 + Math.random() * 1200;
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-            
+
             osc.type = 'sine';
             osc.frequency.value = freq;
-            
+
             const now = this.ctx.currentTime;
             gain.gain.setValueAtTime(0, now);
             gain.gain.linearRampToValueAtTime(0.02, now + 0.1);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 1);
-            
+
             osc.connect(gain);
             gain.connect(this.planetAmbientGain);
-            
+
             osc.start(now);
             osc.stop(now + 1.1);
-            
-            setTimeout(shimmer, 1500 + Math.random() * 3000);
+
+            // Store timer for cleanup
+            const timerId = setTimeout(shimmer, 1500 + Math.random() * 3000);
+            this.planetTimers.push(timerId);
         };
-        
+
         shimmer();
     }
     
@@ -728,32 +743,35 @@ export class AudioManager {
     addLifeSounds() {
         const chirp = () => {
             if (this.currentPlanetAmbient !== 'earth') return;
-            
+
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-            
+
             osc.type = 'sine';
             const baseFreq = 1000 + Math.random() * 500;
-            
+
             const now = this.ctx.currentTime;
             osc.frequency.setValueAtTime(baseFreq, now);
             osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.2, now + 0.05);
             osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.9, now + 0.1);
-            
+
             gain.gain.setValueAtTime(0, now);
             gain.gain.linearRampToValueAtTime(0.015, now + 0.02);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-            
+
             osc.connect(gain);
             gain.connect(this.planetAmbientGain);
-            
+
             osc.start(now);
             osc.stop(now + 0.2);
-            
-            setTimeout(chirp, 3000 + Math.random() * 6000);
+
+            // Store timer for cleanup
+            const timerId = setTimeout(chirp, 3000 + Math.random() * 6000);
+            this.planetTimers.push(timerId);
         };
-        
-        setTimeout(chirp, 2000);
+
+        const timerId = setTimeout(chirp, 2000);
+        this.planetTimers.push(timerId);
     }
     
     // Silent ambient (Moon) - almost nothing, just emptiness

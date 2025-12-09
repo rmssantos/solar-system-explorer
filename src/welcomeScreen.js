@@ -3,6 +3,7 @@
  * Allows the player to enter their name and customize their experience
  */
 import { i18n } from './i18n.js';
+import * as storage from './utils/storage.js';
 
 export class WelcomeScreen {
     constructor(onComplete) {
@@ -16,9 +17,8 @@ export class WelcomeScreen {
     }
 
     loadSavedData() {
-        const saved = localStorage.getItem('spaceExplorer_player');
-        if (saved) {
-            const data = JSON.parse(saved);
+        const data = storage.getItem('player', null);
+        if (data) {
             this.playerName = data.name || '';
             this.shipColor = data.shipColor || '#ff4444';
             return true;
@@ -32,7 +32,7 @@ export class WelcomeScreen {
             shipColor: this.shipColor,
             savedAt: Date.now()
         };
-        localStorage.setItem('spaceExplorer_player', JSON.stringify(data));
+        storage.setItem('player', data);
     }
 
     show() {
@@ -174,7 +174,7 @@ export class WelcomeScreen {
 
     // Static method to reset player data
     static resetPlayer() {
-        localStorage.removeItem('spaceExplorer_player');
-        localStorage.removeItem('spaceExplorer_game');
+        storage.removeItem('player');
+        storage.removeItem('game');
     }
 }

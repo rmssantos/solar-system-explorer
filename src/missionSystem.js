@@ -4,6 +4,7 @@
  */
 import { SOLAR_SYSTEM_DATA } from './data/objectsInfo.js';
 import { i18n } from './i18n.js';
+import * as storage from './utils/storage.js';
 
 export class MissionSystem {
     constructor(gameManager) {
@@ -24,7 +25,7 @@ export class MissionSystem {
 
         // Debug helper
         window.resetMissions = () => {
-            localStorage.removeItem('spaceExplorer_missions');
+            storage.removeItem('missions');
             location.reload();
         };
     }
@@ -278,9 +279,8 @@ export class MissionSystem {
     }
 
     loadProgress() {
-        const saved = localStorage.getItem('spaceExplorer_missions');
-        if (saved) {
-            const data = JSON.parse(saved);
+        const data = storage.getItem('missions', null);
+        if (data) {
             this.completedMissions = new Set(data.completed || []);
 
             // Find the saved active mission
@@ -321,7 +321,7 @@ export class MissionSystem {
             completed: Array.from(this.completedMissions),
             active: this.activeMission?.id || null
         };
-        localStorage.setItem('spaceExplorer_missions', JSON.stringify(data));
+        storage.setItem('missions', data);
     }
 
     getNextMission() {

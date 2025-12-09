@@ -3,6 +3,7 @@
  * Tracks player progress and unlocks ranks
  */
 import { i18n } from './i18n.js';
+import * as storage from './utils/storage.js';
 
 export class XPSystem {
     constructor() {
@@ -33,9 +34,8 @@ export class XPSystem {
     }
 
     loadProgress() {
-        const saved = localStorage.getItem('spaceExplorer_xp');
-        if (saved) {
-            const data = JSON.parse(saved);
+        const data = storage.getItem('xp', null);
+        if (data) {
             this.xp = data.xp || 0;
             this.totalXPEarned = data.totalXP || 0;
             this.level = this.calculateLevel();
@@ -47,7 +47,7 @@ export class XPSystem {
             xp: this.xp,
             totalXP: this.totalXPEarned
         };
-        localStorage.setItem('spaceExplorer_xp', JSON.stringify(data));
+        storage.setItem('xp', data);
     }
 
     calculateLevel() {
