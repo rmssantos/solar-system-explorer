@@ -1264,11 +1264,11 @@ export class ManualNavigation {
         document.addEventListener('pointerlockchange', () => this.onPointerLockChange());
         document.addEventListener('pointerlockerror', () => this.onPointerLockError());
 
-        // Fallback mouse look (right-click drag when pointer lock is blocked)
+        // Mouse look with left-click drag (consistent with exploration mode)
         document.addEventListener('mousedown', (e) => this.onMouseDown(e));
         document.addEventListener('mouseup', (e) => this.onMouseUp(e));
 
-        // Click to interact with targeted object
+        // Click to close info panel (use "I" key to open info)
         document.addEventListener('click', (e) => this.onClickInteract(e));
 
         // Prevent context menu when using fallback mouse look
@@ -1543,7 +1543,7 @@ export class ManualNavigation {
         hint.innerHTML = `
             <div class="hint-content">
                 <span>🖱️</span>
-                <span>${i18n.lang === 'en' ? 'Right-click + drag to look around | WASD to move | Left-click to interact' : 'Clique direito + arrasta para olhar | WASD para mover | Clique esquerdo para interagir'}</span>
+                <span>${i18n.lang === 'en' ? 'Click + drag to look around | WASD to move | I = Info' : 'Clica + arrasta para olhar | WASD para mover | I = Info'}</span>
             </div>
         `;
         hint.style.cssText = `
@@ -1789,18 +1789,19 @@ export class ManualNavigation {
     onMouseDown(event) {
         if (!this.enabled || this.isTouchDevice) return;
 
-        // ONLY right-click (button 2) for fallback mouse look
-        // Left-click (button 0) is reserved for crosshair/targeting system
+        // LEFT-click (button 0) for mouse look - consistent with exploration mode!
+        // Use "I" key to interact with targeted objects
         // This ensures mouse look works on corporate PCs that block pointer lock
-        if (event.button === 2) {
+        if (event.button === 0) {
             this.isMouseDragging = true;
             this.lastMouseX = event.clientX;
             this.lastMouseY = event.clientY;
+            event.preventDefault(); // Prevent text selection
         }
     }
 
     onMouseUp(event) {
-        if (event.button === 2) {
+        if (event.button === 0) {
             this.isMouseDragging = false;
         }
     }
@@ -2644,8 +2645,8 @@ export class ManualNavigation {
             crosshair.classList.add('targeting');
             if (crosshairHint) {
                 crosshairHint.textContent = i18n.lang === 'en'
-                    ? `Click: ${planetName}`
-                    : `Clica: ${planetName}`;
+                    ? `[I] ${planetName}`
+                    : `[I] ${planetName}`;
             }
         } else {
             crosshair.classList.remove('targeting');
@@ -2714,24 +2715,19 @@ export class ManualNavigation {
     }
 
     /**
-     * Handle click to interact with targeted object
+     * Handle click - only to close info panel
+     * Use "I" key to open info for targeted objects
      */
     onClickInteract(e) {
         // Only handle when manual nav is enabled
         if (!this.enabled) return;
 
-        // Don't handle right-clicks (used for mouse look in fallback mode)
-        if (e.button === 2) return;
+        // Only handle left-clicks
+        if (e.button !== 0) return;
 
-        // If already showing info, close it on any left-click
+        // If showing info, close it on click
         if (this.infoPanelVisible) {
             this.hidePlanetInfo();
-            return;
-        }
-
-        // If targeting an object, show its info
-        if (this.targetedObject) {
-            this.showPlanetInfoFor(this.targetedObject.name);
         }
     }
 
