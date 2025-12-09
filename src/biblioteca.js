@@ -137,10 +137,15 @@ function renderContent() {
         const randomFact = obj.factosUau ?
             obj.factosUau[Math.floor(Math.random() * obj.factosUau.length)] : '';
 
+        // Accessibility attributes
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `${obj.nome} - ${obj.tipo}. ${ui.click_to_learn || 'Clica para saber mais'}`);
+
         card.innerHTML = `
             <div class="card-image">
                 ${obj.imagem ?
-                `<img src="${obj.imagem}" alt="${obj.nome}" onerror="this.parentElement.innerHTML='<span class=\\'emoji-placeholder\\'>${obj.emoji}</span>'">` :
+                `<img src="${obj.imagem}" alt="${obj.nome}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'emoji-placeholder\\'>${obj.emoji}</span>'">` :
                 `<span class="emoji-placeholder">${obj.emoji}</span>`
             }
                 <span class="card-type-badge">${obj.tipo}</span>
@@ -148,7 +153,7 @@ function renderContent() {
             <div class="card-body">
                 <h3 class="card-title">${obj.emoji} ${obj.nome}</h3>
                 <p class="card-subtitle">${obj.tipo}</p>
-                
+
                 <div class="card-stats">
                     ${obj.estatisticas?.raio ? `
                         <div class="stat">
@@ -163,10 +168,18 @@ function renderContent() {
                         </div>
                     ` : ''}
                 </div>
-                
+
                 ${randomFact ? `<p class="card-fact">${randomFact.replace(/^[^\s]+\s/, '')}</p>` : ''}
             </div>
         `;
+
+        // Keyboard support
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openModal(key);
+            }
+        });
 
         grid.appendChild(card);
     }
@@ -185,9 +198,10 @@ function openModal(objectId) {
     if (!obj) return;
 
     modalBody.innerHTML = `
-        <div class="modal-header">
+        <div class="modal-header ${obj.imagem ? 'clickable' : ''}" ${obj.imagem ? `onclick="openLightbox('${obj.imagem}', '${obj.nome} - Foto real da NASA')"` : ''}>
             ${obj.imagem ?
-            `<img src="${obj.imagem}" alt="${obj.nome}">` :
+            `<img src="${obj.imagem}" alt="${obj.nome}">
+             <div class="modal-header-zoom">🔍 Clica para ampliar</div>` :
             `<div style="background: linear-gradient(135deg, #1a1a3a, #0a0a20); display: flex; align-items: center; justify-content: center; height: 100%;"><span style="font-size: 8rem;">${obj.emoji}</span></div>`
         }
             <div class="modal-header-gradient"></div>
@@ -251,16 +265,25 @@ function openModal(objectId) {
             ` : ''}
             
             <!-- Galeria -->
-            ${obj.galeria?.length ? `
+            ${obj.galeria?.length ? (() => {
+                // Prepare gallery data for lightbox navigation
+                const galleryData = obj.galeria.map(item => {
+                    const imgUrl = typeof item === 'string' ? item : (item.url || item.src);
+                    const caption = typeof item === 'string' ? obj.nome : (currentLang === 'en' ? (item.captionEN || item.caption) : item.caption);
+                    return { src: imgUrl, caption };
+                });
+                window._currentGallery = galleryData;
+
+                return `
                 <h2 class="section-title">${ui.section_gallery}</h2>
                 <div class="gallery-grid">
-                    ${obj.galeria.map(img => `
-                        <div class="gallery-item" onclick="openLightbox('${img}', '${obj.nome}')">
-                            <img src="${img}" alt="${obj.nome} gallery">
+                    ${galleryData.map((item, index) => `
+                        <div class="gallery-item" onclick="openLightbox('${item.src}', '${item.caption.replace(/'/g, "\\'")}', window._currentGallery, ${index})" tabindex="0" role="button" aria-label="Ver ${item.caption}">
+                            <img src="${item.src}" alt="${item.caption}" loading="lazy">
                         </div>
                     `).join('')}
                 </div>
-            ` : ''}
+            `;})() : ''}
 
             <!-- Comparação -->
             ${obj.comparacao ? `
@@ -333,6 +356,8 @@ function formatStatLabel(key, ui) {
 
 // ========== LIGHTBOX ==========
 let lightboxElement = null;
+let currentGallery = [];
+let currentImageIndex = 0;
 
 function createLightbox() {
     if (lightboxElement) return;
@@ -343,25 +368,68 @@ function createLightbox() {
     lightboxElement.innerHTML = `
         <div class="lightbox-overlay" onclick="closeLightbox()"></div>
         <div class="lightbox-content">
-            <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+            <button class="lightbox-close" onclick="closeLightbox()" aria-label="Fechar">✕</button>
+            <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)" aria-label="Anterior">❮</button>
             <img class="lightbox-image" src="" alt="">
-            <p class="lightbox-caption"></p>
+            <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)" aria-label="Seguinte">❯</button>
+            <div class="lightbox-footer">
+                <p class="lightbox-caption"></p>
+                <p class="lightbox-counter"></p>
+            </div>
         </div>
     `;
     document.body.appendChild(lightboxElement);
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (lightboxElement?.classList.contains('hidden')) return;
+        if (e.key === 'ArrowLeft') navigateLightbox(-1);
+        if (e.key === 'ArrowRight') navigateLightbox(1);
+    });
 }
 
-function openLightbox(imageSrc, caption) {
+function openLightbox(imageSrc, caption, gallery = null, index = 0) {
     if (!lightboxElement) createLightbox();
 
+    // Store gallery for navigation
+    if (gallery && gallery.length > 0) {
+        currentGallery = gallery;
+        currentImageIndex = index;
+    } else {
+        currentGallery = [{ src: imageSrc, caption }];
+        currentImageIndex = 0;
+    }
+
+    updateLightboxImage();
+    lightboxElement.classList.remove('hidden');
+}
+
+function updateLightboxImage() {
     const img = lightboxElement.querySelector('.lightbox-image');
     const cap = lightboxElement.querySelector('.lightbox-caption');
+    const counter = lightboxElement.querySelector('.lightbox-counter');
+    const prevBtn = lightboxElement.querySelector('.lightbox-prev');
+    const nextBtn = lightboxElement.querySelector('.lightbox-next');
 
-    img.src = imageSrc;
-    cap.textContent = caption || '';
+    const current = currentGallery[currentImageIndex];
+    img.src = current.src || current.url;
+    cap.textContent = current.caption || '';
 
-    lightboxElement.classList.remove('hidden');
-    // Prevent body scroll but don't interfere with detail modal
+    // Show/hide navigation
+    const showNav = currentGallery.length > 1;
+    prevBtn.style.display = showNav ? 'flex' : 'none';
+    nextBtn.style.display = showNav ? 'flex' : 'none';
+    counter.textContent = showNav ? `${currentImageIndex + 1} / ${currentGallery.length}` : '';
+}
+
+function navigateLightbox(direction) {
+    if (currentGallery.length <= 1) return;
+
+    currentImageIndex += direction;
+    if (currentImageIndex < 0) currentImageIndex = currentGallery.length - 1;
+    if (currentImageIndex >= currentGallery.length) currentImageIndex = 0;
+
+    updateLightboxImage();
 }
 
 function closeLightbox() {
@@ -373,3 +441,4 @@ function closeLightbox() {
 // Expose lightbox functions globally
 window.openLightbox = openLightbox;
 window.closeLightbox = closeLightbox;
+window.navigateLightbox = navigateLightbox;
