@@ -2,6 +2,8 @@
  * Game Logic for 'Gonçalo Mode'.
  * Tracks visited planets and manages game state.
  */
+import * as storage from './utils/storage.js';
+
 export class GameManager {
     constructor() {
         this.visited = new Set();
@@ -10,10 +12,9 @@ export class GameManager {
     }
 
     loadProgress() {
-        const saved = localStorage.getItem('spaceExplorer_visited');
-        if (saved) {
-            const data = JSON.parse(saved);
-            this.visited = new Set(data.visited || []);
+        const data = storage.getItem('visited', null);
+        if (data && data.visited) {
+            this.visited = new Set(data.visited);
         }
     }
 
@@ -21,7 +22,7 @@ export class GameManager {
         const data = {
             visited: Array.from(this.visited)
         };
-        localStorage.setItem('spaceExplorer_visited', JSON.stringify(data));
+        storage.setItem('visited', data);
     }
 
     // Called when we identify how many planets there are

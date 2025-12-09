@@ -398,9 +398,13 @@ export class CollectiblesSystem {
             return [];
         }
     }
-    
+
     saveCollected() {
-        localStorage.setItem('solarCollectibles', JSON.stringify(this.collected));
+        try {
+            localStorage.setItem('solarCollectibles', JSON.stringify(this.collected));
+        } catch (e) {
+            console.warn('[Collectibles] Failed to save:', e.message);
+        }
     }
     
     // Reset collection (for testing)

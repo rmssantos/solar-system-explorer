@@ -4,6 +4,7 @@
  * Supports PT and EN languages
  */
 import { i18n } from './i18n.js';
+import * as storage from './utils/storage.js';
 
 // Achievement translations
 const ACHIEVEMENT_TRANSLATIONS = {
@@ -269,14 +270,14 @@ export class AchievementSystem {
     }
 
     loadProgress() {
-        const saved = localStorage.getItem('spaceExplorer_achievements');
+        const saved = storage.getItem('achievements', null);
         if (saved) {
-            this.unlockedAchievements = new Set(JSON.parse(saved));
+            this.unlockedAchievements = new Set(saved);
         }
     }
 
     saveProgress() {
-        localStorage.setItem('spaceExplorer_achievements', JSON.stringify([...this.unlockedAchievements]));
+        storage.setItem('achievements', [...this.unlockedAchievements]);
     }
 
     createUI() {

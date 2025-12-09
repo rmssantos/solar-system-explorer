@@ -665,7 +665,11 @@ export const PLANET_TRANSLATIONS = {
 
 class I18n {
     constructor() {
-        this.currentLang = localStorage.getItem('spaceExplorer_lang') || 'pt';
+        try {
+            this.currentLang = localStorage.getItem('spaceExplorer_lang') || 'pt';
+        } catch {
+            this.currentLang = 'pt';
+        }
         this.listeners = [];
     }
 
@@ -678,7 +682,11 @@ class I18n {
         if (lang === this.currentLang) return; // No change needed
 
         this.currentLang = lang;
-        localStorage.setItem('spaceExplorer_lang', lang);
+        try {
+            localStorage.setItem('spaceExplorer_lang', lang);
+        } catch (e) {
+            console.warn('[i18n] Failed to save language:', e.message);
+        }
         this.updateAllTranslations();
         this.notifyListeners();
     }

@@ -1,7 +1,12 @@
 import { BIBLIOTECA_DATA } from './data/bibliotecaData.js';
 
 // Estado da aplicação
-let currentLang = localStorage.getItem('spaceExplorer_lang') || 'pt'; // Use saved lang or default to pt
+let currentLang = 'pt';
+try {
+    currentLang = localStorage.getItem('spaceExplorer_lang') || 'pt';
+} catch {
+    // Private browsing or storage disabled
+}
 let currentCategory = 'all';
 
 // Inicialização
@@ -21,7 +26,11 @@ window.closeModal = closeModal;
 // Trocar idioma
 function setLanguage(lang) {
     currentLang = lang;
-    localStorage.setItem('spaceExplorer_lang', lang); // Save preference
+    try {
+        localStorage.setItem('spaceExplorer_lang', lang); // Save preference
+    } catch {
+        // Private browsing or storage disabled
+    }
 
     // Atualizar botões
     document.querySelectorAll('.lang-btn').forEach(btn => {

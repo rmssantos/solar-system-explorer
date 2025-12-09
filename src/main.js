@@ -388,7 +388,11 @@ class App {
 
         overlay.querySelector('.settings-reset-btn').addEventListener('click', () => {
             if (confirm(i18n.t('confirm_reset'))) {
-                localStorage.clear();
+                try {
+                    localStorage.clear();
+                } catch (e) {
+                    console.warn('[App] Failed to clear storage:', e.message);
+                }
                 location.reload();
             }
         });

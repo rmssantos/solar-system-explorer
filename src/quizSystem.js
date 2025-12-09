@@ -5,6 +5,7 @@
  */
 import { SOLAR_SYSTEM_DATA } from './data/objectsInfo.js';
 import { i18n } from './i18n.js';
+import * as storage from './utils/storage.js';
 
 export class QuizSystem {
     constructor(xpSystem, audioManager) {
@@ -366,14 +367,14 @@ export class QuizSystem {
     }
 
     loadProgress() {
-        const saved = localStorage.getItem('spaceExplorer_quizzes');
+        const saved = storage.getItem('quizzes', null);
         if (saved) {
-            this.answeredQuizzes = new Set(JSON.parse(saved));
+            this.answeredQuizzes = new Set(saved);
         }
     }
 
     saveProgress() {
-        localStorage.setItem('spaceExplorer_quizzes', JSON.stringify([...this.answeredQuizzes]));
+        storage.setItem('quizzes', [...this.answeredQuizzes]);
     }
 
     getQuizzesForLang() {

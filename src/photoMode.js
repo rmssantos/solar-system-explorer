@@ -3,6 +3,7 @@
  * Saves photos to browser's gallery
  */
 import { i18n } from './i18n.js';
+import * as storage from './utils/storage.js';
 
 export class PhotoMode {
     constructor(app) {
@@ -26,9 +27,9 @@ export class PhotoMode {
     }
 
     loadGallery() {
-        const saved = localStorage.getItem('spaceExplorer_photos');
+        const saved = storage.getItem('photos', null);
         if (saved) {
-            this.gallery = JSON.parse(saved);
+            this.gallery = saved;
             this.photoCount = this.gallery.length;
         }
     }
@@ -38,7 +39,7 @@ export class PhotoMode {
         if (this.gallery.length > 20) {
             this.gallery = this.gallery.slice(-20);
         }
-        localStorage.setItem('spaceExplorer_photos', JSON.stringify(this.gallery));
+        storage.setItem('photos', this.gallery);
     }
 
     createUI() {
