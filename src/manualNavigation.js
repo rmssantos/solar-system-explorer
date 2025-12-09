@@ -71,6 +71,12 @@ export class ManualNavigation {
         this.mouseSensitivity = 0.002;
         this.euler = new THREE.Euler(0, 0, 0, 'YXZ');
         this.isPointerLocked = false;
+
+        // Fallback mouse look (when pointer lock is blocked by policies)
+        this.pointerLockFailed = false;
+        this.isMouseDragging = false;
+        this.lastMouseX = 0;
+        this.lastMouseY = 0;
         
         // Direction vectors
         this.velocity = new THREE.Vector3();
@@ -1240,9 +1246,21 @@ export class ManualNavigation {
         // Mouse
         document.addEventListener('mousemove', (e) => this.onMouseMove(e));
         document.addEventListener('pointerlockchange', () => this.onPointerLockChange());
+        document.addEventListener('pointerlockerror', () => this.onPointerLockError());
+
+        // Fallback mouse look (right-click drag when pointer lock is blocked)
+        document.addEventListener('mousedown', (e) => this.onMouseDown(e));
+        document.addEventListener('mouseup', (e) => this.onMouseUp(e));
 
         // Click to interact with targeted object
         document.addEventListener('click', (e) => this.onClickInteract(e));
+
+        // Prevent context menu when using fallback mouse look
+        document.addEventListener('contextmenu', (e) => {
+            if (this.enabled && !this.isTouchDevice) {
+                e.preventDefault();
+            }
+        });
 
         // Toggle with M key
         document.addEventListener('keydown', (e) => {
@@ -1448,6 +1466,14 @@ export class ManualNavigation {
         // For mobile: don't need pointer lock
         if (!this.isTouchDevice) {
             document.body.requestPointerLock();
+
+            // Check if pointer lock worked after a short delay
+            // Some browsers silently fail without firing pointerlockerror
+            setTimeout(() => {
+                if (this.enabled && !this.isPointerLocked && !this.pointerLockFailed) {
+                    this.onPointerLockError();
+                }
+            }, 500);
         }
         
         // Disable orbit controls
@@ -1629,8 +1655,84 @@ export class ManualNavigation {
         this.isPointerLocked = document.pointerLockElement === document.body;
 
         // Note: We no longer auto-disable when pointer lock is lost
-        // Keyboard controls still work, just mouse look won't
+        // Keyboard controls still work, fallback mouse look available
         // User can manually exit with ESC or M key
+    }
+
+    onPointerLockError() {
+        // Pointer lock failed (blocked by company policies, etc.)
+        this.pointerLockFailed = true;
+        this.isPointerLocked = false;
+        console.log('⚠️ Pointer lock blocked - using fallback mouse controls');
+
+        // Show a hint to the user
+        if (this.enabled) {
+            this.showPointerLockFallbackHint();
+        }
+    }
+
+    showPointerLockFallbackHint() {
+        // Show hint that user needs to hold right-click to look around
+        const hint = document.createElement('div');
+        hint.className = 'pointer-lock-hint';
+        hint.innerHTML = `
+            <div class="hint-content">
+                <span>🖱️</span>
+                <span>${i18n.lang === 'en' ? 'Hold RIGHT CLICK + move mouse to look around' : 'Segura BOTÃO DIREITO + move rato para olhar'}</span>
+            </div>
+        `;
+        hint.style.cssText = `
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #4a90e2;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            z-index: 10000;
+            border: 1px solid #4a90e2;
+            animation: fadeInOut 4s ease-in-out forwards;
+        `;
+
+        // Add animation style if not exists
+        if (!document.getElementById('pointer-lock-hint-style')) {
+            const style = document.createElement('style');
+            style.id = 'pointer-lock-hint-style';
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+                    15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    85% { opacity: 1; }
+                    100% { opacity: 0; }
+                }
+                .hint-content { display: flex; align-items: center; gap: 10px; }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(hint);
+        setTimeout(() => hint.remove(), 4000);
+    }
+
+    onMouseDown(event) {
+        if (!this.enabled || this.isTouchDevice) return;
+
+        // Right-click (or left-click when pointer lock failed) for fallback mouse look
+        if (event.button === 2 || (this.pointerLockFailed && event.button === 0)) {
+            this.isMouseDragging = true;
+            this.lastMouseX = event.clientX;
+            this.lastMouseY = event.clientY;
+            event.preventDefault();
+        }
+    }
+
+    onMouseUp(event) {
+        if (event.button === 2 || event.button === 0) {
+            this.isMouseDragging = false;
+        }
     }
     
     onKeyDown(event) {
@@ -1748,18 +1850,37 @@ export class ManualNavigation {
     }
     
     onMouseMove(event) {
-        if (!this.enabled || !this.isPointerLocked) return;
-        
-        const movementX = event.movementX || 0;
-        const movementY = event.movementY || 0;
-        
-        this.euler.y -= movementX * this.mouseSensitivity;
-        this.euler.x -= movementY * this.mouseSensitivity;
-        
-        // Clamp vertical rotation
-        this.euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.euler.x));
-        
-        this.camera.quaternion.setFromEuler(this.euler);
+        if (!this.enabled) return;
+
+        // Pointer lock mode (normal operation)
+        if (this.isPointerLocked) {
+            const movementX = event.movementX || 0;
+            const movementY = event.movementY || 0;
+
+            this.euler.y -= movementX * this.mouseSensitivity;
+            this.euler.x -= movementY * this.mouseSensitivity;
+
+            // Clamp vertical rotation
+            this.euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.euler.x));
+
+            this.camera.quaternion.setFromEuler(this.euler);
+        }
+        // Fallback mode: drag to look (when pointer lock is blocked)
+        else if (this.isMouseDragging) {
+            const movementX = event.clientX - this.lastMouseX;
+            const movementY = event.clientY - this.lastMouseY;
+
+            this.euler.y -= movementX * this.mouseSensitivity;
+            this.euler.x -= movementY * this.mouseSensitivity;
+
+            // Clamp vertical rotation
+            this.euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.euler.x));
+
+            this.camera.quaternion.setFromEuler(this.euler);
+
+            this.lastMouseX = event.clientX;
+            this.lastMouseY = event.clientY;
+        }
     }
     
     update(deltaTime) {
