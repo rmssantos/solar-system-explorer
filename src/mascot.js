@@ -109,6 +109,25 @@ export class Mascot {
                 transform: translateX(-50%) translateY(0);
             }
 
+            /* Position beside info panel (when panel is visible on right) */
+            #mascot-container.position-beside-panel {
+                left: auto;
+                right: 420px; /* 400px panel + 20px gap */
+                bottom: 80px;
+                transform: translateX(0) translateY(30px);
+                align-items: flex-end;
+            }
+
+            #mascot-container.position-beside-panel.visible {
+                transform: translateX(0) translateY(0);
+            }
+
+            #mascot-container.position-beside-panel .mascot-bubble-tail {
+                left: auto;
+                right: 30px;
+                transform: none;
+            }
+
             .mascot-bubble {
                 background: rgba(255, 255, 255, 0.95);
                 border-radius: 16px;
@@ -211,6 +230,13 @@ export class Mascot {
                     bottom: 80px;
                 }
 
+                /* On mobile, info panel is full width, so beside-panel should go to left */
+                #mascot-container.position-beside-panel {
+                    right: auto;
+                    left: 20px;
+                    bottom: 60px;
+                }
+
                 .mascot-character {
                     width: 80px;
                     height: 80px;
@@ -223,6 +249,13 @@ export class Mascot {
 
                 .mascot-text {
                     font-size: 12px;
+                }
+            }
+
+            /* Medium screens - adjust beside-panel position */
+            @media (max-width: 1024px) and (min-width: 769px) {
+                #mascot-container.position-beside-panel {
+                    right: 380px; /* Slightly closer on smaller screens */
                 }
             }
         `;
@@ -344,10 +377,20 @@ export class Mascot {
             this.textEl.textContent = message;
         }
 
-        // Set position
-        this.container.classList.remove('position-left', 'position-right', 'position-center');
-        if (position !== 'center') {
-            this.container.classList.add(`position-${position}`);
+        // Set position - auto-detect if info panel is visible
+        this.container.classList.remove('position-left', 'position-right', 'position-center', 'position-beside-panel');
+
+        let finalPosition = position;
+        if (position === 'auto' || position === 'center') {
+            // Check if info panel is visible - if so, position beside it
+            const infoPanel = document.querySelector('.info-panel:not(.hidden), #info-panel:not(.hidden)');
+            if (infoPanel && infoPanel.offsetParent !== null) {
+                finalPosition = 'beside-panel';
+            }
+        }
+
+        if (finalPosition !== 'center') {
+            this.container.classList.add(`position-${finalPosition}`);
         }
 
         // Set animation class
@@ -402,7 +445,7 @@ export class Mascot {
         ];
 
         const tip = tips[Math.floor(Math.random() * tips.length)];
-        this.show(tip, 'curious', { duration: 4000 });
+        this.show(tip, 'curious', { duration: 4000, position: 'auto' });
     }
 
     onMissionComplete(mission) {
@@ -417,14 +460,14 @@ export class Mascot {
         ];
 
         const msg = messages[Math.floor(Math.random() * messages.length)];
-        this.show(msg, 'celebrate', { duration: 4000 });
+        this.show(msg, 'celebrate', { duration: 4000, position: 'auto' });
     }
 
     onAchievement(achievement) {
         const msg = i18n.lang === 'pt'
             ? `Conquista desbloqueada! ${achievement?.name || ''}`
             : `Achievement unlocked! ${achievement?.name || ''}`;
-        this.show(msg, 'celebrate', { duration: 5000 });
+        this.show(msg, 'celebrate', { duration: 5000, position: 'auto' });
     }
 
     onQuizCorrect() {
@@ -439,7 +482,7 @@ export class Mascot {
         ];
 
         const msg = messages[Math.floor(Math.random() * messages.length)];
-        this.show(msg, 'celebrate', { duration: 3000 });
+        this.show(msg, 'celebrate', { duration: 3000, position: 'auto' });
     }
 
     onQuizWrong() {
@@ -454,28 +497,28 @@ export class Mascot {
         ];
 
         const msg = messages[Math.floor(Math.random() * messages.length)];
-        this.show(msg, 'encourage', { duration: 4000 });
+        this.show(msg, 'encourage', { duration: 4000, position: 'auto' });
     }
 
     onEasterEgg(name) {
         const msg = i18n.lang === 'pt'
             ? `Uau! Descobriste um segredo: ${name}!`
             : `Wow! You found a secret: ${name}!`;
-        this.show(msg, 'surprised', { duration: 5000 });
+        this.show(msg, 'surprised', { duration: 5000, position: 'auto' });
     }
 
     onFirstVisit() {
         const msg = i18n.lang === 'pt'
             ? 'Olá! Sou o Astro, o teu guia espacial! Vamos explorar o Sistema Solar!'
             : 'Hello! I\'m Astro, your space guide! Let\'s explore the Solar System!';
-        this.show(msg, 'neutral', { duration: 6000 });
+        this.show(msg, 'neutral', { duration: 6000, position: 'auto' });
     }
 
     /**
      * Show a tip (can be called from anywhere)
      */
     showTip(message, pose = 'neutral') {
-        this.show(message, pose, { duration: 5000 });
+        this.show(message, pose, { duration: 5000, position: 'auto' });
     }
 
     /**
@@ -483,7 +526,7 @@ export class Mascot {
      */
     showThinking(message) {
         const msg = message || (i18n.lang === 'pt' ? 'A pensar...' : 'Thinking...');
-        this.show(msg, 'thinking', { duration: 0 }); // No auto-hide
+        this.show(msg, 'thinking', { duration: 0, position: 'auto' }); // No auto-hide
     }
 
     updateTranslations() {
