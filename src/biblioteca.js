@@ -255,7 +255,7 @@ function openModal(objectId) {
                 <h2 class="section-title">${ui.section_gallery}</h2>
                 <div class="gallery-grid">
                     ${obj.galeria.map(img => `
-                        <div class="gallery-item" onclick="window.open(this.querySelector('img').src, '_blank')">
+                        <div class="gallery-item" onclick="openLightbox('${img}', '${obj.nome}')">
                             <img src="${img}" alt="${obj.nome} gallery">
                         </div>
                     `).join('')}
@@ -282,7 +282,10 @@ function closeModal() {
 
 // Fechar modal com Escape
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Escape') {
+        closeLightbox();
+        closeModal();
+    }
 });
 
 // Fechar modal clicando fora
@@ -318,20 +321,55 @@ function formatStatLabel(key, ui) {
         ano: ui.stat_year,
         temperatura: ui.stat_temp,
         luas: ui.stat_moons,
-        idade: 'Idade', // Default fallback
-        tipo: 'Tipo',
-        composicao: 'Composição',
-        velocidade: 'Velocidade',
-        lancamento: 'Lançamento',
-        tamanho: 'Tamanho'
+        idade: ui.stat_age,
+        tipo: ui.stat_type,
+        composicao: ui.stat_composition,
+        velocidade: ui.stat_speed,
+        lancamento: ui.stat_launch,
+        tamanho: ui.stat_size
     };
-    // Translate some hardcoded keys if needed
-    if (key === 'velocidade') return currentLang === 'pt' ? 'Velocidade' : 'Speed';
-    if (key === 'lancamento') return currentLang === 'pt' ? 'Lançamento' : 'Launch';
-    if (key === 'tamanho') return currentLang === 'pt' ? 'Tamanho' : 'Size';
-    if (key === 'idade') return currentLang === 'pt' ? 'Idade' : 'Age';
-    if (key === 'tipo') return currentLang === 'pt' ? 'Tipo' : 'Type';
-    if (key === 'composicao') return currentLang === 'pt' ? 'Composição' : 'Composition';
-
     return labels[key] || key;
 }
+
+// ========== LIGHTBOX ==========
+let lightboxElement = null;
+
+function createLightbox() {
+    if (lightboxElement) return;
+
+    lightboxElement = document.createElement('div');
+    lightboxElement.id = 'imageLightbox';
+    lightboxElement.className = 'lightbox hidden';
+    lightboxElement.innerHTML = `
+        <div class="lightbox-overlay" onclick="closeLightbox()"></div>
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+            <img class="lightbox-image" src="" alt="">
+            <p class="lightbox-caption"></p>
+        </div>
+    `;
+    document.body.appendChild(lightboxElement);
+}
+
+function openLightbox(imageSrc, caption) {
+    if (!lightboxElement) createLightbox();
+
+    const img = lightboxElement.querySelector('.lightbox-image');
+    const cap = lightboxElement.querySelector('.lightbox-caption');
+
+    img.src = imageSrc;
+    cap.textContent = caption || '';
+
+    lightboxElement.classList.remove('hidden');
+    // Prevent body scroll but don't interfere with detail modal
+}
+
+function closeLightbox() {
+    if (lightboxElement) {
+        lightboxElement.classList.add('hidden');
+    }
+}
+
+// Expose lightbox functions globally
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;

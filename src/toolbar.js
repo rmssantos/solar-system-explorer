@@ -74,7 +74,7 @@ export class Toolbar {
         
         // Library button
         this.addButton('📚', 'library', i18n.t('library', 'Biblioteca'), () => {
-            window.location.href = 'biblioteca.html';
+            window.location.href = '/biblioteca';
         });
 
         // Settings button

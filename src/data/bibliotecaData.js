@@ -43,7 +43,13 @@ export const BIBLIOTECA_DATA = {
             stat_day: "Duração do Dia",
             stat_year: "Duração do Ano",
             stat_temp: "Temperatura",
-            stat_moons: "Luas Conhecidas"
+            stat_moons: "Luas Conhecidas",
+            stat_age: "Idade",
+            stat_type: "Tipo",
+            stat_composition: "Composição",
+            stat_speed: "Velocidade",
+            stat_launch: "Lançamento",
+            stat_size: "Tamanho"
         },
         objects: {
             "sol": {
@@ -390,7 +396,13 @@ Tem uma atmosfera super grossa de nuvens tóxicas que funcionam como um cobertor
             stat_day: "Day Length",
             stat_year: "Year Length",
             stat_temp: "Temperature",
-            stat_moons: "Known Moons"
+            stat_moons: "Known Moons",
+            stat_age: "Age",
+            stat_type: "Type",
+            stat_composition: "Composition",
+            stat_speed: "Speed",
+            stat_launch: "Launch",
+            stat_size: "Size"
         },
         objects: {
             "sol": { id: "sol", nome: "Sun", tipo: "Star", categoria: "star", emoji: "☀️", imagem: REAL_PHOTOS.sun, estatisticas: { raio: "696,340 km" }, factosUau: ["🔥 Hot enough to evaporate you from millions of km away!", "💪 Contains 99.86% of Solar System mass."], comparacao: "A soccer ball vs pinhead Earth." },
