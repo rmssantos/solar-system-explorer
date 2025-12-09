@@ -1,0 +1,2150 @@
+<html lang="pt-PT"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Sistema Solar Interactivo 3D</title>
+    <meta name="description" content="Explora o Sistema Solar em 3D! Uma aventura espacial educativa para crianças.">
+    <meta name="theme-color" content="#1a0a2e">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon-BXiFBcFg.svg">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Solar Explorer">
+    
+
+    <!-- Three.js CDN -->
+
+    
+    <!-- Service Worker Registration (disabled in development) -->
+    <script>
+        if ('serviceWorker' in navigator && !window.location.hostname.includes('localhost')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('✅ Service Worker registado:', reg.scope))
+                    .catch(err => console.log('❌ Service Worker falhou:', err));
+            });
+        } else if ('serviceWorker' in navigator) {
+            // Unregister SW in development to avoid cache issues
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(reg => reg.unregister());
+            });
+        }
+    </script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+  <script type="module" crossorigin="" src="/assets/main-Xbd0FHNe.js"></script>
+  <link rel="modulepreload" crossorigin="" href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="stylesheet" crossorigin="" href="/assets/main-BBvD4gJk.css">
+<style>
+            .time-compact {
+                position: fixed;
+                bottom: 15px;
+                right: 15px;
+                z-index: 800;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 5px 10px;
+                background: rgba(15, 20, 40, 0.9);
+                border: 1px solid rgba(100, 150, 255, 0.2);
+                border-radius: 20px;
+                backdrop-filter: blur(15px);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+                opacity: 0.4;
+                transition: opacity 0.3s ease, transform 0.3s ease;
+            }
+            
+            .time-compact:hover {
+                opacity: 1;
+            }
+            
+            .time-compact.panel-hidden {
+                transform: translateX(calc(100% + 20px));
+                opacity: 0;
+                pointer-events: none;
+            }
+            
+            .time-toggle-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 6px;
+                border-radius: 6px;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .time-toggle-btn:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+            
+            /* Modern toggle icon - chevron arrows */
+            .toggle-icon {
+                width: 12px;
+                height: 12px;
+                position: relative;
+                transition: transform 0.3s ease;
+            }
+            
+            .toggle-icon::before,
+            .toggle-icon::after {
+                content: '';
+                position: absolute;
+                width: 6px;
+                height: 2px;
+                background: linear-gradient(90deg, #66ddff, #4a90e2);
+                border-radius: 1px;
+                transition: all 0.3s ease;
+            }
+            
+            .toggle-icon.expanded::before {
+                top: 4px;
+                left: 0;
+                transform: rotate(45deg);
+            }
+            
+            .toggle-icon.expanded::after {
+                top: 4px;
+                left: 4px;
+                transform: rotate(-45deg);
+            }
+            
+            .toggle-icon.collapsed::before {
+                top: 3px;
+                left: 3px;
+                transform: rotate(-45deg);
+            }
+            
+            .toggle-icon.collapsed::after {
+                top: 7px;
+                left: 3px;
+                transform: rotate(45deg);
+            }
+            
+            .time-toggle-btn:hover .toggle-icon::before,
+            .time-toggle-btn:hover .toggle-icon::after {
+                background: linear-gradient(90deg, #ffffff, #88ccff);
+            }
+            
+            .time-content {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: all 0.3s ease;
+            }
+            
+            .time-compact.collapsed .time-content {
+                display: none;
+            }
+            
+            .time-speed {
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: #66ddff;
+                min-width: 30px;
+                text-align: center;
+                font-family: 'Segoe UI', system-ui, sans-serif;
+            }
+            
+            .time-speed.paused {
+                color: #ff6666;
+                animation: pulse-pause 1s ease-in-out infinite;
+            }
+            
+            @keyframes pulse-pause {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+            
+            .time-buttons {
+                display: flex;
+                gap: 4px;
+            }
+            
+            .time-btn {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: rgba(60, 80, 120, 0.4);
+                font-size: 0.85rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.15s ease;
+                padding: 0;
+            }
+            
+            .time-btn:hover {
+                background: rgba(80, 100, 150, 0.6);
+                transform: scale(1.1);
+            }
+            
+            .time-btn.active {
+                background: linear-gradient(135deg, #4a90e2, #357abd);
+                border-color: #66aaff;
+                box-shadow: 0 0 12px rgba(74, 144, 226, 0.5);
+            }
+            
+            /* Language buttons inside time bar */
+            .time-lang {
+                display: flex;
+                gap: 3px;
+                margin-left: 6px;
+                padding-left: 8px;
+                border-left: 1px solid rgba(100, 150, 255, 0.3);
+            }
+            
+            .lang-btn {
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                border: 2px solid transparent;
+                background: rgba(40, 50, 80, 0.6);
+                font-size: 0.9rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.15s ease;
+                padding: 0;
+            }
+            
+            .lang-btn:hover {
+                transform: scale(1.1);
+                border-color: rgba(100, 150, 255, 0.5);
+            }
+            
+            .lang-btn.active {
+                border-color: #4a90e2;
+                box-shadow: 0 0 8px rgba(74, 144, 226, 0.5);
+            }
+            
+            /* Hide old time control */
+            .time-control {
+                display: none !important;
+            }
+            
+            /* Hide old language selector */
+            .lang-selector {
+                display: none !important;
+            }
+            
+            /* Mobile */
+            @media (max-width: 768px) {
+                .time-compact {
+                    padding: 6px 12px;
+                    gap: 8px;
+                }
+                
+                .time-btn {
+                    width: 32px;
+                    height: 32px;
+                    font-size: 0.9rem;
+                }
+                
+                .time-speed {
+                    font-size: 0.85rem;
+                    min-width: 32px;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .time-compact {
+                    bottom: 10px;
+                    right: 10px;
+                    padding: 4px 8px;
+                }
+                
+                .time-btn {
+                    width: 28px;
+                    height: 28px;
+                    font-size: 0.8rem;
+                }
+            }
+        </style><style id="modern-ui-styles">
+            /* ========== LANGUAGE SELECTOR - Bottom Right with Time Control ========== */
+            .lang-selector {
+                position: fixed;
+                bottom: 70px;
+                right: 10px;
+                z-index: 1100;
+                display: flex;
+                gap: 4px;
+            }
+            
+            .lang-flag {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                border: 2px solid transparent;
+                background: rgba(20, 25, 45, 0.9);
+                font-size: 1.2rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+                backdrop-filter: blur(10px);
+            }
+            
+            .lang-flag:hover {
+                transform: scale(1.1);
+                border-color: rgba(100, 150, 255, 0.5);
+            }
+            
+            .lang-flag.active {
+                border-color: #4a90e2;
+                box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+            }
+            
+            /* ========== MINIMAP - Top Right, HIGH z-index ========== */
+            .minimap-container, #minimap-container {
+                position: fixed !important;
+                top: 0 !important;
+                right: 0 !important;
+                left: auto !important;
+                bottom: auto !important;
+                width: 180px !important;
+                z-index: 1500 !important;
+                border-radius: 0 0 0 12px !important;
+                border: 2px solid rgba(100, 150, 255, 0.4) !important;
+                background: rgba(5, 10, 25, 0.9) !important;
+            }
+            
+            /* ========== MISSIONS PANEL - Top Left, away from toolbar ========== */
+            .missions-panel, #missions-panel, #mission-panel {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: auto !important;
+                width: 220px !important;
+                max-height: 200px !important;
+                overflow-y: auto !important;
+                z-index: 800 !important;
+                background: rgba(15, 20, 40, 0.95) !important;
+                border-radius: 0 0 12px 0 !important;
+                border: 1px solid rgba(100, 150, 255, 0.2) !important;
+                font-size: 0.8rem !important;
+                pointer-events: auto !important;
+            }
+            
+            /* ========== INFO PANEL - Center Right ========== */
+            #info-panel {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                right: auto !important;
+                max-width: 450px !important;
+                width: 90% !important;
+                max-height: 80vh !important;
+                overflow-y: auto !important;
+                z-index: 2000 !important;
+                background: rgba(10, 15, 35, 0.98) !important;
+                border: 2px solid rgba(100, 150, 255, 0.4) !important;
+                border-radius: 16px !important;
+                backdrop-filter: blur(20px) !important;
+                box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8) !important;
+            }
+            
+            #info-panel.hidden {
+                display: none !important;
+            }
+            
+            /* ========== CLOSE BUTTON - Prominent Red X ========== */
+            #close-info, .close-info-btn {
+                position: absolute !important;
+                top: 12px !important;
+                right: 12px !important;
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 50% !important;
+                border: 2px solid rgba(255, 100, 100, 0.5) !important;
+                background: rgba(200, 50, 50, 0.9) !important;
+                color: white !important;
+                font-size: 1.4rem !important;
+                font-weight: bold !important;
+                cursor: pointer !important;
+                z-index: 100 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                transition: all 0.2s ease !important;
+                line-height: 1 !important;
+            }
+            
+            #close-info:hover, .close-info-btn:hover {
+                background: rgba(255, 60, 60, 1) !important;
+                transform: scale(1.1) !important;
+                box-shadow: 0 0 15px rgba(255, 100, 100, 0.6) !important;
+            }
+            
+            /* ========== HUD PANEL - Bottom Left, simple vertical ========== */
+            #hud-panel {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: auto !important;
+                top: auto !important;
+                z-index: 700 !important;
+                background: rgba(15, 20, 40, 0.9) !important;
+                border: 1px solid rgba(100, 150, 255, 0.2) !important;
+                border-radius: 0 10px 0 0 !important;
+                padding: 10px 14px !important;
+                backdrop-filter: blur(12px) !important;
+                max-width: 200px !important;
+                pointer-events: auto !important;
+            }
+            
+            #hud-panel h3 {
+                font-size: 0.85rem !important;
+                margin-bottom: 6px !important;
+                color: #88aaff !important;
+            }
+            
+            #hud-panel .hud-section {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            #hud-panel .hud-section ul {
+                margin: 0 !important;
+                padding: 0 !important;
+                list-style: none !important;
+            }
+            
+            #hud-panel .hud-section li {
+                font-size: 0.75rem !important;
+                margin-bottom: 3px !important;
+                opacity: 0.9 !important;
+            }
+            
+            #hud-panel .nav-controls {
+                display: flex !important;
+                gap: 6px !important;
+                margin-top: 8px !important;
+            }
+            
+            #hud-panel button {
+                padding: 5px 10px !important;
+                font-size: 0.75rem !important;
+                border-radius: 8px !important;
+            }
+            
+            /* ========== PASSPORT - Top Center ========== */
+            #passport-panel {
+                position: fixed !important;
+                top: 0 !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                right: auto !important;
+                z-index: 700 !important;
+                border-radius: 0 0 12px 12px !important;
+            }
+            
+            /* ========== XP PANEL - Bottom Center (compact) ========== */
+            .xp-panel, #xp-panel {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                z-index: 700 !important;
+                max-width: 260px !important;
+                padding: 6px 12px !important;
+                font-size: 0.8rem !important;
+                pointer-events: auto !important;
+                border-radius: 12px 12px 0 0 !important;
+            }
+            
+            .xp-panel .xp-header {
+                gap: 6px !important;
+            }
+            
+            .xp-panel .xp-rank-icon {
+                font-size: 1.2rem !important;
+            }
+            
+            .xp-panel .xp-rank-name {
+                font-size: 0.75rem !important;
+            }
+            
+            .xp-panel .xp-amount {
+                font-size: 0.7rem !important;
+            }
+            
+            .xp-panel .xp-bar-container {
+                height: 4px !important;
+            }
+            
+            .xp-panel .xp-next {
+                font-size: 0.65rem !important;
+                padding-top: 3px !important;
+            }
+            
+            /* ========== HIDE OLD ELEMENTS ========== */
+            #photo-btn, #gallery-btn, #compare-btn,
+            .photo-btn, .gallery-btn, .compare-btn,
+            #settings-btn, .collectibles-counter, #collectibles-counter {
+                display: none !important;
+            }
+            
+            /* ========== MOBILE RESPONSIVE ========== */
+            @media (max-width: 768px) {
+                .lang-selector {
+                    right: 240px;
+                    bottom: 10px;
+                }
+                
+                .lang-flag {
+                    width: 28px;
+                    height: 28px;
+                    font-size: 1rem;
+                }
+                
+                .minimap-container, #minimap-container {
+                    width: 120px !important;
+                    top: 0 !important;
+                    right: 0 !important;
+                    border-radius: 0 0 0 12px !important;
+                }
+                
+                .missions-panel, #missions-panel {
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: auto !important;
+                    width: 180px !important;
+                    max-height: 180px !important;
+                    font-size: 0.85rem !important;
+                    border-radius: 0 0 12px 0 !important;
+                }
+                
+                #hud-panel {
+                    left: 0 !important;
+                    bottom: 0 !important;
+                    padding: 8px 12px !important;
+                    border-radius: 0 10px 0 0 !important;
+                }
+                
+                #passport-panel {
+                    display: none !important;
+                }
+                
+                #info-panel {
+                    max-width: 95% !important;
+                    max-height: 85vh !important;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .missions-panel, #missions-panel {
+                    display: none !important;
+                }
+                
+                .lang-selector {
+                    right: 100px;
+                }
+            }
+        </style><style id="toolbar-styles">
+            #main-toolbar {
+                position: fixed;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: 900;
+                display: flex;
+                align-items: center;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+                opacity: 0.5;
+            }
+            
+            #main-toolbar:hover {
+                opacity: 1;
+            }
+            
+            #main-toolbar.collapsed {
+                transform: translateY(-50%) translateX(-48px);
+            }
+            
+            .toolbar-content {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                padding: 8px 6px;
+                background: linear-gradient(180deg, rgba(20, 25, 45, 0.95) 0%, rgba(15, 20, 35, 0.98) 100%);
+                border: 1px solid rgba(100, 150, 255, 0.2);
+                border-left: none;
+                border-radius: 0 12px 12px 0;
+                backdrop-filter: blur(12px);
+            }
+            
+            .toolbar-toggle {
+                width: 18px;
+                height: 40px;
+                background: linear-gradient(180deg, rgba(30, 40, 60, 0.95) 0%, rgba(20, 30, 50, 0.98) 100%);
+                border: 1px solid rgba(100, 150, 255, 0.2);
+                border-left: none;
+                border-radius: 0 6px 6px 0;
+                color: rgba(150, 180, 255, 0.8);
+                font-size: 1rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+            
+            .toolbar-toggle:hover {
+                background: linear-gradient(180deg, rgba(50, 70, 100, 0.95) 0%, rgba(40, 60, 90, 0.98) 100%);
+                color: white;
+            }
+            
+            .toolbar-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 8px;
+                border: none;
+                background: transparent;
+                font-size: 1.3rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+                filter: grayscale(20%);
+                opacity: 0.85;
+            }
+            
+            .toolbar-btn:hover {
+                transform: scale(1.2);
+                filter: grayscale(0%) drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+                opacity: 1;
+            }
+            
+            .toolbar-btn:active {
+                transform: scale(0.95);
+            }
+            
+            /* Hide old floating buttons */
+            #photo-btn, #gallery-btn, #compare-btn,
+            .photo-btn, .gallery-btn, .compare-btn,
+            #settings-btn, .toolbar-collectibles,
+            .ui-settings-btn {
+                display: none !important;
+            }
+            
+            /* Hide when in manual navigation mode */
+            #main-toolbar.hidden-for-nav {
+                transform: translateY(-50%) translateX(-100%);
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            @media (max-width: 768px) {
+                .toolbar-btn {
+                    width: 32px;
+                    height: 32px;
+                    font-size: 1rem;
+                }
+                .toolbar-content {
+                    padding: 6px 4px;
+                    gap: 3px;
+                }
+            }
+        </style><style id="manual-nav-styles">
+            .manual-nav-toggle {
+                position: fixed;
+                bottom: 130px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #1a1a2e, #16213e);
+                border: 2px solid #4a90e2;
+                color: white;
+                font-size: 24px;
+                cursor: pointer;
+                z-index: 1000;
+                transition: all 0.3s ease;
+                box-shadow: 0 0 15px rgba(74, 144, 226, 0.3);
+            }
+            
+            /* Mobile adjustments for toggle button */
+            @media (hover: none) and (pointer: coarse) {
+                .manual-nav-toggle {
+                    bottom: 200px;
+                    right: 15px;
+                    width: 45px;
+                    height: 45px;
+                    font-size: 20px;
+                }
+            }
+            
+            @media (max-height: 500px) and (hover: none) and (pointer: coarse) {
+                .manual-nav-toggle {
+                    bottom: 80px;
+                    right: 15px;
+                    width: 40px;
+                    height: 40px;
+                    font-size: 18px;
+                }
+            }
+            
+            .manual-nav-toggle:hover {
+                transform: scale(1.1);
+                box-shadow: 0 0 25px rgba(74, 144, 226, 0.6);
+            }
+            
+            .manual-nav-toggle.active {
+                background: linear-gradient(135deg, #4a90e2, #357abd);
+                animation: pulse 1.5s infinite;
+            }
+            
+            @keyframes pulse {
+                0%, 100% { box-shadow: 0 0 15px rgba(74, 144, 226, 0.5); }
+                50% { box-shadow: 0 0 30px rgba(74, 144, 226, 0.8); }
+            }
+            
+            .manual-nav-hud {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                pointer-events: none;
+                z-index: 999;
+            }
+            
+            .manual-nav-hud.hidden {
+                display: none;
+            }
+            
+            .nav-warp-display {
+                position: absolute;
+                top: 15px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                padding: 8px 20px;
+                border-radius: 20px;
+                border: 1px solid rgba(74, 144, 226, 0.5);
+                font-family: 'Orbitron', monospace, sans-serif;
+                text-align: center;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .warp-level {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .warp-name {
+                color: #4a90e2;
+                font-size: 12px;
+                font-weight: bold;
+                text-transform: uppercase;
+            }
+            
+            .warp-number {
+                background: linear-gradient(135deg, #4a90e2, #357abd);
+                color: white;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .warp-bar {
+                width: 80px;
+                height: 6px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 3px;
+                overflow: hidden;
+            }
+            
+            .warp-fill {
+                height: 100%;
+                width: 0%;
+                background: linear-gradient(90deg, #4a90e2, #00ff88);
+                border-radius: 3px;
+                transition: width 0.2s ease, background 0.3s ease;
+            }
+            
+            .warp-speed {
+                display: flex;
+                align-items: baseline;
+                gap: 3px;
+            }
+            
+            .speed-value {
+                color: #4a90e2;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            
+            .speed-unit {
+                color: #666;
+                font-size: 10px;
+            }
+            
+            .speed-comparison {
+                font-size: 10px;
+                color: #888;
+                max-width: 150px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .nav-controls-help {
+                position: absolute;
+                bottom: 100px;
+                left: 20px;
+                background: rgba(0, 0, 0, 0.8);
+                padding: 15px;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                font-size: 12px;
+            }
+            
+            .control-row {
+                display: flex;
+                gap: 10px;
+                margin: 5px 0;
+                color: #aaa;
+            }
+            
+            .control-row .key {
+                background: rgba(74, 144, 226, 0.3);
+                padding: 2px 8px;
+                border-radius: 4px;
+                color: #4a90e2;
+                font-family: monospace;
+                min-width: 50px;
+                text-align: center;
+            }
+            
+            .nav-crosshair {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 30px;
+                color: rgba(74, 144, 226, 0.5);
+                font-weight: 100;
+                text-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+                pointer-events: none;
+                transition: all 0.2s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .nav-crosshair.targeting {
+                color: #4ade80;
+                text-shadow: 0 0 15px rgba(74, 222, 128, 0.8);
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+
+            .crosshair-hint {
+                font-size: 12px;
+                color: #4ade80;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 4px 10px;
+                border-radius: 12px;
+                white-space: nowrap;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
+
+            .nav-crosshair.targeting .crosshair-hint {
+                opacity: 1;
+            }
+            
+            /* Hide other UI elements when in manual mode */
+            body.manual-nav-active #hud-panel,
+            body.manual-nav-active #passport-panel,
+            body.manual-nav-active .mission-panel,
+            body.manual-nav-active .xp-bar-container,
+            body.manual-nav-active .comparator-button,
+            body.manual-nav-active .settings-btn,
+            body.manual-nav-active .manual-nav-toggle,
+            body.manual-nav-active .toolbar,
+            body.manual-nav-active .toolbar-main,
+            body.manual-nav-active .time-compact,
+            body.manual-nav-active .time-control-panel,
+            body.manual-nav-active .photo-btn,
+            body.manual-nav-active .gallery-btn,
+            body.manual-nav-active .planet-info-panel,
+            body.manual-nav-active .info-panel,
+            body.manual-nav-active .quiz-panel,
+            body.manual-nav-active .celebration-overlay,
+            body.manual-nav-active .collectibles-panel,
+            body.manual-nav-active .achievements-panel,
+            body.manual-nav-active .level-up-modal,
+            body.manual-nav-active #navigation-hint {
+                opacity: 0 !important;
+                pointer-events: none !important;
+                visibility: hidden !important;
+            }
+            
+            /* ========== TOUCH CONTROLS (Mobile/Tablet) ========== */
+            .desktop-only {
+                display: block;
+            }
+            .mobile-only {
+                display: none;
+            }
+            
+            @media (hover: none) and (pointer: coarse) {
+                .desktop-only { display: none !important; }
+                .mobile-only { display: flex !important; }
+                .nav-crosshair { font-size: 24px; }
+                .nav-warp-display { 
+                    top: 80px; 
+                    transform: translateX(-50%) scale(0.9);
+                }
+            }
+            
+            .touch-controls {
+                pointer-events: auto;
+                display: none;
+                flex-direction: column;
+            }
+            
+            /* Virtual Joystick - Left side, bottom */
+            .touch-joystick {
+                position: absolute;
+                bottom: 40px;
+                left: 20px;
+                width: 130px;
+                height: 130px;
+            }
+            
+            .joystick-base {
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.6);
+                border: 3px solid rgba(74, 144, 226, 0.6);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                touch-action: none;
+            }
+            
+            .joystick-stick {
+                width: 55px;
+                height: 55px;
+                background: linear-gradient(135deg, #4a90e2, #357abd);
+                border-radius: 50%;
+                box-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
+                transition: transform 0.05s ease-out;
+            }
+            
+            /* Warp controls - Horizontal bar at bottom center */
+            .touch-warp-controls {
+                position: absolute;
+                bottom: 40px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(0, 0, 0, 0.8);
+                padding: 6px 12px;
+                border-radius: 25px;
+                border: 2px solid rgba(74, 144, 226, 0.5);
+            }
+            
+            .touch-warp-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                border: 2px solid #4a90e2;
+                background: rgba(74, 144, 226, 0.3);
+                color: white;
+                font-size: 20px;
+                font-weight: bold;
+                cursor: pointer;
+                touch-action: manipulation;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .touch-warp-btn:active {
+                background: #4a90e2;
+                transform: scale(0.95);
+            }
+            
+            .touch-warp-level {
+                font-size: 20px;
+                font-weight: bold;
+                color: #4a90e2;
+                min-width: 28px;
+                text-align: center;
+                font-family: 'Orbitron', monospace;
+            }
+            
+            /* Action buttons - Right side, organized vertically with spacing */
+            .touch-action-buttons {
+                position: absolute;
+                bottom: 40px;
+                right: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                align-items: center;
+            }
+            
+            .touch-btn {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                border: 3px solid rgba(74, 144, 226, 0.6);
+                background: rgba(0, 0, 0, 0.7);
+                font-size: 24px;
+                cursor: pointer;
+                touch-action: manipulation;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .touch-btn:active, .touch-btn.active {
+                background: rgba(74, 144, 226, 0.5);
+                transform: scale(0.95);
+            }
+            
+            .touch-boost {
+                border-color: #ffa500;
+                order: 2; /* Middle */
+            }
+            .touch-boost.active {
+                background: rgba(255, 165, 0, 0.5);
+                box-shadow: 0 0 20px rgba(255, 165, 0, 0.7);
+            }
+            
+            .touch-up {
+                border-color: #00ff88;
+                order: 1; /* Top */
+            }
+            
+            .touch-down {
+                border-color: #ff6b6b;
+                order: 3; /* Bottom */
+            }
+            
+            /* Exit button - Top left corner to avoid conflict with warp display */
+            .touch-exit-btn {
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                width: 45px;
+                height: 45px;
+                border-radius: 50%;
+                border: 2px solid #ff6b6b;
+                background: rgba(255, 50, 50, 0.8);
+                color: white;
+                font-size: 20px;
+                font-weight: bold;
+                cursor: pointer;
+                touch-action: manipulation;
+                z-index: 1001;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .touch-exit-btn:active {
+                transform: scale(0.9);
+            }
+            
+            /* Tablet-specific adjustments */
+            @media (min-width: 768px) and (hover: none) and (pointer: coarse) {
+                .touch-joystick {
+                    width: 150px;
+                    height: 150px;
+                    bottom: 50px;
+                    left: 30px;
+                }
+                .joystick-stick {
+                    width: 65px;
+                    height: 65px;
+                }
+                .touch-btn {
+                    width: 70px;
+                    height: 70px;
+                    font-size: 28px;
+                }
+                .touch-action-buttons {
+                    gap: 15px;
+                    right: 30px;
+                    bottom: 50px;
+                }
+                .touch-warp-controls {
+                    padding: 10px 18px;
+                    gap: 12px;
+                    bottom: 50px;
+                }
+                .touch-warp-btn {
+                    width: 44px;
+                    height: 44px;
+                    font-size: 24px;
+                }
+                .touch-warp-level {
+                    font-size: 24px;
+                    min-width: 35px;
+                }
+                .touch-exit-btn {
+                    width: 50px;
+                    height: 50px;
+                    font-size: 22px;
+                }
+                .nav-warp-display {
+                    transform: translateX(-50%) scale(1);
+                }
+            }
+            
+            /* Landscape phone adjustments */
+            @media (max-height: 500px) and (hover: none) and (pointer: coarse) {
+                .touch-joystick {
+                    width: 100px;
+                    height: 100px;
+                    bottom: 20px;
+                    left: 15px;
+                }
+                .joystick-stick {
+                    width: 45px;
+                    height: 45px;
+                }
+                .touch-btn {
+                    width: 50px;
+                    height: 50px;
+                    font-size: 20px;
+                }
+                .touch-action-buttons {
+                    gap: 8px;
+                    right: 15px;
+                    bottom: 20px;
+                }
+                .touch-warp-controls {
+                    padding: 5px 10px;
+                    gap: 6px;
+                    bottom: 20px;
+                }
+                .touch-warp-btn {
+                    width: 32px;
+                    height: 32px;
+                    font-size: 18px;
+                }
+                .touch-warp-level {
+                    font-size: 18px;
+                    min-width: 24px;
+                }
+                .touch-exit-btn {
+                    width: 40px;
+                    height: 40px;
+                    font-size: 18px;
+                    top: 10px;
+                    left: 10px;
+                }
+                .nav-warp-display {
+                    top: 10px;
+                    padding: 5px 15px;
+                    gap: 10px;
+                }
+                .nav-warp-display .warp-name { font-size: 10px; }
+                .nav-warp-display .warp-number { width: 20px; height: 20px; font-size: 12px; }
+                .nav-warp-display .speed-value { font-size: 14px; }
+            }
+
+            /* Speedometer gauge */
+            .nav-speedometer {
+                position: fixed;
+                top: 100px;
+                left: 20px;
+                width: 120px;
+                background: rgba(10, 15, 30, 0.85);
+                border: 1px solid rgba(100, 150, 255, 0.3);
+                border-radius: 10px;
+                padding: 10px;
+                backdrop-filter: blur(8px);
+            }
+            .speedometer-svg {
+                width: 100%;
+                height: 60px;
+            }
+            .speedometer-bg {
+                fill: none;
+                stroke: rgba(100, 150, 255, 0.2);
+                stroke-width: 8;
+                stroke-linecap: round;
+            }
+            .speedometer-fill {
+                fill: none;
+                stroke: #4a90e2;
+                stroke-width: 8;
+                stroke-linecap: round;
+                stroke-dasharray: 126;
+                stroke-dashoffset: 126;
+                transition: stroke-dashoffset 0.3s ease, stroke 0.3s ease;
+            }
+            .speedometer-needle {
+                fill: #fff;
+                filter: drop-shadow(0 0 3px #fff);
+            }
+            .speedometer-label {
+                text-align: center;
+                color: rgba(150, 180, 255, 0.8);
+                font-size: 10px;
+                margin-top: 5px;
+                letter-spacing: 2px;
+            }
+
+            /* Space compass - positioned on left side below speedometer */
+            .nav-compass {
+                position: fixed;
+                top: 220px;
+                left: 20px;
+                width: 80px;
+                height: 80px;
+                background: rgba(10, 15, 30, 0.85);
+                border: 1px solid rgba(100, 150, 255, 0.3);
+                border-radius: 50%;
+                backdrop-filter: blur(8px);
+            }
+            .compass-ring {
+                position: absolute;
+                inset: 5px;
+                border: 2px solid rgba(100, 150, 255, 0.3);
+                border-radius: 50%;
+            }
+            .compass-indicator {
+                position: absolute;
+                font-size: 16px;
+                transform: translate(-50%, -50%);
+                transition: all 0.1s ease;
+                text-shadow: 0 0 10px rgba(255, 200, 50, 0.8);
+            }
+            .compass-center {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: rgba(150, 180, 255, 0.6);
+                font-size: 8px;
+            }
+            .compass-label {
+                position: absolute;
+                bottom: -18px;
+                left: 50%;
+                transform: translateX(-50%);
+                color: rgba(150, 180, 255, 0.7);
+                font-size: 9px;
+                letter-spacing: 1px;
+                white-space: nowrap;
+            }
+
+            /* Distance display - horizontal bar at bottom */
+            .nav-distances {
+                position: fixed;
+                bottom: 15px;
+                right: 80px;
+                background: rgba(10, 15, 30, 0.9);
+                border: 1px solid rgba(100, 150, 255, 0.3);
+                border-radius: 20px;
+                padding: 6px 12px;
+                backdrop-filter: blur(8px);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .distance-title {
+                color: rgba(150, 180, 255, 0.8);
+                font-size: 9px;
+                letter-spacing: 1px;
+            }
+            .distance-list {
+                display: flex;
+                gap: 5px;
+            }
+            .distance-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                cursor: pointer;
+                padding: 3px 8px;
+                border-radius: 8px;
+                transition: all 0.2s;
+                border: 1px solid transparent;
+            }
+            .distance-item:hover {
+                background: rgba(74, 144, 226, 0.3);
+                border-color: rgba(74, 144, 226, 0.5);
+            }
+            .distance-item .planet-name {
+                color: #fff;
+                font-size: 9px;
+                font-weight: bold;
+            }
+            .distance-item .planet-dist {
+                color: rgba(150, 180, 255, 0.6);
+                font-size: 8px;
+            }
+
+            /* Auto-pilot panel */
+            .nav-autopilot {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(10, 20, 40, 0.95);
+                border: 2px solid #4a90e2;
+                border-radius: 15px;
+                padding: 20px;
+                text-align: center;
+                z-index: 1002;
+                min-width: 200px;
+            }
+            .nav-autopilot.hidden { display: none; }
+            .autopilot-header {
+                color: #4a90e2;
+                font-size: 14px;
+                margin-bottom: 10px;
+                letter-spacing: 2px;
+            }
+            .autopilot-target {
+                color: #fff;
+                font-size: 18px;
+                margin-bottom: 5px;
+            }
+            .autopilot-distance {
+                color: rgba(150, 180, 255, 0.8);
+                font-size: 12px;
+                margin-bottom: 15px;
+            }
+            .autopilot-cancel {
+                background: rgba(255, 100, 100, 0.3);
+                border: 1px solid #ff6b6b;
+                color: #ff6b6b;
+                padding: 8px 20px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-size: 12px;
+                transition: all 0.2s;
+            }
+            .autopilot-cancel:hover {
+                background: rgba(255, 100, 100, 0.5);
+            }
+
+            /* Planet markers in 3D space */
+            .planet-marker {
+                position: fixed;
+                pointer-events: auto;
+                cursor: pointer;
+                transition: transform 0.1s ease;
+                z-index: 100;
+            }
+            .planet-marker:hover {
+                transform: scale(1.2);
+            }
+            .planet-marker-content {
+                background: rgba(10, 20, 40, 0.9);
+                border: 1px solid rgba(100, 150, 255, 0.5);
+                border-radius: 8px;
+                padding: 5px 10px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                white-space: nowrap;
+            }
+            .planet-marker-icon {
+                font-size: 16px;
+            }
+            .planet-marker-name {
+                color: #fff;
+                font-size: 11px;
+                font-weight: bold;
+            }
+            .planet-marker-dist {
+                color: rgba(150, 180, 255, 0.7);
+                font-size: 9px;
+            }
+            .planet-marker-arrow {
+                position: absolute;
+                bottom: -8px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 0;
+                height: 0;
+                border-left: 6px solid transparent;
+                border-right: 6px solid transparent;
+                border-top: 8px solid rgba(100, 150, 255, 0.5);
+            }
+
+            /* Speed lines effect */
+            .speed-lines-container {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 50;
+                overflow: hidden;
+            }
+            .speed-line {
+                position: absolute;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+                height: 1px;
+                animation: speedLineMove 0.3s linear infinite;
+            }
+            @keyframes speedLineMove {
+                from { transform: translateX(-100vw); }
+                to { transform: translateX(100vw); }
+            }
+
+            /* Warp flash effect */
+            .warp-flash {
+                position: fixed;
+                inset: 0;
+                background: radial-gradient(circle, rgba(100, 150, 255, 0.3) 0%, transparent 70%);
+                pointer-events: none;
+                z-index: 99;
+                opacity: 0;
+                transition: opacity 0.15s ease;
+            }
+            .warp-flash.active {
+                opacity: 1;
+            }
+
+            /* Emergency brake effect */
+            .emergency-brake-effect {
+                position: fixed;
+                inset: 0;
+                border: 4px solid #ff4444;
+                pointer-events: none;
+                z-index: 98;
+                opacity: 0;
+                transition: opacity 0.1s;
+            }
+            .emergency-brake-effect.active {
+                opacity: 1;
+                animation: brakeFlash 0.2s ease-out;
+            }
+            @keyframes brakeFlash {
+                0%, 100% { border-color: #ff4444; }
+                50% { border-color: #ff8888; }
+            }
+
+            /* Planet info panel */
+            .nav-planet-info {
+                position: fixed;
+                top: 50%;
+                right: 20px;
+                transform: translateY(-50%);
+                width: 280px;
+                max-height: 70vh;
+                background: rgba(10, 20, 40, 0.95);
+                border: 2px solid rgba(100, 150, 255, 0.5);
+                border-radius: 15px;
+                padding: 15px;
+                pointer-events: auto;
+                overflow-y: auto;
+                z-index: 1003;
+                animation: slideIn 0.2s ease;
+            }
+            .nav-planet-info.hidden { display: none; }
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateY(-50%) translateX(20px); }
+                to { opacity: 1; transform: translateY(-50%) translateX(0); }
+            }
+            .planet-info-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid rgba(100, 150, 255, 0.3);
+            }
+            .planet-info-name {
+                font-size: 18px;
+                font-weight: bold;
+                color: #fff;
+            }
+            .planet-info-close {
+                background: rgba(255, 100, 100, 0.3);
+                border: 1px solid #ff6b6b;
+                color: #ff6b6b;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 14px;
+                transition: all 0.2s;
+            }
+            .planet-info-close:hover {
+                background: rgba(255, 100, 100, 0.5);
+            }
+            .planet-info-type {
+                color: rgba(150, 180, 255, 0.8);
+                font-size: 12px;
+                margin-bottom: 12px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .planet-info-stats {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-bottom: 15px;
+            }
+            .planet-info-stat {
+                background: rgba(100, 150, 255, 0.1);
+                padding: 8px;
+                border-radius: 8px;
+            }
+            .planet-info-stat-label {
+                color: rgba(150, 180, 255, 0.6);
+                font-size: 9px;
+                text-transform: uppercase;
+            }
+            .planet-info-stat-value {
+                color: #fff;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .planet-info-curiosity {
+                background: rgba(255, 200, 50, 0.1);
+                border-left: 3px solid #ffc832;
+                padding: 10px;
+                border-radius: 0 8px 8px 0;
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.9);
+                line-height: 1.4;
+            }
+            .planet-info-curiosity-title {
+                color: #ffc832;
+                font-size: 10px;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            /* Proximity hint */
+            .nav-proximity-hint {
+                position: fixed;
+                bottom: 60px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(10, 20, 40, 0.9);
+                border: 1px solid rgba(100, 150, 255, 0.5);
+                border-radius: 20px;
+                padding: 8px 20px;
+                pointer-events: none;
+                z-index: 1001;
+                animation: fadeInUp 0.3s ease;
+            }
+            .nav-proximity-hint.hidden { display: none; }
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+                to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+            .proximity-text {
+                color: #fff;
+                font-size: 13px;
+            }
+            .proximity-text .key-hint {
+                background: rgba(74, 144, 226, 0.4);
+                padding: 2px 8px;
+                border-radius: 4px;
+                color: #4a90e2;
+                font-weight: bold;
+            }
+
+            /* Touch info button */
+            .touch-info {
+                border-color: #4a90e2 !important;
+                order: 0; /* First in the list */
+            }
+            .touch-info.active {
+                background: rgba(74, 144, 226, 0.5);
+                box-shadow: 0 0 20px rgba(74, 144, 226, 0.7);
+            }
+
+            /* Hide new elements on mobile for now */
+            @media (hover: none) and (pointer: coarse) {
+                .nav-speedometer,
+                .nav-compass,
+                .nav-distances {
+                    display: none;
+                }
+            }
+        </style><style id="ui-settings-styles">
+            /* Settings button - HIDDEN (now in toolbar) */
+            .ui-settings-btn {
+                display: none !important;
+            }
+            
+            /* Settings panel - positioned next to left toolbar */
+            .ui-settings-panel {
+                position: fixed;
+                top: 50%;
+                left: 80px;
+                transform: translateY(-50%);
+                width: 220px;
+                background: rgba(15, 15, 35, 0.95);
+                border: 1px solid rgba(74, 144, 226, 0.3);
+                border-radius: 12px;
+                backdrop-filter: blur(15px);
+                z-index: 1200;
+                overflow: hidden;
+                transition: all 0.3s ease;
+            }
+            
+            .ui-settings-panel.hidden {
+                opacity: 0;
+                transform: translateY(-50%) translateX(-20px) scale(0.95);
+                pointer-events: none;
+            }
+            
+            .ui-settings-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 15px;
+                background: rgba(40, 40, 80, 0.5);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+            
+            .ui-settings-close {
+                background: none;
+                border: none;
+                color: rgba(255, 255, 255, 0.6);
+                font-size: 1.3rem;
+                cursor: pointer;
+                padding: 0;
+                line-height: 1;
+            }
+            
+            .ui-settings-close:hover {
+                color: white;
+            }
+            
+            .ui-settings-body {
+                padding: 10px;
+            }
+            
+            .ui-toggle-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background 0.2s ease;
+                font-size: 0.85rem;
+            }
+            
+            .ui-toggle-row:hover {
+                background: rgba(255, 255, 255, 0.05);
+            }
+            
+            .ui-toggle-row input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                accent-color: #4a90e2;
+                cursor: pointer;
+            }
+            
+            /* Hidden state for panels */
+            .panel-hidden {
+                opacity: 0 !important;
+                pointer-events: none !important;
+                transform: scale(0.9);
+            }
+            
+            /* Ensure passport has hidden state */
+            #passport-panel.panel-hidden {
+                transform: translateX(-50%) translateY(-20px) scale(0.9);
+            }
+            
+            /* Minimap hidden state */
+            .minimap-container.panel-hidden {
+                transform: translateX(-100%);
+            }
+            
+            /* Time control hidden */
+            #time-control-compact.panel-hidden,
+            .time-control.panel-hidden {
+                transform: translateX(100%);
+            }
+            
+            /* HUD panel hidden */
+            #hud-panel.panel-hidden {
+                transform: translateX(-100%);
+            }
+        </style><style>
+            #mascot-container {
+                position: fixed;
+                bottom: 100px;
+                left: 50%;
+                transform: translateX(-50%) translateY(30px);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                z-index: 9999;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.4s ease, transform 0.4s ease;
+            }
+
+            #mascot-container.visible {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+
+            #mascot-container.position-left {
+                left: 120px;
+                transform: translateX(0) translateY(30px);
+            }
+
+            #mascot-container.position-left.visible {
+                transform: translateX(0) translateY(0);
+            }
+
+            #mascot-container.position-right {
+                left: auto;
+                right: 120px;
+                transform: translateX(0) translateY(30px);
+                align-items: flex-end;
+            }
+
+            #mascot-container.position-right.visible {
+                transform: translateX(0) translateY(0);
+            }
+
+            #mascot-container.position-center {
+                left: 50%;
+                transform: translateX(-50%) translateY(30px);
+            }
+
+            #mascot-container.position-center.visible {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            .mascot-bubble {
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 16px;
+                padding: 12px 16px;
+                max-width: 280px;
+                margin-bottom: 8px;
+                position: relative;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                border: 2px solid #FF6B35;
+            }
+
+            .mascot-bubble-tail {
+                position: absolute;
+                bottom: -10px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 0;
+                height: 0;
+                border-left: 10px solid transparent;
+                border-right: 10px solid transparent;
+                border-top: 12px solid #FF6B35;
+            }
+
+            .mascot-bubble-tail::after {
+                content: '';
+                position: absolute;
+                bottom: 3px;
+                left: -8px;
+                width: 0;
+                height: 0;
+                border-left: 8px solid transparent;
+                border-right: 8px solid transparent;
+                border-top: 10px solid rgba(255, 255, 255, 0.95);
+            }
+
+            .position-left .mascot-bubble-tail {
+                left: 30px;
+                transform: none;
+            }
+
+            .position-right .mascot-bubble-tail {
+                left: auto;
+                right: 30px;
+                transform: none;
+            }
+
+            .mascot-text {
+                color: #1a1a2e;
+                font-size: 14px;
+                line-height: 1.4;
+                font-family: 'Nunito', 'Comic Sans MS', sans-serif;
+            }
+
+            .mascot-character {
+                width: 150px;
+                height: 150px;
+                animation: mascot-bounce 0.5s ease;
+            }
+
+            .mascot-character img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+            }
+
+            @keyframes mascot-bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+            }
+
+            @keyframes mascot-celebrate {
+                0%, 100% { transform: translateY(0) rotate(0deg); }
+                25% { transform: translateY(-15px) rotate(-5deg); }
+                75% { transform: translateY(-15px) rotate(5deg); }
+            }
+
+            .mascot-character.celebrating {
+                animation: mascot-celebrate 0.6s ease infinite;
+            }
+
+            .mascot-character.thinking {
+                animation: mascot-think 1s ease infinite;
+            }
+
+            @keyframes mascot-think {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-5px); }
+            }
+
+            /* Hide bubble when no text */
+            .mascot-bubble:empty,
+            .mascot-bubble.hidden {
+                display: none;
+            }
+
+            /* Mobile adjustments */
+            @media (max-width: 768px) {
+                #mascot-container {
+                    bottom: 80px;
+                }
+
+                .mascot-character {
+                    width: 80px;
+                    height: 80px;
+                }
+
+                .mascot-bubble {
+                    max-width: 200px;
+                    padding: 8px 12px;
+                }
+
+                .mascot-text {
+                    font-size: 12px;
+                }
+            }
+        </style></head>
+
+<body class="manual-nav-active">
+    <!-- Main Window Container -->
+    <div id="app-window" class="window-container">
+        <!-- Window Body -->
+        <div class="window-body" id="window-body">
+            <!-- 3D Canvas Container -->
+            <div id="canvas-container">
+                <!-- HUD Instructions - Will be replaced by JS with translations -->
+                <div id="hud-panel">
+                    <h3 id="controls-title" data-i18n="controls_title">Controls</h3>
+                    <div class="hud-section">
+                        <ul>
+                            <li>🖱️ <span data-i18n="drag_to_rotate">Drag: Rotate view</span></li>
+                            <li>🔍 <span data-i18n="scroll_to_zoom">Scroll/Pinch: Zoom</span></li>
+                            <li>👆 <span data-i18n="click_to_see">Click: See info</span></li>
+                        </ul>
+                    </div>
+                    <div class="nav-controls"><button class="nav-arrow">◀</button><span>Explore</span><button class="nav-arrow">▶</button></div><button id="btn-recenter" class="modern-btn" data-i18n="recenter">Recenter View</button>
+                </div>
+            <canvas data-engine="three.js r160" width="1701" height="927" style="display: block; width: 1701px; height: 927px;"></canvas></div>
+
+            <!-- Side Information Panel -->
+            <div id="info-panel" class="info-panel hidden">
+                <button id="close-info" class="close-info-btn">×</button>
+                <h2 id="info-title">Informações</h2>
+                <div id="info-content">
+                    <p class="placeholder-text">Seleccione um planeta ou lua para ver detalhes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modules -->
+
+
+<div id="xp-panel" class="xp-panel">
+            <div class="xp-header">
+                <span class="xp-rank-icon">🧑‍🎓</span>
+                <div class="xp-rank-info">
+                    <span class="xp-rank-name">Pilot Apprentice</span>
+                    <span class="xp-amount">⭐ 175 XP</span>
+                </div>
+            </div>
+            <div class="xp-bar-container">
+                <div class="xp-bar" style="width: 50%"></div>
+            </div>
+            
+                <div class="xp-next">
+                    <span>Next level: 👨‍✈️ Junior Pilot</span>
+                    <span class="xp-needed">75 XP</span>
+                </div>
+            
+        </div><div id="mission-panel" class="mission-panel">
+            <div class="mission-header">
+                <span class="mission-badge">MISSION 3/20</span>
+                <button class="mission-hint-btn" title="💡 See hint">💡</button>
+            </div>
+            <div class="mission-content">
+                <span class="mission-icon">🚀</span>
+                <div class="mission-info">
+                    <span class="mission-title">First Flight</span>
+                    <span class="mission-desc">Visit your first planet! Start with Mercury, the closest to the Sun.</span>
+                </div>
+            </div>
+            <div class="mission-reward">
+                <span>⭐ Reward: 50 XP</span>
+            </div>
+            <div class="mission-hint hidden">
+                <span>💡 Use arrows ◀ ▶ to navigate to Mercury!</span>
+            </div>
+        </div><button id="achievements-btn" class="achievements-btn" title="View Achievements">🏆</button><div id="passport-panel" class="compact"><button class="passport-toggle" title="Minimize"><div class="chevron-icon left"></div></button><div class="passport-title">Space Passport</div><div class="passport-items"><div class="passport-badge locked" id="badge-mercury" title="Mercury"><div class="badge-icon" style="background-color: rgb(169, 169, 169);"></div><span>Mer</span></div><div class="passport-badge locked" id="badge-venus" title="Venus"><div class="badge-icon" style="background-color: rgb(230, 230, 250);"></div><span>Ven</span></div><div class="passport-badge unlocked" id="badge-earth" title="Earth"><div class="badge-icon" style="background-color: rgb(0, 0, 255);"></div><span>Ear</span></div><div class="passport-badge locked" id="badge-mars" title="Mars"><div class="badge-icon" style="background-color: rgb(255, 69, 0);"></div><span>Mar</span></div><div class="passport-badge locked" id="badge-jupiter" title="Jupiter"><div class="badge-icon" style="background-color: rgb(218, 165, 32);"></div><span>Jup</span></div><div class="passport-badge locked" id="badge-saturn" title="Saturn"><div class="badge-icon" style="background-color: rgb(244, 196, 48);"></div><span>Sat</span></div><div class="passport-badge locked" id="badge-uranus" title="Uranus"><div class="badge-icon" style="background-color: rgb(64, 224, 208);"></div><span>Ura</span></div><div class="passport-badge locked" id="badge-neptune" title="Neptune"><div class="badge-icon" style="background-color: rgb(0, 0, 139);"></div><span>Nep</span></div></div></div><button id="settings-btn" class="settings-btn" title="Definições">⚙️</button><button id="photo-btn" class="photo-btn" title="Take Space Photo" style="position: fixed; bottom: 200px; left: 20px; width: 50px; height: 50px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.3); background: rgba(20, 20, 40, 0.8); color: white; font-size: 1.5rem; cursor: pointer; z-index: 600; display: flex; align-items: center; justify-content: center; transition: 0.3s;">📸</button><button id="gallery-btn" class="gallery-btn" title="Photo Gallery" style="position: fixed; bottom: 260px; left: 20px; width: 50px; height: 50px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.3); background: rgba(20, 20, 40, 0.8); color: white; font-size: 1.5rem; cursor: pointer; z-index: 600; display: flex; align-items: center; justify-content: center; transition: 0.3s;">🖼️<span class="photo-counter" style="position: absolute; top: -5px; right: -5px; background: rgb(255, 68, 68); color: white; font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 10px; min-width: 16px; text-align: center; display: none;">0</span></button><div class="camera-flash" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; background: white; pointer-events: none; opacity: 0; z-index: 9999; transition: opacity 0.2s;"></div><div id="minimap-container" class="minimap-container"><div class="minimap-header">
+            <span class="minimap-title">🗺️ Map</span>
+            <div class="minimap-buttons">
+                <button class="minimap-minimize" title="Minimize">−</button>
+                <button class="minimap-toggle" title="Expand">⊕</button>
+            </div>
+        </div><canvas class="minimap-canvas" width="150" height="150"></canvas></div><button class="collectibles-counter" style="position: fixed; bottom: 380px; left: 20px; background: linear-gradient(135deg, rgba(255, 180, 0, 0.9), rgba(255, 100, 50, 0.9)); color: white; border: none; padding: 10px 18px; border-radius: 25px; cursor: pointer; font-family: Orbitron, monospace; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; transition: 0.3s; z-index: 600; box-shadow: rgba(255, 150, 0, 0.4) 0px 4px 15px;">🎁 <span id="collected-count">0</span>/14</button><div class="collectibles-modal">
+            <div class="collectibles-content">
+                <div class="collectibles-header">
+                    <h2>🎁 My Collection</h2>
+                    <button class="collectibles-close">×</button>
+                </div>
+                <div class="collectibles-grid" id="collectibles-grid"></div>
+                <div class="collectibles-stats">
+                    <p id="collection-progress"></p>
+                </div>
+            </div>
+        </div><div class="collectible-notification"></div><div id="time-control-compact" class="time-compact"><button class="time-toggle-btn" title="toggle_controls"><div class="toggle-icon expanded"></div></button><div class="time-content"><div class="time-speed" id="time-speed-display">1x</div><div class="time-buttons"><button class="time-btn" data-value="0" data-index="0">⏸️</button><button class="time-btn" data-value="0.25" data-index="1">🐌</button><button class="time-btn" data-value="0.5" data-index="2">🐢</button><button class="time-btn active" data-value="1" data-index="3">▶️</button><button class="time-btn" data-value="2" data-index="4">⏩</button><button class="time-btn" data-value="5" data-index="5">🚀</button><button class="time-btn" data-value="10" data-index="6">⚡</button></div><div class="time-lang"><button class="lang-btn " title="Português" id="lang-btn-pt">🇵🇹</button><button class="lang-btn active" title="English" id="lang-btn-en">🇬🇧</button></div></div></div><div class="lang-selector" id="lang-selector"><button class="lang-flag " title="Português" data-lang="pt">🇵🇹</button><button class="lang-flag active" title="English" data-lang="en">🇬🇧</button></div><div id="main-toolbar" class="hidden-for-nav"><div class="toolbar-content"><button class="toolbar-btn" id="toolbar-photo" title="Take Space Photo">📸</button><button class="toolbar-btn" id="toolbar-gallery" title="Photo Gallery">🖼️</button><button class="toolbar-btn" id="toolbar-compare" title="Compare">⚖️</button><button class="toolbar-btn" id="toolbar-achievements" title="Achievements">🏆</button><button class="toolbar-btn" id="toolbar-library" title="Library">📚</button><button class="toolbar-btn" id="toolbar-settings" title="Settings">⚙️</button></div><button class="toolbar-toggle" title="Hide Menu">‹</button></div><button class="manual-nav-toggle active" title="Manual Navigation (M)">🎮</button><div class="manual-nav-hud">
+            <div class="nav-warp-display">
+                <div class="warp-level">
+                    <span class="warp-name" style="color: rgb(74, 144, 226);">Impulso</span>
+                    <span class="warp-number" style="background: linear-gradient(135deg, rgb(74, 144, 226), rgba(74, 144, 226, 0.533));">1</span>
+                </div>
+                <div class="warp-bar">
+                    <div class="warp-fill" style="width: 0%; background: linear-gradient(90deg, rgb(74, 144, 226), rgba(74, 144, 226, 0.533));"></div>
+                </div>
+                <div class="warp-speed">
+                    <span class="speed-value" style="color: rgb(74, 144, 226);">0 km/s</span>
+                    <span class="speed-unit">km/s</span>
+                </div>
+                <div class="speed-comparison">Press W to accelerate!</div>
+            </div>
+
+            <!-- Speedometer gauge -->
+            <div class="nav-speedometer">
+                <svg viewBox="0 0 100 60" class="speedometer-svg">
+                    <path class="speedometer-bg" d="M 10 50 A 40 40 0 0 1 90 50"></path>
+                    <path class="speedometer-fill" d="M 10 50 A 40 40 0 0 1 90 50" style="stroke-dashoffset: 126; stroke: rgb(74, 144, 226);"></path>
+                    <circle class="speedometer-needle" cx="50" cy="15" r="3"></circle>
+                </svg>
+                <div class="speedometer-label">WARP</div>
+            </div>
+
+            <!-- Space compass -->
+            <div class="nav-compass">
+                <div class="compass-ring">
+                    <div class="compass-indicator sun-indicator" title="Sun" style="left: 56.641px; top: 64.9615px; opacity: 1;">☀️</div>
+                </div>
+                <div class="compass-center">●</div>
+                <div class="compass-label">SUN</div>
+            </div>
+
+            <!-- Distance to planets -->
+            <div class="nav-distances">
+                <div class="distance-title">📍 <span class="nearby-label">NEARBY</span></div>
+                <div class="distance-list">
+            <div class="distance-item" data-planet="mercury" title="Go to mercury">
+                <span class="planet-name">Mer</span>
+                <span class="planet-dist">11.7M km</span>
+            </div>
+        
+            <div class="distance-item" data-planet="sun" title="Go to sun">
+                <span class="planet-name">☀️</span>
+                <span class="planet-dist">12.0M km</span>
+            </div>
+        
+            <div class="distance-item" data-planet="venus" title="Go to venus">
+                <span class="planet-name">Ven</span>
+                <span class="planet-dist">13.9M km</span>
+            </div>
+        
+            <div class="distance-item" data-planet="earth" title="Go to earth">
+                <span class="planet-name">Ear</span>
+                <span class="planet-dist">14.4M km</span>
+            </div>
+        </div>
+            </div>
+
+            <!-- Auto-pilot panel -->
+            <div class="nav-autopilot hidden">
+                <div class="autopilot-header">🎯 <span class="autopilot-label">AUTO-PILOT</span></div>
+                <div class="autopilot-target"></div>
+                <div class="autopilot-distance"></div>
+                <button class="autopilot-cancel">✕ <span class="cancel-label">Cancel</span></button>
+            </div>
+
+            <!-- Planet info panel -->
+            <div class="nav-planet-info">
+                <div class="planet-info-header">
+                    <span class="planet-info-name">Sol</span>
+                    <button class="planet-info-close">✕</button>
+                </div>
+                <div class="planet-info-type">Estrela</div>
+                <div class="planet-info-stats">
+                    <div class="planet-info-stat">
+                        <div class="planet-info-stat-label">Day Length</div>
+                        <div class="planet-info-stat-value">25-35 dias</div>
+                    </div>
+                
+                    <div class="planet-info-stat">
+                        <div class="planet-info-stat-label">Year Length</div>
+                        <div class="planet-info-stat-value">N/A</div>
+                    </div>
+                
+                    <div class="planet-info-stat">
+                        <div class="planet-info-stat-label">Radius</div>
+                        <div class="planet-info-stat-value">696,340 km</div>
+                    </div>
+                </div>
+                <div class="planet-info-curiosity" style="display: block;">
+                <div class="planet-info-curiosity-title">🤯 Did You Know...</div>
+                Contém 99,86% da massa de todo o Sistema Solar.
+            </div>
+            </div>
+
+            <!-- Proximity hint -->
+            <div class="nav-proximity-hint hidden">
+                <span class="proximity-text"></span>
+            </div>
+
+            <!-- Desktop controls help -->
+            <div class="nav-controls-help desktop-only">
+                <div class="control-row"><span class="key">W/↑</span> <span class="ctrl-forward">Forward</span></div>
+                <div class="control-row"><span class="key">S/↓</span> <span class="ctrl-backward">Backward</span></div>
+                <div class="control-row"><span class="key">A/←</span> <span class="ctrl-left">Left</span></div>
+                <div class="control-row"><span class="key">D/→</span> <span class="ctrl-right">Right</span></div>
+                <div class="control-row"><span class="key">R/F</span> <span class="ctrl-roll">Roll</span></div>
+                <div class="control-row"><span class="key">Space</span> <span class="ctrl-up">Up</span></div>
+                <div class="control-row"><span class="key">X</span> <span class="ctrl-brake">Brake</span></div>
+                <div class="control-row"><span class="key">1-9</span> Warp</div>
+                <div class="control-row"><span class="key">Q/E</span> ±Warp</div>
+                <div class="control-row"><span class="key">🖱️</span> <span class="ctrl-info">Info</span></div>
+                <div class="control-row"><span class="key">ESC</span> <span class="ctrl-exit">Exit</span></div>
+            </div>
+            
+            <!-- Touch Controls (Mobile/Tablet) -->
+            <div class="touch-controls mobile-only">
+                <!-- Virtual Joystick (left side) -->
+                <div class="touch-joystick" id="touch-joystick">
+                    <div class="joystick-base">
+                        <div class="joystick-stick"></div>
+                    </div>
+                </div>
+                
+                <!-- Warp buttons (right side top) -->
+                <div class="touch-warp-controls">
+                    <button class="touch-warp-btn" data-warp="down">−</button>
+                    <span class="touch-warp-level">1</span>
+                    <button class="touch-warp-btn" data-warp="up">+</button>
+                </div>
+                
+                <!-- Action buttons (right side) -->
+                <div class="touch-action-buttons">
+                    <button class="touch-btn touch-info" id="touch-info">ℹ️</button>
+                    <button class="touch-btn touch-boost" id="touch-boost">🚀</button>
+                    <button class="touch-btn touch-up" id="touch-up">⬆️</button>
+                    <button class="touch-btn touch-down" id="touch-down">⬇️</button>
+                </div>
+                
+                <!-- Exit button -->
+                <button class="touch-exit-btn" id="touch-exit">✕</button>
+            </div>
+            
+            <div class="nav-crosshair">
+                <span class="crosshair-icon">+</span>
+                <span class="crosshair-hint"></span>
+            </div>
+        </div><button class="ui-settings-btn" title="UI Settings">⚙️</button><div class="ui-settings-panel hidden">
+            <div class="ui-settings-header">
+                <span>⚙️ UI Settings</span>
+                <button class="ui-settings-close">×</button>
+            </div>
+            <div class="ui-settings-body">
+                <label class="ui-toggle-row">
+                    <input type="checkbox" data-panel="passport" checked="">
+                    <span>🛂 Space Passport</span>
+                </label>
+                <label class="ui-toggle-row">
+                    <input type="checkbox" data-panel="minimap" checked="">
+                    <span>🗺️ Minimap</span>
+                </label>
+                <label class="ui-toggle-row">
+                    <input type="checkbox" data-panel="timeControl" checked="">
+                    <span>⏱️ Time Control</span>
+                </label>
+                <label class="ui-toggle-row">
+                    <input type="checkbox" data-panel="langSelector" checked="">
+                    <span>🌐 Language</span>
+                </label>
+                <label class="ui-toggle-row">
+                    <input type="checkbox" data-panel="hudPanel" checked="">
+                    <span>🎮 Controls</span>
+                </label>
+            </div>
+        </div><div id="mascot-container" class="">
+            <div class="mascot-bubble">
+                <div class="mascot-text">Hello! I'm Astro, your space guide! Let's explore the Solar System!</div>
+                <div class="mascot-bubble-tail"></div>
+            </div>
+            <div class="mascot-character">
+                <img src="/mascot/1.png" alt="Astro">
+            </div>
+        </div><button id="compare-btn" class="compare-btn" title="Compare Planets" style="position: fixed; bottom: 320px; left: 20px; width: 50px; height: 50px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.3); background: rgba(20, 20, 40, 0.8); color: white; font-size: 1.5rem; cursor: pointer; z-index: 600; display: flex; align-items: center; justify-content: center; transition: 0.3s;">⚖️</button></body></html>
