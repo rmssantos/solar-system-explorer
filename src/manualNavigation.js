@@ -1511,8 +1511,60 @@ export class ManualNavigation {
         
         // Play activation sound
         this.app.audioManager?.playSelect();
-        
+
+        // Show mouse controls hint on desktop
+        if (!this.isTouchDevice) {
+            this.showMouseControlsHint();
+        }
+
         console.log('🎮 Navegação manual ativada! Use 1-9 para Warp');
+    }
+
+    showMouseControlsHint() {
+        // Show hint for mouse controls (works with or without pointer lock)
+        const hint = document.createElement('div');
+        hint.className = 'mouse-controls-hint';
+        hint.innerHTML = `
+            <div class="hint-content">
+                <span>🖱️</span>
+                <span>${i18n.lang === 'en' ? 'Click + drag to look around | WASD to move' : 'Clica + arrasta para olhar | WASD para mover'}</span>
+            </div>
+        `;
+        hint.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #4a90e2;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            z-index: 10000;
+            border: 1px solid #4a90e2;
+            animation: hintFadeInOut 5s ease-in-out forwards;
+            pointer-events: none;
+        `;
+
+        // Add animation style if not exists
+        if (!document.getElementById('mouse-hint-style')) {
+            const style = document.createElement('style');
+            style.id = 'mouse-hint-style';
+            style.textContent = `
+                @keyframes hintFadeInOut {
+                    0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+                    10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    80% { opacity: 1; }
+                    100% { opacity: 0; }
+                }
+                .hint-content { display: flex; align-items: center; gap: 10px; }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(hint);
+        setTimeout(() => hint.remove(), 5000);
     }
     
     disable() {
@@ -1720,12 +1772,13 @@ export class ManualNavigation {
     onMouseDown(event) {
         if (!this.enabled || this.isTouchDevice) return;
 
-        // Right-click (or left-click when pointer lock failed) for fallback mouse look
-        if (event.button === 2 || (this.pointerLockFailed && event.button === 0)) {
+        // Always allow click + drag for mouse look (works even without pointer lock)
+        // Left-click (0) or Right-click (2) both work
+        // This ensures mouse look works on corporate PCs that block pointer lock
+        if (event.button === 0 || event.button === 2) {
             this.isMouseDragging = true;
             this.lastMouseX = event.clientX;
             this.lastMouseY = event.clientY;
-            event.preventDefault();
         }
     }
 
