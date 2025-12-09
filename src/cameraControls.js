@@ -12,6 +12,9 @@ export class CameraControls {
         this.app = app; // Reference to main app (optional if we link solarSystem directly)
         this.solarSystem = null;
 
+        // Enabled state
+        this.enabled = true;
+
         // State
         this.target = new THREE.Vector3(0, 0, 0);
         this.orbitRadius = 800;
@@ -55,6 +58,7 @@ export class CameraControls {
     initListeners() {
         // --- Mouse ---
         this.domElement.addEventListener('mousedown', (e) => {
+            if (!this.enabled) return;
             this.isDragging = true;
             this.lastMouseX = e.clientX;
             this.lastMouseY = e.clientY;
@@ -75,6 +79,7 @@ export class CameraControls {
         });
 
         this.domElement.addEventListener('wheel', (e) => {
+            if (!this.enabled) return;
             e.preventDefault();
             this.zoom(e.deltaY * 0.5);
         }, { passive: false });
@@ -93,6 +98,7 @@ export class CameraControls {
     // --- Touch Logic ---
 
     onTouchStart(e) {
+        if (!this.enabled) return;
         if (e.touches.length === 1) {
             this.isDragging = true;
             this.lastTouchX = e.touches[0].clientX;
@@ -107,6 +113,7 @@ export class CameraControls {
     }
 
     onTouchMove(e) {
+        if (!this.enabled) return;
         e.preventDefault(); // Stop scrolling
 
         if (e.touches.length === 1 && this.isDragging) {
@@ -136,6 +143,7 @@ export class CameraControls {
     // --- Click / Select Logic ---
 
     onClick(e) {
+        if (!this.enabled) return; // Disabled during manual navigation
         if (!this.solarSystem) return;
         if (this.isFlying) return; // Don't interrupt flight
 
@@ -239,6 +247,9 @@ export class CameraControls {
     }
 
     update(deltaTime) {
+        // Skip updates when disabled (e.g., during manual navigation)
+        if (!this.enabled) return;
+
         // Handle fly-to animation
         if (this.isFlying) {
             this.flyProgress += deltaTime / this.flyDuration;

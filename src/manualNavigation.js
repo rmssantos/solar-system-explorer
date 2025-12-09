@@ -1627,11 +1627,10 @@ export class ManualNavigation {
     
     onPointerLockChange() {
         this.isPointerLocked = document.pointerLockElement === document.body;
-        
-        // If pointer lock was lost (e.g., pressing ESC), disable manual nav
-        if (!this.isPointerLocked && this.enabled) {
-            this.disable();
-        }
+
+        // Note: We no longer auto-disable when pointer lock is lost
+        // Keyboard controls still work, just mouse look won't
+        // User can manually exit with ESC or M key
     }
     
     onKeyDown(event) {
