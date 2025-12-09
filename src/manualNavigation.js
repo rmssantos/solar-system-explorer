@@ -7,13 +7,7 @@
 
 import * as THREE from 'three';
 import { i18n } from './i18n.js';
-import { SOLAR_SYSTEM_DATA as SOLAR_SYSTEM_DATA_PT } from './data/objectsInfo.js';
-import { SOLAR_SYSTEM_DATA_EN } from './data/objectsInfoEN.js';
-
-// Get correct planet data based on language
-function getPlanetData() {
-    return i18n.lang === 'en' ? SOLAR_SYSTEM_DATA_EN : SOLAR_SYSTEM_DATA_PT;
-}
+import { getTranslatedObjectData } from './data/objectsInfo.js';
 
 // Get translated warp speed name
 function getWarpName(level) {
@@ -2513,8 +2507,8 @@ export class ManualNavigation {
         this.nearestPlanet = nearest.name;
         this.infoPanelVisible = true;
 
-        // Get planet data (imported at top of file)
-        const planetData = getPlanetData()[nearest.name];
+        // Get planet data with correct translation
+        const planetData = getTranslatedObjectData(nearest.name);
 
         if (!planetData) return;
 
@@ -2534,19 +2528,19 @@ export class ManualNavigation {
         if (statsEl) {
             let statsHTML = '';
 
-            if (planetData.distanciaSol) {
+            if (planetData.distanciaMediaAoSol) {
                 statsHTML += `
                     <div class="planet-info-stat">
                         <div class="planet-info-stat-label">${i18n.t('info_distance')}</div>
-                        <div class="planet-info-stat-value">${planetData.distanciaSol}</div>
+                        <div class="planet-info-stat-value">${planetData.distanciaMediaAoSol} M km</div>
                     </div>
                 `;
             }
-            if (planetData.temperaturaMedia) {
+            if (planetData.temperaturaMediaAproximada) {
                 statsHTML += `
                     <div class="planet-info-stat">
                         <div class="planet-info-stat-label">${i18n.t('info_temp')}</div>
-                        <div class="planet-info-stat-value">${planetData.temperaturaMedia}</div>
+                        <div class="planet-info-stat-value">${planetData.temperaturaMediaAproximada}</div>
                     </div>
                 `;
             }
@@ -2566,11 +2560,11 @@ export class ManualNavigation {
                     </div>
                 `;
             }
-            if (planetData.luasConhecidas !== undefined) {
+            if (planetData.numeroLuasConhecidas !== undefined) {
                 statsHTML += `
                     <div class="planet-info-stat">
                         <div class="planet-info-stat-label">${i18n.t('info_moons')}</div>
-                        <div class="planet-info-stat-value">${planetData.luasConhecidas}</div>
+                        <div class="planet-info-stat-value">${planetData.numeroLuasConhecidas}</div>
                     </div>
                 `;
             }
@@ -2741,7 +2735,7 @@ export class ManualNavigation {
         this.infoPanelVisible = true;
 
         // Get planet data
-        const planetData = getPlanetData()[planetName];
+        const planetData = getTranslatedObjectData(planetName);
         if (!planetData) return;
 
         const panel = this.hud?.querySelector('.nav-planet-info');
@@ -2760,19 +2754,19 @@ export class ManualNavigation {
         if (statsEl) {
             let statsHTML = '';
 
-            if (planetData.distanciaSol) {
+            if (planetData.distanciaMediaAoSol) {
                 statsHTML += `
                     <div class="planet-info-stat">
                         <div class="planet-info-stat-label">${i18n.t('info_distance')}</div>
-                        <div class="planet-info-stat-value">${planetData.distanciaSol}</div>
+                        <div class="planet-info-stat-value">${planetData.distanciaMediaAoSol} M km</div>
                     </div>
                 `;
             }
-            if (planetData.temperaturaMedia) {
+            if (planetData.temperaturaMediaAproximada) {
                 statsHTML += `
                     <div class="planet-info-stat">
                         <div class="planet-info-stat-label">${i18n.t('info_temp')}</div>
-                        <div class="planet-info-stat-value">${planetData.temperaturaMedia}</div>
+                        <div class="planet-info-stat-value">${planetData.temperaturaMediaAproximada}</div>
                     </div>
                 `;
             }
@@ -2792,11 +2786,11 @@ export class ManualNavigation {
                     </div>
                 `;
             }
-            if (planetData.luasConhecidas !== undefined) {
+            if (planetData.numeroLuasConhecidas !== undefined) {
                 statsHTML += `
                     <div class="planet-info-stat">
                         <div class="planet-info-stat-label">${i18n.t('info_moons')}</div>
-                        <div class="planet-info-stat-value">${planetData.luasConhecidas}</div>
+                        <div class="planet-info-stat-value">${planetData.numeroLuasConhecidas}</div>
                     </div>
                 `;
             }
