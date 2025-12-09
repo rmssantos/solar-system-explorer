@@ -38,10 +38,10 @@ export const REAL_PHOTOS = {
     mercury: '/textures/real/mercury.jpg',
     venus: '/textures/real/venus.jpg',
     earth: '/textures/real/earth.jpg',
-    mars: '/textures/real/mars.png',
+    mars: '/textures/real/mars.jpg',
     jupiter: '/textures/real/jupiter.jpg',
     saturn: '/textures/real/saturn.jpg',
-    uranus: '/textures/real/uranus.png',
+    uranus: '/textures/real/uranus.jpg',
     neptune: '/textures/real/neptune.jpg',
     // Dwarf Planets
     pluto: '/textures/real/pluto.jpg',
@@ -57,7 +57,7 @@ export const REAL_PHOTOS = {
     // Moons - Jupiter
     io: '/textures/real/io.jpg',
     europa: '/textures/real/europa.jpg',
-    ganymede: '/textures/real/ganymede.png',
+    ganymede: '/textures/real/ganymede.jpg',
     callisto: '/textures/real/callisto.jpg',
     // Moons - Saturn
     titan: '/textures/real/titan.jpg',
@@ -74,7 +74,7 @@ export const REAL_PHOTOS = {
     // Moons - Eris
     dysnomia: '/textures/real/dysnomia.jpg',
     // Spacecraft
-    voyager: '/textures/real/voyager.png',
+    voyager: '/textures/real/voyager.jpg',
     newhorizons: '/textures/real/newhorizons.jpg',
     pioneer: '/textures/real/pioneer.jpg',
     pioneer2: '/textures/real/pioneer2.jpg',
