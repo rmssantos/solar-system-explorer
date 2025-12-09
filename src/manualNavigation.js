@@ -1527,7 +1527,7 @@ export class ManualNavigation {
         hint.innerHTML = `
             <div class="hint-content">
                 <span>🖱️</span>
-                <span>${i18n.lang === 'en' ? 'Click + drag to look around | WASD to move' : 'Clica + arrasta para olhar | WASD para mover'}</span>
+                <span>${i18n.lang === 'en' ? 'Right-click + drag to look around | WASD to move | Left-click to interact' : 'Clique direito + arrasta para olhar | WASD para mover | Clique esquerdo para interagir'}</span>
             </div>
         `;
         hint.style.cssText = `
@@ -1772,10 +1772,10 @@ export class ManualNavigation {
     onMouseDown(event) {
         if (!this.enabled || this.isTouchDevice) return;
 
-        // Always allow click + drag for mouse look (works even without pointer lock)
-        // Left-click (0) or Right-click (2) both work
+        // ONLY right-click (button 2) for fallback mouse look
+        // Left-click (button 0) is reserved for crosshair/targeting system
         // This ensures mouse look works on corporate PCs that block pointer lock
-        if (event.button === 0 || event.button === 2) {
+        if (event.button === 2) {
             this.isMouseDragging = true;
             this.lastMouseX = event.clientX;
             this.lastMouseY = event.clientY;
@@ -1783,7 +1783,7 @@ export class ManualNavigation {
     }
 
     onMouseUp(event) {
-        if (event.button === 2 || event.button === 0) {
+        if (event.button === 2) {
             this.isMouseDragging = false;
         }
     }
