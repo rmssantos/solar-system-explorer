@@ -1,0 +1,25 @@
+{
+  "routes": [
+    {
+      "route": "/biblioteca",
+      "rewrite": "/biblioteca.html"
+    },
+    {
+      "route": "/index",
+      "redirect": "/",
+      "statusCode": 301
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/textures/*", "/styles/*", "/src/*", "/assets/*", "*.js", "*.css", "*.svg", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.ico"]
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY"
+  },
+  "mimeTypes": {
+    ".json": "application/json",
+    ".svg": "image/svg+xml"
+  }
+}
