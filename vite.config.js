@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig({
     server: {
@@ -21,6 +22,14 @@ export default defineConfig({
     build: {
         // Suppress chunk size warning (educational app with many features)
         chunkSizeWarningLimit: 1000,
+        // Multi-page build
+        rollupOptions: {
+            input: {
+                main: resolve(__dirname, 'index.html'),
+                biblioteca: resolve(__dirname, 'biblioteca.html'),
+                escala: resolve(__dirname, 'escala.html'),
+            },
+        },
     },
     // Copy public files
     publicDir: 'public',
