@@ -69,6 +69,7 @@ export class CameraControls {
         });
 
         this.domElement.addEventListener('mousemove', (e) => {
+            if (!this.enabled) return; // Don't process when manual navigation is active
             if (this.isDragging) {
                 const deltaX = e.clientX - this.lastMouseX;
                 const deltaY = e.clientY - this.lastMouseY;
