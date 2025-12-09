@@ -851,20 +851,4 @@ export class AudioManager {
     setPlanetAmbientVolume(value) {
         this.planetAmbientGain.gain.value = value;
     }
-
-    playNote(freq, dur, startTime) {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-
-        gain.gain.setValueAtTime(0.3, startTime);
-        gain.gain.linearRampToValueAtTime(0, startTime + dur);
-
-        osc.connect(gain);
-        gain.connect(this.masterGain);
-
-        osc.start(startTime);
-        osc.stop(startTime + dur);
-    }
 }

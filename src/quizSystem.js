@@ -192,7 +192,7 @@ export class QuizSystem {
                 ]
             },
             en: {
-                'Sol': [
+                'sun': [
                     {
                         question: 'How much of the Solar System\'s mass is in the Sun?',
                         options: ['50%', '75%', '99%', '25%'],

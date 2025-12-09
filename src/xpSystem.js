@@ -188,10 +188,10 @@ export class XPSystem {
         overlay.innerHTML = `
             <div class="levelup-content">
                 <div class="levelup-icon">${rank.icon}</div>
-                <h2>SUBISTE DE NÍVEL!</h2>
+                <h2>${i18n.t('level_up')}</h2>
                 <p class="levelup-rank">${rankName}</p>
-                <p class="levelup-level">Nível ${rank.level}</p>
-                <button class="levelup-btn">Continuar Aventura! 🚀</button>
+                <p class="levelup-level">${i18n.t('level')} ${rank.level}</p>
+                <button class="levelup-btn">${i18n.t('continue_adventure')} 🚀</button>
             </div>
         `;
 

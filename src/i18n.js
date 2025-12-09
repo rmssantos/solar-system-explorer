@@ -170,6 +170,7 @@ export const TRANSLATIONS = {
         max_level: "🌟 Nível Máximo!",
         level_up: "SUBISTE DE NÍVEL!",
         continue: "Continuar",
+        continue_adventure: "Continuar Aventura!",
 
         // Ranks
         rank_1: "Cadete Espacial",
@@ -459,6 +460,7 @@ export const TRANSLATIONS = {
         max_level: "🌟 Max Level!",
         level_up: "LEVEL UP!",
         continue: "Continue",
+        continue_adventure: "Continue Adventure!",
 
         // Ranks
         rank_1: "Space Cadet",
