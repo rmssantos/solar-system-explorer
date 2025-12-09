@@ -6,7 +6,7 @@
         "dev": "vite --host",
         "build": "vite build",
         "preview": "vite preview",
-        "start": "serve dist -l $PORT"
+        "start": "serve -l $PORT"
     },
     "keywords": ["solar-system", "education", "threejs", "3d", "kids", "astronomy"],
     "author": "Ruben Santos",
