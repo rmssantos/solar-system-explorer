@@ -392,18 +392,21 @@ export class Mascot {
         this.container.classList.remove('position-left', 'position-right', 'position-center', 'position-beside-panel');
 
         let finalPosition = position;
-        if (position === 'auto' || position === 'center') {
-            // Check if info panel is visible (it's position:fixed so offsetParent doesn't work)
+        if (position === 'auto') {
+            // Default to center, but check if info panel is visible
+            finalPosition = 'center';
+
             const infoPanel = document.querySelector('.info-panel, #info-panel');
             if (infoPanel && !infoPanel.classList.contains('hidden')) {
                 // Double-check it's actually visible on screen
                 const rect = infoPanel.getBoundingClientRect();
-                if (rect.width > 0 && rect.right > 0) {
+                if (rect.width > 0 && rect.height > 0) {
                     finalPosition = 'beside-panel';
                 }
             }
         }
 
+        // Only add position class if not center (center is the default)
         if (finalPosition !== 'center') {
             this.container.classList.add(`position-${finalPosition}`);
         }
