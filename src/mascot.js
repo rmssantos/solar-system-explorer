@@ -109,13 +109,13 @@ export class Mascot {
                 transform: translateX(-50%) translateY(0);
             }
 
-            /* Position beside info panel (when panel is visible on right) */
+            /* Position when info panel is visible (go to bottom-left corner) */
             #mascot-container.position-beside-panel {
-                left: auto;
-                right: 420px; /* 400px panel + 20px gap */
-                bottom: 80px;
+                left: 30px;
+                right: auto;
+                bottom: 100px;
                 transform: translateX(0) translateY(30px);
-                align-items: flex-end;
+                align-items: flex-start;
             }
 
             #mascot-container.position-beside-panel.visible {
@@ -123,8 +123,8 @@ export class Mascot {
             }
 
             #mascot-container.position-beside-panel .mascot-bubble-tail {
-                left: auto;
-                right: 30px;
+                left: 30px;
+                right: auto;
                 transform: none;
             }
 
