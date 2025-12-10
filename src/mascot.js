@@ -388,25 +388,12 @@ export class Mascot {
             this.textEl.textContent = message;
         }
 
-        // Set position - auto-detect if info panel is visible
+        // Set position - always bottom-right to avoid overlapping centered info panel
         this.container.classList.remove('position-left', 'position-right', 'position-center', 'position-beside-panel');
 
-        let finalPosition = position;
-        if (position === 'auto') {
-            // Default to center, but check if info panel is visible
-            finalPosition = 'center';
+        // Always use right position (auto = right)
+        const finalPosition = (position === 'auto') ? 'right' : position;
 
-            const infoPanel = document.querySelector('.info-panel, #info-panel');
-            if (infoPanel && !infoPanel.classList.contains('hidden')) {
-                // Double-check it's actually visible on screen
-                const rect = infoPanel.getBoundingClientRect();
-                if (rect.width > 0 && rect.height > 0) {
-                    finalPosition = 'beside-panel';
-                }
-            }
-        }
-
-        // Only add position class if not center (center is the default)
         if (finalPosition !== 'center') {
             this.container.classList.add(`position-${finalPosition}`);
         }
