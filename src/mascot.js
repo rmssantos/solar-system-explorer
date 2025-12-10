@@ -109,13 +109,13 @@ export class Mascot {
                 transform: translateX(-50%) translateY(0);
             }
 
-            /* Position when info panel is visible (go to bottom-left corner) */
+            /* Position when info panel is visible (go to bottom-right corner) */
             #mascot-container.position-beside-panel {
-                left: 30px;
-                right: auto;
+                left: auto;
+                right: 30px;
                 bottom: 100px;
                 transform: translateX(0) translateY(30px);
-                align-items: flex-start;
+                align-items: flex-end;
             }
 
             #mascot-container.position-beside-panel.visible {
@@ -123,8 +123,8 @@ export class Mascot {
             }
 
             #mascot-container.position-beside-panel .mascot-bubble-tail {
-                left: 30px;
-                right: auto;
+                left: auto;
+                right: 30px;
                 transform: none;
             }
 
