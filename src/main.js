@@ -77,6 +77,16 @@ class App {
         this.shipColor = '#ff4444';
 
         this.clock = new THREE.Clock();
+
+        // Adaptive performance / quality (no UI; automatic)
+        this.qualityLevel = 2; // 0=low, 1=medium, 2=high
+        this.postFxScale = 1.0;
+        this.bloomPass = null;
+        this.sunLight = null;
+        this._fpsWindowTime = 0;
+        this._fpsWindowFrames = 0;
+        this._fpsSmoothed = 60;
+        this._qualityCooldown = 0;
         
         // Resource manager for memory cleanup
         this.resourceManager = resourceManager;
@@ -457,7 +467,8 @@ class App {
             preserveDrawingBuffer: true // Required for screenshots
         });
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        // Cap DPR for performance on HiDPI screens (especially mobile)
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.toneMapping = THREE.ReinhardToneMapping; // Better for bloom
 
         // SHADOWS ENABLED
@@ -481,6 +492,7 @@ class App {
         sunLight.shadow.bias = -0.0001;
 
         this.scene.add(sunLight);
+        this.sunLight = sunLight;
 
         // Ship Light (fill light for the ship itself)
         const shipLight = new THREE.PointLight(0xccddff, 0.8, 50);
@@ -499,9 +511,92 @@ class App {
             0.85 // Threshold (High threshold so only bright things glow)
         );
 
+        this.bloomPass = bloomPass;
+
         this.composer = new EffectComposer(this.renderer);
         this.composer.addPass(renderScene);
         this.composer.addPass(bloomPass);
+
+        // Apply current quality settings (handles post-fx scale)
+        this.applyQualitySettings(this.qualityLevel);
+    }
+
+    applyQualitySettings(level) {
+        this.qualityLevel = Math.max(0, Math.min(2, level));
+
+        // Post-processing resolution scale (render smaller, upscale)
+        this.postFxScale = this.qualityLevel === 2 ? 1.0 : (this.qualityLevel === 1 ? 0.75 : 0.6);
+
+        // Bloom tuning
+        if (this.bloomPass) {
+            // Keep bloom on for medium/high, disable on low
+            this.bloomPass.enabled = this.qualityLevel >= 1;
+            if (this.qualityLevel === 2) {
+                this.bloomPass.strength = 1.5;
+                this.bloomPass.radius = 0.4;
+                this.bloomPass.threshold = 0.85;
+            } else if (this.qualityLevel === 1) {
+                this.bloomPass.strength = 1.0;
+                this.bloomPass.radius = 0.35;
+                this.bloomPass.threshold = 0.9;
+            }
+        }
+
+        // Shadows are expensive; disable on low
+        if (this.renderer) {
+            this.renderer.shadowMap.enabled = this.qualityLevel >= 1;
+        }
+
+        // Keep shadow map sizes reasonable
+        if (this.sunLight && this.sunLight.shadow) {
+            const mapSize = this.qualityLevel === 2 ? 2048 : (this.qualityLevel === 1 ? 1024 : 512);
+            // Only update when it actually changes
+            if (this.sunLight.shadow.mapSize.width !== mapSize || this.sunLight.shadow.mapSize.height !== mapSize) {
+                this.sunLight.shadow.mapSize.set(mapSize, mapSize);
+                // Force shadow map re-allocation
+                if (this.sunLight.shadow.map) {
+                    this.sunLight.shadow.map.dispose();
+                    this.sunLight.shadow.map = null;
+                }
+            }
+        }
+
+        // Update composer resolution scale
+        if (this.composer) {
+            const width = this.container.clientWidth;
+            const height = this.container.clientHeight;
+            this.composer.setSize(Math.max(1, Math.floor(width * this.postFxScale)), Math.max(1, Math.floor(height * this.postFxScale)));
+        }
+    }
+
+    updateAdaptiveQuality(deltaTime) {
+        // Evaluate FPS over a 1s window, then adjust with hysteresis + cooldown
+        this._fpsWindowTime += deltaTime;
+        this._fpsWindowFrames += 1;
+        this._qualityCooldown -= deltaTime;
+
+        if (this._fpsWindowTime < 1.0) return;
+
+        const fps = this._fpsWindowFrames / this._fpsWindowTime;
+        // Exponential smoothing to avoid oscillation
+        this._fpsSmoothed = this._fpsSmoothed * 0.7 + fps * 0.3;
+
+        this._fpsWindowTime = 0;
+        this._fpsWindowFrames = 0;
+
+        if (this._qualityCooldown > 0) return;
+
+        // Thresholds tuned for typical 60fps targets
+        const lowerThreshold = 40;
+        const raiseThreshold = 55;
+
+        if (this._fpsSmoothed < lowerThreshold && this.qualityLevel > 0) {
+            this.applyQualitySettings(this.qualityLevel - 1);
+            this._qualityCooldown = 3.0;
+        } else if (this._fpsSmoothed > raiseThreshold && this.qualityLevel < 2) {
+            this.applyQualitySettings(this.qualityLevel + 1);
+            this._qualityCooldown = 5.0;
+        }
     }
 
     onWindowResize() {
@@ -513,9 +608,14 @@ class App {
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(width, height);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
         if (this.composer) {
-            this.composer.setSize(width, height);
+            // Keep post-fx scaled resolution in sync
+            this.composer.setSize(
+                Math.max(1, Math.floor(width * this.postFxScale)),
+                Math.max(1, Math.floor(height * this.postFxScale))
+            );
         }
     }
 
@@ -526,6 +626,9 @@ class App {
         requestAnimationFrame(() => this.animate());
 
         let deltaTime = this.clock.getDelta();
+
+        // Auto quality scaling (based on real frame time, not timeScale)
+        this.updateAdaptiveQuality(deltaTime);
         
         // Apply time scale from TimeControl
         const timeScale = this.timeControl ? this.timeControl.getTimeScale() : 1;
