@@ -30,6 +30,7 @@ npm-debug.log*
 .claude/
 Screenshot*.png
 destroyed*.jpg
+inspect.html
 escala.html
 src/assets/textures/
 
