@@ -21,7 +21,6 @@ export class SolarSystem {
         this.raycaster = new THREE.Raycaster();
         this.pointer = new THREE.Vector2();
 
-        this.scaleFactor = 0.05; // Tele-compress scale for visual usability
         this.sunScale = 0.25; // Make sun bigger and more impressive
 
         // Groups
@@ -108,6 +107,7 @@ export class SolarSystem {
             roughness: 0.05
         });
         const saucer = new THREE.Mesh(saucerGeom, saucerMat);
+        saucer.userData.root = ufoGroup;
         ufoGroup.add(saucer);
         
         // Outer ring
@@ -329,6 +329,7 @@ export class SolarSystem {
             roughness: 0.3
         });
         const body = new THREE.Mesh(bodyGeom, bodyMat);
+        body.userData.root = group;
         group.add(body);
 
         // Solar panels
@@ -1089,11 +1090,16 @@ export class SolarSystem {
 
             comet.tailGeom.attributes.position.needsUpdate = true;
 
-            // Force valid bounding sphere centered on comet position
-            comet.tailGeom.boundingSphere = new THREE.Sphere(
-                comet.group.position.clone(),
-                comet.params.tailLength * 2
-            );
+            // Keep a valid bounding sphere for frustum culling without per-frame allocations
+            if (!comet.tailGeom.boundingSphere) {
+                comet.tailGeom.boundingSphere = new THREE.Sphere(
+                    comet.group.position.clone(),
+                    comet.params.tailLength * 2
+                );
+            } else {
+                comet.tailGeom.boundingSphere.center.copy(comet.group.position);
+                comet.tailGeom.boundingSphere.radius = comet.params.tailLength * 2;
+            }
 
             // Scale tail based on distance from sun (bigger when closer)
             const tailScale = Math.max(0.5, 2.0 - r / 2000);

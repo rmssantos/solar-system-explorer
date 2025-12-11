@@ -59,8 +59,8 @@ export class ManualNavigation {
         this.maxWarpLevel = 9;
         
         // Speed settings - much faster for space travel!
-        // In our scale: 1 unit ≈ 10,000 km (approximately)
-        // With 150x scale multiplier, distances are HUGE - speeds adjusted accordingly
+        // In manual mode (with 50x system scaling), 1 unit ≈ 10,000 km.
+        // Note: the km/s numbers shown in the HUD are “fun comparisons” and not a strict physics sim.
         this.warpSpeeds = [
             { level: 1, speed: 500,     realKmS: 10000,     name: 'Impulso',       color: '#4a90e2' },
             { level: 2, speed: 1500,    realKmS: 50000,     name: 'Warp 1',        color: '#5a9df2' },
@@ -108,51 +108,56 @@ export class ManualNavigation {
         this.originalSpaceshipScale = null;
         this.originalSolarSystemScale = null;
         this.originalCameraPosition = null;
-        this.originalObjectScales = new Map(); // Store original scales for each object
-        this.solarSystemScaleMultiplier = 150; // Make everything 150x bigger for truly vast distances
+        this.originalObjectScales = new Map(); // Store original scales for each scaled root (uuid -> Vector3)
+
+        // Manual mode tries to be more “realistic” in travel distances.
+        // In exploration mode, distances are roughly: 1 unit ≈ 500,000 km (because distance uses: millionKm * 2).
+        // Scaling the whole system by 50x gives: 1 manual unit ≈ 10,000 km.
+        this.solarSystemScaleMultiplier = 50;
+        this.explorationKmPerUnit = 500000;
+        this.kmPerUnit = this.explorationKmPerUnit / this.solarSystemScaleMultiplier;
         
-        // Realistic size multipliers to fix visual scale problems
-        // 
-        // THE CORE PROBLEM:
-        // - Sun uses: raioKm * 0.25 * 0.0001 = 0.000025 factor
-        // - Planets use: raioKm * 0.001 = 0.001 factor
-        // - This means planets are 40x BIGGER relative to the Sun than reality!
+        // Realistic size multipliers (manual mode)
         //
-        // REAL PROPORTIONS (radius in km):
-        // - Sol: 696,340 (reference)
-        // - Jupiter: 69,911 → Sol is 10x bigger
-        // - Saturn: 58,232 → Sol is 12x bigger
-        // - Uranus: 25,362 → Sol is 27x bigger
-        // - Neptune: 24,622 → Sol is 28x bigger
-        // - Earth: 6,371 → Sol is 109x bigger
-        // - Venus: 6,051 → Sol is 115x bigger
-        // - Mars: 3,389 → Sol is 205x bigger
-        // - Mercury: 2,439 → Sol is 285x bigger
+        // Base (exploration) scale factors are inconsistent:
+        // - Sun radius: raioKm * 0.25 * 0.0001  → 0.000025
+        // - Planets/moons: raioKm * 0.001       → 0.001
+        // So planets end up ~40x too large relative to the Sun.
         //
-        // To fix: multiply Sun by 40 to compensate, OR divide planets by 40
-        // We'll do a mix: Sun x4, and reduce gas giants significantly
+        // For manual mode we want proportions closer to reality:
+        // - Sun ≈ 10x Jupiter radius
+        // - Sun ≈ 109x Earth radius
+        //
+        // Keeping Sun x4 (so Sun ≈ Jupiter *10 when planets are x0.1)
+        // and scaling most bodies by x0.1 gives a good near-real ratio
+        // while staying visible (system is already scaled up in manual mode).
         this.realisticScales = {
-            'sun': 4.0,        // Boost sun 4x (was artificially shrunk)
-            'jupiter': 0.1,    // 69911*0.001=70 → 70*0.1=7 (Sol will be ~100, so Sol is ~14x bigger)
-            'saturn': 0.1,    // 58232*0.001=58 → 58*0.1=5.8
-            'uranus': 0.15,     // 25362*0.001=25 → 25*0.15=3.8
-            'neptune': 0.15,   // 24622*0.001=25 → 25*0.15=3.8
-            'earth': 0.5,      // 6371*0.001=6.4 → 6.4*0.5=3.2
-            'venus': 0.5,      // Similar to Earth
-            'mars': 0.6,      // 3389*0.001=3.4 → 3.4*0.6=2.0
-            'mercury': 0.8,   // 2439*0.001=2.4 → 2.4*0.8=1.9
-            'moon': 0.5,
-            'io': 0.15,
-            'europa': 0.15,
-            'ganymede': 0.12,
-            'callisto': 0.12,
-            'titan': 0.15,
-            'mimas': 0.3,
-            'enceladus': 0.3,
-            'triton': 0.2,
-            'phobos': 0.5,
-            'deimos': 0.5,
-            'default': 0.5
+            'sun': 4.0,
+
+            // Planets
+            'mercury': 0.1,
+            'venus': 0.1,
+            'earth': 0.1,
+            'mars': 0.1,
+            'jupiter': 0.1,
+            'saturn': 0.1,
+            'uranus': 0.1,
+            'neptune': 0.1,
+
+            // Major moons (keep aligned to their parent planet sizes)
+            'moon': 0.1,
+            'io': 0.1,
+            'europa': 0.1,
+            'ganymede': 0.1,
+            'callisto': 0.1,
+            'titan': 0.1,
+            'mimas': 0.1,
+            'enceladus': 0.1,
+            'triton': 0.1,
+            'phobos': 0.1,
+            'deimos': 0.1,
+
+            'default': 0.1
         };
         
         // Create UI
@@ -1660,16 +1665,26 @@ export class ManualNavigation {
         if (!this.app.solarSystem?.objects) return;
         
         this.originalObjectScales.clear();
+
+        const scaledRoots = new Set();
         
         for (const [name, mesh] of Object.entries(this.app.solarSystem.objects)) {
+            if (!mesh?.scale) continue;
+
+            // Some “objects” are actually meshes inside a composite group (probes, UFO).
+            // Scale the root group so the whole object stays consistent.
+            const root = mesh.userData?.root || mesh;
+            if (!root?.scale || scaledRoots.has(root.uuid)) continue;
+            scaledRoots.add(root.uuid);
+
             // Store original scale
-            this.originalObjectScales.set(name, mesh.scale.clone());
+            this.originalObjectScales.set(root.uuid, root.scale.clone());
             
             // Get scale multiplier for this object
             const scaleMultiplier = this.realisticScales[name] || this.realisticScales['default'];
             
             // Apply scale
-            mesh.scale.multiplyScalar(scaleMultiplier);
+            root.scale.multiplyScalar(scaleMultiplier);
             
             // Special: Also scale any glow effects attached to the Sun
             if (name === 'sun' && mesh.children) {
@@ -1689,11 +1704,19 @@ export class ManualNavigation {
      */
     restoreOriginalScales() {
         if (!this.app.solarSystem?.objects) return;
+
+        const restoredRoots = new Set();
         
         for (const [name, mesh] of Object.entries(this.app.solarSystem.objects)) {
-            const originalScale = this.originalObjectScales.get(name);
+            if (!mesh?.scale) continue;
+
+            const root = mesh.userData?.root || mesh;
+            if (!root?.scale || restoredRoots.has(root.uuid)) continue;
+            restoredRoots.add(root.uuid);
+
+            const originalScale = this.originalObjectScales.get(root.uuid);
             if (originalScale) {
-                mesh.scale.copy(originalScale);
+                root.scale.copy(originalScale);
             }
         }
         
@@ -2222,8 +2245,8 @@ export class ManualNavigation {
 
     formatDistance(units) {
         // Convert units to readable distance
-        // At 150x scale, 1 unit ≈ some distance
-        const km = units * 100; // Approximate conversion
+        // Uses the manual-mode unit conversion derived from the current scale multiplier.
+        const km = units * this.kmPerUnit;
 
         if (km >= 1000000) {
             return `${(km / 1000000).toFixed(1)}M km`;
