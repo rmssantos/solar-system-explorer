@@ -56,6 +56,9 @@ export const TRANSLATIONS = {
 
         // Manual Navigation
         manual_nav: "Navegação Manual (M)",
+        manual_nav_tooltip: "🎮 Modo Manual (mais realista)",
+        manual_mode: "MODO MANUAL",
+        speed_unit_approx: "km/s (aprox.)",
         speed: "Velocidade",
         forward: "Frente",
         backward: "Trás",
@@ -199,6 +202,8 @@ export const TRANSLATIONS = {
         sound: "Som",
         music: "Música",
         sfx: "Efeitos Sonoros",
+        master: "Master",
+        volume: "Volume",
         reset_progress: "Reiniciar Progresso",
         confirm_reset: "Tens a certeza? Vais perder TODO o teu progresso!",
         progress: "Progresso",
@@ -346,6 +351,9 @@ export const TRANSLATIONS = {
 
         // Manual Navigation
         manual_nav: "Manual Navigation (M)",
+        manual_nav_tooltip: "🎮 Manual Mode (more realistic)",
+        manual_mode: "MANUAL MODE",
+        speed_unit_approx: "km/s (approx.)",
         speed: "Speed",
         forward: "Forward",
         backward: "Backward",
@@ -489,6 +497,8 @@ export const TRANSLATIONS = {
         sound: "Sound",
         music: "Music",
         sfx: "Sound Effects",
+        master: "Master",
+        volume: "Volume",
         reset_progress: "Reset Progress",
         confirm_reset: "Are you sure? You will lose ALL your progress!",
         progress: "Progress",

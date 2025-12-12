@@ -21,7 +21,9 @@ export class SolarSystem {
         this.raycaster = new THREE.Raycaster();
         this.pointer = new THREE.Vector2();
 
-        this.sunScale = 0.25; // Make sun bigger and more impressive
+        // Exploration mode is intentionally non-realistic, but the Sun should not look smaller than Jupiter/Saturn.
+        // Increasing this keeps Mercury outside the Sun while improving the overall look.
+        this.sunScale = 1.25;
 
         // Groups
         this.solarSystemGroup = new THREE.Group();
@@ -37,7 +39,8 @@ export class SolarSystem {
 
         // 2. Create Sun
         const sunData = SOLAR_SYSTEM_DATA['sun'];
-        const sunGeometry = new THREE.SphereGeometry(sunData.raioKm * this.sunScale * 0.0001, 32, 32);
+        const sunRadius = sunData.raioKm * this.sunScale * 0.0001;
+        const sunGeometry = new THREE.SphereGeometry(sunRadius, 32, 32);
 
         let sunMaterial;
         if (sunData.textureUrl) {
@@ -48,6 +51,31 @@ export class SolarSystem {
         }
 
         const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+
+        // Subtle corona/glow (visual only)
+        const coronaGeom1 = new THREE.SphereGeometry(sunRadius * 1.12, 32, 32);
+        const coronaMat1 = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.18,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const corona1 = new THREE.Mesh(coronaGeom1, coronaMat1);
+        corona1.renderOrder = 1;
+        sunMesh.add(corona1);
+
+        const coronaGeom2 = new THREE.SphereGeometry(sunRadius * 1.25, 24, 24);
+        const coronaMat2 = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.07,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const corona2 = new THREE.Mesh(coronaGeom2, coronaMat2);
+        corona2.renderOrder = 1;
+        sunMesh.add(corona2);
 
         this.solarSystemGroup.add(sunMesh);
         this.objects['sun'] = sunMesh;
