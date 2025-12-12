@@ -31,6 +31,19 @@ export class AudioManager {
         this._manualModeActive = false;
         this._manualDuckFactor = 0.65;
 
+        // Spaceship engine loop (procedural) for manual navigation
+        this._ship = {
+            active: false,
+            gain: null,
+            osc: null,
+            sub: null,
+            noise: null,
+            filter: null,
+            lfo: null,
+            lfoGain: null,
+            idleSince: null
+        };
+
         this.loadAudioSettings();
         this.applyAllVolumes({ ramp: false });
 
@@ -128,6 +141,188 @@ export class AudioManager {
                 intensity: 0.45,
                 color: 'deep'
             }
+        };
+    }
+
+    ensureAudioRunning() {
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+    }
+
+    createWhiteNoiseBuffer(seconds = 1) {
+        const sampleRate = this.ctx.sampleRate;
+        const length = Math.max(1, Math.floor(sampleRate * seconds));
+        const buffer = this.ctx.createBuffer(1, length, sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < length; i++) {
+            data[i] = (Math.random() * 2 - 1) * 0.6;
+        }
+        return buffer;
+    }
+
+    startShipEngine() {
+        if (!this.sfxEnabled) return;
+        if (this._ship.active) return;
+
+        this.ensureAudioRunning();
+
+        const now = this.ctx.currentTime;
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.0, now);
+
+        // Gentle lowpass so it reads as “engine” and not harsh synth.
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(350, now);
+        filter.Q.setValueAtTime(0.7, now);
+
+        // Two oscillators for body + sub.
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(55, now);
+
+        const sub = this.ctx.createOscillator();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(27.5, now);
+
+        // Noise layer for “thruster air” feel.
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this.createWhiteNoiseBuffer(1);
+        noise.loop = true;
+        const noiseGain = this.ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.0, now);
+
+        // Subtle wobble.
+        const lfo = this.ctx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(0.8, now);
+        const lfoGain = this.ctx.createGain();
+        lfoGain.gain.setValueAtTime(6, now);
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+
+        osc.connect(filter);
+        sub.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.sfxGain);
+
+        noise.connect(noiseGain);
+        noiseGain.connect(filter);
+
+        osc.start(now);
+        sub.start(now);
+        noise.start(now);
+        lfo.start(now);
+
+        // Keep silent until we have throttle (avoids constant hum at rest)
+        gain.gain.setValueAtTime(0.0, now);
+
+        this._ship = {
+            active: true,
+            gain,
+            osc,
+            sub,
+            noise: { src: noise, gain: noiseGain },
+            filter,
+            lfo,
+            lfoGain,
+            idleSince: now
+        };
+    }
+
+    updateShipEngine({ throttle = 0, warpLevel = 1, boosting = false, braking = false } = {}) {
+        if (!this.sfxEnabled) {
+            this.stopShipEngine();
+            return;
+        }
+
+        this.ensureAudioRunning();
+
+        const now = this.ctx.currentTime;
+        const t = this.clamp01(throttle);
+
+        // Auto-start only when we actually need audible engine.
+        const shouldBeAudible = t > 0.02 || boosting || braking;
+        if (!this._ship.active) {
+            if (!shouldBeAudible) return;
+            this.startShipEngine();
+        }
+
+        // If we're idle, ramp to silence and stop the loop after a short delay.
+        if (!shouldBeAudible) {
+            if (this._ship.idleSince == null) this._ship.idleSince = now;
+
+            try {
+                this._ship.gain.gain.setTargetAtTime(0.0, now, 0.08);
+                this._ship.noise.gain.gain.setTargetAtTime(0.0, now, 0.12);
+                this._ship.filter.frequency.setTargetAtTime(220, now, 0.12);
+            } catch {}
+
+            if (now - this._ship.idleSince > 1.2) {
+                this.stopShipEngine();
+            }
+            return;
+        }
+
+        this._ship.idleSince = null;
+
+        // Base pitch rises with throttle + warp. Keep it musically stable.
+        const warpBoost = Math.max(0, Math.min(9, warpLevel)) / 9;
+        const baseHz = 45 + t * 110 + warpBoost * 35 + (boosting ? 18 : 0);
+        const subHz = Math.max(18, baseHz * 0.5);
+
+        // Filter opens with throttle; closes during braking.
+        const filterHz = (braking ? 220 : 320) + t * 1400;
+
+        // Gain follows throttle only (no constant idle hum).
+        const targetGain = t * 0.085;
+        const noiseAmt = (braking ? 0.012 : 0.0) + t * 0.022;
+
+        try {
+            this._ship.osc.frequency.setTargetAtTime(baseHz, now, 0.06);
+            this._ship.sub.frequency.setTargetAtTime(subHz, now, 0.08);
+            this._ship.filter.frequency.setTargetAtTime(filterHz, now, 0.08);
+            this._ship.gain.gain.setTargetAtTime(targetGain, now, 0.08);
+            this._ship.noise.gain.gain.setTargetAtTime(noiseAmt, now, 0.12);
+        } catch {
+            // No-op: browsers can throw if nodes are stopped mid-update
+        }
+    }
+
+    stopShipEngine() {
+        if (!this._ship.active) return;
+
+        const now = this.ctx.currentTime;
+        const ship = this._ship;
+        ship.active = false;
+
+        try {
+            ship.gain.gain.cancelScheduledValues(now);
+            ship.gain.gain.setValueAtTime(ship.gain.gain.value, now);
+            ship.gain.gain.linearRampToValueAtTime(0.0, now + 0.2);
+        } catch {
+            // ignore
+        }
+
+        // Stop nodes after fade
+        setTimeout(() => {
+            try { ship.osc?.stop(); } catch {}
+            try { ship.sub?.stop(); } catch {}
+            try { ship.noise?.src?.stop(); } catch {}
+            try { ship.lfo?.stop(); } catch {}
+        }, 260);
+
+        this._ship = {
+            active: false,
+            gain: null,
+            osc: null,
+            sub: null,
+            noise: null,
+            filter: null,
+            lfo: null,
+            lfoGain: null,
+            idleSince: null
         };
     }
 
@@ -457,6 +652,11 @@ export class AudioManager {
 
     toggleSFX() {
         this.sfxEnabled = !this.sfxEnabled;
+
+        if (!this.sfxEnabled) {
+            this.stopShipEngine();
+        }
+
         this.saveAudioSettings();
         return this.sfxEnabled;
     }
