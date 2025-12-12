@@ -236,6 +236,11 @@ class App {
                 this.audioManager.ctx.resume();
             }
         }, { once: true });
+
+        // Duck music slightly during manual navigation for clarity
+        window.addEventListener('manualNavModeChanged', (e) => {
+            this.audioManager?.setManualMode?.(e.detail?.active);
+        });
     }
 
     handlePlanetDiscovery(planetName) {
@@ -348,6 +353,21 @@ class App {
                         <input type="checkbox" id="toggle-sfx" ${this.audioManager.sfxEnabled ? 'checked' : ''}>
                         <span class="toggle-slider"></span>
                     </label>
+
+                    <div class="settings-sliders">
+                        <div class="settings-slider-row">
+                            <div class="settings-slider-label">${i18n.t('master')} ${i18n.t('volume')}</div>
+                            <input type="range" id="vol-master" min="0" max="100" value="${Math.round((this.audioManager.getMasterVolume?.() ?? 0.3) * 100)}" />
+                        </div>
+                        <div class="settings-slider-row">
+                            <div class="settings-slider-label">🎵 ${i18n.t('music')} ${i18n.t('volume')}</div>
+                            <input type="range" id="vol-music" min="0" max="100" value="${Math.round((this.audioManager.getMusicVolume?.() ?? 0.15) * 100)}" />
+                        </div>
+                        <div class="settings-slider-row">
+                            <div class="settings-slider-label">🔔 ${i18n.t('sfx')} ${i18n.t('volume')}</div>
+                            <input type="range" id="vol-sfx" min="0" max="100" value="${Math.round((this.audioManager.getSFXVolume?.() ?? 0.4) * 100)}" />
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="settings-group">
@@ -390,6 +410,27 @@ class App {
         overlay.querySelector('#toggle-sfx').addEventListener('change', (e) => {
             this.audioManager.toggleSFX();
         });
+
+        // Volume sliders
+        const masterSlider = overlay.querySelector('#vol-master');
+        const musicSlider = overlay.querySelector('#vol-music');
+        const sfxSlider = overlay.querySelector('#vol-sfx');
+
+        if (masterSlider) {
+            masterSlider.addEventListener('input', (e) => {
+                this.audioManager.setMasterVolume(Number(e.target.value) / 100);
+            });
+        }
+        if (musicSlider) {
+            musicSlider.addEventListener('input', (e) => {
+                this.audioManager.setMusicVolume(Number(e.target.value) / 100);
+            });
+        }
+        if (sfxSlider) {
+            sfxSlider.addEventListener('input', (e) => {
+                this.audioManager.setSFXVolume(Number(e.target.value) / 100);
+            });
+        }
 
         overlay.querySelector('.settings-close-btn').addEventListener('click', () => {
             overlay.classList.add('fade-out');
@@ -456,7 +497,7 @@ class App {
         const fov = 45;
         const aspect = this.container.clientWidth / this.container.clientHeight;
         const near = 0.1;
-        const far = 5000000; // Extended for manual navigation with 150x scale (Neptune at ~1.3M units)
+        const far = 5000000; // Extended for manual navigation (system is scaled up in manual mode)
         this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         this.camera.position.set(0, 400, 800);
         this.camera.lookAt(0, 0, 0);
@@ -532,13 +573,13 @@ class App {
             // Keep bloom on for medium/high, disable on low
             this.bloomPass.enabled = this.qualityLevel >= 1;
             if (this.qualityLevel === 2) {
-                this.bloomPass.strength = 1.5;
+                this.bloomPass.strength = 1.7;
+                this.bloomPass.radius = 0.45;
+                this.bloomPass.threshold = 0.8;
+            } else if (this.qualityLevel === 1) {
+                this.bloomPass.strength = 1.2;
                 this.bloomPass.radius = 0.4;
                 this.bloomPass.threshold = 0.85;
-            } else if (this.qualityLevel === 1) {
-                this.bloomPass.strength = 1.0;
-                this.bloomPass.radius = 0.35;
-                this.bloomPass.threshold = 0.9;
             }
         }
 

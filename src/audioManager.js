@@ -7,23 +7,32 @@ export class AudioManager {
     constructor() {
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.value = 0.3;
         this.masterGain.connect(this.ctx.destination);
 
         // Music gain (separate control)
         this.musicGain = this.ctx.createGain();
-        this.musicGain.gain.value = 0.15;
-        this.musicGain.connect(this.ctx.destination);
+        this.musicGain.connect(this.masterGain);
 
         // SFX gain
         this.sfxGain = this.ctx.createGain();
-        this.sfxGain.gain.value = 0.4;
-        this.sfxGain.connect(this.ctx.destination);
+        this.sfxGain.connect(this.masterGain);
         
         // Planet ambient gain (separate from music)
         this.planetAmbientGain = this.ctx.createGain();
-        this.planetAmbientGain.gain.value = 0.2;
-        this.planetAmbientGain.connect(this.ctx.destination);
+        this.planetAmbientGain.connect(this.masterGain);
+
+        // User-controlled volumes (persisted)
+        this.masterVolume = 0.3;
+        this.musicVolume = 0.15;
+        this.sfxVolume = 0.4;
+        this.planetAmbientVolume = 0.2;
+
+        // Manual mode ducking (keeps manual navigation readable / less fatiguing)
+        this._manualModeActive = false;
+        this._manualDuckFactor = 0.65;
+
+        this.loadAudioSettings();
+        this.applyAllVolumes({ ramp: false });
 
         this.isMusicPlaying = false;
         this.musicNodes = [];
@@ -120,6 +129,86 @@ export class AudioManager {
                 color: 'deep'
             }
         };
+    }
+
+    loadAudioSettings() {
+        try {
+            const raw = localStorage.getItem('audio-settings');
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+
+            if (typeof parsed.masterVolume === 'number') this.masterVolume = this.clamp01(parsed.masterVolume);
+            if (typeof parsed.musicVolume === 'number') this.musicVolume = this.clamp01(parsed.musicVolume);
+            if (typeof parsed.sfxVolume === 'number') this.sfxVolume = this.clamp01(parsed.sfxVolume);
+            if (typeof parsed.planetAmbientVolume === 'number') this.planetAmbientVolume = this.clamp01(parsed.planetAmbientVolume);
+            if (typeof parsed.musicEnabled === 'boolean') this.musicEnabled = parsed.musicEnabled;
+            if (typeof parsed.sfxEnabled === 'boolean') this.sfxEnabled = parsed.sfxEnabled;
+        } catch (e) {
+            console.warn('[AudioManager] Failed to load settings:', e.message);
+        }
+    }
+
+    saveAudioSettings() {
+        try {
+            localStorage.setItem('audio-settings', JSON.stringify({
+                masterVolume: this.masterVolume,
+                musicVolume: this.musicVolume,
+                sfxVolume: this.sfxVolume,
+                planetAmbientVolume: this.planetAmbientVolume,
+                musicEnabled: this.musicEnabled,
+                sfxEnabled: this.sfxEnabled
+            }));
+        } catch (e) {
+            console.warn('[AudioManager] Failed to save settings:', e.message);
+        }
+    }
+
+    clamp01(v) {
+        return Math.max(0, Math.min(1, v));
+    }
+
+    rampAudioParam(param, target, seconds) {
+        const now = this.ctx.currentTime;
+        try {
+            param.cancelScheduledValues(now);
+            param.setValueAtTime(param.value, now);
+            param.linearRampToValueAtTime(target, now + Math.max(0.01, seconds));
+        } catch {
+            param.value = target;
+        }
+    }
+
+    applyAllVolumes({ ramp = true } = {}) {
+        const seconds = ramp ? 0.25 : 0.0;
+        this.rampAudioParam(this.masterGain.gain, this.masterVolume, seconds);
+
+        const duck = this._manualModeActive ? this._manualDuckFactor : 1;
+        this.rampAudioParam(this.musicGain.gain, this.musicVolume * duck, seconds);
+        this.rampAudioParam(this.planetAmbientGain.gain, this.planetAmbientVolume * duck, seconds);
+        this.rampAudioParam(this.sfxGain.gain, this.sfxVolume, seconds);
+    }
+
+    setManualMode(active) {
+        this._manualModeActive = !!active;
+        this.applyAllVolumes({ ramp: true });
+    }
+
+    setMasterVolume(value) {
+        this.masterVolume = this.clamp01(value);
+        this.applyAllVolumes({ ramp: true });
+        this.saveAudioSettings();
+    }
+
+    getMasterVolume() {
+        return this.masterVolume;
+    }
+
+    getMusicVolume() {
+        return this.musicVolume;
+    }
+
+    getSFXVolume() {
+        return this.sfxVolume;
     }
 
     // Play a short tone
@@ -362,20 +451,26 @@ export class AudioManager {
         } else {
             this.stopAmbientMusic();
         }
+        this.saveAudioSettings();
         return this.musicEnabled;
     }
 
     toggleSFX() {
         this.sfxEnabled = !this.sfxEnabled;
+        this.saveAudioSettings();
         return this.sfxEnabled;
     }
 
     setMusicVolume(value) {
-        this.musicGain.gain.value = value;
+        this.musicVolume = this.clamp01(value);
+        this.applyAllVolumes({ ramp: true });
+        this.saveAudioSettings();
     }
 
     setSFXVolume(value) {
-        this.sfxGain.gain.value = value;
+        this.sfxVolume = this.clamp01(value);
+        this.applyAllVolumes({ ramp: true });
+        this.saveAudioSettings();
     }
     
     /**

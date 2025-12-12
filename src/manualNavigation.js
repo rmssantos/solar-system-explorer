@@ -132,7 +132,9 @@ export class ManualNavigation {
         // and scaling most bodies by x0.1 gives a good near-real ratio
         // while staying visible (system is already scaled up in manual mode).
         this.realisticScales = {
-            'sun': 4.0,
+            // Sun base geometry was increased for exploration mode; use a smaller multiplier here
+            // so manual-mode proportions remain near-realistic.
+            'sun': 0.8,
 
             // Planets
             'mercury': 0.1,
@@ -173,7 +175,7 @@ export class ManualNavigation {
         this.toggleBtn = document.createElement('button');
         this.toggleBtn.className = 'manual-nav-toggle';
         this.toggleBtn.innerHTML = '🎮';
-        this.toggleBtn.title = i18n.t('manual_nav') || 'Navegação Manual (M)';
+        this.toggleBtn.title = i18n.t('manual_nav_tooltip') || i18n.t('manual_nav') || 'Navegação Manual (M)';
         this.toggleBtn.onclick = () => this.toggle();
         document.body.appendChild(this.toggleBtn);
         
@@ -185,6 +187,7 @@ export class ManualNavigation {
         this.hud.className = 'manual-nav-hud hidden';
         this.hud.innerHTML = `
             <div class="nav-warp-display">
+                <div class="nav-mode-badge">${i18n.t('manual_mode')}</div>
                 <div class="warp-level">
                     <span class="warp-name">IMPULSO</span>
                     <span class="warp-number">1</span>
@@ -194,7 +197,7 @@ export class ManualNavigation {
                 </div>
                 <div class="warp-speed">
                     <span class="speed-value">0</span>
-                    <span class="speed-unit">km/s</span>
+                    <span class="speed-unit">${i18n.t('speed_unit_approx')}</span>
                 </div>
                 <div class="speed-comparison"></div>
             </div>
@@ -396,6 +399,16 @@ export class ManualNavigation {
                 display: flex;
                 align-items: center;
                 gap: 15px;
+            }
+
+            .nav-mode-badge {
+                font-size: 10px;
+                color: #aaa;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                opacity: 0.9;
+                margin-right: 5px;
+                white-space: nowrap;
             }
             
             .warp-level {
@@ -1527,10 +1540,7 @@ export class ManualNavigation {
         // Play activation sound
         this.app.audioManager?.playSelect();
 
-        // Show mouse controls hint on desktop
-        if (!this.isTouchDevice) {
-            this.showMouseControlsHint();
-        }
+        // Show mouse controls hint only if pointer lock is blocked (less UI noise)
 
         console.log('🎮 Navegação manual ativada! Use 1-9 para Warp');
     }
@@ -2439,8 +2449,16 @@ export class ManualNavigation {
 
         // Update toggle button tooltip
         if (this.toggleBtn) {
-            this.toggleBtn.title = i18n.t('manual_nav');
+            this.toggleBtn.title = i18n.t('manual_nav_tooltip') || i18n.t('manual_nav');
         }
+
+        // Update manual-mode badge
+        const modeBadge = this.hud.querySelector('.nav-mode-badge');
+        if (modeBadge) modeBadge.textContent = i18n.t('manual_mode');
+
+        // Update speed unit label
+        const speedUnit = this.hud.querySelector('.speed-unit');
+        if (speedUnit) speedUnit.textContent = i18n.t('speed_unit_approx');
 
         // Update controls help panel
         const ctrlForward = this.hud.querySelector('.ctrl-forward');

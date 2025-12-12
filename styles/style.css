@@ -1733,6 +1733,27 @@ canvas {
     margin: 5px 0;
 }
 
+.settings-sliders {
+    margin-top: 10px;
+    display: grid;
+    gap: 10px;
+}
+
+.settings-slider-row {
+    display: grid;
+    gap: 6px;
+}
+
+.settings-slider-label {
+    color: #aaa;
+    font-size: 0.8rem;
+}
+
+.settings-slider-row input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent-color);
+}
+
 .settings-buttons {
     display: flex;
     gap: 10px;
