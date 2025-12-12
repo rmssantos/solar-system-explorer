@@ -1603,6 +1603,12 @@ export class ManualNavigation {
         
         // Dispatch event for UI to react (restore passport, etc.)
         window.dispatchEvent(new CustomEvent('manualNavModeChanged', { detail: { active: false } }));
+
+        // Map current manual camera position back to exploration coordinates.
+        // (In manual mode we scale the whole system + camera by solarSystemScaleMultiplier.)
+        const mappedExplorationCameraPos = this.solarSystemScaleMultiplier
+            ? this.camera.position.clone().multiplyScalar(1 / this.solarSystemScaleMultiplier)
+            : null;
         
         // Exit pointer lock (desktop only)
         if (!this.isTouchDevice) {
@@ -1623,7 +1629,9 @@ export class ManualNavigation {
         }
         
         // Restore camera position
-        if (this.originalCameraPosition) {
+        if (mappedExplorationCameraPos) {
+            this.camera.position.copy(mappedExplorationCameraPos);
+        } else if (this.originalCameraPosition) {
             this.camera.position.copy(this.originalCameraPosition);
         }
         
@@ -1649,6 +1657,45 @@ export class ManualNavigation {
 
         // Clean up visual effects
         this.cleanupEffects();
+
+        // Stop spaceship engine loop
+        this.app.audioManager?.stopShipEngine();
+
+        // Sync orbit controls to the new camera position to prevent a jump.
+        // Keep the target near the nearest major body so the camera doesn't drift back to origin.
+        if (this.app.cameraControls && mappedExplorationCameraPos && this.app.solarSystem?.objects) {
+            const controls = this.app.cameraControls;
+
+            const candidates = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+            let nearestMesh = null;
+            let nearestPos = null;
+            let nearestDist = Infinity;
+
+            for (const name of candidates) {
+                const mesh = this.app.solarSystem.objects[name];
+                if (!mesh) continue;
+                const worldPos = new THREE.Vector3();
+                mesh.getWorldPosition(worldPos);
+                const d = this.camera.position.distanceTo(worldPos);
+                if (d < nearestDist) {
+                    nearestDist = d;
+                    nearestMesh = mesh;
+                    nearestPos = worldPos;
+                }
+            }
+
+            if (nearestMesh && nearestPos) {
+                controls.followingObject = nearestMesh;
+                controls.target.copy(nearestPos);
+
+                const offset = new THREE.Vector3().subVectors(this.camera.position, nearestPos);
+                controls.orbitRadius = offset.length();
+                if (controls.orbitRadius > 0.0001) {
+                    controls.phi = Math.acos(Math.max(-1, Math.min(1, offset.y / controls.orbitRadius)));
+                    controls.theta = Math.atan2(offset.z, offset.x);
+                }
+            }
+        }
 
         console.log('🎮 Navegação manual desativada');
     }
@@ -2064,6 +2111,16 @@ export class ManualNavigation {
         // Update speed lines based on warp level
         this.updateSpeedLines();
 
+        // Update spaceship engine audio (procedural)
+        const maxSpeed = baseWarpSpeed * 2; // includes boost
+        const throttle = maxSpeed > 0 ? (this.currentSpeed / maxSpeed) : 0;
+        this.app.audioManager?.updateShipEngine({
+            throttle,
+            warpLevel: this.warpLevel,
+            boosting: this.boost,
+            braking: this.emergencyBraking
+        });
+
         // Update HUD elements
         this.updateHUD();
         this.updateCompass();
@@ -2337,10 +2394,12 @@ export class ManualNavigation {
 
         if (oldLevel !== this.warpLevel) {
             this.showWarpFlash();
+            this.app.audioManager?.playWarp();
+        } else {
+            this.app.audioManager?.playSelect();
         }
 
         this.updateWarpDisplay();
-        this.app.audioManager?.playSelect();
     }
 
     enableAutoPilot(planetName) {

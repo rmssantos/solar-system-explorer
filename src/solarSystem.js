@@ -1306,6 +1306,18 @@ export class SolarSystem {
                     }
                 }
             }
+
+            // If we hit a decorative/child mesh (e.g. Sun corona), bubble up to a registered object.
+            // This keeps selection working even when visual effects are added as children.
+            let current = hitObject;
+            while (current) {
+                for (const mesh of Object.values(this.objects)) {
+                    if (mesh === current) {
+                        return mesh;
+                    }
+                }
+                current = current.parent;
+            }
             
             return hitObject;
         }
