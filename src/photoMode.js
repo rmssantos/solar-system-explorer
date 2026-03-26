@@ -193,12 +193,16 @@ export class PhotoMode {
             <img src="${photo.image}" alt="Preview" class="photo-preview">
             <div class="photo-toast-info">
                 <span class="photo-toast-title">📸 ${i18n.t('photo_saved')}</span>
-                <span class="photo-toast-location">📍 ${photo.location}</span>
+                <span class="photo-toast-location"></span>
             </div>
         `;
         
+        // Safely set location text (avoid XSS from localStorage-persisted data)
+        const locSpan = toast.querySelector('.photo-toast-location');
+        if (locSpan) locSpan.textContent = `📍 ${photo.location}`;
+
         document.body.appendChild(toast);
-        
+
         requestAnimationFrame(() => toast.classList.add('visible'));
         
         setTimeout(() => {
@@ -225,7 +229,7 @@ export class PhotoMode {
                 <div class="gallery-item" data-index="${index}">
                     <img src="${photo.image}" alt="${i18n.t('photo')} ${index + 1}">
                     <div class="gallery-item-info">
-                        <span class="gallery-location">📍 ${photo.location}</span>
+                        <span class="gallery-location"></span>
                         <span class="gallery-time">${photo.timestamp}</span>
                     </div>
                     <div class="gallery-item-actions">
@@ -251,9 +255,13 @@ export class PhotoMode {
 
         document.body.appendChild(overlay);
 
-        // Safely set subtitle text (avoid XSS via playerName)
+        // Safely set text content (avoid XSS via playerName and photo.location)
         const subtitleEl = overlay.querySelector('.gallery-subtitle');
         if (subtitleEl) subtitleEl.textContent = `${i18n.t('captain')} ${this.app.playerName} - ${this.gallery.length} ${i18n.t('photos')}`;
+        overlay.querySelectorAll('.gallery-location').forEach((el, i) => {
+            const idx = this.gallery.length - 1 - i; // reversed order
+            if (this.gallery[idx]) el.textContent = `📍 ${this.gallery[idx].location}`;
+        });
 
         // Event listeners
         overlay.querySelector('.gallery-close').onclick = () => {

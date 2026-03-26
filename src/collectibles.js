@@ -314,7 +314,8 @@ export class CollectiblesSystem {
             // Use distanceToSquared to avoid sqrt per frame
             const distSq = cameraPos.distanceToSquared(c.group.position);
             // Adjust threshold for manual nav mode (scene scaled 50x)
-            const threshold = this.app.manualNavigation?.enabled ? (150 * 150) : (3 * 3);
+            // Exploration mode: 25 units (camera min zoom is 20). Manual nav: 150 units (50x scale)
+            const threshold = this.app.manualNavigation?.enabled ? (150 * 150) : (25 * 25);
             if (distSq < threshold) {
                 this.collectItem(c);
             }

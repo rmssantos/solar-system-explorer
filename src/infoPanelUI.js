@@ -47,18 +47,18 @@ export class InfoPanelUI {
 
         // Slide 1: Basic Stats
         slides.push({
-            title: lang === 'en' ? 'Basic Data' : 'Dados B\u00e1sicos',
+            title: i18n.t('slide_basic_data'),
             content: (container) => {
                 if (data.tipo) this.createRow(container, i18n.t('info_type'), data.tipo);
                 if (data.distanciaMediaAoSol) this.createRow(container, i18n.t('info_distance'), `${data.distanciaMediaAoSol} M km`);
-                if (data.distanciaKm) this.createRow(container, lang === 'en' ? 'Distance' : 'Dist\u00e2ncia', `${data.distanciaKm} km`);
+                if (data.distanciaKm) this.createRow(container, i18n.t('slide_distance'), `${data.distanciaKm} km`);
             }
         });
 
         // Slide 2: Real Photo
         if (data.imagemReal) {
             slides.push({
-                title: lang === 'en' ? 'Real Photo' : 'Fotografia Real',
+                title: i18n.t('slide_real_photo'),
                 content: (container) => {
                     const photoContainer = document.createElement('div');
                     photoContainer.className = 'real-photo-container';
@@ -133,7 +133,7 @@ export class InfoPanelUI {
 
         // Slide 3: Climate & Time
         slides.push({
-            title: lang === 'en' ? 'Climate & Time' : 'Clima e Tempo',
+            title: i18n.t('slide_climate_time'),
             content: (container) => {
                 if (data.duracaoDia) this.createRow(container, i18n.t('info_day'), data.duracaoDia);
                 if (data.duracaoAno) this.createRow(container, i18n.t('info_year'), data.duracaoAno);
@@ -193,7 +193,7 @@ export class InfoPanelUI {
         // Slide: Description (Final)
         if (data.descricao) {
             slides.push({
-                title: lang === 'en' ? 'About' : 'Sobre',
+                title: i18n.t('slide_about'),
                 content: (container) => {
                     const p = document.createElement('p');
                     p.className = 'info-desc';
@@ -295,8 +295,8 @@ export class InfoPanelUI {
         const isNew = this.app.gameManager.visit(key);
 
         if (isNew) {
-            // Delegate celebration to UIManager which owns the CelebrationUI
-            this.app.uiManager.showCelebration(displayName);
+            // Delegate celebration to UIManager - pass internal key for SOLAR_SYSTEM_DATA lookup
+            this.app.uiManager.showCelebration(key);
             window.dispatchEvent(new CustomEvent('app:visit', { detail: key }));
 
             // Update passport visual immediately

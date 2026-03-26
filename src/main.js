@@ -742,6 +742,9 @@ class App {
         if (this.particleEffects) this.particleEffects.update(deltaTime);
         if (this.collectibles) this.collectibles.update(deltaTime);
 
+        // Update minimap (driven by main loop, not its own rAF)
+        if (this.miniMap) this.miniMap.externalUpdate();
+
         // Render via Composer for Bloom
         if (this.composer && !this.isDisposed) {
             this.composer.render();
@@ -758,6 +761,9 @@ class App {
 
         // Mark as disposed to stop animation loop
         this.isDisposed = true;
+
+        // Clear pending quiz timeout
+        if (this._quizTimeout) clearTimeout(this._quizTimeout);
 
         // Stop animation loop
         this.clock.stop();
@@ -834,7 +840,6 @@ function cleanupDynamicUI() {
         'achievement-notification',
         'achievements-panel-overlay',
         'xp-notification',
-        'mission-complete-overlay',
         'quiz-overlay',
         'photo-flash',
         'photo-toast',
@@ -849,8 +854,6 @@ function cleanupDynamicUI() {
 
     dynamicClasses.forEach(className => {
         const elements = document.querySelectorAll('.' + className);
-        if (elements.length > 0) {
-        }
         elements.forEach(el => el.remove());
     });
 
@@ -872,25 +875,26 @@ function cleanupDynamicUI() {
 
 }
 
+// Module-scoped ref for dispose on re-init (not exposed on window)
+let _currentApp = null;
+
 function initApp() {
     // Clean up any existing app instance (prevents issues on navigation)
-    if (window._appInstance && typeof window._appInstance.dispose === 'function') {
+    if (_currentApp && typeof _currentApp.dispose === 'function') {
         try {
-            window._appInstance.dispose();
+            _currentApp.dispose();
         } catch (e) {
-            console.warn('Error disposing previous app:', e);
+            // Ignore dispose errors
         }
     }
 
     // Clean up all dynamic UI elements
     cleanupDynamicUI();
 
-    const app = new App();
-    // Store internal ref for dispose on re-init, but don't expose publicly
-    window._appInstance = app;
+    _currentApp = new App();
     // Only expose globally in development for debugging
     if (import.meta.env?.DEV) {
-        window.app = app;
+        window.app = _currentApp;
     }
 }
 

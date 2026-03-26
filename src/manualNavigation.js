@@ -2115,9 +2115,13 @@ export class ManualNavigation {
         // Apply movement
         if (this.currentSpeed > 0.1) {
             // Get camera direction vectors
-            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
-            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
-            const up = new THREE.Vector3(0, 1, 0);
+            // Reuse pre-allocated vectors (avoid per-frame allocation)
+            if (!this._moveVecs) {
+                this._moveVecs = { forward: new THREE.Vector3(), right: new THREE.Vector3(), up: new THREE.Vector3(0, 1, 0) };
+            }
+            const forward = this._moveVecs.forward.set(0, 0, -1).applyQuaternion(this.camera.quaternion);
+            const right = this._moveVecs.right.set(1, 0, 0).applyQuaternion(this.camera.quaternion);
+            const up = this._moveVecs.up;
 
             // Calculate velocity
             this.velocity.set(0, 0, 0);
@@ -2443,6 +2447,7 @@ export class ManualNavigation {
             document.body.appendChild(container);
         } else if (!shouldShow && container) {
             container.remove();
+            this._speedLinesContainer = null; // Invalidate cache so it's recreated next time
         }
     }
 
@@ -2646,9 +2651,9 @@ export class ManualNavigation {
         for (const name of mainObjects) {
             const mesh = this.app.solarSystem.objects[name];
             if (mesh) {
-                const worldPos = new THREE.Vector3();
-                mesh.getWorldPosition(worldPos);
-                const dist = this.camera.position.distanceTo(worldPos);
+                if (!this._nearestWorldPos) this._nearestWorldPos = new THREE.Vector3();
+                mesh.getWorldPosition(this._nearestWorldPos);
+                const dist = this.camera.position.distanceTo(this._nearestWorldPos);
 
                 if (dist < nearestDist) {
                     nearestDist = dist;
@@ -2733,7 +2738,8 @@ export class ManualNavigation {
         if (!this.app.solarSystem?.objects) return null;
 
         // Raycast from screen center (where crosshair is)
-        this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
+        if (!this._screenCenter) this._screenCenter = new THREE.Vector2(0, 0);
+        this.raycaster.setFromCamera(this._screenCenter, this.camera);
 
         // Collect all planet meshes
         const mainObjects = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
@@ -2770,11 +2776,12 @@ export class ManualNavigation {
         const nearest = this.findNearestPlanet();
         if (nearest && nearest.dist < 2000) {
             // Check if planet is roughly in front of camera
-            const dir = new THREE.Vector3();
-            this.camera.getWorldDirection(dir);
+            if (!this._targetVecs) this._targetVecs = { dir: new THREE.Vector3(), toplanet: new THREE.Vector3() };
+            this.camera.getWorldDirection(this._targetVecs.dir);
+            const dir = this._targetVecs.dir;
 
-            const toplanet = new THREE.Vector3();
-            nearest.mesh.getWorldPosition(toplanet);
+            nearest.mesh.getWorldPosition(this._targetVecs.toplanet);
+            const toplanet = this._targetVecs.toplanet;
             toplanet.sub(this.camera.position).normalize();
 
             const dot = dir.dot(toplanet);

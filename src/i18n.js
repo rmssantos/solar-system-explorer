@@ -50,6 +50,7 @@ export const TRANSLATIONS = {
         no_photos_yet: "Ainda não tiraste fotos!",
         explore_capture: "Explora o Sistema Solar e captura os momentos especiais.",
         space_gallery: "Galeria Espacial",
+        captain: "Capitão",
         photos: "fotos",
         photo: "Foto",
 
@@ -101,6 +102,11 @@ export const TRANSLATIONS = {
         library: "Biblioteca",
 
         // Info Panel
+        slide_basic_data: "Dados Básicos",
+        slide_real_photo: "Fotografia Real",
+        slide_climate_time: "Clima e Tempo",
+        slide_about: "Sobre",
+        slide_distance: "Distância",
         info_type: "Tipo",
         info_distance: "Distância ao Sol",
         info_day: "Duração do Dia",
@@ -381,6 +387,7 @@ export const TRANSLATIONS = {
         no_photos_yet: "You haven't taken any photos yet!",
         explore_capture: "Explore the Solar System and capture special moments.",
         space_gallery: "Space Gallery",
+        captain: "Captain",
         photos: "photos",
         photo: "Photo",
 
@@ -432,6 +439,11 @@ export const TRANSLATIONS = {
         library: "Library",
 
         // Info Panel
+        slide_basic_data: "Basic Data",
+        slide_real_photo: "Real Photo",
+        slide_climate_time: "Climate & Time",
+        slide_about: "About",
+        slide_distance: "Distance",
         info_type: "Type",
         info_distance: "Distance to Sun",
         info_day: "Day Length",
@@ -743,7 +755,40 @@ export const PLANET_TRANSLATIONS = {
         "Neptuno": {
             nome: "Neptune",
             tipo: "Ice Giant"
-        }
+        },
+        // Moons
+        "Lua": { nome: "Moon" },
+        "Fobos": { nome: "Phobos" },
+        "Deimos": { nome: "Deimos" },
+        "Io": { nome: "Io" },
+        "Europa": { nome: "Europa" },
+        "Ganimedes": { nome: "Ganymede" },
+        "Calisto": { nome: "Callisto" },
+        "Titã": { nome: "Titan" },
+        "Encélado": { nome: "Enceladus" },
+        "Mimas": { nome: "Mimas" },
+        "Titânia": { nome: "Titania" },
+        "Oberon": { nome: "Oberon" },
+        "Tritão": { nome: "Triton" },
+        "Proteu": { nome: "Proteus" },
+        "Caronte": { nome: "Charon" },
+        "Disnomia": { nome: "Dysnomia" },
+        // Dwarf planets
+        "Plutão": { nome: "Pluto", tipo: "Dwarf Planet" },
+        "Ceres": { nome: "Ceres", tipo: "Dwarf Planet" },
+        "Éris": { nome: "Eris", tipo: "Dwarf Planet" },
+        "Makemake": { nome: "Makemake", tipo: "Dwarf Planet" },
+        "Haumea": { nome: "Haumea", tipo: "Dwarf Planet" },
+        // Probes
+        "Voyager 1": { nome: "Voyager 1" },
+        "Voyager 2": { nome: "Voyager 2" },
+        "New Horizons": { nome: "New Horizons" },
+        "Pioneer 10": { nome: "Pioneer 10" },
+        "Juno": { nome: "Juno" },
+        "Cassini": { nome: "Cassini" },
+        "Estação Espacial Internacional": { nome: "International Space Station" },
+        "Telescópio Espacial Hubble": { nome: "Hubble Space Telescope" },
+        "OVNI Misterioso": { nome: "Mysterious UFO" }
     }
 };
 

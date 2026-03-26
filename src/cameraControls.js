@@ -276,10 +276,10 @@ export class CameraControls {
                 this.camera.lookAt(this.target);
                 
                 // Show info panel after a gentle delay
-                if (this.pendingObjectName && this.solarSystem?.uiManager) {
+                if (this.pendingObjectName && this.app?.uiManager) {
                     const objectName = this.pendingObjectName;
                     setTimeout(() => {
-                        this.solarSystem?.uiManager?.showInfo(objectName);
+                        this.app?.uiManager?.showInfo(objectName);
                     }, 500);
                 }
                 this.pendingObjectName = null;

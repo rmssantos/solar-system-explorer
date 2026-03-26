@@ -409,6 +409,7 @@ Tem uma atmosfera super grossa de nuvens tóxicas que funcionam como um cobertor
             section_moons: "🌙 Moons",
             section_history: "📜 History",
             section_comparison: "🌍 Comparison",
+            section_gallery: "📸 Gallery",
             stat_radius: "Radius",
             stat_distance: "Distance to Sun",
             stat_day: "Day Length",

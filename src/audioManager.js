@@ -143,6 +143,7 @@ export class AudioManager {
     }
 
     ensureAudioRunning() {
+        if (!this.ctx) return;
         if (this.ctx.state === 'suspended') this.ctx.resume();
     }
 
@@ -697,15 +698,16 @@ export class AudioManager {
      * @param {string} planetName - Internal name of the planet (e.g., "Sol", "Terra")
      */
     startPlanetAmbient(planetName) {
+        if (!this.ctx) return;
         // Don't restart if same planet
         if (this.currentPlanetAmbient === planetName) return;
-        
+
         // Stop previous ambient
         this.stopPlanetAmbient();
-        
+
         const profile = this.planetSounds[planetName];
         if (!profile || !this.musicEnabled) return;
-        
+
         if (this.ctx.state === 'suspended') this.ctx.resume();
         
         this.currentPlanetAmbient = planetName;
@@ -751,6 +753,7 @@ export class AudioManager {
         this.planetTimers.forEach(id => clearTimeout(id));
         this.planetTimers = [];
 
+        if (!this.ctx) return;
         const now = this.ctx.currentTime;
 
         // Fade out all planet ambient nodes
