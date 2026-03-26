@@ -35,12 +35,6 @@ import { Mascot } from './mascot.js';
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
 
-// Suppress Three.js NaN bounding sphere warnings (cosmetic, from comet init)
-const _origWarn = console.warn;
-console.warn = (...args) => {
-    if (typeof args[0] === 'string' && args[0].includes('computeBoundingSphere')) return;
-    _origWarn.apply(console, args);
-};
 
 class App {
     constructor() {
