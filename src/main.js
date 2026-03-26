@@ -33,15 +33,7 @@ import { resourceManager } from './resourceManager.js';
 import { Mascot } from './mascot.js';
 
 import { i18n } from './i18n.js';
-
-// Suppress Three.js NaN warnings (cosmetic issue, doesn't affect rendering)
-const originalWarn = console.warn;
-console.warn = function(...args) {
-    if (args[0] && typeof args[0] === 'string' && args[0].includes('computeBoundingSphere')) {
-        return; // Silently ignore bounding sphere NaN warnings
-    }
-    originalWarn.apply(console, args);
-};
+import * as storage from './utils/storage.js';
 
 class App {
     constructor() {
@@ -108,8 +100,9 @@ class App {
     }
 
     async init() {
-        console.log(`🚀 Bem-vindo, Capitão ${this.playerName}!`);
-        
+        // Show loading overlay
+        this.showLoadingOverlay();
+
         try {
             // Initialize game systems
             this.xpSystem = new XPSystem();
@@ -153,6 +146,9 @@ class App {
             } else if (this.renderer) {
                 this.renderer.render(this.scene, this.camera);
             }
+
+            // Hide loading overlay (textures may still be loading async)
+            this.hideLoadingOverlay();
 
             // 4. Start Animation Loop
             this.animate();
@@ -232,7 +228,7 @@ class App {
 
         // Unlock Audio Context on first interaction
         window.addEventListener('click', () => {
-            if (this.audioManager.ctx.state === 'suspended') {
+            if (this.audioManager.ctx?.state === 'suspended') {
                 this.audioManager.ctx.resume();
             }
         }, { once: true });
@@ -282,8 +278,11 @@ class App {
         this.achievementSystem.checkPlanetVisit(planetName, this.gameManager.visited);
 
         // Show quiz after a delay (if available)
-        if (this.quizSystem.hasQuiz(planetName)) {
-            setTimeout(() => {
+        // Guard against double-scheduling with a pending flag
+        if (this.quizSystem.hasQuiz(planetName) && !this._quizPending) {
+            this._quizPending = true;
+            this._quizTimeout = setTimeout(() => {
+                this._quizPending = false;
                 this.quizSystem.showQuiz(planetName, (answered) => {
                     if (answered) {
                         // Check quiz achievements
@@ -297,7 +296,8 @@ class App {
 
     setupAudioStart() {
         const startAudio = () => {
-            if (this.audioManager.ctx.state === 'suspended') {
+            this.audioManager._initContext();
+            if (this.audioManager.ctx?.state === 'suspended') {
                 this.audioManager.ctx.resume();
             }
             this.audioManager.startAmbientMusic();
@@ -338,7 +338,7 @@ class App {
                 
                 <div class="settings-group">
                     <h3>👨‍🚀 ${i18n.t('captain')}</h3>
-                    <p class="captain-name">${this.playerName}</p>
+                    <p class="captain-name"></p>
                 </div>
                 
                 <div class="settings-group">
@@ -386,6 +386,10 @@ class App {
         `;
 
         document.body.appendChild(overlay);
+
+        // Safely set player name (avoid XSS via innerHTML)
+        const captainNameEl = overlay.querySelector('.captain-name');
+        if (captainNameEl) captainNameEl.textContent = this.playerName;
 
         // Animate in
         requestAnimationFrame(() => {
@@ -440,7 +444,7 @@ class App {
         overlay.querySelector('.settings-reset-btn').addEventListener('click', () => {
             if (confirm(i18n.t('confirm_reset'))) {
                 try {
-                    localStorage.clear();
+                    storage.clearAll();
                 } catch (e) {
                     console.warn('[App] Failed to clear storage:', e.message);
                 }
@@ -463,8 +467,10 @@ class App {
         toast.className = 'welcome-toast';
         toast.innerHTML = `
             <span class="toast-icon">🚀</span>
-            <span class="toast-text">${i18n.t('welcome_back')}, ${rank.icon} ${rankName} ${this.playerName}!</span>
+            <span class="toast-text"></span>
         `;
+        // Safely set text to avoid XSS via playerName
+        toast.querySelector('.toast-text').textContent = `${i18n.t('welcome_back')}, ${rank.icon} ${rankName} ${this.playerName}!`;
         
         document.body.appendChild(toast);
         
@@ -488,7 +494,39 @@ class App {
             this.uiManager.updatePassport(planetName);
         });
         
-        console.log(`📛 Passaporte restaurado: ${visitedPlanets.length} planetas visitados`);
+    }
+
+    showLoadingOverlay() {
+        const overlay = document.createElement('div');
+        overlay.id = 'loading-overlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0e1a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10000;transition:opacity 0.5s;';
+        overlay.innerHTML = `
+            <div style="font-size:3rem;margin-bottom:1rem;">🚀</div>
+            <div style="color:#e2e8f0;font-family:system-ui;font-size:1.2rem;margin-bottom:1.5rem;">A carregar o Sistema Solar...</div>
+            <div style="width:200px;height:4px;background:#1a2237;border-radius:2px;overflow:hidden;">
+                <div id="loading-bar" style="width:0%;height:100%;background:linear-gradient(90deg,#6366f1,#a855f7);border-radius:2px;transition:width 0.3s;"></div>
+            </div>
+            <div id="loading-text" style="color:#94a3b8;font-size:0.8rem;margin-top:0.5rem;">0%</div>
+        `;
+        document.body.appendChild(overlay);
+        this._loadingOverlay = overlay;
+
+        // Listen for texture loading progress
+        this._onLoadProgress = (e) => {
+            const bar = document.getElementById('loading-bar');
+            const text = document.getElementById('loading-text');
+            if (bar) bar.style.width = `${Math.round(e.detail.progress * 100)}%`;
+            if (text) text.textContent = `${Math.round(e.detail.progress * 100)}%`;
+        };
+        window.addEventListener('loading:progress', this._onLoadProgress);
+    }
+
+    hideLoadingOverlay() {
+        window.removeEventListener('loading:progress', this._onLoadProgress);
+        if (this._loadingOverlay) {
+            this._loadingOverlay.style.opacity = '0';
+            setTimeout(() => this._loadingOverlay?.remove(), 500);
+        }
     }
 
     setupScene() {
@@ -505,7 +543,7 @@ class App {
         this.renderer = new THREE.WebGLRenderer({ 
             antialias: true, 
             alpha: true,
-            preserveDrawingBuffer: true // Required for screenshots
+            preserveDrawingBuffer: true // Required for PhotoMode screenshots (toDataURL)
         });
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
         // Cap DPR for performance on HiDPI screens (especially mobile)
@@ -521,16 +559,25 @@ class App {
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.1); // Reduced ambient to make shadows visible (night side dark)
         this.scene.add(ambientLight);
 
-        const sunLight = new THREE.PointLight(0xffffff, 3.0, 0, 0.5); // Sun decay logic
-        sunLight.position.set(0, 0, 0);
+        // Use DirectionalLight for shadows (1 face instead of PointLight's 6 cube faces)
+        const sunLight = new THREE.DirectionalLight(0xffffff, 3.0);
+        sunLight.position.set(0, 500, 0); // Above the solar system
 
-        // SUN CASTS SHADOWS
         sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 2048; // Balanced quality/performance
+        sunLight.shadow.mapSize.width = 2048;
         sunLight.shadow.mapSize.height = 2048;
-        sunLight.shadow.camera.near = 100;
+        sunLight.shadow.camera.near = 1;
         sunLight.shadow.camera.far = 20000;
+        sunLight.shadow.camera.left = -5000;
+        sunLight.shadow.camera.right = 5000;
+        sunLight.shadow.camera.top = 5000;
+        sunLight.shadow.camera.bottom = -5000;
         sunLight.shadow.bias = -0.0001;
+
+        // Add a non-shadow PointLight at origin for correct radial lighting from sun
+        const sunPointLight = new THREE.PointLight(0xffffff, 2.0, 0, 0.5);
+        sunPointLight.position.set(0, 0, 0);
+        this.scene.add(sunPointLight);
 
         this.scene.add(sunLight);
         this.sunLight = sunLight;
@@ -653,10 +700,14 @@ class App {
 
         if (this.composer) {
             // Keep post-fx scaled resolution in sync
-            this.composer.setSize(
-                Math.max(1, Math.floor(width * this.postFxScale)),
-                Math.max(1, Math.floor(height * this.postFxScale))
-            );
+            const scaledW = Math.max(1, Math.floor(width * this.postFxScale));
+            const scaledH = Math.max(1, Math.floor(height * this.postFxScale));
+            this.composer.setSize(scaledW, scaledH);
+
+            // Also update bloom pass internal resolution
+            if (this.bloomPass) {
+                this.bloomPass.resolution.set(scaledW, scaledH);
+            }
         }
     }
 
@@ -703,7 +754,6 @@ class App {
      * Called on page unload or when app is destroyed
      */
     dispose() {
-        console.log('🧹 Cleaning up app resources...');
 
         // Mark as disposed to stop animation loop
         this.isDisposed = true;
@@ -733,7 +783,14 @@ class App {
             this.audioManager.ctx.close();
         }
 
-        console.log('✅ App cleanup complete');
+        // Remove manual navigation event listeners
+        if (this.manualNavigation) {
+            this.manualNavigation.removeEventListeners();
+        }
+
+        // Clear i18n listeners to prevent accumulation on reinit
+        i18n.clearListeners();
+
     }
 }
 
@@ -764,7 +821,6 @@ function cleanupDynamicUI() {
     dynamicElementIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            console.log(`🗑️ Removing element with ID: ${id}`);
             el.remove();
         }
     });
@@ -793,7 +849,6 @@ function cleanupDynamicUI() {
     dynamicClasses.forEach(className => {
         const elements = document.querySelectorAll('.' + className);
         if (elements.length > 0) {
-            console.log(`🗑️ Removing ${elements.length} elements with class: ${className}`);
         }
         elements.forEach(el => el.remove());
     });
@@ -814,14 +869,13 @@ function cleanupDynamicUI() {
         infoPanel.classList.add('hidden');
     }
 
-    console.log('🧹 Dynamic UI elements cleaned up');
 }
 
 function initApp() {
     // Clean up any existing app instance (prevents issues on navigation)
-    if (window.app && typeof window.app.dispose === 'function') {
+    if (window._appInstance && typeof window._appInstance.dispose === 'function') {
         try {
-            window.app.dispose();
+            window._appInstance.dispose();
         } catch (e) {
             console.warn('Error disposing previous app:', e);
         }
@@ -830,7 +884,13 @@ function initApp() {
     // Clean up all dynamic UI elements
     cleanupDynamicUI();
 
-    window.app = new App();
+    const app = new App();
+    // Store internal ref for dispose on re-init, but don't expose publicly
+    window._appInstance = app;
+    // Only expose globally in development for debugging
+    if (import.meta.env?.DEV) {
+        window.app = app;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
@@ -838,7 +898,6 @@ document.addEventListener('DOMContentLoaded', initApp);
 // Handle bfcache (back-forward cache) - reinitialize when page is restored from cache
 window.addEventListener('pageshow', (event) => {
     if (event.persisted) {
-        console.log('📦 Page restored from bfcache, reinitializing...');
         initApp();
     }
 });

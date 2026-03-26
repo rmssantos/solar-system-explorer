@@ -10,9 +10,21 @@ export class ResourceManager {
         this.geometries = new Set();
         this.materials = new Set();
         this.meshes = new Set();
-        
-        // Track texture loader
-        this.textureLoader = new THREE.TextureLoader();
+
+        // Loading manager for progress tracking
+        this.loadingManager = new THREE.LoadingManager();
+        this.loadingManager.onProgress = (url, loaded, total) => {
+            const progress = total > 0 ? loaded / total : 0;
+            window.dispatchEvent(new CustomEvent('loading:progress', {
+                detail: { url, loaded, total, progress }
+            }));
+        };
+        this.loadingManager.onLoad = () => {
+            window.dispatchEvent(new CustomEvent('loading:complete'));
+        };
+
+        // Track texture loader (uses loading manager)
+        this.textureLoader = new THREE.TextureLoader(this.loadingManager);
     }
 
     /**
@@ -81,7 +93,6 @@ export class ResourceManager {
             const texture = this.textures.get(url);
             texture.dispose();
             this.textures.delete(url);
-            console.log(`🗑️ Disposed texture: ${url}`);
         }
     }
 
@@ -147,12 +158,10 @@ export class ResourceManager {
      * Call this when closing the app or major cleanup needed
      */
     disposeAll() {
-        console.log('🧹 Disposing all resources...');
 
         // Dispose textures
         this.textures.forEach((texture, url) => {
             texture.dispose();
-            console.log(`  Disposed texture: ${url}`);
         });
         this.textures.clear();
 
@@ -171,7 +180,6 @@ export class ResourceManager {
         // Clear mesh references
         this.meshes.clear();
 
-        console.log('✅ All resources disposed');
     }
 
     /**
@@ -191,12 +199,7 @@ export class ResourceManager {
      * Log current resource usage
      */
     logStats() {
-        const stats = this.getStats();
-        console.log('📊 Resource Manager Stats:');
-        console.log(`  📸 Textures: ${stats.textures}`);
-        console.log(`  📐 Geometries: ${stats.geometries}`);
-        console.log(`  🎨 Materials: ${stats.materials}`);
-        console.log(`  🧊 Meshes: ${stats.meshes}`);
+        // Stats available via getStats() - no console output in production
     }
 }
 

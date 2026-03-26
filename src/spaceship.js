@@ -118,11 +118,15 @@ export class Spaceship {
         const bobFreq = 2.0;
         this.mesh.position.y += Math.sin(this.time * bobFreq) * bobAmount * 0.05;
 
-        // 5. Engine Glow Pulse
-        this.mesh.traverse(child => {
-            if (child.userData.isEngine) {
-                child.material.color.setHSL(0.5, 1, 0.5 + Math.sin(this.time * 10) * 0.3);
-            }
-        });
+        // 5. Engine Glow Pulse (cache engine references on first call)
+        if (!this._engines) {
+            this._engines = [];
+            this.mesh.traverse(child => {
+                if (child.userData.isEngine) this._engines.push(child);
+            });
+        }
+        for (const engine of this._engines) {
+            engine.material.color.setHSL(0.5, 1, 0.5 + Math.sin(this.time * 10) * 0.3);
+        }
     }
 }

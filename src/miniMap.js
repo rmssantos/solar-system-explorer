@@ -13,18 +13,22 @@ export class MiniMap {
         this.ctx = null;
         this.isExpanded = false;
         
-        // Planet positions (simplified orbital distances)
-        this.planetData = [
-            { name: 'Sol', key: 'Sol', distance: 0, color: '#FFD700', size: 8 },
-            { name: 'Mercúrio', key: 'Mercurio', distance: 25, color: '#A9A9A9', size: 2 },
-            { name: 'Vénus', key: 'Venus', distance: 35, color: '#DEB887', size: 3 },
-            { name: 'Terra', key: 'Terra', distance: 45, color: '#4169E1', size: 3 },
-            { name: 'Marte', key: 'Marte', distance: 55, color: '#CD5C5C', size: 2.5 },
-            { name: 'Júpiter', key: 'Jupiter', distance: 75, color: '#DAA520', size: 6 },
-            { name: 'Saturno', key: 'Saturno', distance: 95, color: '#F4C430', size: 5, rings: true },
-            { name: 'Úrano', key: 'Urano', distance: 115, color: '#40E0D0', size: 4 },
-            { name: 'Neptuno', key: 'Neptuno', distance: 135, color: '#1E90FF', size: 4 }
-        ];
+        // Derive planet data from SOLAR_SYSTEM_DATA for consistency
+        const planetOrder = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+        const sizeMap = { sun: 8, mercury: 2, venus: 3, earth: 3, mars: 2.5, jupiter: 6, saturn: 5, uranus: 4, neptune: 4 };
+        const distMap = { sun: 0, mercury: 25, venus: 35, earth: 45, mars: 55, jupiter: 75, saturn: 95, uranus: 115, neptune: 135 };
+        this.planetData = planetOrder.map(key => {
+            const data = SOLAR_SYSTEM_DATA[key];
+            const colorHex = data?.cor ? '#' + data.cor.toString(16).padStart(6, '0') : '#888888';
+            return {
+                name: data?.nome || key,
+                key: key,
+                distance: distMap[key] || 0,
+                color: colorHex,
+                size: sizeMap[key] || 3,
+                rings: key === 'saturn'
+            };
+        });
         
         this.currentTarget = null;
         this.animationFrame = null;
@@ -325,11 +329,21 @@ export class MiniMap {
     }
 
     startAnimation() {
+        // Use a throttled rAF loop - skip frames when minimized
         const animate = () => {
-            this.draw();
+            if (!this.isMinimized) {
+                this.draw();
+            }
             this.animationFrame = requestAnimationFrame(animate);
         };
         animate();
+    }
+
+    /** Called from main animation loop to allow external throttling */
+    externalUpdate() {
+        if (!this.isMinimized) {
+            this.draw();
+        }
     }
 
     draw() {

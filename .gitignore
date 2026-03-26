@@ -28,10 +28,8 @@ npm-debug.log*
 
 # Local/dev files
 .claude/
+.local/
 Screenshot*.png
-destroyed*.jpg
-inspect.html
-escala.html
 src/assets/textures/
 
 # Duplicate mascot images (keep only PNG)

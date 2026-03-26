@@ -1,5 +1,6 @@
-// Import shared REAL_PHOTOS from main data file (avoid duplication!)
-import { REAL_PHOTOS as BASE_PHOTOS } from './objectsInfo.js';
+// Import shared data from main data file (avoid duplication!)
+// REAL_PHOTOS shared, SOLAR_SYSTEM_DATA used for numeric stats consistency
+import { REAL_PHOTOS as BASE_PHOTOS, SOLAR_SYSTEM_DATA } from './objectsInfo.js';
 
 // Extend with biblioteca-specific photos (Apollo, missions, galleries)
 const REAL_PHOTOS = {

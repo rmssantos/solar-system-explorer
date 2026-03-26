@@ -13,13 +13,21 @@ let currentCategory = 'all';
 document.addEventListener('DOMContentLoaded', () => {
     // Set initial active lang button
     setLanguage(currentLang);
-    // renderContent is called inside setLanguage
+
+    // Use addEventListener instead of inline onclick (CSP-safe)
+    document.querySelectorAll('.lang-btn[data-lang]').forEach(btn => {
+        btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+    });
+    document.querySelectorAll('.cat-tab[data-category]').forEach(btn => {
+        btn.addEventListener('click', () => showCategory(btn.dataset.category));
+    });
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.addEventListener('input', filterContent);
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
 });
 
-// Expor funções globalmente para os onclick do HTML
-window.setLanguage = setLanguage;
-window.filterContent = filterContent;
-window.showCategory = showCategory;
+// Keep window globals for dynamically generated onclick in gallery lightbox
 window.openModal = openModal;
 window.closeModal = closeModal;
 
@@ -272,13 +280,15 @@ function openModal(objectId) {
                     const caption = typeof item === 'string' ? obj.nome : (currentLang === 'en' ? (item.captionEN || item.caption) : item.caption);
                     return { src: imgUrl, caption };
                 });
-                window._currentGallery = galleryData;
+                // Store gallery data in module scope instead of global window
+                if (!window._bibliotecaState) window._bibliotecaState = {};
+                window._bibliotecaState.currentGallery = galleryData;
 
                 return `
                 <h2 class="section-title">${ui.section_gallery}</h2>
                 <div class="gallery-grid">
                     ${galleryData.map((item, index) => `
-                        <div class="gallery-item" onclick="openLightbox('${item.src}', '${item.caption.replace(/'/g, "\\'")}', window._currentGallery, ${index})" tabindex="0" role="button" aria-label="Ver ${item.caption}">
+                        <div class="gallery-item" onclick="openLightbox('${item.src}', '${item.caption.replace(/'/g, "\\'")}', window._bibliotecaState.currentGallery, ${index})" tabindex="0" role="button" aria-label="Ver ${item.caption}">
                             <img src="${item.src}" alt="${item.caption}" loading="lazy">
                         </div>
                     `).join('')}

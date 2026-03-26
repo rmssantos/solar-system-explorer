@@ -240,7 +240,7 @@ export class PhotoMode {
             <div class="gallery-container">
                 <div class="gallery-header">
                     <h2>🖼️ ${i18n.t('space_gallery')}</h2>
-                    <span class="gallery-subtitle">${i18n.t('captain')} ${this.app.playerName} - ${this.gallery.length} ${i18n.t('photos')}</span>
+                    <span class="gallery-subtitle"></span>
                     <button class="gallery-close">✕</button>
                 </div>
                 <div class="gallery-grid">
@@ -250,6 +250,10 @@ export class PhotoMode {
         `;
 
         document.body.appendChild(overlay);
+
+        // Safely set subtitle text (avoid XSS via playerName)
+        const subtitleEl = overlay.querySelector('.gallery-subtitle');
+        if (subtitleEl) subtitleEl.textContent = `${i18n.t('captain')} ${this.app.playerName} - ${this.gallery.length} ${i18n.t('photos')}`;
 
         // Event listeners
         overlay.querySelector('.gallery-close').onclick = () => {

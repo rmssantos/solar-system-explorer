@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Biblioteca do Sistema Solar</title>
     <link rel="icon" type="image/svg+xml" href="/public/favicon.svg">
     <link rel="stylesheet" href="styles/biblioteca.css">
@@ -16,12 +13,12 @@
     <div class="container">
         <!-- Language Switcher -->
         <div class="language-switcher">
-            <button class="lang-btn active" onclick="setLanguage('pt')">🇵🇹 Português</button>
-            <button class="lang-btn" onclick="setLanguage('en')">🇬🇧 English</button>
+            <button class="lang-btn active" data-lang="pt">🇵🇹 Português</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 English</button>
         </div>
 
         <a href="/" class="back-link" data-i18n="back_to_solar">← Voltar ao Sistema Solar</a>
-        
+
         <header>
             <h1 data-i18n="library_title">📚 Biblioteca do Sistema Solar</h1>
             <p class="subtitle" data-i18n="library_subtitle">Explora tudo sobre o nosso vizinhança cósmica!</p>
@@ -29,18 +26,18 @@
 
         <!-- Search Bar -->
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" data-i18n-placeholder="search_placeholder" placeholder="Procurar planetas, luas, sondas..." oninput="filterContent()">
+            <input type="text" id="searchInput" class="search-input" data-i18n-placeholder="search_placeholder" placeholder="Procurar planetas, luas, sondas...">
             <span class="search-icon">🔍</span>
         </div>
 
         <!-- Category Tabs -->
         <div class="category-tabs">
-            <button class="cat-tab active" onclick="showCategory('all')" data-i18n="cat_all">🌌 Todos</button>
-            <button class="cat-tab" onclick="showCategory('star')" data-i18n="cat_star">☀️ Estrela</button>
-            <button class="cat-tab" onclick="showCategory('planets')" data-i18n="cat_planets">🪐 Planetas</button>
-            <button class="cat-tab" onclick="showCategory('moons')" data-i18n="cat_moons">🌙 Luas</button>
-            <button class="cat-tab" onclick="showCategory('dwarfs')" data-i18n="cat_dwarfs">🔴 Anões</button>
-            <button class="cat-tab" onclick="showCategory('probes')" data-i18n="cat_probes">🛰️ Sondas</button>
+            <button class="cat-tab active" data-category="all" data-i18n="cat_all">🌌 Todos</button>
+            <button class="cat-tab" data-category="star" data-i18n="cat_star">☀️ Estrela</button>
+            <button class="cat-tab" data-category="planets" data-i18n="cat_planets">🪐 Planetas</button>
+            <button class="cat-tab" data-category="moons" data-i18n="cat_moons">🌙 Luas</button>
+            <button class="cat-tab" data-category="dwarfs" data-i18n="cat_dwarfs">🔴 Anões</button>
+            <button class="cat-tab" data-category="probes" data-i18n="cat_probes">🛰️ Sondas</button>
         </div>
 
         <!-- Content Grid -->
@@ -51,7 +48,7 @@
         <!-- Detail Modal -->
         <div id="detailModal" class="modal hidden">
             <div class="modal-content">
-                <button class="modal-close" onclick="closeModal()">✕</button>
+                <button class="modal-close" id="modal-close-btn">✕</button>
                 <div id="modalBody">
                     <!-- Dynamic content -->
                 </div>

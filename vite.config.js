@@ -13,10 +13,6 @@ export default defineConfig({
     },
     // Clear cache on every build
     cacheDir: 'node_modules/.vite_nocache',
-    // Optimize deps
-    optimizeDeps: {
-        force: true,
-    },
     // Build configuration
     build: {
         // Suppress chunk size warning (educational app with many features)
@@ -26,6 +22,7 @@ export default defineConfig({
             input: {
                 main: 'index.html',
                 biblioteca: 'biblioteca.html',
+                escala: 'escala.html',
             },
         },
     },

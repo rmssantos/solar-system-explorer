@@ -92,8 +92,6 @@ export class Toolbar {
         this.container.appendChild(this.content);
         this.container.appendChild(this.toggleBtn);
         document.body.appendChild(this.container);
-        
-        this.addStyles();
     }
     
     addButton(icon, id, title, callback) {
@@ -117,118 +115,5 @@ export class Toolbar {
     updateCollectiblesCount(current, total) {
         const el = document.getElementById('toolbar-coll-count');
         if (el) el.textContent = `${current}/${total}`;
-    }
-    
-    addStyles() {
-        const style = document.createElement('style');
-        style.id = 'toolbar-styles';
-        style.textContent = `
-            #main-toolbar {
-                position: fixed;
-                left: 0;
-                top: 50%;
-                transform: translateY(-50%);
-                z-index: 900;
-                display: flex;
-                align-items: center;
-                transition: transform 0.3s ease, opacity 0.3s ease;
-                opacity: 0.5;
-            }
-            
-            #main-toolbar:hover {
-                opacity: 1;
-            }
-            
-            #main-toolbar.collapsed {
-                transform: translateY(-50%) translateX(-48px);
-            }
-            
-            .toolbar-content {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                padding: 8px 6px;
-                background: linear-gradient(180deg, rgba(20, 25, 45, 0.95) 0%, rgba(15, 20, 35, 0.98) 100%);
-                border: 1px solid rgba(100, 150, 255, 0.2);
-                border-left: none;
-                border-radius: 0 12px 12px 0;
-                backdrop-filter: blur(12px);
-            }
-            
-            .toolbar-toggle {
-                width: 18px;
-                height: 40px;
-                background: linear-gradient(180deg, rgba(30, 40, 60, 0.95) 0%, rgba(20, 30, 50, 0.98) 100%);
-                border: 1px solid rgba(100, 150, 255, 0.2);
-                border-left: none;
-                border-radius: 0 6px 6px 0;
-                color: rgba(150, 180, 255, 0.8);
-                font-size: 1rem;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s ease;
-            }
-            
-            .toolbar-toggle:hover {
-                background: linear-gradient(180deg, rgba(50, 70, 100, 0.95) 0%, rgba(40, 60, 90, 0.98) 100%);
-                color: white;
-            }
-            
-            .toolbar-btn {
-                width: 36px;
-                height: 36px;
-                border-radius: 8px;
-                border: none;
-                background: transparent;
-                font-size: 1.3rem;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s ease;
-                filter: grayscale(20%);
-                opacity: 0.85;
-            }
-            
-            .toolbar-btn:hover {
-                transform: scale(1.2);
-                filter: grayscale(0%) drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
-                opacity: 1;
-            }
-            
-            .toolbar-btn:active {
-                transform: scale(0.95);
-            }
-            
-            /* Hide old floating buttons */
-            #photo-btn, #gallery-btn, #compare-btn,
-            .photo-btn, .gallery-btn, .compare-btn,
-            #settings-btn, .toolbar-collectibles,
-            .ui-settings-btn {
-                display: none !important;
-            }
-            
-            /* Hide when in manual navigation mode */
-            #main-toolbar.hidden-for-nav {
-                transform: translateY(-50%) translateX(-100%);
-                opacity: 0;
-                pointer-events: none;
-            }
-
-            @media (max-width: 768px) {
-                .toolbar-btn {
-                    width: 32px;
-                    height: 32px;
-                    font-size: 1rem;
-                }
-                .toolbar-content {
-                    padding: 6px 4px;
-                    gap: 3px;
-                }
-            }
-        `;
-        document.head.appendChild(style);
     }
 }

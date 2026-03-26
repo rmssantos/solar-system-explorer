@@ -56,16 +56,13 @@ export class PlanetComparator {
         compareBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Compare button clicked!');
             this.openComparator();
         });
         
         document.body.appendChild(compareBtn);
-        console.log('Compare button created and added to DOM');
     }
 
     openComparator() {
-        console.log('Opening comparator, isOpen:', this.isOpen);
         if (this.isOpen) return;
         this.isOpen = true;
 

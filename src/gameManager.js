@@ -40,7 +40,6 @@ export class GameManager {
         if (!this.visited.has(name)) {
             this.visited.add(name);
             this.saveProgress();
-            console.log(`🚀 New Discovery: ${name}!`);
             return true;
         }
         return false;
