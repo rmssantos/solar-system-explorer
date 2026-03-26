@@ -941,12 +941,16 @@ export function getTranslatedObjectData(objectName) {
     if (enData.descricao) merged.descricao = enData.descricao;
     if (enData.distanciaKm) merged.distanciaKm = enData.distanciaKm;
     
-    // Translate moons if available
+    // Translate moons if available (match by id/nome instead of array index)
     if (baseData.moons && enData.moons) {
-        merged.moons = baseData.moons.map((moon, index) => {
-            const enMoon = enData.moons[index];
+        merged.moons = baseData.moons.map((moon) => {
+            // Match by id first, then by nome (more robust than index-based)
+            const enMoon = enData.moons.find(em =>
+                (moon.id && em.id && em.id === moon.id) ||
+                (em.nome && moon.nome && em.nome.toLowerCase() === moon.nome.toLowerCase())
+            );
             if (!enMoon) return moon;
-            
+
             return {
                 ...moon,
                 nome: enMoon.nome || moon.nome,

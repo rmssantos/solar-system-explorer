@@ -23,11 +23,13 @@ export class MissionSystem {
         // Check if active mission target was already visited
         this.checkAlreadyVisitedMissions();
 
-        // Debug helper
-        window.resetMissions = () => {
-            storage.removeItem('missions');
-            location.reload();
-        };
+        // Debug helper (only in development)
+        if (import.meta.env?.DEV) {
+            window.resetMissions = () => {
+                storage.removeItem('missions');
+                location.reload();
+            };
+        }
     }
 
     // Check all missions to see if any targets were already visited before
@@ -52,7 +54,6 @@ export class MissionSystem {
             if (this.gameManager.isVisited && this.gameManager.isVisited(mission.target)) {
                 this.completedMissions.add(mission.id);
                 hasChanges = true;
-                console.log(`✅ Missão "${mission.title}" auto-completada (${mission.target} já visitado)`);
             }
         }
 
@@ -292,7 +293,6 @@ export class MissionSystem {
             }
             // If saved active IS completed, it will be corrected by validateState()
 
-            console.log(`📋 Missões carregadas: ${this.completedMissions.size} completadas`);
         }
 
         // Validate state to ensure consistency
@@ -309,7 +309,6 @@ export class MissionSystem {
             if (nextMission) {
                 this.activeMission = nextMission;
                 this.saveProgress();
-                console.log(`🔧 Corrigido para: ${nextMission.title}`);
             } else {
                 this.activeMission = null; // No more missions
             }
@@ -386,29 +385,27 @@ export class MissionSystem {
         });
     }
 
-    // Get translated mission title
+    // Get translated mission title (i18n is the single source of truth)
     getMissionTitle(mission) {
         const key = `mission_${mission.id}_title`;
         const translated = i18n.t(key);
-        // If no translation, use the original (remove emoji prefix)
-        if (translated === key) {
-            return mission.title.split(' ').slice(1).join(' ');
-        }
-        return translated.replace(/^[^\s]+ /, ''); // Remove emoji
+        if (translated !== key) return translated.replace(/^[^\s]+ /, ''); // Remove emoji
+        // Fallback: strip emoji from hardcoded title
+        return mission.title.split(' ').slice(1).join(' ');
     }
 
     // Get translated mission description
     getMissionDesc(mission) {
         const key = `mission_${mission.id}_desc`;
         const translated = i18n.t(key);
-        return translated === key ? mission.description : translated;
+        return translated !== key ? translated : mission.description;
     }
 
     // Get translated mission hint
     getMissionHint(mission) {
         const key = `mission_${mission.id}_hint`;
         const translated = i18n.t(key);
-        return translated === key ? mission.hint : translated;
+        return translated !== key ? translated : mission.hint;
     }
 
     checkMissionComplete(planetName) {
@@ -422,7 +419,6 @@ export class MissionSystem {
             if (mission.target === planetName) {
                 this.completedMissions.add(mission.id);
                 completedMission = mission;
-                console.log(`✅ Missão completada: ${mission.title}`);
                 break; // Only complete one mission at a time
             }
         }
@@ -430,7 +426,6 @@ export class MissionSystem {
         if (completedMission) {
             // Update active mission to next uncompleted
             this.activeMission = this.getNextMission();
-            console.log(`🎯 Nova missão ativa: ${this.activeMission?.title || 'Nenhuma'} (ID: ${this.activeMission?.id})`);
             this.saveProgress();
             this.updateMissionUI();
 

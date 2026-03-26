@@ -303,7 +303,8 @@ export class CameraControls {
             this.followingObject.getWorldPosition(worldPos);
             this.target.lerp(worldPos, 0.1);
         } else {
-            this.target.lerp(new THREE.Vector3(0, 0, 0), 0.1);
+            if (!this._origin) this._origin = new THREE.Vector3();
+            this.target.lerp(this._origin, 0.1);
         }
 
         const x = this.orbitRadius * Math.sin(this.phi) * Math.cos(this.theta);

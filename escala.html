@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Solar - Escalas e Distâncias</title>
+    <link rel="icon" type="image/svg+xml" href="/public/favicon.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a20 0%, #1a1a3a 50%, #0a0a20 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.9), transparent),
+                radial-gradient(1px 1px at 230px 80px, #fff, transparent),
+                radial-gradient(2px 2px at 300px 150px, rgba(255,255,255,0.7), transparent);
+            background-size: 350px 200px;
+            animation: twinkle 5s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ffd700, #ff8c00, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #4fc3f7;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: #81d4fa;
+        }
+
+        .formulas-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .formulas-section h2 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .formula-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .formula-table th, .formula-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .formula-table th {
+            background: rgba(79, 195, 247, 0.2);
+            color: #4fc3f7;
+        }
+
+        .formula-table code {
+            background: rgba(0,0,0,0.3);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            color: #81c784;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .section h2 .emoji {
+            font-size: 1.8rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        th {
+            background: rgba(255,255,255,0.08);
+            font-weight: 600;
+            color: #ffd700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .number {
+            font-family: 'Consolas', monospace;
+            color: #81c784;
+        }
+
+        .planet-name {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .planet-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .sun { background: radial-gradient(circle, #ffd700, #ff8c00); box-shadow: 0 0 10px #ffd700; }
+        .mercury { background: radial-gradient(circle, #b0b0b0, #707070); }
+        .venus { background: radial-gradient(circle, #e6c87a, #c4a35a); }
+        .earth { background: radial-gradient(circle, #4a90d9, #2d5a87); }
+        .mars { background: radial-gradient(circle, #d4622a, #8b3a1a); }
+        .jupiter { background: radial-gradient(circle, #d4a574, #8b6914); }
+        .saturn { background: radial-gradient(circle, #f4d59e, #c4a35a); }
+        .uranus { background: radial-gradient(circle, #7de3f4, #4a9ea8); }
+        .neptune { background: radial-gradient(circle, #3d5ef5, #1a2a87); }
+        .pluto { background: radial-gradient(circle, #d4c4a8, #8b7355); }
+        .dwarf { background: radial-gradient(circle, #909090, #505050); }
+        .moon { background: radial-gradient(circle, #c0c0c0, #808080); }
+        .probe { background: linear-gradient(135deg, #808080, #404040); border-radius: 3px; }
+
+        .multiplier {
+            color: #ff9800;
+            font-size: 0.85rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .summary-card .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4fc3f7;
+        }
+
+        .summary-card .label {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .asteroid-belt-visual {
+            height: 30px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(139, 90, 43, 0.3) 15%, 
+                rgba(139, 90, 43, 0.6) 30%, 
+                rgba(139, 90, 43, 0.6) 70%, 
+                rgba(139, 90, 43, 0.3) 85%, 
+                transparent 100%);
+            border-radius: 5px;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .asteroid-belt-visual::before {
+            content: '🪨 Cinturão de Asteroides 🪨';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #4fc3f7, #2196f3);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    
+    <div class="container">
+        <a href="/" class="back-link">← Voltar ao Sistema Solar</a>
+        
+        <h1>🌌 Escalas e Distâncias do Sistema Solar</h1>
+        <p class="subtitle">Comparação entre valores reais e valores na aplicação</p>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="value">8</div>
+                <div class="label">Planetas</div>
+            </div>
+            <div class="summary-card">
+                <div class="value">5</div>
+                <div class="label">Planetas Anões</div>
+            </div>
+            <div class="summary-card">
+                <div class="value">18</div>
+                <div class="label">Luas</div>
+            </div>
+            <div class="summary-card">
+                <div class="value">8</div>
+                <div class="label">Sondas/Estações</div>
+            </div>
+            <div class="summary-card">
+                <div class="value">×20</div>
+                <div class="label">Escala Modo Manual</div>
+            </div>
+        </div>
+
+        <!-- Realism Analysis -->
+        <div class="formulas-section" style="border-color: rgba(255, 152, 0, 0.3); background: rgba(255, 152, 0, 0.05);">
+            <h2 style="color: #ff9800;">⚠️ Análise de Realismo</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Comparação entre proporções reais e proporções na app. O <strong>Modo Exploração</strong> é "agradável" (planetas grandes para serem visíveis).
+                O <strong>Modo Manual</strong> tenta ser mais realista mas ainda não é 100% fiel.
+            </p>
+            <table class="formula-table">
+                <tr>
+                    <th>Comparação</th>
+                    <th>Realidade</th>
+                    <th>Modo Exploração</th>
+                    <th>Modo Manual</th>
+                    <th>Análise</th>
+                </tr>
+                <tr>
+                    <td>Sol vs Júpiter (tamanho)</td>
+                    <td class="number">Sol 10× maior</td>
+                    <td class="number">Sol 0,25× menor ❌</td>
+                    <td class="number">Sol 10× maior ✅</td>
+                    <td style="color: #81c784;">Manual correto!</td>
+                </tr>
+                <tr>
+                    <td>Sol vs Terra (tamanho)</td>
+                    <td class="number">Sol 109× maior</td>
+                    <td class="number">Sol 2,7× maior ❌</td>
+                    <td class="number">Sol 22× maior ⚠️</td>
+                    <td style="color: #ff9800;">Manual 5× inflado</td>
+                </tr>
+                <tr>
+                    <td>Sol vs Mercúrio (tamanho)</td>
+                    <td class="number">Sol 285× maior</td>
+                    <td class="number">Sol 7× maior ❌</td>
+                    <td class="number">Sol 36× maior ⚠️</td>
+                    <td style="color: #ff9800;">Manual 8× inflado</td>
+                </tr>
+                <tr>
+                    <td>Terra vs Neptuno (distância)</td>
+                    <td class="number">Neptuno 30× mais longe</td>
+                    <td class="number">30× mais longe ✅</td>
+                    <td class="number">30× mais longe ✅</td>
+                    <td style="color: #81c784;">Distâncias corretas!</td>
+                </tr>
+            </table>
+            <p style="color: #888; margin-top: 15px; font-size: 0.9rem;">
+                💡 <strong>Nota:</strong> As distâncias são proporcionais à realidade em ambos os modos. 
+                Os tamanhos no Modo Exploração são exagerados de propósito para jogabilidade.
+                O Modo Manual corrige os gigantes gasosos mas mantém planetas rochosos maiores para visibilidade.
+            </p>
+        </div>
+
+        <!-- Formulas Section -->
+        <div class="formulas-section">
+            <h2>📐 Fórmulas de Escala</h2>
+            <table class="formula-table">
+                <tr>
+                    <th>Modo</th>
+                    <th>Objetivo</th>
+                    <th>Distância (unidades)</th>
+                    <th>Tamanho</th>
+                </tr>
+                <tr>
+                    <td><strong>Exploração</strong><br><span style="color:#81c784;font-size:0.85rem;">🎮 Agradável</span></td>
+                    <td style="color:#aaa;">Planetas grandes e fáceis de ver. Proporções sacrificadas por jogabilidade.</td>
+                    <td><code>distância(M km) × 2</code></td>
+                    <td>
+                        Sol: <code>raio × 0.000025</code><br>
+                        Planetas: <code>raio × 0.001</code><br>
+                        Anões: <code>raio × 0.002</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Manual</strong><br><span style="color:#4fc3f7;font-size:0.85rem;">🚀 Mais Realista</span></td>
+                    <td style="color:#aaa;">Proporções mais realistas. Gigantes gasosos reduzidos, Sol aumentado.</td>
+                    <td><code>distância × 2 × 20</code></td>
+                    <td><code>tamanho_exploração × 20 × realisticScale</code></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('planets')">🪐 Planetas</button>
+            <button class="tab" onclick="showTab('moons')">🌙 Luas</button>
+            <button class="tab" onclick="showTab('dwarfs')">🔴 Planetas Anões</button>
+            <button class="tab" onclick="showTab('probes')">🛰️ Sondas</button>
+            <button class="tab" onclick="showTab('multipliers')">🔢 Multiplicadores</button>
+            <button class="tab" onclick="showTab('realism')">📊 Análise Realismo</button>
+        </div>
+
+        <!-- Planets Tab -->
+        <div id="planets" class="tab-content active">
+            <div class="section">
+                <h2><span class="emoji">☀️</span> Sol</h2>
+                <table>
+                    <tr>
+                        <th>Propriedade</th>
+                        <th>Valor Real</th>
+                        <th>Modo Exploração</th>
+                        <th>Modo Manual</th>
+                    </tr>
+                    <tr>
+                        <td>Raio</td>
+                        <td class="number">696.340 km</td>
+                        <td class="number">17,4 unidades</td>
+                        <td class="number">1.393 unidades <span class="multiplier">(×4,0)</span></td>
+                    </tr>
+                    <tr>
+                        <td>Distância ao centro</td>
+                        <td class="number">0 km</td>
+                        <td class="number">0</td>
+                        <td class="number">0</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2><span class="emoji">🪐</span> Planetas</h2>
+                <table>
+                    <tr>
+                        <th>Planeta</th>
+                        <th>Distância Real</th>
+                        <th>Dist. Exploração</th>
+                        <th>Dist. Manual</th>
+                        <th>Raio Real</th>
+                        <th>Raio Exploração</th>
+                        <th>Raio Manual</th>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon mercury"></span> Mercúrio</td>
+                        <td class="number">58 M km</td>
+                        <td class="number">116</td>
+                        <td class="number">2.320</td>
+                        <td class="number">2.439 km</td>
+                        <td class="number">2,4</td>
+                        <td class="number">38,9 <span class="multiplier">(×0,8)</span></td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon venus"></span> Vénus</td>
+                        <td class="number">108 M km</td>
+                        <td class="number">216</td>
+                        <td class="number">4.320</td>
+                        <td class="number">6.051 km</td>
+                        <td class="number">6,1</td>
+                        <td class="number">60,5 <span class="multiplier">(×0,5)</span></td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon earth"></span> Terra</td>
+                        <td class="number">150 M km</td>
+                        <td class="number">300</td>
+                        <td class="number">6.000</td>
+                        <td class="number">6.371 km</td>
+                        <td class="number">6,4</td>
+                        <td class="number">63,7 <span class="multiplier">(×0,5)</span></td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon mars"></span> Marte</td>
+                        <td class="number">228 M km</td>
+                        <td class="number">456</td>
+                        <td class="number">9.120</td>
+                        <td class="number">3.389 km</td>
+                        <td class="number">3,4</td>
+                        <td class="number">40,7 <span class="multiplier">(×0,6)</span></td>
+                    </tr>
+                </table>
+
+                <div class="asteroid-belt-visual"></div>
+
+                <table>
+                    <tr>
+                        <th>Planeta</th>
+                        <th>Distância Real</th>
+                        <th>Dist. Exploração</th>
+                        <th>Dist. Manual</th>
+                        <th>Raio Real</th>
+                        <th>Raio Exploração</th>
+                        <th>Raio Manual</th>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon jupiter"></span> Júpiter</td>
+                        <td class="number">778 M km</td>
+                        <td class="number">1.556</td>
+                        <td class="number">31.120</td>
+                        <td class="number">69.911 km</td>
+                        <td class="number">69,9</td>
+                        <td class="number">139,8 <span class="multiplier">(×0,1)</span></td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon saturn"></span> Saturno</td>
+                        <td class="number">1.427 M km</td>
+                        <td class="number">2.854</td>
+                        <td class="number">57.080</td>
+                        <td class="number">58.232 km</td>
+                        <td class="number">58,2</td>
+                        <td class="number">116,5 <span class="multiplier">(×0,1)</span></td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon uranus"></span> Úrano</td>
+                        <td class="number">2.871 M km</td>
+                        <td class="number">5.742</td>
+                        <td class="number">114.840</td>
+                        <td class="number">25.362 km</td>
+                        <td class="number">25,4</td>
+                        <td class="number">76,1 <span class="multiplier">(×0,15)</span></td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon neptune"></span> Neptuno</td>
+                        <td class="number">4.498 M km</td>
+                        <td class="number">8.996</td>
+                        <td class="number">179.920</td>
+                        <td class="number">24.622 km</td>
+                        <td class="number">24,6</td>
+                        <td class="number">73,9 <span class="multiplier">(×0,15)</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Moons Tab -->
+        <div id="moons" class="tab-content">
+            <div class="section">
+                <h2><span class="emoji">🌙</span> Luas</h2>
+                <table>
+                    <tr>
+                        <th>Lua</th>
+                        <th>Planeta</th>
+                        <th>Distância ao Planeta</th>
+                        <th>Raio Real</th>
+                        <th>Raio Exploração</th>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Lua</td>
+                        <td>Terra</td>
+                        <td class="number">384.400 km</td>
+                        <td class="number">1.737 km</td>
+                        <td class="number">1,7</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Fobos</td>
+                        <td>Marte</td>
+                        <td class="number">9.376 km</td>
+                        <td class="number">11 km</td>
+                        <td class="number">0,011</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Deimos</td>
+                        <td>Marte</td>
+                        <td class="number">23.460 km</td>
+                        <td class="number">6 km</td>
+                        <td class="number">0,006</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Io</td>
+                        <td>Júpiter</td>
+                        <td class="number">421.700 km</td>
+                        <td class="number">1.821 km</td>
+                        <td class="number">1,8</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Europa</td>
+                        <td>Júpiter</td>
+                        <td class="number">670.900 km</td>
+                        <td class="number">1.560 km</td>
+                        <td class="number">1,6</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Ganimedes</td>
+                        <td>Júpiter</td>
+                        <td class="number">1.070.400 km</td>
+                        <td class="number">2.634 km</td>
+                        <td class="number">2,6</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Calisto</td>
+                        <td>Júpiter</td>
+                        <td class="number">1.882.700 km</td>
+                        <td class="number">2.410 km</td>
+                        <td class="number">2,4</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Mimas</td>
+                        <td>Saturno</td>
+                        <td class="number">185.520 km</td>
+                        <td class="number">198 km</td>
+                        <td class="number">0,2</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Encélado</td>
+                        <td>Saturno</td>
+                        <td class="number">238.020 km</td>
+                        <td class="number">252 km</td>
+                        <td class="number">0,25</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Tétis</td>
+                        <td>Saturno</td>
+                        <td class="number">294.660 km</td>
+                        <td class="number">531 km</td>
+                        <td class="number">0,53</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Dione</td>
+                        <td>Saturno</td>
+                        <td class="number">377.400 km</td>
+                        <td class="number">561 km</td>
+                        <td class="number">0,56</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Reia</td>
+                        <td>Saturno</td>
+                        <td class="number">527.040 km</td>
+                        <td class="number">763 km</td>
+                        <td class="number">0,76</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Titã</td>
+                        <td>Saturno</td>
+                        <td class="number">1.221.850 km</td>
+                        <td class="number">2.574 km</td>
+                        <td class="number">2,6</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Miranda</td>
+                        <td>Úrano</td>
+                        <td class="number">129.900 km</td>
+                        <td class="number">235 km</td>
+                        <td class="number">0,24</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Ariel</td>
+                        <td>Úrano</td>
+                        <td class="number">190.900 km</td>
+                        <td class="number">579 km</td>
+                        <td class="number">0,58</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Titânia</td>
+                        <td>Úrano</td>
+                        <td class="number">436.300 km</td>
+                        <td class="number">788 km</td>
+                        <td class="number">0,79</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Tritão</td>
+                        <td>Neptuno</td>
+                        <td class="number">354.760 km</td>
+                        <td class="number">1.353 km</td>
+                        <td class="number">1,4</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Caronte</td>
+                        <td>Plutão</td>
+                        <td class="number">19.600 km</td>
+                        <td class="number">606 km</td>
+                        <td class="number">1,2</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Disnomia</td>
+                        <td>Éris</td>
+                        <td class="number">37.350 km</td>
+                        <td class="number">350 km</td>
+                        <td class="number">0,7</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Dwarf Planets Tab -->
+        <div id="dwarfs" class="tab-content">
+            <div class="section">
+                <h2><span class="emoji">🔴</span> Planetas Anões</h2>
+                <table>
+                    <tr>
+                        <th>Planeta Anão</th>
+                        <th>Distância Real</th>
+                        <th>Dist. Exploração</th>
+                        <th>Dist. Manual</th>
+                        <th>Raio Real</th>
+                        <th>Raio Exploração (×0,002)</th>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon dwarf"></span> Ceres</td>
+                        <td class="number">414 M km</td>
+                        <td class="number">828</td>
+                        <td class="number">16.560</td>
+                        <td class="number">473 km</td>
+                        <td class="number">0,95</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon pluto"></span> Plutão</td>
+                        <td class="number">5.906 M km</td>
+                        <td class="number">11.812</td>
+                        <td class="number">236.240</td>
+                        <td class="number">1.188 km</td>
+                        <td class="number">2,4</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon dwarf"></span> Haumea</td>
+                        <td class="number">6.452 M km</td>
+                        <td class="number">12.904</td>
+                        <td class="number">258.080</td>
+                        <td class="number">816 km</td>
+                        <td class="number">1,6</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon dwarf"></span> Makemake</td>
+                        <td class="number">6.850 M km</td>
+                        <td class="number">13.700</td>
+                        <td class="number">274.000</td>
+                        <td class="number">715 km</td>
+                        <td class="number">1,4</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon dwarf"></span> Éris</td>
+                        <td class="number">10.125 M km</td>
+                        <td class="number">20.250</td>
+                        <td class="number">405.000</td>
+                        <td class="number">1.163 km</td>
+                        <td class="number">2,3</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2><span class="emoji">🪨</span> Cinturão de Asteroides</h2>
+                <table>
+                    <tr>
+                        <th>Propriedade</th>
+                        <th>Valor Real</th>
+                        <th>Valor na App</th>
+                    </tr>
+                    <tr>
+                        <td>Distância interior</td>
+                        <td class="number">~330 M km</td>
+                        <td class="number">550 unidades</td>
+                    </tr>
+                    <tr>
+                        <td>Distância exterior</td>
+                        <td class="number">~480 M km</td>
+                        <td class="number">1.050 unidades</td>
+                    </tr>
+                    <tr>
+                        <td>Localização</td>
+                        <td>Entre Marte e Júpiter</td>
+                        <td>✅ Correto</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Probes Tab -->
+        <div id="probes" class="tab-content">
+            <div class="section">
+                <h2><span class="emoji">🛰️</span> Sondas e Estações Espaciais</h2>
+                <table>
+                    <tr>
+                        <th>Objeto</th>
+                        <th>Tipo</th>
+                        <th>Distância Aproximada</th>
+                        <th>Notas</th>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon probe"></span> Voyager 1</td>
+                        <td>Sonda Espacial</td>
+                        <td class="number">24 mil milhões km</td>
+                        <td>Objeto humano mais distante</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon probe"></span> Voyager 2</td>
+                        <td>Sonda Espacial</td>
+                        <td class="number">20 mil milhões km</td>
+                        <td>Única a visitar 4 planetas gigantes</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon probe"></span> Pioneer 10</td>
+                        <td>Sonda Espacial</td>
+                        <td class="number">18 mil milhões km</td>
+                        <td>Primeiro a cruzar asteroides</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon probe"></span> New Horizons</td>
+                        <td>Sonda Espacial</td>
+                        <td class="number">8 mil milhões km</td>
+                        <td>Fotografou Plutão de perto</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon probe"></span> Juno</td>
+                        <td>Sonda Espacial</td>
+                        <td class="number">778 milhões km</td>
+                        <td>Em órbita de Júpiter</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon probe"></span> Cassini</td>
+                        <td>Sonda Espacial</td>
+                        <td class="number">1,4 mil milhões km</td>
+                        <td>Estudou Saturno 13 anos</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon probe"></span> ISS</td>
+                        <td>Estação Espacial</td>
+                        <td class="number">408 km</td>
+                        <td>Orbita a Terra</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon probe"></span> Hubble</td>
+                        <td>Telescópio Espacial</td>
+                        <td class="number">547 km</td>
+                        <td>Orbita a Terra</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2><span class="emoji">🛸</span> Easter Egg</h2>
+                <table>
+                    <tr>
+                        <th>Objeto</th>
+                        <th>Localização</th>
+                        <th>Dica</th>
+                    </tr>
+                    <tr>
+                        <td class="planet-name">🛸 OVNI</td>
+                        <td>Perto da Terra</td>
+                        <td>Procura bem perto do nosso planeta... 👽</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Multipliers Tab -->
+        <div id="multipliers" class="tab-content">
+            <div class="section">
+                <h2><span class="emoji">🔢</span> Multiplicadores do Modo Manual (realisticScales)</h2>
+                <p style="color: #aaa; margin-bottom: 20px;">
+                    O Modo Manual aplica estes multiplicadores para corrigir proporções visuais entre o Sol e os planetas.
+                    <br>Base: <code style="background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 4px; color: #81c784;">solarSystemScaleMultiplier = 20</code>
+                </p>
+                <table>
+                    <tr>
+                        <th>Objeto</th>
+                        <th>Multiplicador</th>
+                        <th>Explicação</th>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon sun"></span> Sol</td>
+                        <td class="number">4,0×</td>
+                        <td>Compensar escala artificialmente reduzida</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon jupiter"></span> Júpiter</td>
+                        <td class="number">0,1×</td>
+                        <td>Reduzir para proporção realista com Sol</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon saturn"></span> Saturno</td>
+                        <td class="number">0,1×</td>
+                        <td>Reduzir para proporção realista com Sol</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon uranus"></span> Úrano</td>
+                        <td class="number">0,15×</td>
+                        <td>Reduzir para proporção realista</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon neptune"></span> Neptuno</td>
+                        <td class="number">0,15×</td>
+                        <td>Reduzir para proporção realista</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon earth"></span> Terra</td>
+                        <td class="number">0,5×</td>
+                        <td>Manter visível mas proporcional</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon venus"></span> Vénus</td>
+                        <td class="number">0,5×</td>
+                        <td>Similar à Terra</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon mars"></span> Marte</td>
+                        <td class="number">0,6×</td>
+                        <td>Ligeiramente maior que Terra/Vénus</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon mercury"></span> Mercúrio</td>
+                        <td class="number">0,8×</td>
+                        <td>Menor redução (já é pequeno)</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Lua</td>
+                        <td class="number">0,5×</td>
+                        <td>Proporcional à Terra</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Io, Europa</td>
+                        <td class="number">0,15×</td>
+                        <td>Luas galileanas</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Ganimedes, Calisto</td>
+                        <td class="number">0,12×</td>
+                        <td>Luas galileanas grandes</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Titã</td>
+                        <td class="number">0,15×</td>
+                        <td>Maior lua de Saturno</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Mimas, Encélado</td>
+                        <td class="number">0,3×</td>
+                        <td>Luas pequenas de Saturno</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Tritão</td>
+                        <td class="number">0,2×</td>
+                        <td>Lua de Neptuno</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon moon"></span> Fobos, Deimos</td>
+                        <td class="number">0,5×</td>
+                        <td>Luas de Marte</td>
+                    </tr>
+                    <tr>
+                        <td>Outros</td>
+                        <td class="number">0,5× (default)</td>
+                        <td>Valor padrão para objetos não listados</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Realism Analysis Tab -->
+        <div id="realism" class="tab-content">
+            <div class="section">
+                <h2><span class="emoji">📊</span> Análise Detalhada de Realismo</h2>
+                
+                <h3 style="color: #4fc3f7; margin: 20px 0 15px;">Proporções de Tamanho (Raios)</h3>
+                <table>
+                    <tr>
+                        <th>Objeto</th>
+                        <th>Raio Real (km)</th>
+                        <th>Proporção Real vs Sol</th>
+                        <th>Exploração</th>
+                        <th>Manual</th>
+                        <th>Precisão Manual</th>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon sun"></span> Sol</td>
+                        <td class="number">696.340</td>
+                        <td class="number">1× (referência)</td>
+                        <td class="number">17,4</td>
+                        <td class="number">1.394</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon jupiter"></span> Júpiter</td>
+                        <td class="number">69.911</td>
+                        <td class="number">Sol 10× maior</td>
+                        <td class="number">69,9</td>
+                        <td class="number">139,8</td>
+                        <td style="color: #81c784;">✅ Sol 10× maior</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon saturn"></span> Saturno</td>
+                        <td class="number">58.232</td>
+                        <td class="number">Sol 12× maior</td>
+                        <td class="number">58,2</td>
+                        <td class="number">116,5</td>
+                        <td style="color: #81c784;">✅ Sol 12× maior</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon uranus"></span> Úrano</td>
+                        <td class="number">25.362</td>
+                        <td class="number">Sol 27× maior</td>
+                        <td class="number">25,4</td>
+                        <td class="number">76,1</td>
+                        <td style="color: #81c784;">✅ Sol 18× maior</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon neptune"></span> Neptuno</td>
+                        <td class="number">24.622</td>
+                        <td class="number">Sol 28× maior</td>
+                        <td class="number">24,6</td>
+                        <td class="number">73,9</td>
+                        <td style="color: #81c784;">✅ Sol 19× maior</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon earth"></span> Terra</td>
+                        <td class="number">6.371</td>
+                        <td class="number">Sol 109× maior</td>
+                        <td class="number">6,4</td>
+                        <td class="number">63,7</td>
+                        <td style="color: #ff9800;">⚠️ Sol 22× maior (5× inflado)</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon venus"></span> Vénus</td>
+                        <td class="number">6.051</td>
+                        <td class="number">Sol 115× maior</td>
+                        <td class="number">6,1</td>
+                        <td class="number">60,5</td>
+                        <td style="color: #ff9800;">⚠️ Sol 23× maior (5× inflado)</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon mars"></span> Marte</td>
+                        <td class="number">3.389</td>
+                        <td class="number">Sol 205× maior</td>
+                        <td class="number">3,4</td>
+                        <td class="number">40,7</td>
+                        <td style="color: #ff9800;">⚠️ Sol 34× maior (6× inflado)</td>
+                    </tr>
+                    <tr>
+                        <td class="planet-name"><span class="planet-icon mercury"></span> Mercúrio</td>
+                        <td class="number">2.439</td>
+                        <td class="number">Sol 285× maior</td>
+                        <td class="number">2,4</td>
+                        <td class="number">39,0</td>
+                        <td style="color: #ff9800;">⚠️ Sol 36× maior (8× inflado)</td>
+                    </tr>
+                </table>
+
+                <h3 style="color: #4fc3f7; margin: 30px 0 15px;">Proporções de Distância</h3>
+                <table>
+                    <tr>
+                        <th>Comparação</th>
+                        <th>Distância Real</th>
+                        <th>Proporção Real</th>
+                        <th>Exploração</th>
+                        <th>Manual</th>
+                        <th>Precisão</th>
+                    </tr>
+                    <tr>
+                        <td>Mercúrio → Terra</td>
+                        <td class="number">58 → 150 M km</td>
+                        <td class="number">Terra 2,6× mais longe</td>
+                        <td class="number">116 → 300</td>
+                        <td class="number">2.320 → 6.000</td>
+                        <td style="color: #81c784;">✅ 2,6× (correto)</td>
+                    </tr>
+                    <tr>
+                        <td>Terra → Marte</td>
+                        <td class="number">150 → 228 M km</td>
+                        <td class="number">Marte 1,5× mais longe</td>
+                        <td class="number">300 → 456</td>
+                        <td class="number">6.000 → 9.120</td>
+                        <td style="color: #81c784;">✅ 1,5× (correto)</td>
+                    </tr>
+                    <tr>
+                        <td>Terra → Júpiter</td>
+                        <td class="number">150 → 778 M km</td>
+                        <td class="number">Júpiter 5,2× mais longe</td>
+                        <td class="number">300 → 1.556</td>
+                        <td class="number">6.000 → 31.120</td>
+                        <td style="color: #81c784;">✅ 5,2× (correto)</td>
+                    </tr>
+                    <tr>
+                        <td>Terra → Neptuno</td>
+                        <td class="number">150 → 4.498 M km</td>
+                        <td class="number">Neptuno 30× mais longe</td>
+                        <td class="number">300 → 8.996</td>
+                        <td class="number">6.000 → 179.920</td>
+                        <td style="color: #81c784;">✅ 30× (correto)</td>
+                    </tr>
+                    <tr>
+                        <td>Terra → Plutão</td>
+                        <td class="number">150 → 5.906 M km</td>
+                        <td class="number">Plutão 39× mais longe</td>
+                        <td class="number">300 → 11.812</td>
+                        <td class="number">6.000 → 236.240</td>
+                        <td style="color: #81c784;">✅ 39× (correto)</td>
+                    </tr>
+                </table>
+
+                <h3 style="color: #4fc3f7; margin: 30px 0 15px;">Resumo</h3>
+                <div class="summary-grid" style="margin-top: 15px;">
+                    <div class="summary-card" style="border-color: rgba(129, 199, 132, 0.3);">
+                        <div class="value" style="color: #81c784;">✅</div>
+                        <div class="label">Distâncias são proporcionais em ambos os modos</div>
+                    </div>
+                    <div class="summary-card" style="border-color: rgba(129, 199, 132, 0.3);">
+                        <div class="value" style="color: #81c784;">✅</div>
+                        <div class="label">Gigantes gasosos corretos no Modo Manual</div>
+                    </div>
+                    <div class="summary-card" style="border-color: rgba(255, 152, 0, 0.3);">
+                        <div class="value" style="color: #ff9800;">⚠️</div>
+                        <div class="label">Planetas rochosos 5-8× inflados no Manual</div>
+                    </div>
+                    <div class="summary-card" style="border-color: rgba(100, 181, 246, 0.3);">
+                        <div class="value" style="color: #64b5f6;">💡</div>
+                        <div class="label">Inflação intencional para visibilidade</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 10px; margin-top: 25px;">
+                    <h4 style="color: #ffd700; margin-bottom: 10px;">🎯 Porque não é 100% realista?</h4>
+                    <p style="color: #aaa; line-height: 1.6;">
+                        Se os planetas rochosos (Terra, Marte, Mercúrio, Vénus) tivessem tamanhos realistas 
+                        em comparação com o Sol, seriam <strong>praticamente invisíveis</strong> no ecrã!
+                        <br><br>
+                        Por exemplo, se o Sol tiver 1.394 unidades de raio, a Terra deveria ter apenas 
+                        <strong>12,8 unidades</strong> (em vez das 63,7 atuais) - seria um ponto minúsculo difícil de ver e clicar.
+                        <br><br>
+                        O <strong>Modo Manual</strong> faz um compromisso: corrige os gigantes gasosos (Júpiter, Saturno) 
+                        que eram desproporcionalmente grandes, mas mantém os planetas pequenos inflados para 
+                        que o Gonçalo consiga vê-los e interagir com eles! 🚀
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <strong>M km</strong> = Milhões de quilómetros
+            </div>
+            <div class="legend-item">
+                <strong>Unidades</strong> = Unidades do Three.js na aplicação
+            </div>
+            <div class="legend-item">
+                <span class="multiplier">(×0,5)</span> = Multiplicador realisticScales
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            // Show selected
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

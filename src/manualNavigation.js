@@ -1267,38 +1267,68 @@ export class ManualNavigation {
     }
     
     initEventListeners() {
-        // Keyboard - use capture phase to intercept before other handlers
-        document.addEventListener('keydown', (e) => this.onKeyDown(e), true);
-        document.addEventListener('keyup', (e) => this.onKeyUp(e), true);
-        
-        // Mouse
-        document.addEventListener('mousemove', (e) => this.onMouseMove(e));
-        document.addEventListener('pointerlockchange', () => this.onPointerLockChange());
-        document.addEventListener('pointerlockerror', () => this.onPointerLockError());
-
-        // Mouse look with left-click drag (consistent with exploration mode)
-        document.addEventListener('mousedown', (e) => this.onMouseDown(e));
-        document.addEventListener('mouseup', (e) => this.onMouseUp(e));
-
-        // Click to close info panel (use "I" key to open info)
-        document.addEventListener('click', (e) => this.onClickInteract(e));
-
-        // Prevent context menu when using fallback mouse look
-        document.addEventListener('contextmenu', (e) => {
+        // Store bound references so we can remove them later
+        this._boundKeyDown = (e) => {
+            // Handle M key toggle (with input guard)
+            if (e.key.toLowerCase() === 'm' && !e.ctrlKey && !e.altKey && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                this.toggle();
+                return;
+            }
+            this.onKeyDown(e);
+        };
+        this._boundKeyUp = (e) => this.onKeyUp(e);
+        this._boundMouseMove = (e) => this.onMouseMove(e);
+        this._boundPointerLockChange = () => this.onPointerLockChange();
+        this._boundPointerLockError = () => this.onPointerLockError();
+        this._boundMouseDown = (e) => this.onMouseDown(e);
+        this._boundMouseUp = (e) => this.onMouseUp(e);
+        this._boundClick = (e) => this.onClickInteract(e);
+        this._boundContextMenu = (e) => {
             if (this.enabled && !this.isTouchDevice) {
                 e.preventDefault();
             }
-        });
+        };
 
-        // Toggle with M key
-        document.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'm' && !e.ctrlKey && !e.altKey) {
-                this.toggle();
-            }
-        });
-        
+        // Keyboard - use capture phase to intercept before other handlers
+        document.addEventListener('keydown', this._boundKeyDown, true);
+        document.addEventListener('keyup', this._boundKeyUp, true);
+
+        // Mouse
+        document.addEventListener('mousemove', this._boundMouseMove);
+        document.addEventListener('pointerlockchange', this._boundPointerLockChange);
+        document.addEventListener('pointerlockerror', this._boundPointerLockError);
+
+        // Mouse look with left-click drag (consistent with exploration mode)
+        document.addEventListener('mousedown', this._boundMouseDown);
+        document.addEventListener('mouseup', this._boundMouseUp);
+
+        // Click to close info panel (use "I" key to open info)
+        document.addEventListener('click', this._boundClick);
+
+        // Prevent context menu when using fallback mouse look
+        document.addEventListener('contextmenu', this._boundContextMenu);
+
         // Touch event listeners (will be activated when HUD is shown)
         this.initTouchListeners();
+    }
+
+    removeEventListeners() {
+        if (this._boundKeyDown) {
+            document.removeEventListener('keydown', this._boundKeyDown, true);
+            document.removeEventListener('keyup', this._boundKeyUp, true);
+            document.removeEventListener('mousemove', this._boundMouseMove);
+            document.removeEventListener('pointerlockchange', this._boundPointerLockChange);
+            document.removeEventListener('pointerlockerror', this._boundPointerLockError);
+            document.removeEventListener('mousedown', this._boundMouseDown);
+            document.removeEventListener('mouseup', this._boundMouseUp);
+            document.removeEventListener('click', this._boundClick);
+            document.removeEventListener('contextmenu', this._boundContextMenu);
+        }
+        if (this._boundTouchStart) {
+            document.removeEventListener('touchstart', this._boundTouchStart);
+            document.removeEventListener('touchmove', this._boundTouchMove);
+            document.removeEventListener('touchend', this._boundTouchEnd);
+        }
     }
     
     initTouchListeners() {
@@ -1370,9 +1400,13 @@ export class ManualNavigation {
             }
             
             // Touch look (right side of screen for looking around)
-            document.addEventListener('touchstart', (e) => this.onTouchLookStart(e), { passive: false });
-            document.addEventListener('touchmove', (e) => this.onTouchLookMove(e), { passive: false });
-            document.addEventListener('touchend', (e) => this.onTouchLookEnd(e), { passive: false });
+            // Store bound references for removal
+            this._boundTouchStart = (e) => this.onTouchLookStart(e);
+            this._boundTouchMove = (e) => this.onTouchLookMove(e);
+            this._boundTouchEnd = (e) => this.onTouchLookEnd(e);
+            document.addEventListener('touchstart', this._boundTouchStart, { passive: false });
+            document.addEventListener('touchmove', this._boundTouchMove, { passive: false });
+            document.addEventListener('touchend', this._boundTouchEnd, { passive: false });
             
         }, 100);
     }
@@ -1482,6 +1516,7 @@ export class ManualNavigation {
     }
     
     enable() {
+        if (this.enabled) return; // Guard against double-call (prevents 2500x scale)
         this.enabled = true;
         this.toggleBtn.classList.add('active');
         this.hud.classList.remove('hidden');
@@ -1542,7 +1577,6 @@ export class ManualNavigation {
 
         // Show mouse controls hint only if pointer lock is blocked (less UI noise)
 
-        console.log('🎮 Navegação manual ativada! Use 1-9 para Warp');
     }
 
     showMouseControlsHint() {
@@ -1697,7 +1731,6 @@ export class ManualNavigation {
             }
         }
 
-        console.log('🎮 Navegação manual desativada');
     }
 
     cleanupEffects() {
@@ -1753,7 +1786,6 @@ export class ManualNavigation {
             }
         }
         
-        console.log('🌟 Realistic scales applied - Sun is now MASSIVE!');
     }
     
     /**
@@ -1778,7 +1810,6 @@ export class ManualNavigation {
         }
         
         this.originalObjectScales.clear();
-        console.log('🔄 Original scales restored');
     }
 
     updateWarpDisplay() {
@@ -1806,7 +1837,6 @@ export class ManualNavigation {
         // Pointer lock failed (blocked by company policies, etc.)
         this.pointerLockFailed = true;
         this.isPointerLocked = false;
-        console.log('⚠️ Pointer lock blocked - using fallback mouse controls');
 
         // Show a hint to the user
         if (this.enabled) {
@@ -2207,33 +2237,45 @@ export class ManualNavigation {
     }
 
     showBrakeEffect() {
-        let effect = document.querySelector('.emergency-brake-effect');
-        if (!effect) {
-            effect = document.createElement('div');
-            effect.className = 'emergency-brake-effect';
-            document.body.appendChild(effect);
+        if (!this._brakeEffect) {
+            this._brakeEffect = document.querySelector('.emergency-brake-effect');
         }
-        effect.classList.add('active');
+        if (!this._brakeEffect) {
+            this._brakeEffect = document.createElement('div');
+            this._brakeEffect.className = 'emergency-brake-effect';
+            document.body.appendChild(this._brakeEffect);
+        }
+        this._brakeEffect.classList.add('active');
     }
 
     hideBrakeEffect() {
-        const effect = document.querySelector('.emergency-brake-effect');
-        if (effect) {
-            effect.classList.remove('active');
+        if (this._brakeEffect) {
+            this._brakeEffect.classList.remove('active');
         }
     }
 
     updateCompass() {
-        const sunIndicator = this.hud?.querySelector('.sun-indicator');
-        if (!sunIndicator) return;
+        // Cache DOM reference
+        if (!this._sunIndicator) {
+            this._sunIndicator = this.hud?.querySelector('.sun-indicator');
+        }
+        if (!this._sunIndicator) return;
+        const sunIndicator = this._sunIndicator;
 
-        // Get direction to sun (origin)
-        const toSun = new THREE.Vector3(0, 0, 0).sub(this.camera.position);
-
-        // Project to camera's view plane
-        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
-        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
-        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
+        // Reuse pre-allocated vectors (avoid new THREE.Vector3 per frame)
+        if (!this._compassVecs) {
+            this._compassVecs = {
+                toSun: new THREE.Vector3(),
+                forward: new THREE.Vector3(),
+                right: new THREE.Vector3(),
+                up: new THREE.Vector3()
+            };
+        }
+        const { toSun, forward, right, up } = this._compassVecs;
+        toSun.set(0, 0, 0).sub(this.camera.position);
+        forward.set(0, 0, -1).applyQuaternion(this.camera.quaternion);
+        right.set(1, 0, 0).applyQuaternion(this.camera.quaternion);
+        up.set(0, 1, 0).applyQuaternion(this.camera.quaternion);
 
         // Calculate angle on compass
         const dotRight = toSun.dot(right);
@@ -2254,8 +2296,15 @@ export class ManualNavigation {
     }
 
     updateDistances() {
-        const distanceList = this.hud?.querySelector('.distance-list');
+        // Cache DOM reference
+        if (!this._distanceList) {
+            this._distanceList = this.hud?.querySelector('.distance-list');
+        }
+        const distanceList = this._distanceList;
         if (!distanceList || !this.app.solarSystem?.objects) return;
+
+        // Reuse worldPos vector (avoid allocation per frame)
+        if (!this._worldPos) this._worldPos = new THREE.Vector3();
 
         // Calculate distances to all major objects
         const distances = [];
@@ -2264,10 +2313,9 @@ export class ManualNavigation {
         for (const name of mainObjects) {
             const mesh = this.app.solarSystem.objects[name];
             if (mesh) {
-                const worldPos = new THREE.Vector3();
-                mesh.getWorldPosition(worldPos);
-                const dist = this.camera.position.distanceTo(worldPos);
-                distances.push({ name, dist, mesh });
+                mesh.getWorldPosition(this._worldPos);
+                const dist = this.camera.position.distanceTo(this._worldPos);
+                distances.push({ name, dist });
             }
         }
 
@@ -2277,37 +2325,50 @@ export class ManualNavigation {
 
         // Short planet names for compact display - using i18n
         const shortNameKeys = {
-            'sun': 'short_sun',
-            'mercury': 'short_mercury',
-            'venus': 'short_venus',
-            'earth': 'short_earth',
-            'mars': 'short_mars',
-            'jupiter': 'short_jupiter',
-            'saturn': 'short_saturn',
-            'uranus': 'short_uranus',
-            'neptune': 'short_neptune'
+            'sun': 'short_sun', 'mercury': 'short_mercury', 'venus': 'short_venus',
+            'earth': 'short_earth', 'mars': 'short_mars', 'jupiter': 'short_jupiter',
+            'saturn': 'short_saturn', 'uranus': 'short_uranus', 'neptune': 'short_neptune'
         };
+
+        // Create persistent DOM nodes on first call (avoid innerHTML per frame)
+        if (!this._distanceItems || this._distanceItems.length === 0) {
+            this._distanceItems = [];
+            distanceList.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                const div = document.createElement('div');
+                div.className = 'distance-item';
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'planet-name';
+                const distSpan = document.createElement('span');
+                distSpan.className = 'planet-dist';
+                div.appendChild(nameSpan);
+                div.appendChild(distSpan);
+                div.addEventListener('click', () => {
+                    const planetName = div.dataset.planet;
+                    if (planetName) this.enableAutoPilot(planetName);
+                });
+                distanceList.appendChild(div);
+                this._distanceItems.push({ div, nameSpan, distSpan });
+            }
+        }
 
         const goToText = i18n.t('go_to');
 
-        // Update HTML
-        distanceList.innerHTML = closest.map(({ name, dist }) => {
-            const shortName = i18n.t(shortNameKeys[name]) || name;
-            return `
-            <div class="distance-item" data-planet="${name}" title="${goToText} ${name}">
-                <span class="planet-name">${shortName}</span>
-                <span class="planet-dist">${this.formatDistance(dist)}</span>
-            </div>
-        `;
-        }).join('');
-
-        // Add click handlers for auto-pilot
-        distanceList.querySelectorAll('.distance-item').forEach(item => {
-            item.onclick = () => {
-                const planetName = item.dataset.planet;
-                this.enableAutoPilot(planetName);
-            };
-        });
+        // Update existing DOM nodes (no innerHTML rebuild)
+        for (let i = 0; i < 4; i++) {
+            const item = this._distanceItems[i];
+            if (i < closest.length) {
+                const { name, dist } = closest[i];
+                const shortName = i18n.t(shortNameKeys[name]) || name;
+                item.nameSpan.textContent = shortName;
+                item.distSpan.textContent = this.formatDistance(dist);
+                item.div.dataset.planet = name;
+                item.div.title = `${goToText} ${name}`;
+                item.div.style.display = '';
+            } else {
+                item.div.style.display = 'none';
+            }
+        }
     }
 
     formatDistance(units) {
@@ -2324,8 +2385,13 @@ export class ManualNavigation {
     }
 
     updateSpeedometer() {
-        const fill = this.hud?.querySelector('.speedometer-fill');
-        const needle = this.hud?.querySelector('.speedometer-needle');
+        // Cache DOM references
+        if (!this._speedoFill) {
+            this._speedoFill = this.hud?.querySelector('.speedometer-fill');
+            this._speedoNeedle = this.hud?.querySelector('.speedometer-needle');
+        }
+        const fill = this._speedoFill;
+        const needle = this._speedoNeedle;
         if (!fill) return;
 
         const warp = this.warpSpeeds[this.warpLevel - 1];
@@ -2352,7 +2418,11 @@ export class ManualNavigation {
         // Only show speed lines at warp 5+
         const shouldShow = this.warpLevel >= 5 && this.currentSpeed > 100;
 
-        let container = document.querySelector('.speed-lines-container');
+        // Cache speed lines container reference
+        if (!this._speedLinesContainer) {
+            this._speedLinesContainer = document.querySelector('.speed-lines-container');
+        }
+        let container = this._speedLinesContainer;
 
         if (shouldShow && !container) {
             container = document.createElement('div');
@@ -2487,6 +2557,10 @@ export class ManualNavigation {
             this.warpLevel = 1;
         }
         this.updateWarpDisplay();
+        // Also update mobile touch warp display during autopilot
+        if (this.touchWarpLevel) {
+            this.touchWarpLevel.textContent = this.warpLevel;
+        }
 
         // Move towards target
         const warp = this.warpSpeeds[this.warpLevel - 1];
@@ -2603,105 +2677,7 @@ export class ManualNavigation {
     showPlanetInfo() {
         const nearest = this.findNearestPlanet();
         if (!nearest) return;
-
-        this.nearestPlanet = nearest.name;
-        this.infoPanelVisible = true;
-
-        // Get planet data with correct translation
-        const planetData = getTranslatedObjectData(nearest.name);
-
-        if (!planetData) return;
-
-        const panel = this.hud?.querySelector('.nav-planet-info');
-        if (!panel) return;
-
-        // Fill in the data
-        const nameEl = panel.querySelector('.planet-info-name');
-        const typeEl = panel.querySelector('.planet-info-type');
-        const statsEl = panel.querySelector('.planet-info-stats');
-        const curiosityEl = panel.querySelector('.planet-info-curiosity');
-
-        if (nameEl) nameEl.textContent = planetData.nome || nearest.name;
-        if (typeEl) typeEl.textContent = planetData.tipo || '';
-
-        // Stats
-        if (statsEl) {
-            let statsHTML = '';
-
-            if (planetData.distanciaMediaAoSol) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('info_distance')}</div>
-                        <div class="planet-info-stat-value">${planetData.distanciaMediaAoSol} M km</div>
-                    </div>
-                `;
-            }
-            if (planetData.temperaturaMediaAproximada) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('info_temp')}</div>
-                        <div class="planet-info-stat-value">${planetData.temperaturaMediaAproximada}</div>
-                    </div>
-                `;
-            }
-            if (planetData.duracaoDia) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('info_day')}</div>
-                        <div class="planet-info-stat-value">${planetData.duracaoDia}</div>
-                    </div>
-                `;
-            }
-            if (planetData.duracaoAno) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('info_year')}</div>
-                        <div class="planet-info-stat-value">${planetData.duracaoAno}</div>
-                    </div>
-                `;
-            }
-            if (planetData.numeroLuasConhecidas !== undefined) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('info_moons')}</div>
-                        <div class="planet-info-stat-value">${planetData.numeroLuasConhecidas}</div>
-                    </div>
-                `;
-            }
-            if (planetData.raioKm) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('radius')}</div>
-                        <div class="planet-info-stat-value">${planetData.raioKm.toLocaleString()} km</div>
-                    </div>
-                `;
-            }
-
-            statsEl.innerHTML = statsHTML;
-        }
-
-        // Curiosity
-        if (curiosityEl && planetData.curiosidades && planetData.curiosidades.length > 0) {
-            const randomCuriosity = planetData.curiosidades[Math.floor(Math.random() * planetData.curiosidades.length)];
-            curiosityEl.innerHTML = `
-                <div class="planet-info-curiosity-title">${i18n.t('info_wow_facts')}</div>
-                ${randomCuriosity}
-            `;
-            curiosityEl.style.display = 'block';
-        } else if (curiosityEl) {
-            curiosityEl.style.display = 'none';
-        }
-
-        // Show panel
-        panel.classList.remove('hidden');
-
-        // Add close button handler
-        const closeBtn = panel.querySelector('.planet-info-close');
-        if (closeBtn) {
-            closeBtn.onclick = () => this.hidePlanetInfo();
-        }
-
-        this.app.audioManager?.playSelect();
+        this._renderPlanetInfoPanel(nearest.name);
     }
 
     /**
@@ -2831,17 +2807,22 @@ export class ManualNavigation {
      * Show info for a specific planet by name
      */
     showPlanetInfoFor(planetName) {
+        this._renderPlanetInfoPanel(planetName);
+    }
+
+    /**
+     * Shared helper: render planet info into the HUD panel
+     */
+    _renderPlanetInfoPanel(planetName) {
         this.nearestPlanet = planetName;
         this.infoPanelVisible = true;
 
-        // Get planet data
         const planetData = getTranslatedObjectData(planetName);
         if (!planetData) return;
 
         const panel = this.hud?.querySelector('.nav-planet-info');
         if (!panel) return;
 
-        // Fill in the data
         const nameEl = panel.querySelector('.planet-info-name');
         const typeEl = panel.querySelector('.planet-info-type');
         const statsEl = panel.querySelector('.planet-info-stats');
@@ -2850,83 +2831,34 @@ export class ManualNavigation {
         if (nameEl) nameEl.textContent = planetData.nome || planetName;
         if (typeEl) typeEl.textContent = planetData.tipo || '';
 
-        // Stats
         if (statsEl) {
-            let statsHTML = '';
-
-            if (planetData.distanciaMediaAoSol) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('info_distance')}</div>
-                        <div class="planet-info-stat-value">${planetData.distanciaMediaAoSol} M km</div>
-                    </div>
-                `;
-            }
-            if (planetData.temperaturaMediaAproximada) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('info_temp')}</div>
-                        <div class="planet-info-stat-value">${planetData.temperaturaMediaAproximada}</div>
-                    </div>
-                `;
-            }
-            if (planetData.duracaoDia) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('info_day')}</div>
-                        <div class="planet-info-stat-value">${planetData.duracaoDia}</div>
-                    </div>
-                `;
-            }
-            if (planetData.duracaoAno) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('info_year')}</div>
-                        <div class="planet-info-stat-value">${planetData.duracaoAno}</div>
-                    </div>
-                `;
-            }
-            if (planetData.numeroLuasConhecidas !== undefined) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('info_moons')}</div>
-                        <div class="planet-info-stat-value">${planetData.numeroLuasConhecidas}</div>
-                    </div>
-                `;
-            }
-            if (planetData.raioKm) {
-                statsHTML += `
-                    <div class="planet-info-stat">
-                        <div class="planet-info-stat-label">${i18n.t('radius')}</div>
-                        <div class="planet-info-stat-value">${planetData.raioKm.toLocaleString()} km</div>
-                    </div>
-                `;
-            }
-
-            statsEl.innerHTML = statsHTML;
+            const stats = [
+                { key: 'info_distance', val: planetData.distanciaMediaAoSol, suffix: ' M km' },
+                { key: 'info_temp', val: planetData.temperaturaMediaAproximada },
+                { key: 'info_day', val: planetData.duracaoDia },
+                { key: 'info_year', val: planetData.duracaoAno },
+                { key: 'info_moons', val: planetData.numeroLuasConhecidas },
+                { key: 'radius', val: planetData.raioKm, fmt: v => v.toLocaleString() + ' km' },
+            ];
+            statsEl.innerHTML = stats
+                .filter(s => s.val !== undefined && s.val !== null)
+                .map(s => `<div class="planet-info-stat">
+                    <div class="planet-info-stat-label">${i18n.t(s.key)}</div>
+                    <div class="planet-info-stat-value">${s.fmt ? s.fmt(s.val) : s.val + (s.suffix || '')}</div>
+                </div>`).join('');
         }
 
-        // Curiosity
-        if (curiosityEl && planetData.curiosidades && planetData.curiosidades.length > 0) {
+        if (curiosityEl && planetData.curiosidades?.length > 0) {
             const randomCuriosity = planetData.curiosidades[Math.floor(Math.random() * planetData.curiosidades.length)];
-            curiosityEl.innerHTML = `
-                <div class="planet-info-curiosity-title">${i18n.t('info_wow_facts')}</div>
-                ${randomCuriosity}
-            `;
+            curiosityEl.innerHTML = `<div class="planet-info-curiosity-title">${i18n.t('info_wow_facts')}</div>${randomCuriosity}`;
             curiosityEl.style.display = 'block';
         } else if (curiosityEl) {
             curiosityEl.style.display = 'none';
         }
 
-        // Show panel
         panel.classList.remove('hidden');
-
-        // Add close button handler
         const closeBtn = panel.querySelector('.planet-info-close');
-        if (closeBtn) {
-            closeBtn.onclick = () => this.hidePlanetInfo();
-        }
-
+        if (closeBtn) closeBtn.onclick = () => this.hidePlanetInfo();
         this.app.audioManager?.playSelect();
     }
 }

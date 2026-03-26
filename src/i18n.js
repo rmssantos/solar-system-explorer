@@ -46,11 +46,10 @@ export const TRANSLATIONS = {
         minimap: "Mini-mapa",
         time_control: "Controlo Tempo",
         ui_settings: "Config. UI",
-        photo_saved: "Foto Guardada!",
+        photo_saved_flash: "Foto Guardada!",
         no_photos_yet: "Ainda não tiraste fotos!",
         explore_capture: "Explora o Sistema Solar e captura os momentos especiais.",
         space_gallery: "Galeria Espacial",
-        captain: "Capitão",
         photos: "fotos",
         photo: "Foto",
 
@@ -198,7 +197,6 @@ export const TRANSLATIONS = {
 
         // Settings
         settings: "Definições",
-        captain: "Capitão",
         sound: "Som",
         music: "Música",
         sfx: "Efeitos Sonoros",
@@ -289,9 +287,38 @@ export const TRANSLATIONS = {
         mission_death_star_desc: "Encontra Mimas, a lua que parece a Estrela da Morte do Star Wars!",
         mission_death_star_hint: "A cratera Herschel dá-lhe esse aspecto. Orbita Saturno.",
 
-        mission_sun_title: "☀️ Caçador do Sol",
-        mission_sun_desc: "Visita o Sol, a nossa estrela! Contém 99,86% de toda a massa do Sistema Solar.",
-        mission_sun_hint: "Está no centro de tudo!",
+        // Alias keys for missions whose ID doesn't match the key pattern
+        mission_sun_seeker_title: "☀️ Caçador do Sol",
+        mission_sun_seeker_desc: "Visita o Sol, a nossa estrela! Contém 99,86% de toda a massa do Sistema Solar.",
+        mission_sun_seeker_hint: "Está no centro de tudo!",
+        mission_our_moon_title: "🌙 A Nossa Lua",
+        mission_our_moon_desc: "Visita a Lua, o único satélite natural da Terra! Humanos já caminharam lá.",
+        mission_our_moon_hint: "Está a cerca de 384.000 km da Terra.",
+        mission_volcanic_moon_title: "🌋 Lua Vulcânica",
+        mission_volcanic_moon_desc: "Descobre Io, a lua mais vulcânica do Sistema Solar! Tem centenas de vulcões activos.",
+        mission_volcanic_moon_hint: "É uma lua de Júpiter.",
+        mission_ocean_moon_title: "🌊 Lua com Oceano",
+        mission_ocean_moon_desc: "Encontra Europa! Os cientistas acham que tem um oceano escondido debaixo do gelo.",
+        mission_ocean_moon_hint: "Também orbita Júpiter. Pode ter vida alienígena!",
+        mission_titan_explorer_title: "🪐 Explorador de Titã",
+        mission_titan_explorer_desc: "Descobre Titã, a única lua com atmosfera densa! Tem lagos de metano líquido.",
+        mission_titan_explorer_hint: "É a maior lua de Saturno.",
+        // Dwarf planet missions (new)
+        mission_pluto_explorer_title: "💔 O Ex-Planeta",
+        mission_pluto_explorer_desc: "Descobre Plutão, o famoso planeta anão! Foi 'despromovido' em 2006.",
+        mission_pluto_explorer_hint: "Está muito além de Neptuno e tem um coração de gelo!",
+        mission_ceres_belt_title: "🪨 Rainha dos Asteroides",
+        mission_ceres_belt_desc: "Encontra Ceres, o maior objeto no cinturão de asteroides!",
+        mission_ceres_belt_hint: "Está entre Marte e Júpiter.",
+        mission_eris_discord_title: "😈 Deusa da Discórdia",
+        mission_eris_discord_desc: "Viaja até Éris, o planeta anão que causou a 'despromição' de Plutão!",
+        mission_eris_discord_hint: "É o mais distante dos planetas anões conhecidos.",
+        mission_makemake_easter_title: "🐣 Descoberta Pascal",
+        mission_makemake_easter_desc: "Descobre Makemake, o planeta anão descoberto na Páscoa!",
+        mission_makemake_easter_hint: "Tem o nome do deus da Ilha de Páscoa.",
+        mission_haumea_rugby_title: "🏈 Bola de Rugby Espacial",
+        mission_haumea_rugby_desc: "Encontra Haumea, o planeta anão em forma de bola de rugby!",
+        mission_haumea_rugby_hint: "Roda tão rápido que esticou!",
 
         // Language
         language: "Idioma",
@@ -341,11 +368,10 @@ export const TRANSLATIONS = {
         minimap: "Minimap",
         time_control: "Time Control",
         ui_settings: "UI Settings",
-        photo_saved: "Photo Saved!",
+        photo_saved_flash: "Photo Saved!",
         no_photos_yet: "You haven't taken any photos yet!",
         explore_capture: "Explore the Solar System and capture special moments.",
         space_gallery: "Space Gallery",
-        captain: "Captain",
         photos: "photos",
         photo: "Photo",
 
@@ -493,7 +519,6 @@ export const TRANSLATIONS = {
 
         // Settings
         settings: "Settings",
-        captain: "Captain",
         sound: "Sound",
         music: "Music",
         sfx: "Sound Effects",
@@ -584,9 +609,38 @@ export const TRANSLATIONS = {
         mission_death_star_desc: "Find Mimas, the moon that looks like the Death Star from Star Wars!",
         mission_death_star_hint: "The Herschel crater gives it that look. It orbits Saturn.",
 
-        mission_sun_title: "☀️ Sun Seeker",
-        mission_sun_desc: "Visit the Sun, our star! It contains 99.86% of all mass in the Solar System.",
-        mission_sun_hint: "It's at the center of everything!",
+        // Alias keys for missions whose ID doesn't match the key pattern
+        mission_sun_seeker_title: "☀️ Sun Seeker",
+        mission_sun_seeker_desc: "Visit the Sun, our star! It contains 99.86% of all mass in the Solar System.",
+        mission_sun_seeker_hint: "It's at the center of everything!",
+        mission_our_moon_title: "🌙 Our Moon",
+        mission_our_moon_desc: "Visit the Moon, Earth's only natural satellite! Humans have walked there.",
+        mission_our_moon_hint: "It's about 384,000 km from Earth.",
+        mission_volcanic_moon_title: "🌋 Volcanic Moon",
+        mission_volcanic_moon_desc: "Discover Io, the most volcanic moon in the Solar System! It has hundreds of active volcanoes.",
+        mission_volcanic_moon_hint: "It's one of Jupiter's moons.",
+        mission_ocean_moon_title: "🌊 Ocean Moon",
+        mission_ocean_moon_desc: "Find Europa! Scientists believe it has a hidden ocean beneath its ice.",
+        mission_ocean_moon_hint: "Also orbits Jupiter. It might have alien life!",
+        mission_titan_explorer_title: "🪐 Titan Explorer",
+        mission_titan_explorer_desc: "Discover Titan, the only moon with a dense atmosphere! It has lakes of liquid methane.",
+        mission_titan_explorer_hint: "It's Saturn's largest moon.",
+        // Dwarf planet missions
+        mission_pluto_explorer_title: "💔 The Ex-Planet",
+        mission_pluto_explorer_desc: "Discover Pluto, the famous dwarf planet! It was 'demoted' in 2006.",
+        mission_pluto_explorer_hint: "It's far beyond Neptune and has a heart of ice!",
+        mission_ceres_belt_title: "🪨 Queen of the Asteroids",
+        mission_ceres_belt_desc: "Find Ceres, the largest object in the asteroid belt!",
+        mission_ceres_belt_hint: "It's between Mars and Jupiter.",
+        mission_eris_discord_title: "😈 Goddess of Discord",
+        mission_eris_discord_desc: "Travel to Eris, the dwarf planet that caused Pluto's 'demotion'!",
+        mission_eris_discord_hint: "It's the most distant known dwarf planet.",
+        mission_makemake_easter_title: "🐣 Easter Discovery",
+        mission_makemake_easter_desc: "Discover Makemake, the dwarf planet discovered at Easter!",
+        mission_makemake_easter_hint: "Named after the god of Easter Island.",
+        mission_haumea_rugby_title: "🏈 Space Rugby Ball",
+        mission_haumea_rugby_desc: "Find Haumea, the rugby ball-shaped dwarf planet!",
+        mission_haumea_rugby_hint: "It spins so fast that it stretched!",
 
         // Language
         language: "Language",
@@ -722,6 +776,10 @@ class I18n {
 
     offLangChange(callback) {
         this.listeners = this.listeners.filter(cb => cb !== callback);
+    }
+
+    clearListeners() {
+        this.listeners = [];
     }
 
     notifyListeners() {

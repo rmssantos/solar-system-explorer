@@ -5,13 +5,22 @@
     "scripts": {
         "dev": "vite --host",
         "build": "vite build",
+        "typecheck": "tsc --noEmit",
         "preview": "vite preview",
         "start": "serve -l $PORT"
     },
-    "keywords": ["solar-system", "education", "threejs", "3d", "kids", "astronomy"],
+    "keywords": [
+        "solar-system",
+        "education",
+        "threejs",
+        "3d",
+        "kids",
+        "astronomy"
+    ],
     "author": "Ruben Santos",
     "license": "MIT",
     "devDependencies": {
+        "typescript": "^6.0.2",
         "vite": "^5.0.0"
     },
     "dependencies": {
