@@ -241,7 +241,7 @@ export class UIManager {
             this.updatePassport(name); // Gamification Trigger (Just visual sync here)
 
             // Play planet-specific ambient sound
-            this.app.audioManager?.playPlanetAmbient(name);
+            this.app.audioManager?.startPlanetAmbient(name);
         }
     }
 
