@@ -173,19 +173,23 @@ export class UIManager {
     // --- Data helpers ---
 
     findData(name) {
-        // First try to get translated data for main objects
+        // First try to get translated data for main objects (planets, probes, etc.)
         const translated = getTranslatedObjectData(name);
         if (translated) return translated;
 
-        // Fallback for moons - search in navigation list
+        // Fallback for moons - find parent planet, then get translated moon data
         const item = this.navigationList.find(x => x.name === name);
         if (item && item.data) {
-            // Try to find translated moon data from parent planet
-            const parentPlanet = this.findParentPlanet(name);
+            const parentPlanet = this.findParentPlanet(name, item.data);
             if (parentPlanet) {
                 const parentData = getTranslatedObjectData(parentPlanet);
                 if (parentData && parentData.moons) {
-                    const moonData = parentData.moons.find(m => m.nome === name || m.nome === item.data.nome);
+                    // Match by id (e.g. "enceladus") or by nome
+                    const moonData = parentData.moons.find(m =>
+                        m.id === name ||
+                        m.nome === name ||
+                        m.nome === item.data.nome
+                    );
                     if (moonData) return { ...item.data, ...moonData };
                 }
             }
@@ -194,11 +198,15 @@ export class UIManager {
         return null;
     }
 
-    findParentPlanet(moonName) {
-        // Find which planet this moon belongs to
+    findParentPlanet(moonName, moonData) {
+        // Find which planet this moon belongs to (search by id and nome)
         for (const [planetKey, planetData] of Object.entries(SOLAR_SYSTEM_DATA)) {
             if (planetData.moons) {
-                const moon = planetData.moons.find(m => m.nome === moonName);
+                const moon = planetData.moons.find(m =>
+                    m.id === moonName ||
+                    m.nome === moonName ||
+                    (moonData && m.nome === moonData.nome)
+                );
                 if (moon) return planetKey;
             }
         }

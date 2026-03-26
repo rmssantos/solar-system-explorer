@@ -242,6 +242,9 @@ export const TRANSLATIONS = {
         mission_home_title: "🏠 Lar Doce Lar",
         mission_home_desc: "Visita o nosso planeta - a Terra! O único com vida conhecida.",
         mission_home_hint: "É o terceiro planeta a contar do Sol.",
+        mission_home_sweet_home_title: "🏠 Lar Doce Lar",
+        mission_home_sweet_home_desc: "Visita o nosso planeta - a Terra! O único com vida conhecida.",
+        mission_home_sweet_home_hint: "É o terceiro planeta a contar do Sol.",
 
         mission_red_planet_title: "🔴 Planeta Vermelho",
         mission_red_planet_desc: "Viaja até Marte, o Planeta Vermelho! Os cientistas querem enviar pessoas para lá.",
@@ -258,10 +261,16 @@ export const TRANSLATIONS = {
         mission_sideways_title: "🔄 Planeta Deitado",
         mission_sideways_desc: "Encontra Úrano, o planeta que roda \"deitado\"! O seu eixo está quase na horizontal.",
         mission_sideways_hint: "A sua cor azul-esverdeada vem do metano.",
+        mission_sideways_planet_title: "🔄 Planeta Deitado",
+        mission_sideways_planet_desc: "Encontra Úrano, o planeta que roda \"deitado\"! O seu eixo está quase na horizontal.",
+        mission_sideways_planet_hint: "A sua cor azul-esverdeada vem do metano.",
 
         mission_windy_title: "💨 Mundo dos Ventos",
         mission_windy_desc: "Viaja até Neptuno, onde os ventos chegam a 2100 km/h! O mais distante dos planetas.",
         mission_windy_hint: "É o planeta mais azul do Sistema Solar.",
+        mission_windy_world_title: "💨 Mundo dos Ventos",
+        mission_windy_world_desc: "Viaja até Neptuno, onde os ventos chegam a 2100 km/h! O mais distante dos planetas.",
+        mission_windy_world_hint: "É o planeta mais azul do Sistema Solar.",
 
         mission_moon_title: "🌙 A Nossa Lua",
         mission_moon_desc: "Visita a Lua, o único satélite natural da Terra! Humanos já caminharam lá.",
@@ -564,6 +573,9 @@ export const TRANSLATIONS = {
         mission_home_title: "🏠 Home Sweet Home",
         mission_home_desc: "Visit our planet - Earth! The only one with known life.",
         mission_home_hint: "It's the third planet from the Sun.",
+        mission_home_sweet_home_title: "🏠 Home Sweet Home",
+        mission_home_sweet_home_desc: "Visit our planet - Earth! The only one with known life.",
+        mission_home_sweet_home_hint: "It's the third planet from the Sun.",
 
         mission_red_planet_title: "🔴 Red Planet",
         mission_red_planet_desc: "Travel to Mars, the Red Planet! Scientists want to send people there.",
@@ -580,10 +592,16 @@ export const TRANSLATIONS = {
         mission_sideways_title: "🔄 Sideways Planet",
         mission_sideways_desc: "Find Uranus, the planet that rotates \"on its side\"! Its axis is almost horizontal.",
         mission_sideways_hint: "Its blue-green color comes from methane.",
+        mission_sideways_planet_title: "🔄 Sideways Planet",
+        mission_sideways_planet_desc: "Find Uranus, the planet that rotates \"on its side\"! Its axis is almost horizontal.",
+        mission_sideways_planet_hint: "Its blue-green color comes from methane.",
 
         mission_windy_title: "💨 World of Winds",
         mission_windy_desc: "Travel to Neptune, where winds reach 2100 km/h! The most distant planet.",
         mission_windy_hint: "It's the bluest planet in the Solar System.",
+        mission_windy_world_title: "💨 World of Winds",
+        mission_windy_world_desc: "Travel to Neptune, where winds reach 2100 km/h! The most distant planet.",
+        mission_windy_world_hint: "It's the bluest planet in the Solar System.",
 
         mission_moon_title: "🌙 Our Moon",
         mission_moon_desc: "Visit the Moon, Earth's only natural satellite! Humans have walked there.",
