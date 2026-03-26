@@ -20,6 +20,15 @@
     
     <link rel="stylesheet" href="styles/style.css">
 
+    <!-- Suppress Three.js NaN bounding sphere warnings (cosmetic, runs before module imports) -->
+    <script>
+        const _w = console.warn;
+        console.warn = function() {
+            if (arguments[0] && typeof arguments[0] === 'string' && arguments[0].indexOf('computeBoundingSphere') !== -1) return;
+            _w.apply(console, arguments);
+        };
+    </script>
+
     <!-- Service Worker Registration (disabled in development) -->
     <script>
         if ('serviceWorker' in navigator && !window.location.hostname.includes('localhost')) {
