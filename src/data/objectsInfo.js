@@ -941,14 +941,19 @@ export function getTranslatedObjectData(objectName) {
     if (enData.descricao) merged.descricao = enData.descricao;
     if (enData.distanciaKm) merged.distanciaKm = enData.distanciaKm;
     
-    // Translate moons if available (match by id/nome instead of array index)
+    // Translate moons if available
     if (baseData.moons && enData.moons) {
-        merged.moons = baseData.moons.map((moon) => {
-            // Match by id first, then by nome (more robust than index-based)
-            const enMoon = enData.moons.find(em =>
-                (moon.id && em.id && em.id === moon.id) ||
-                (em.nome && moon.nome && em.nome.toLowerCase() === moon.nome.toLowerCase())
-            );
+        merged.moons = baseData.moons.map((moon, index) => {
+            // Match by id first, then by index as fallback
+            // (nome matching doesn't work: PT "Titã" vs EN "Titan")
+            let enMoon = null;
+            if (moon.id) {
+                enMoon = enData.moons.find(em => em.id === moon.id);
+            }
+            // Fallback to index matching (original approach, still needed)
+            if (!enMoon && index < enData.moons.length) {
+                enMoon = enData.moons[index];
+            }
             if (!enMoon) return moon;
 
             return {
