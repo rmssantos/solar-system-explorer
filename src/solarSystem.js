@@ -31,8 +31,7 @@ export class SolarSystem {
         this.solarSystemGroup = new THREE.Group();
         this.scene.add(this.solarSystemGroup);
 
-        // Use ResourceManager for texture loading (tracked + cached)
-        this.textureLoader = new THREE.TextureLoader();
+        // Textures are loaded via resourceManager.loadTexture() (tracked + cached)
 
         // Shared materials (reuse instead of creating new instances)
         this._hitboxMaterial = new THREE.MeshBasicMaterial({
@@ -253,7 +252,7 @@ export class SolarSystem {
         meshHi.castShadow = true;
         meshLo.castShadow = true;
         lod.addLevel(meshHi, 0);       // Full detail when close
-        lod.addLevel(meshLo, distance * 0.8); // Low detail when far
+        lod.addLevel(meshLo, 500);     // Low detail beyond 500 units from camera
 
         const planetMesh = lod;
         planetMesh.castShadow = true;
@@ -653,9 +652,13 @@ export class SolarSystem {
             this._ufoSystem.updateUFO(deltaTime, this._animTime);
         }
 
-        // Self rotation of planets (meshes)
-        for (const mesh of this._objectValues) {
-            mesh.rotation.y += 0.5 * deltaTime;
+        // Self rotation of planets and moons only (exclude UFO, comets, probes)
+        const excludeKeys = new Set(['ufo', 'Halley', 'Encke', 'Hale-Bopp']);
+        for (const [name, speed] of this._orbitEntries) {
+            const mesh = this.objects[name];
+            if (mesh && !excludeKeys.has(name)) {
+                mesh.rotation.y += 0.5 * deltaTime;
+            }
         }
     }
 

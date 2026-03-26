@@ -425,7 +425,7 @@ export const SOLAR_SYSTEM_DATA = {
     },
     "uranus": {
         nome: "Úrano",
-        tipo: "Gigante Gelado",
+        tipo: "Gigante de Gelo",
         distanciaMediaAoSol: 2871,
         duracaoDia: "17h 14m",
         duracaoAno: "84 anos terrestres",
@@ -481,7 +481,7 @@ export const SOLAR_SYSTEM_DATA = {
     },
     "neptune": {
         nome: "Neptuno",
-        tipo: "Gigante Gelado",
+        tipo: "Gigante de Gelo",
         distanciaMediaAoSol: 4495,
         duracaoDia: "16h 6m",
         duracaoAno: "165 anos terrestres",

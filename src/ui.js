@@ -136,8 +136,8 @@ export class UIManager {
         // Delegate to InfoPanelUI
         this.infoPanelUI.show(objectName, data, this.navigationList);
 
-        // Check if this completes any mission (even if previously visited)
-        this.checkMissionForPlanet(objectName);
+        // Mission completion is triggered by "Discover!" button → app:visit event
+        // Do NOT call checkMissionForPlanet here - it silently completes missions without XP
     }
 
     closeInfoPanel() {

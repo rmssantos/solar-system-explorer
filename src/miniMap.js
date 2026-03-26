@@ -45,7 +45,7 @@ export class MiniMap {
         this.mapScale = 1;
 
         this.createUI();
-        this.startAnimation();
+        // Note: animation is driven by main.js calling externalUpdate() - no own rAF loop needed
 
         // Listen for language changes
         i18n.onLangChange(() => this.updateTranslations());

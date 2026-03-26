@@ -461,7 +461,7 @@ export class AchievementSystem {
             // Start speedrun timer
             this.speedrunStart = Date.now();
             this.speedrunCount = 1;
-        } else if (!this.speedrunStart && visitedPlanets.size < 3 && !this.isUnlocked?.('speedrunner')) {
+        } else if (!this.speedrunStart && visitedPlanets.size < 3 && !this.unlockedAchievements?.has('speedrunner')) {
             // Returning session: initialize timer if not too late and achievement not yet unlocked
             this.speedrunStart = Date.now();
             this.speedrunCount = 1;
