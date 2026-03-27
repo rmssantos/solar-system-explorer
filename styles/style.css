@@ -5633,3 +5633,221 @@ body.high-contrast #passport-panel {
         font-size: 2.5rem;
     }
 }
+
+/* ========== MISSION OVERLAY (Feature 2A) ========== */
+.mission-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: all;
+}
+
+.mission-overlay.visible {
+    opacity: 1;
+}
+
+.mission-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.mission-overlay-card {
+    background: linear-gradient(135deg, rgba(15, 20, 50, 0.97) 0%, rgba(25, 30, 70, 0.97) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    border-radius: 24px;
+    padding: 40px 48px;
+    text-align: center;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 0 60px rgba(255, 215, 0, 0.15), 0 20px 60px rgba(0, 0, 0, 0.6);
+    transform: scale(0.85);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mission-overlay.visible .mission-overlay-card {
+    transform: scale(1);
+}
+
+.mission-overlay-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 4px 16px rgba(255, 215, 0, 0.4));
+}
+
+.mission-overlay-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #FFD700;
+    margin: 0 0 12px 0;
+    text-shadow: 0 2px 12px rgba(255, 215, 0, 0.4);
+}
+
+.mission-overlay-desc {
+    font-size: 1.05rem;
+    color: #ccd6e6;
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+}
+
+.mission-overlay-btn {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #1a1a2e;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 50px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: missionOverlayPulse 2s ease-in-out infinite;
+}
+
+.mission-overlay-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes missionOverlayPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+    50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); }
+}
+
+/* ========== MISSION INDICATOR (Feature 2B) ========== */
+.mission-indicator {
+    position: fixed;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: missionIndicatorPulse 2s ease-in-out infinite;
+}
+
+.mission-indicator-arrow {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+    display: inline-block;
+    line-height: 1;
+}
+
+.mission-indicator-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #FFD700;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 3px 8px;
+    border-radius: 8px;
+}
+
+@keyframes missionIndicatorPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* ========== MISSION PANEL REDESIGN (Feature 2C) ========== */
+.mission-progress-bar-wrap {
+    margin-bottom: 8px;
+}
+
+.mission-progress-label {
+    font-size: 0.6rem;
+    color: #a0aec0;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mission-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.mission-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4a90e2, #a855f7, #FFD700);
+    border-radius: 2px;
+    transition: width 0.6s ease;
+}
+
+.mission-active-card {
+    background: rgba(255, 215, 0, 0.05);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 8px;
+    padding: 8px;
+    margin-top: 4px;
+}
+
+.mission-icon-large {
+    font-size: 1.8rem;
+    filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.3));
+}
+
+/* Slide transitions */
+.mission-slide-out {
+    animation: missionSlideOut 0.3s ease forwards;
+}
+
+.mission-slide-in {
+    animation: missionSlideIn 0.4s ease forwards;
+}
+
+@keyframes missionSlideOut {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-30px); opacity: 0; }
+}
+
+@keyframes missionSlideIn {
+    0% { transform: translateX(30px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+/* Gold glow on mission complete */
+.mission-gold-glow {
+    animation: missionGoldGlow 1.5s ease;
+}
+
+@keyframes missionGoldGlow {
+    0% { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
+    30% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), 0 0 80px rgba(255, 215, 0, 0.3); border-color: rgba(255, 215, 0, 0.8); }
+    100% { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
+}
+
+/* Mobile adjustments for mission overlay */
+@media (max-width: 768px) {
+    .mission-overlay-card {
+        padding: 28px 24px;
+    }
+
+    .mission-overlay-icon {
+        font-size: 3rem;
+    }
+
+    .mission-overlay-title {
+        font-size: 1.3rem;
+    }
+
+    .mission-overlay-desc {
+        font-size: 0.95rem;
+    }
+
+    .mission-overlay-btn {
+        padding: 12px 32px;
+        font-size: 1rem;
+    }
+}

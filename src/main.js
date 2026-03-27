@@ -32,6 +32,8 @@ import { UISettings } from './uiSettings.js';
 import { resourceManager } from './resourceManager.js';
 import { Mascot } from './mascot.js';
 import { Tutorial } from './tutorial.js';
+import { MissionOverlay } from './missionOverlay.js';
+import { MissionIndicator } from './missionIndicator.js';
 
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
@@ -67,6 +69,8 @@ class App {
         this.toolbar = null;
         this.manualNavigation = null;
         this.mascot = null;
+        this.missionOverlay = null;
+        this.missionIndicator = null;
         this.playerName = '';
         this.shipColor = '#ff4444';
 
@@ -215,6 +219,25 @@ class App {
 
             // 21. Setup global keyboard accessibility (Enter/Space on role="button")
             this.setupAccessibilityKeyboard();
+
+            // 22. Mission Overlay - show after tutorial (or immediately if no tutorial)
+            this.missionOverlay = new MissionOverlay();
+            const overlayDelay = Tutorial.shouldShow() ? 5000 : 3000;
+            setTimeout(() => {
+                if (this.missionSystem.activeMission) {
+                    this.missionOverlay.show(
+                        this.missionSystem.activeMission,
+                        this.missionSystem.completedMissions.size === 0
+                    );
+                }
+            }, overlayDelay);
+
+            // 23. Mission Indicator - 3D arrow pointing to target planet
+            this.missionIndicator = new MissionIndicator(
+                this.camera,
+                this.solarSystem.objects,
+                this.missionSystem
+            );
 
         } catch (e) {
             console.error("CRITICAL APP ERROR:", e);
@@ -779,6 +802,9 @@ class App {
 
         // Update minimap (driven by main loop, not its own rAF)
         if (this.miniMap) this.miniMap.externalUpdate();
+
+        // Update mission indicator arrow
+        if (this.missionIndicator) this.missionIndicator.update();
 
         // Render via Composer for Bloom
         if (this.composer && !this.isDisposed) {
