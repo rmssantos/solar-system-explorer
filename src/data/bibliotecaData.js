@@ -367,6 +367,8 @@ Tem uma atmosfera super grossa de nuvens tóxicas que funcionam como um cobertor
             "mimas": { id: "mimas", nome: "Mimas", tipo: "Lua de Saturno", categoria: "moons", emoji: "💀", imagem: REAL_PHOTOS.mimas, descricaoLonga: "A 'Estrela da Morte'! Tem uma cratera gigante que a faz parecer a estação espacial do Star Wars.", factosUau: ["🎥 Parece mesmo a Death Star!", "💥 A cratera 'Herschel' quase partiu a lua ao meio."] },
             // Urano/Neptuno/Plutão
             "miranda": { id: "miranda", nome: "Miranda", tipo: "Lua de Úrano", categoria: "moons", emoji: "🧩", descricaoLonga: "A lua Frankenstein! Parece que foi partida e colada de novo de forma errada.", factosUau: ["🧗 Tem o maior penhasco do sistema solar (20km de altura!)."] },
+            "ariel": { id: "ariel", nome: "Ariel", tipo: "Lua de Úrano", categoria: "moons", emoji: "✨", descricaoLonga: "A lua mais brilhante de Úrano! A sua superfície é coberta de gelo fresco e tem vales e desfiladeiros enormes.", factosUau: ["✨ É a lua mais brilhante de Úrano!", "🏔️ Tem desfiladeiros profundos cheios de gelo!"] },
+            "titania": { id: "titania", nome: "Titânia", tipo: "Lua de Úrano", categoria: "moons", emoji: "👑", imagem: REAL_PHOTOS.titania, descricaoLonga: "A maior lua de Úrano! Tem o nome da rainha das fadas de Shakespeare. A sua superfície tem desfiladeiros gigantes maiores que o Grand Canyon.", factosUau: ["👑 É a MAIOR lua de Úrano!", "🏔️ Tem desfiladeiros maiores que o Grand Canyon da Terra!"] },
             "tritao": { id: "tritao", nome: "Tritão", tipo: "Lua de Neptuno", categoria: "moons", emoji: "🥶", imagem: REAL_PHOTOS.triton, descricaoLonga: "Gira ao contrário! É um mundo capturado por Neptuno. Cospe nitrogénio preto.", factosUau: ["❄️ É o objeto mais frio medido (-235°C).", "🌋 Tem vulcões de gelo (criovulcões)!"] },
             "caronte": { id: "caronte", nome: "Caronte", tipo: "Lua de Plutão", categoria: "moons", emoji: "👫", imagem: REAL_PHOTOS.charon, descricaoLonga: "É tão grande comparada com Plutão que dançam uma à volta da outra.", factosUau: ["🔒 Mostra sempre a mesma face a Plutão e vice-versa.", "🏞️ Tem um desfiladeiro 4x mais profundo que o Grand Canyon."] },
 
@@ -879,6 +881,31 @@ It has a super thick atmosphere of toxic clouds that works like a blanket, trapp
                 descricaoLonga: "The Frankenstein moon! It looks like it was broken apart and glued back together the wrong way.",
                 factosUau: [
                     "🧗 It has the tallest cliff in the solar system (20km high!)."
+                ]
+            },
+            "ariel": {
+                id: "ariel",
+                nome: "Ariel",
+                tipo: "Uranus Moon",
+                categoria: "moons",
+                emoji: "✨",
+                descricaoLonga: "The brightest moon of Uranus! Its surface is covered in fresh ice and has enormous valleys and canyons.",
+                factosUau: [
+                    "✨ It's the brightest moon of Uranus!",
+                    "🏔️ It has deep canyons filled with ice!"
+                ]
+            },
+            "titania": {
+                id: "titania",
+                nome: "Titania",
+                tipo: "Uranus Moon",
+                categoria: "moons",
+                emoji: "👑",
+                imagem: REAL_PHOTOS.titania,
+                descricaoLonga: "The largest moon of Uranus! Named after the fairy queen from Shakespeare. Its surface has giant canyons bigger than the Grand Canyon.",
+                factosUau: [
+                    "👑 It's the LARGEST moon of Uranus!",
+                    "🏔️ It has canyons bigger than Earth's Grand Canyon!"
                 ]
             },
             "tritao": {

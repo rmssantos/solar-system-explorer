@@ -535,13 +535,16 @@ class App {
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0e1a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10000;transition:opacity 0.5s;';
         overlay.innerHTML = `
             <div style="font-size:3rem;margin-bottom:1rem;">🚀</div>
-            <div style="color:#e2e8f0;font-family:system-ui;font-size:1.2rem;margin-bottom:1.5rem;">A carregar o Sistema Solar...</div>
+            <div id="loading-message" style="color:#e2e8f0;font-family:system-ui;font-size:1.2rem;margin-bottom:1.5rem;"></div>
             <div style="width:200px;height:4px;background:#1a2237;border-radius:2px;overflow:hidden;">
                 <div id="loading-bar" style="width:0%;height:100%;background:linear-gradient(90deg,#6366f1,#a855f7);border-radius:2px;transition:width 0.3s;"></div>
             </div>
             <div id="loading-text" style="color:#94a3b8;font-size:0.8rem;margin-top:0.5rem;">0%</div>
         `;
         document.body.appendChild(overlay);
+        // Set loading text via i18n (after DOM creation)
+        const msgEl = overlay.querySelector('#loading-message');
+        if (msgEl) msgEl.textContent = i18n.t('loading_solar_system');
         this._loadingOverlay = overlay;
 
         // Listen for texture loading progress
