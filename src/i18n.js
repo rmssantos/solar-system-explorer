@@ -353,13 +353,44 @@ export const TRANSLATIONS = {
         // TTS
         tts_read: "\uD83D\uDD0A L\u00ea para mim",
         tts_stop: "\uD83D\uDD07 Parar",
-        tts_not_supported: "Voz n\u00e3o dispon\u00edvel",
+        tts_not_supported: "Voz não disponível",
+        tts_settings: "Voz / Narração",
+        tts_voice: "Voz",
+        tts_speed: "Velocidade",
+        tts_test: "Testar Voz",
+        tts_test_phrase: "Olá! Eu sou a tua guia pelo Sistema Solar!",
 
         // Biblioteca In-App
         biblioteca_btn: "\uD83D\uDCDA Biblioteca",
         biblioteca_search: "Procurar...",
         biblioteca_close: "Voltar ao jogo",
         biblioteca_detail_back: "\u2190 Voltar",
+
+        // Certificate & Endgame
+        cert_title: "Certificado de Explorador Espacial",
+        cert_awarded: "Concedido a",
+        cert_completed: "Explorou todo o Sistema Solar!",
+        cert_planets: "Planetas Visitados",
+        cert_missions: "Miss\u00f5es Completas",
+        cert_download: "Descarregar Certificado",
+        cert_date: "Data",
+        endgame_congrats: "Parab\u00e9ns! Exploraste todo o Sistema Solar!",
+        endgame_continue: "Continuar a Explorar",
+
+        // Daily Challenge
+        daily_title: "Desafio Di\u00e1rio",
+        daily_question: "Pergunta de Hoje",
+        daily_completed: "Desafio de hoje completo!",
+        daily_streak: "Dias seguidos",
+
+        // Share & Photo Frame
+        share_progress: "Partilhar Progresso",
+        share_copied: "Link copiado!",
+        share_card_title: "O Meu Progresso",
+        share_friend_title: "O teu amigo explorou o espa\u00e7o!",
+        share_friend_visited: "visitou {count} planetas",
+        photo_add_frame: "\uD83D\uDDBC\uFE0F Moldura",
+        photo_frame_applied: "Moldura aplicada!",
 
         // Language
         language: "Idioma",
@@ -717,12 +748,43 @@ export const TRANSLATIONS = {
         tts_read: "\uD83D\uDD0A Read to me",
         tts_stop: "\uD83D\uDD07 Stop",
         tts_not_supported: "Voice not available",
+        tts_settings: "Voice / Narration",
+        tts_voice: "Voice",
+        tts_speed: "Speed",
+        tts_test: "Test Voice",
+        tts_test_phrase: "Hello! I am your guide through the Solar System!",
 
         // Biblioteca In-App
         biblioteca_btn: "\uD83D\uDCDA Library",
         biblioteca_search: "Search...",
         biblioteca_close: "Back to game",
         biblioteca_detail_back: "\u2190 Back",
+
+        // Certificate & Endgame
+        cert_title: "Space Explorer Certificate",
+        cert_awarded: "Awarded to",
+        cert_completed: "Explored the entire Solar System!",
+        cert_planets: "Planets Visited",
+        cert_missions: "Missions Complete",
+        cert_download: "Download Certificate",
+        cert_date: "Date",
+        endgame_congrats: "Congratulations! You've explored the entire Solar System!",
+        endgame_continue: "Continue Exploring",
+
+        // Daily Challenge
+        daily_title: "Daily Challenge",
+        daily_question: "Today's Question",
+        daily_completed: "Today's challenge complete!",
+        daily_streak: "Day streak",
+
+        // Share & Photo Frame
+        share_progress: "Share Progress",
+        share_copied: "Link copied!",
+        share_card_title: "My Progress",
+        share_friend_title: "Your friend explored space!",
+        share_friend_visited: "visited {count} planets",
+        photo_add_frame: "\uD83D\uDDBC\uFE0F Frame",
+        photo_frame_applied: "Frame applied!",
 
         // Language
         language: "Language",
