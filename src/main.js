@@ -313,21 +313,8 @@ class App {
         // Check achievements
         this.achievementSystem.checkPlanetVisit(planetName, this.gameManager.visited);
 
-        // Show quiz after a delay (if available)
-        // Guard against double-scheduling with a pending flag
-        if (this.quizSystem.hasQuiz(planetName) && !this._quizPending) {
-            this._quizPending = true;
-            this._quizTimeout = setTimeout(() => {
-                this._quizPending = false;
-                this.quizSystem.showQuiz(planetName, (answered) => {
-                    if (answered) {
-                        // Check quiz achievements
-                        const quizCount = this.quizSystem.answeredQuizzes.size;
-                        this.achievementSystem.checkQuizCount(quizCount);
-                    }
-                });
-            }, 4500); // After celebration ends
-        }
+        // Quiz is now integrated into the info panel slides (quiz slide).
+        // The old delayed overlay is no longer triggered here.
     }
 
     setupAudioStart() {

@@ -210,7 +210,6 @@ export class Tutorial {
      * Position the tutorial card relative to a target rect
      */
     positionCard(rect, position) {
-        const isMobile = window.innerWidth <= 768;
         const margin = 20;
         const vw = window.innerWidth;
         const vh = window.innerHeight;
@@ -222,52 +221,59 @@ export class Tutorial {
         this.card.style.bottom = '';
         this.card.style.right = '';
 
-        if (isMobile) {
-            // Mobile: always centered at bottom
-            this.card.style.left = '50%';
-            this.card.style.bottom = `${margin}px`;
-            this.card.style.transform = 'translateX(-50%)';
-            return;
-        }
-
-        if (position === 'center' || !rect) {
+        // Mobile or center: always centered
+        if (window.innerWidth <= 768 || position === 'center' || !rect) {
             this.card.style.left = '50%';
             this.card.style.top = '50%';
             this.card.style.transform = 'translate(-50%, -50%)';
             return;
         }
 
-        // Get actual card dimensions after render
-        const cardRect = this.card.getBoundingClientRect();
-        const cardW = cardRect.width || 380;
-        const cardH = cardRect.height || 250;
+        // Use a fixed card size estimate (real size may not be available yet)
+        const cardW = Math.min(380, vw - margin * 2);
+        const cardH = 260;
 
         let left, top;
 
         if (position === 'above') {
-            // Try above the target, centered horizontally
+            // Try above the target
             left = rect.left + rect.width / 2 - cardW / 2;
             top = rect.top - cardH - margin;
-            // If goes above viewport, place below instead
-            if (top < margin) {
-                top = rect.bottom + margin;
-            }
+            // If goes above viewport, try below
+            if (top < margin) top = rect.bottom + margin;
+            // If STILL off-screen (target at bottom), center vertically
+            if (top + cardH > vh - margin) top = vh / 2 - cardH / 2;
         } else if (position === 'beside') {
-            // Try to the right of the target
+            // Try right of target
             left = rect.right + margin;
             top = rect.top;
-            // If goes off right edge, place to the left
-            if (left + cardW > vw - margin) {
-                left = rect.left - cardW - margin;
-            }
+            // If off right edge, try left
+            if (left + cardW > vw - margin) left = rect.left - cardW - margin;
+            // If off left edge too, center horizontally
+            if (left < margin) left = vw / 2 - cardW / 2;
         }
 
-        // ALWAYS clamp to viewport bounds (never go off-screen)
+        // FINAL CLAMP: absolutely guarantee within viewport
         left = Math.max(margin, Math.min(left, vw - cardW - margin));
         top = Math.max(margin, Math.min(top, vh - cardH - margin));
 
         this.card.style.left = `${left}px`;
         this.card.style.top = `${top}px`;
+
+        // After render, re-check with actual dimensions and re-clamp if needed
+        requestAnimationFrame(() => {
+            if (!this.card) return;
+            const actual = this.card.getBoundingClientRect();
+            if (actual.right > vw - 5) {
+                this.card.style.left = `${Math.max(margin, vw - actual.width - margin)}px`;
+            }
+            if (actual.left < 5) {
+                this.card.style.left = `${margin}px`;
+            }
+            if (actual.bottom > vh - 5) {
+                this.card.style.top = `${Math.max(margin, vh - actual.height - margin)}px`;
+            }
+        });
     }
 
     /**
