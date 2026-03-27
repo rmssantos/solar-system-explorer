@@ -184,6 +184,16 @@ export const TRANSLATIONS = {
         quiz_badge: "QUIZ ESPACIAL",
         quiz_correct: "Correto! Excelente!",
         quiz_wrong: "Não foi desta vez...",
+        quiz_slide_title: "\uD83E\uDDE0 Testa o Teu Conhecimento!",
+        quiz_streak: "\uD83D\uDD25 {count} seguidas!",
+        quiz_space_genius: "G\u00e9nio Espacial!",
+        quiz_cosmic_brain: "C\u00e9rebro C\u00f3smico!",
+        quiz_correct_feedback: "Correto! Excelente!",
+        quiz_wrong_feedback: "Quase! A resposta \u00e9:",
+        quiz_xp_earned: "+{xp} XP",
+        quiz_no_quiz: "Sem quiz dispon\u00edvel",
+        quiz_already_answered: "J\u00e1 respondeste a este quiz!",
+        quiz_learn_more: "Sabe mais nos Factos Uau!",
 
         // Achievements
         achievements: "Conquistas",
@@ -526,6 +536,16 @@ export const TRANSLATIONS = {
         quiz_badge: "SPACE QUIZ",
         quiz_correct: "Correct! Excellent!",
         quiz_wrong: "Not this time...",
+        quiz_slide_title: "\uD83E\uDDE0 Test Your Knowledge!",
+        quiz_streak: "\uD83D\uDD25 {count} in a row!",
+        quiz_space_genius: "Space Genius!",
+        quiz_cosmic_brain: "Cosmic Brain!",
+        quiz_correct_feedback: "Correct! Excellent!",
+        quiz_wrong_feedback: "Almost! The answer is:",
+        quiz_xp_earned: "+{xp} XP",
+        quiz_no_quiz: "No quiz available",
+        quiz_already_answered: "You already answered this quiz!",
+        quiz_learn_more: "Learn more in Wow Facts!",
 
         // Achievements
         achievements: "Achievements",

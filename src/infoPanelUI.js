@@ -203,7 +203,214 @@ export class InfoPanelUI {
             });
         }
 
+        // Slide: Quiz (if available)
+        const quizSystem = this.app.quizSystem;
+        if (quizSystem) {
+            const objectKey = this.currentObjectKey;
+            const quizData = quizSystem.getQuizForSlide(objectKey);
+            if (quizData) {
+                slides.push({
+                    title: i18n.t('quiz_slide_title'),
+                    content: (container) => {
+                        this.renderQuizSlide(container, quizData, quizSystem);
+                    }
+                });
+            }
+        }
+
         return slides;
+    }
+
+    renderQuizSlide(container, quizData, quizSystem) {
+        const quizContainer = document.createElement('div');
+        quizContainer.className = 'quiz-slide-container';
+
+        // Streak badge
+        if (quizSystem.streak >= 1) {
+            const streakBadge = document.createElement('div');
+            streakBadge.className = 'quiz-streak-badge';
+            const streakText = i18n.t('quiz_streak').replace('{count}', quizSystem.streak);
+            streakBadge.textContent = streakText;
+            if (quizSystem.streak >= 5) {
+                const cosmicLabel = document.createElement('span');
+                cosmicLabel.className = 'quiz-streak-label cosmic';
+                cosmicLabel.textContent = i18n.t('quiz_cosmic_brain');
+                streakBadge.appendChild(cosmicLabel);
+            } else if (quizSystem.streak >= 3) {
+                const geniusLabel = document.createElement('span');
+                geniusLabel.className = 'quiz-streak-label genius';
+                geniusLabel.textContent = i18n.t('quiz_space_genius');
+                streakBadge.appendChild(geniusLabel);
+            }
+            quizContainer.appendChild(streakBadge);
+        }
+
+        // Already answered state
+        if (quizData.answered) {
+            const answeredMsg = document.createElement('div');
+            answeredMsg.className = 'quiz-slide-answered';
+            answeredMsg.textContent = i18n.t('quiz_already_answered');
+            quizContainer.appendChild(answeredMsg);
+
+            // Show question
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'quiz-slide-question';
+            questionDiv.textContent = quizData.question;
+            quizContainer.appendChild(questionDiv);
+
+            // Show options with correct highlighted
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'quiz-slide-options';
+            const letters = ['A', 'B', 'C', 'D'];
+            const optionColors = ['blue', 'green', 'orange', 'purple'];
+            quizData.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = `quiz-slide-option quiz-slide-option-${optionColors[i]}`;
+                btn.disabled = true;
+                if (i === quizData.correctIndex) {
+                    btn.classList.add('quiz-option-correct');
+                }
+                btn.innerHTML = `<span class="quiz-slide-letter">${letters[i]}</span><span class="quiz-slide-option-text">${opt}</span>`;
+                optionsDiv.appendChild(btn);
+            });
+            quizContainer.appendChild(optionsDiv);
+
+            container.appendChild(quizContainer);
+            return;
+        }
+
+        // Question
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'quiz-slide-question';
+        questionDiv.textContent = quizData.question;
+        quizContainer.appendChild(questionDiv);
+
+        // Options
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'quiz-slide-options';
+        const letters = ['A', 'B', 'C', 'D'];
+        const optionColors = ['blue', 'green', 'orange', 'purple'];
+        let answered = false;
+
+        quizData.options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = `quiz-slide-option quiz-slide-option-${optionColors[i]}`;
+            btn.innerHTML = `<span class="quiz-slide-letter">${letters[i]}</span><span class="quiz-slide-option-text">${opt}</span>`;
+
+            btn.addEventListener('click', () => {
+                if (answered) return;
+                answered = true;
+
+                const isCorrect = i === quizData.correctIndex;
+
+                // Disable all buttons
+                const allBtns = optionsDiv.querySelectorAll('.quiz-slide-option');
+                allBtns.forEach(b => { b.disabled = true; });
+
+                if (isCorrect) {
+                    btn.classList.add('quiz-option-correct');
+                    // Record correct answer
+                    if (!quizData.replay) {
+                        quizSystem.recordCorrectAnswer(quizData.id);
+                    }
+
+                    // Play success sound
+                    if (this.app.audioManager) {
+                        this.app.audioManager.playSuccess();
+                    }
+
+                    // Trigger mascot reaction
+                    window.dispatchEvent(new CustomEvent('app:quiz-correct'));
+
+                    // Show feedback
+                    this.showQuizFeedback(quizContainer, true, quizData, quizSystem);
+
+                    // Confetti burst
+                    if (this.app.uiManager?.celebrationUI) {
+                        this.app.uiManager.celebrationUI.explodeConfetti();
+                    }
+
+                    // Check quiz achievements
+                    if (this.app.achievementSystem) {
+                        const quizCount = quizSystem.answeredQuizzes.size;
+                        this.app.achievementSystem.checkQuizCount(quizCount);
+                    }
+                } else {
+                    btn.classList.add('quiz-option-wrong');
+                    // Highlight correct answer
+                    allBtns[quizData.correctIndex].classList.add('quiz-option-correct');
+                    // Record wrong answer (resets streak)
+                    quizSystem.recordWrongAnswer();
+
+                    // Play error sound
+                    if (this.app.audioManager) {
+                        this.app.audioManager.playTone(200, 'sine', 0.3);
+                    }
+
+                    // Trigger mascot reaction
+                    window.dispatchEvent(new CustomEvent('app:quiz-wrong'));
+
+                    // Show feedback
+                    this.showQuizFeedback(quizContainer, false, quizData, quizSystem);
+                }
+            });
+
+            optionsDiv.appendChild(btn);
+        });
+        quizContainer.appendChild(optionsDiv);
+
+        container.appendChild(quizContainer);
+    }
+
+    showQuizFeedback(quizContainer, isCorrect, quizData, quizSystem) {
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'quiz-slide-feedback';
+
+        if (isCorrect) {
+            // Floating XP text
+            const xpFloat = document.createElement('div');
+            xpFloat.className = 'quiz-xp-float';
+            xpFloat.textContent = i18n.t('quiz_xp_earned').replace('{xp}', '25');
+            quizContainer.appendChild(xpFloat);
+
+            const feedbackText = document.createElement('div');
+            feedbackText.className = 'quiz-feedback-correct';
+            feedbackText.textContent = i18n.t('quiz_correct_feedback');
+            feedbackDiv.appendChild(feedbackText);
+
+            // Show updated streak
+            if (quizSystem.streak >= 1) {
+                const streakDiv = document.createElement('div');
+                streakDiv.className = 'quiz-streak-badge quiz-streak-animated';
+                const streakText = i18n.t('quiz_streak').replace('{count}', quizSystem.streak);
+                streakDiv.textContent = streakText;
+                if (quizSystem.streak >= 5) {
+                    const label = document.createElement('span');
+                    label.className = 'quiz-streak-label cosmic';
+                    label.textContent = i18n.t('quiz_cosmic_brain');
+                    streakDiv.appendChild(label);
+                } else if (quizSystem.streak >= 3) {
+                    const label = document.createElement('span');
+                    label.className = 'quiz-streak-label genius';
+                    label.textContent = i18n.t('quiz_space_genius');
+                    streakDiv.appendChild(label);
+                }
+                feedbackDiv.appendChild(streakDiv);
+            }
+        } else {
+            const feedbackText = document.createElement('div');
+            feedbackText.className = 'quiz-feedback-wrong';
+            feedbackText.textContent = `${i18n.t('quiz_wrong_feedback')} ${quizData.options[quizData.correctIndex]}`;
+            feedbackDiv.appendChild(feedbackText);
+
+            // Learn more hint
+            const learnMore = document.createElement('div');
+            learnMore.className = 'quiz-learn-more';
+            learnMore.textContent = i18n.t('quiz_learn_more');
+            feedbackDiv.appendChild(learnMore);
+        }
+
+        quizContainer.appendChild(feedbackDiv);
     }
 
     renderSlide() {

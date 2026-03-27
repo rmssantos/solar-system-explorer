@@ -13,7 +13,8 @@ export class QuizSystem {
         this.audioManager = audioManager;
         this.quizzes = this.createQuizzes();
         this.answeredQuizzes = new Set();
-        
+        this.streak = 0;
+
         this.loadProgress();
     }
 
@@ -431,10 +432,13 @@ export class QuizSystem {
         if (saved) {
             this.answeredQuizzes = new Set(saved);
         }
+        const savedStreak = storage.getItem('quizStreak', 0);
+        this.streak = typeof savedStreak === 'number' ? savedStreak : 0;
     }
 
     saveProgress() {
         storage.setItem('quizzes', [...this.answeredQuizzes]);
+        storage.setItem('quizStreak', this.streak);
     }
 
     getQuizzesForLang() {
@@ -462,6 +466,68 @@ export class QuizSystem {
         // All answered, return random one for replay (no XP)
         const randomIndex = Math.floor(Math.random() * quizzes.length);
         return { ...quizzes[randomIndex], id: `${planetName}_${randomIndex}`, replay: true };
+    }
+
+    /**
+     * Returns quiz data for the info panel slide without creating any DOM.
+     * @param {string} planetName - Internal planet key
+     * @returns {{ question: string, options: string[], correctIndex: number, id: string, replay: boolean, answered: boolean } | null}
+     */
+    getQuizForSlide(planetName) {
+        const quizzes = this.getQuizzesForLang()[planetName];
+        if (!quizzes || quizzes.length === 0) return null;
+
+        // Try to find an unanswered quiz
+        for (let i = 0; i < quizzes.length; i++) {
+            const quizId = `${planetName}_${i}`;
+            if (!this.answeredQuizzes.has(quizId)) {
+                const shuffled = this.shuffleWithCorrect(quizzes[i].options, quizzes[i].correct);
+                return {
+                    question: quizzes[i].question,
+                    options: shuffled.options,
+                    correctIndex: shuffled.correctIndex,
+                    explanation: quizzes[i].explanation,
+                    id: quizId,
+                    replay: false,
+                    answered: false
+                };
+            }
+        }
+
+        // All answered - return first quiz as answered/replay
+        const firstQuiz = quizzes[0];
+        const shuffled = this.shuffleWithCorrect(firstQuiz.options, firstQuiz.correct);
+        return {
+            question: firstQuiz.question,
+            options: shuffled.options,
+            correctIndex: shuffled.correctIndex,
+            explanation: firstQuiz.explanation,
+            id: `${planetName}_0`,
+            replay: true,
+            answered: true
+        };
+    }
+
+    /**
+     * Record a correct answer: increment streak.
+     */
+    recordCorrectAnswer(quizId) {
+        this.answeredQuizzes.add(quizId);
+        this.streak++;
+        this.saveProgress();
+
+        // Award XP
+        if (this.xpSystem) {
+            this.xpSystem.addXP(25, i18n.lang === 'en' ? 'Correct quiz' : 'Quiz correcto');
+        }
+    }
+
+    /**
+     * Record a wrong answer: reset streak.
+     */
+    recordWrongAnswer() {
+        this.streak = 0;
+        this.saveProgress();
     }
 
     showQuiz(planetName, onComplete) {
