@@ -10,13 +10,15 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 
 // Texture URLs from the project's public/textures folder
 const TEXTURES = {
-    sun: '/textures/sunmap.jpg',
+    sun: '/textures/sun_real.jpg',
     mercury: '/textures/mercurymap.jpg',
     venus: '/textures/venusmap.jpg',
     earth: '/textures/earthmap1k.jpg',
     mars: '/textures/marsmap1k.jpg',
     jupiter: '/textures/jupitermap.jpg',
     saturn: '/textures/saturnmap.jpg',
+    uranus: '/textures/uranusmap.jpg',
+    neptune: '/textures/neptunemap.jpg',
     moon: '/textures/moonmap1k.jpg',
 };
 
@@ -48,6 +50,7 @@ export class IntroAnimation {
         this.setupPostProcessing(w, h);
         this.setupScene();
         this.createCameraPath();
+        this.createCockpitOverlay();
     }
 
     setupPostProcessing(w, h) {
@@ -166,13 +169,8 @@ export class IntroAnimation {
     _createSun() {
         // Sun with real texture (or fallback emissive)
         const sunGeo = new THREE.SphereGeometry(35, 64, 64);
-        let sunMat;
-        try {
-            const sunTex = this.textureLoader.load(TEXTURES.sun);
-            sunMat = new THREE.MeshBasicMaterial({ map: sunTex, color: 0xffffff });
-        } catch {
-            sunMat = new THREE.MeshBasicMaterial({ color: 0xffaa33 });
-        }
+        const sunTex = this.textureLoader.load(TEXTURES.sun);
+        const sunMat = new THREE.MeshBasicMaterial({ map: sunTex, color: 0xffcc66 });
         this.sun = new THREE.Mesh(sunGeo, sunMat);
         this.scene.add(this.sun);
 
@@ -222,8 +220,8 @@ export class IntroAnimation {
             { name: 'mars', radius: 2.0, distance: 290, y: 4, texture: TEXTURES.mars, atmosphere: 0xff6644 },
             { name: 'jupiter', radius: 14, distance: 580, y: -6, texture: TEXTURES.jupiter },
             { name: 'saturn', radius: 11, distance: 800, y: 8, texture: TEXTURES.saturn, hasRing: true },
-            { name: 'uranus', radius: 7, distance: 1020, y: -10, color: 0x40e0d0, tilted: true, atmosphere: 0x66ffee },
-            { name: 'neptune', radius: 7, distance: 1250, y: 5, color: 0x1e90ff, atmosphere: 0x4488ff },
+            { name: 'uranus', radius: 7, distance: 1020, y: -10, texture: TEXTURES.uranus, tilted: true, atmosphere: 0x66ffee },
+            { name: 'neptune', radius: 7, distance: 1250, y: 5, texture: TEXTURES.neptune, atmosphere: 0x4488ff },
         ];
 
         planetDefs.forEach(def => {
@@ -231,16 +229,12 @@ export class IntroAnimation {
             let mat;
 
             if (def.texture) {
-                try {
-                    const tex = this.textureLoader.load(def.texture);
-                    mat = new THREE.MeshStandardMaterial({
-                        map: tex,
-                        roughness: 0.6,
-                        metalness: 0.1,
-                    });
-                } catch {
-                    mat = new THREE.MeshStandardMaterial({ color: def.color || 0x888888, roughness: 0.6 });
-                }
+                const tex = this.textureLoader.load(def.texture);
+                mat = new THREE.MeshStandardMaterial({
+                    map: tex,
+                    roughness: 0.6,
+                    metalness: 0.1,
+                });
             } else {
                 mat = new THREE.MeshStandardMaterial({ color: def.color || 0x888888, roughness: 0.6, metalness: 0.15 });
             }
@@ -461,6 +455,72 @@ export class IntroAnimation {
         ], false, 'catmullrom', 0.3);
     }
 
+    createCockpitOverlay() {
+        // HTML/CSS cockpit frame overlay - simulates being inside a spaceship
+        this.cockpit = document.createElement('div');
+        this.cockpit.className = 'intro-cockpit';
+        this.cockpit.innerHTML = `
+            <div class="cockpit-frame">
+                <!-- Top bar with ship systems -->
+                <div class="cockpit-top">
+                    <div class="cockpit-display left">
+                        <span class="cockpit-label">NAV</span>
+                        <span class="cockpit-value" id="cockpit-nav">AUTOPILOT</span>
+                    </div>
+                    <div class="cockpit-display center">
+                        <span class="cockpit-label">SYSTEM</span>
+                        <span class="cockpit-value" id="cockpit-system">SOLAR SYSTEM EXPLORER</span>
+                    </div>
+                    <div class="cockpit-display right">
+                        <span class="cockpit-label">SPEED</span>
+                        <span class="cockpit-value" id="cockpit-speed">0 km/s</span>
+                    </div>
+                </div>
+                <!-- Bottom panel with controls silhouette -->
+                <div class="cockpit-bottom">
+                    <div class="cockpit-panel-left">
+                        <div class="cockpit-gauge"></div>
+                        <div class="cockpit-gauge small"></div>
+                    </div>
+                    <div class="cockpit-panel-center">
+                        <div class="cockpit-crosshair">+</div>
+                    </div>
+                    <div class="cockpit-panel-right">
+                        <div class="cockpit-gauge"></div>
+                        <div class="cockpit-gauge small"></div>
+                    </div>
+                </div>
+                <!-- Side pillars (window frame) -->
+                <div class="cockpit-pillar left-pillar"></div>
+                <div class="cockpit-pillar right-pillar"></div>
+            </div>
+        `;
+        this.container.appendChild(this.cockpit);
+
+        // Store refs for animation updates
+        this._cockpitSpeed = this.cockpit.querySelector('#cockpit-speed');
+        this._cockpitNav = this.cockpit.querySelector('#cockpit-nav');
+        this._cockpitSystem = this.cockpit.querySelector('#cockpit-system');
+    }
+
+    _updateCockpit(t) {
+        if (!this._cockpitSpeed) return;
+
+        // Simulate speed readout
+        const speedCurve = Math.sin(t * Math.PI) * (t < 0.85 ? 1 : (1 - (t - 0.85) / 0.15));
+        const speed = Math.round(speedCurve * 299792); // up to light speed
+        this._cockpitSpeed.textContent = speed > 1000 ? `${(speed / 1000).toFixed(1)}k km/s` : `${speed} km/s`;
+
+        // Nav status changes
+        if (t < 0.1) this._cockpitNav.textContent = 'ENGAGING';
+        else if (t < 0.85) this._cockpitNav.textContent = 'WARP ACTIVE';
+        else this._cockpitNav.textContent = 'ARRIVING';
+
+        // Glow the displays more at high speed
+        const intensity = Math.min(speedCurve * 1.5, 1);
+        this.cockpit.style.setProperty('--cockpit-glow', `rgba(100, 180, 255, ${intensity * 0.3})`);
+    }
+
     update() {
         if (this.isStopped) return;
 
@@ -573,6 +633,9 @@ export class IntroAnimation {
 
         this.composer.render();
 
+        // Update cockpit HUD
+        this._updateCockpit(t);
+
         if (t >= 1 && !this.isComplete) {
             this.isComplete = true;
             if (this.onComplete) this.onComplete();
@@ -641,6 +704,9 @@ export class IntroAnimation {
         this.renderer.dispose();
         if (this.renderer.domElement?.parentNode) {
             this.renderer.domElement.remove();
+        }
+        if (this.cockpit?.parentNode) {
+            this.cockpit.remove();
         }
     }
 }
