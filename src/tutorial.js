@@ -102,6 +102,16 @@ export class Tutorial {
         this.hand.innerHTML = '<span class="tutorial-hand-icon">👆</span>';
         this.overlay.appendChild(this.hand);
 
+        // SVG connector line (card → target)
+        this.connectorSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        this.connectorSvg.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:20001;pointer-events:none;';
+        this.connectorLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        this.connectorLine.setAttribute('stroke', 'rgba(120,140,255,0.4)');
+        this.connectorLine.setAttribute('stroke-width', '2');
+        this.connectorLine.setAttribute('stroke-dasharray', '6,4');
+        this.connectorSvg.appendChild(this.connectorLine);
+        this.overlay.appendChild(this.connectorSvg);
+
         // Click on overlay background dismisses tutorial
         this.overlay.addEventListener('click', (e) => {
             if (e.target === this.overlay || e.target === this.spotlight) {
@@ -187,9 +197,13 @@ export class Tutorial {
 
             // Position card relative to target
             this.positionCard(rect, step.position);
+
+            // Draw a connecting line from card to target after card is positioned
+            requestAnimationFrame(() => this._drawConnector(rect));
         } else {
             // No target or canvas - center everything
             this.spotlight.style.display = 'none';
+            this._hideConnector();
             this.hand.style.display = step.targetSelector === '#canvas-container' ? 'block' : 'none';
 
             if (step.targetSelector === '#canvas-container') {
@@ -209,71 +223,102 @@ export class Tutorial {
     /**
      * Position the tutorial card relative to a target rect
      */
+    _drawConnector(targetRect) {
+        if (!this.connectorLine || !this.card) {
+            if (this.connectorSvg) this.connectorSvg.style.display = 'none';
+            return;
+        }
+        const cardRect = this.card.getBoundingClientRect();
+        if (!cardRect.width) { this.connectorSvg.style.display = 'none'; return; }
+
+        // Card edge closest to target center
+        const tx = targetRect.left + targetRect.width / 2;
+        const ty = targetRect.top + targetRect.height / 2;
+        const cx = cardRect.left + cardRect.width / 2;
+        const cy = cardRect.top + cardRect.height / 2;
+
+        // Don't show if card overlaps target
+        const dist = Math.hypot(tx - cx, ty - cy);
+        if (dist < 80) { this.connectorSvg.style.display = 'none'; return; }
+
+        this.connectorSvg.style.display = '';
+        this.connectorLine.setAttribute('x1', cx);
+        this.connectorLine.setAttribute('y1', cy);
+        this.connectorLine.setAttribute('x2', tx);
+        this.connectorLine.setAttribute('y2', ty);
+    }
+
+    _hideConnector() {
+        if (this.connectorSvg) this.connectorSvg.style.display = 'none';
+    }
+
     positionCard(rect, position) {
-        const margin = 20;
+        const margin = 16;
+        const gap = 12; // gap between card and target
         const vw = window.innerWidth;
         const vh = window.innerHeight;
+        const cardW = Math.min(360, vw - margin * 2);
+        const cardH = 240;
 
-        // Reset all positioning
+        // Reset
         this.card.style.transform = '';
         this.card.style.left = '';
         this.card.style.top = '';
-        this.card.style.bottom = '';
-        this.card.style.right = '';
 
-        // Mobile or center: always centered
-        if (window.innerWidth <= 768 || position === 'center' || !rect) {
+        if (vw <= 768 || position === 'center' || !rect) {
             this.card.style.left = '50%';
             this.card.style.top = '50%';
             this.card.style.transform = 'translate(-50%, -50%)';
             return;
         }
 
-        // Use a fixed card size estimate (real size may not be available yet)
-        const cardW = Math.min(380, vw - margin * 2);
-        const cardH = 260;
+        // Target center
+        const tx = rect.left + rect.width / 2;
+        const ty = rect.top + rect.height / 2;
 
-        let left, top;
+        // Try all 4 positions in preference order, pick the one closest to target that fits
+        const candidates = [
+            // Above target
+            { left: tx - cardW / 2, top: rect.top - cardH - gap },
+            // Below target
+            { left: tx - cardW / 2, top: rect.bottom + gap },
+            // Right of target
+            { left: rect.right + gap, top: ty - cardH / 2 },
+            // Left of target
+            { left: rect.left - cardW - gap, top: ty - cardH / 2 },
+        ];
 
-        if (position === 'above') {
-            // Try above the target
-            left = rect.left + rect.width / 2 - cardW / 2;
-            top = rect.top - cardH - margin;
-            // If goes above viewport, try below
-            if (top < margin) top = rect.bottom + margin;
-            // If STILL off-screen (target at bottom), center vertically
-            if (top + cardH > vh - margin) top = vh / 2 - cardH / 2;
-        } else if (position === 'beside') {
-            // Try right of target
-            left = rect.right + margin;
-            top = rect.top;
-            // If off right edge, try left
-            if (left + cardW > vw - margin) left = rect.left - cardW - margin;
-            // If off left edge too, center horizontally
-            if (left < margin) left = vw / 2 - cardW / 2;
+        // Reorder based on preferred position
+        if (position === 'beside') {
+            // Prefer right, then left, then below, then above
+            candidates.sort((a, b) => {
+                const aRight = a.left > rect.right;
+                const bRight = b.left > rect.right;
+                if (aRight && !bRight) return -1;
+                if (!aRight && bRight) return 1;
+                return 0;
+            });
         }
 
-        // FINAL CLAMP: absolutely guarantee within viewport
-        left = Math.max(margin, Math.min(left, vw - cardW - margin));
-        top = Math.max(margin, Math.min(top, vh - cardH - margin));
+        // Pick the first candidate that fits within viewport (with clamping)
+        let best = candidates[0];
+        for (const c of candidates) {
+            const cl = Math.max(margin, Math.min(c.left, vw - cardW - margin));
+            const ct = Math.max(margin, Math.min(c.top, vh - cardH - margin));
+            // Check if clamped position is still near the target (within 400px)
+            const dist = Math.hypot(cl + cardW / 2 - tx, ct + cardH / 2 - ty);
+            if (dist < 400) {
+                best = { left: cl, top: ct };
+                break;
+            }
+        }
 
-        this.card.style.left = `${left}px`;
-        this.card.style.top = `${top}px`;
+        // Final clamp
+        best.left = Math.max(margin, Math.min(best.left, vw - cardW - margin));
+        best.top = Math.max(margin, Math.min(best.top, vh - cardH - margin));
 
-        // After render, re-check with actual dimensions and re-clamp if needed
-        requestAnimationFrame(() => {
-            if (!this.card) return;
-            const actual = this.card.getBoundingClientRect();
-            if (actual.right > vw - 5) {
-                this.card.style.left = `${Math.max(margin, vw - actual.width - margin)}px`;
-            }
-            if (actual.left < 5) {
-                this.card.style.left = `${margin}px`;
-            }
-            if (actual.bottom > vh - 5) {
-                this.card.style.top = `${Math.max(margin, vh - actual.height - margin)}px`;
-            }
-        });
+        this.card.style.left = `${best.left}px`;
+        this.card.style.top = `${best.top}px`;
     }
 
     /**
