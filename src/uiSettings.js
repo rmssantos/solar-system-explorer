@@ -25,6 +25,28 @@ export class UISettings {
         window.addEventListener('manualNavModeChanged', (e) => {
             this.onManualNavModeChanged(e.detail.active);
         });
+
+        // Re-render on language change
+        i18n.onLangChange(() => this.updateTranslations());
+    }
+
+    updateTranslations() {
+        // Update button tooltip
+        if (this.settingsBtn) {
+            this.settingsBtn.title = i18n.t('ui_settings') || 'UI Settings';
+        }
+        // Re-render panel labels
+        if (this.panel) {
+            const header = this.panel.querySelector('.ui-settings-header span');
+            if (header) header.textContent = `⚙️ ${i18n.t('ui_settings')}`;
+
+            const labels = this.panel.querySelectorAll('.ui-toggle-row span');
+            const keys = ['passport_title', 'minimap', 'time_control', 'language', 'controls_title'];
+            const icons = ['🛂', '🗺️', '⏱️', '🌐', '🎮'];
+            labels.forEach((label, i) => {
+                if (keys[i]) label.textContent = `${icons[i]} ${i18n.t(keys[i])}`;
+            });
+        }
     }
     
     loadStates() {
