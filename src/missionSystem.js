@@ -468,6 +468,11 @@ export class MissionSystem {
             // Trigger mascot celebration
             window.dispatchEvent(new CustomEvent('app:mission-complete', { detail: completedMission }));
 
+            // Check if all missions are now complete
+            if (this.completedMissions.size === this.missions.length) {
+                window.dispatchEvent(new CustomEvent('app:all-missions-complete'));
+            }
+
             return completedMission;
         }
 

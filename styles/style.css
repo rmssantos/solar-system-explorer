@@ -6456,4 +6456,4 @@ button:focus-visible, [role="button"]:focus-visible {
     .biblioteca-card-emoji {
         font-size: 1.8rem;
     }
-}
+}.settings-select { width: 100%; padding: 6px 10px; background: rgba(30,30,50,0.8); color: #e2e8f0; border: 1px solid rgba(74,144,226,0.3); border-radius: 8px; font-family: inherit; font-size: 0.85rem; }

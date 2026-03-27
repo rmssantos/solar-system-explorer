@@ -35,6 +35,9 @@ import { Tutorial } from './tutorial.js';
 import { MissionOverlay } from './missionOverlay.js';
 import { MissionIndicator } from './missionIndicator.js';
 
+import { CertificateGenerator } from './certificateGenerator.js';
+import { ShareManager } from './shareManager.js';
+
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
 
@@ -71,6 +74,8 @@ class App {
         this.mascot = null;
         this.missionOverlay = null;
         this.missionIndicator = null;
+        this.certificateGenerator = null;
+        this.shareManager = null;
         this.playerName = '';
         this.shipColor = '#ff4444';
 
@@ -239,6 +244,20 @@ class App {
                 this.missionSystem
             );
 
+            // 24. Certificate Generator & Share Manager
+            this.certificateGenerator = new CertificateGenerator();
+            this.shareManager = new ShareManager();
+
+            // 25. Listen for all-missions-complete event (endgame)
+            window.addEventListener('app:all-missions-complete', () => {
+                setTimeout(() => this.showCompletionScreen(), 2000);
+            });
+
+            // 26. Daily Challenge (only if all missions already complete)
+            if (this.missionSystem.completedMissions.size === this.missionSystem.missions.length) {
+                setTimeout(() => this.showDailyChallenge(), 3000);
+            }
+
         } catch (e) {
             console.error("CRITICAL APP ERROR:", e);
             alert("Erro fatal na aplicação. Verifica a consola.");
@@ -395,6 +414,19 @@ class App {
                 </div>
                 
                 <div class="settings-group">
+                    <h3>🔊 ${i18n.t('tts_settings')}</h3>
+                    <div class="settings-slider-row">
+                        <div class="settings-slider-label">${i18n.t('tts_voice')}</div>
+                        <select id="tts-voice-select" class="settings-select"></select>
+                    </div>
+                    <div class="settings-slider-row">
+                        <div class="settings-slider-label">${i18n.t('tts_speed')}</div>
+                        <input type="range" id="tts-rate" min="50" max="150" value="${Math.round((this.infoPanelUI?.tts?.rate ?? 0.9) * 100)}" />
+                    </div>
+                    <button class="modern-btn" id="tts-test-btn" style="margin-top:8px;font-size:0.85rem;">🔊 ${i18n.t('tts_test')}</button>
+                </div>
+
+                <div class="settings-group">
                     <h3>♿ ${i18n.t('settings_high_contrast')}</h3>
                     <label class="settings-toggle">
                         <span>🔲 ${i18n.t('settings_high_contrast')}</span>
@@ -428,6 +460,39 @@ class App {
         requestAnimationFrame(() => {
             overlay.classList.add('visible');
         });
+
+        // TTS voice selector
+        const ttsSelect = overlay.querySelector('#tts-voice-select');
+        const ttsManager = this.infoPanelUI?.tts || this.uiManager?.infoPanelUI?.tts;
+        if (ttsSelect && ttsManager) {
+            const voices = ttsManager.getVoicesForCurrentLang();
+            const currentVoiceName = ttsManager.selectedVoiceName;
+            if (voices.length === 0) {
+                const opt = document.createElement('option');
+                opt.textContent = i18n.t('tts_not_supported');
+                ttsSelect.appendChild(opt);
+                ttsSelect.disabled = true;
+            } else {
+                voices.forEach(voice => {
+                    const opt = document.createElement('option');
+                    opt.value = voice.name;
+                    opt.textContent = `${voice.name} (${voice.lang})`;
+                    if (voice.name === currentVoiceName) opt.selected = true;
+                    ttsSelect.appendChild(opt);
+                });
+                ttsSelect.addEventListener('change', () => ttsManager.setVoice(ttsSelect.value));
+            }
+        }
+        const ttsRateSlider = overlay.querySelector('#tts-rate');
+        if (ttsRateSlider && ttsManager) {
+            ttsRateSlider.addEventListener('input', (e) => ttsManager.setRate(Number(e.target.value) / 100));
+        }
+        const ttsTestBtn = overlay.querySelector('#tts-test-btn');
+        if (ttsTestBtn && ttsManager) {
+            ttsTestBtn.addEventListener('click', () => {
+                ttsManager.speak(i18n.t('tts_test_phrase'));
+            });
+        }
 
         // Language selector
         overlay.querySelectorAll('.lang-btn').forEach(btn => {
