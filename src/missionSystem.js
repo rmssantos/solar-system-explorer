@@ -303,7 +303,7 @@ export class MissionSystem {
     validateState() {
         // If we have no active mission, or the active mission is already completed
         if (!this.activeMission || this.completedMissions.has(this.activeMission.id)) {
-            console.warn('⚠️ Estado de missão inválido detetado (missão ativa já completada). Corrigindo...');
+            // Normal startup correction: advance to next uncompleted mission
             const nextMission = this.getNextMission();
 
             if (nextMission) {

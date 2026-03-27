@@ -5463,11 +5463,11 @@ body.high-contrast #passport-panel {
 
 @keyframes tutorialCardPop {
     0% {
-        transform: translate(-50%, -50%) scale(0.85);
+        transform: scale(0.85);
         opacity: 0;
     }
     100% {
-        transform: translate(-50%, -50%) scale(1);
+        transform: scale(1);
         opacity: 1;
     }
 }
