@@ -2,6 +2,7 @@
  * Manages the Info Panel: slide-based planet/object information display.
  */
 import { i18n } from './i18n.js';
+import { TTSManager } from './ttsManager.js';
 
 export class InfoPanelUI {
     constructor(app) {
@@ -17,6 +18,9 @@ export class InfoPanelUI {
         this.currentObjectKey = null;
         this.currentSlideIndex = 0;
         this.slides = [];
+
+        // TTS
+        this.tts = new TTSManager();
     }
 
     show(objectName, data, navigationList) {
@@ -37,6 +41,8 @@ export class InfoPanelUI {
 
     close() {
         this.infoPanel.classList.add('hidden');
+        // Stop TTS when panel closes
+        this.tts.stop();
         // Stop planet ambient sound when closing info panel
         this.app.audioManager?.stopPlanetAmbient();
     }
@@ -415,6 +421,8 @@ export class InfoPanelUI {
 
     renderSlide() {
         this.infoContent.innerHTML = '';
+        // Stop TTS on slide change
+        this.tts.stop();
         const slide = this.slides[this.currentSlideIndex];
 
         // Object Visual Preview (texture sphere or special image)
@@ -433,6 +441,22 @@ export class InfoPanelUI {
         contentDiv.className = 'slide-content';
         slide.content(contentDiv);
         this.infoContent.appendChild(contentDiv);
+
+        // TTS "Read to Me" button
+        if (this.tts.isSupported()) {
+            const ttsBtn = document.createElement('button');
+            ttsBtn.className = 'tts-btn';
+            ttsBtn.textContent = i18n.t('tts_read');
+            ttsBtn.setAttribute('aria-label', i18n.t('tts_read'));
+            ttsBtn.addEventListener('click', () => {
+                const text = contentDiv.innerText || '';
+                const isSpeaking = this.tts.toggle(text);
+                ttsBtn.textContent = isSpeaking ? i18n.t('tts_stop') : i18n.t('tts_read');
+                ttsBtn.classList.toggle('speaking', isSpeaking);
+                ttsBtn.setAttribute('aria-label', isSpeaking ? i18n.t('tts_stop') : i18n.t('tts_read'));
+            });
+            this.infoContent.appendChild(ttsBtn);
+        }
 
         // Buttons
         const controls = document.createElement('div');

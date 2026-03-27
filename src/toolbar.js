@@ -4,13 +4,15 @@
  */
 
 import { i18n } from './i18n.js';
+import { BibliotecaPanel } from './bibliotecaPanel.js';
 
 export class Toolbar {
     constructor(app) {
         this.app = app;
         this.isExpanded = true;
         this.buttons = [];
-        
+        this.bibliotecaPanel = new BibliotecaPanel();
+
         this.createToolbar();
 
         // Listen for language changes
@@ -39,7 +41,7 @@ export class Toolbar {
         if (galleryBtn) galleryBtn.title = i18n.t('gallery');
         if (compareBtn) compareBtn.title = i18n.t('compare_planets');
         if (achievementsBtn) achievementsBtn.title = i18n.t('achievements');
-        if (libraryBtn) libraryBtn.title = i18n.t('library');
+        if (libraryBtn) libraryBtn.title = i18n.t('biblioteca_btn');
         if (settingsBtn) settingsBtn.title = i18n.t('settings');
 
         this.toggleBtn.title = this.isExpanded ? i18n.t('hide_menu') : i18n.t('show_menu');
@@ -72,9 +74,9 @@ export class Toolbar {
             if (this.app.achievementSystem) this.app.achievementSystem.showAchievementsPanel();
         });
         
-        // Library button
-        this.addButton('📚', 'library', i18n.t('library', 'Biblioteca'), () => {
-            window.location.href = '/biblioteca';
+        // Library button (opens in-app panel)
+        this.addButton('\uD83D\uDCDA', 'library', i18n.t('biblioteca_btn'), () => {
+            this.bibliotecaPanel.open();
         });
 
         // Settings button

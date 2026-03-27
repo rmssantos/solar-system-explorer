@@ -350,9 +350,20 @@ export const TRANSLATIONS = {
         mission_completed_all: "Todas as missões completas!",
         mission_next: "Próxima missão",
 
+        // TTS
+        tts_read: "\uD83D\uDD0A L\u00ea para mim",
+        tts_stop: "\uD83D\uDD07 Parar",
+        tts_not_supported: "Voz n\u00e3o dispon\u00edvel",
+
+        // Biblioteca In-App
+        biblioteca_btn: "\uD83D\uDCDA Biblioteca",
+        biblioteca_search: "Procurar...",
+        biblioteca_close: "Voltar ao jogo",
+        biblioteca_detail_back: "\u2190 Voltar",
+
         // Language
         language: "Idioma",
-        lang_pt: "Português",
+        lang_pt: "Portugu\u00eas",
         lang_en: "English"
     },
 
@@ -702,9 +713,20 @@ export const TRANSLATIONS = {
         mission_completed_all: "All missions complete!",
         mission_next: "Next mission",
 
+        // TTS
+        tts_read: "\uD83D\uDD0A Read to me",
+        tts_stop: "\uD83D\uDD07 Stop",
+        tts_not_supported: "Voice not available",
+
+        // Biblioteca In-App
+        biblioteca_btn: "\uD83D\uDCDA Library",
+        biblioteca_search: "Search...",
+        biblioteca_close: "Back to game",
+        biblioteca_detail_back: "\u2190 Back",
+
         // Language
         language: "Language",
-        lang_pt: "Português",
+        lang_pt: "Portugu\u00eas",
         lang_en: "English"
     }
 };
