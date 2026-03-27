@@ -298,6 +298,27 @@ export const TRANSLATIONS = {
         mission_haumea_rugby_desc: "Encontra Haumea, o planeta anão em forma de bola de rugby!",
         mission_haumea_rugby_hint: "Roda tão rápido que esticou!",
 
+        // Tutorial
+        tutorial_title: "Tutorial",
+        tutorial_step1: "Bem-vindo! Toca nas setas para explorar os planetas!",
+        tutorial_step2: "Toca num planeta para aprender sobre ele!",
+        tutorial_step3: "Completa missões para ganhar XP!",
+        tutorial_step4: "Carrega M para voar a tua nave manualmente!",
+        tutorial_next: "Próximo",
+        tutorial_skip: "Saltar",
+        tutorial_got_it: "Entendido!",
+
+        // Accessibility
+        settings_high_contrast: "Alto Contraste",
+        aria_settings: "Definições",
+        aria_photo: "Tirar foto espacial",
+        aria_gallery: "Abrir galeria de fotos",
+        aria_compare: "Comparar planetas",
+        aria_collectibles: "Ver colecionáveis",
+        aria_nav_prev: "Planeta anterior",
+        aria_nav_next: "Próximo planeta",
+        aria_manual_nav: "Ativar navegação manual",
+
         // Language
         language: "Idioma",
         lang_pt: "Português",
@@ -597,6 +618,27 @@ export const TRANSLATIONS = {
         mission_haumea_rugby_title: "🏈 Space Rugby Ball",
         mission_haumea_rugby_desc: "Find Haumea, the rugby ball-shaped dwarf planet!",
         mission_haumea_rugby_hint: "It spins so fast that it stretched!",
+
+        // Tutorial
+        tutorial_title: "Tutorial",
+        tutorial_step1: "Welcome! Tap the arrows to explore planets!",
+        tutorial_step2: "Tap a planet to learn about it!",
+        tutorial_step3: "Complete missions to earn XP!",
+        tutorial_step4: "Press M for manual flight mode!",
+        tutorial_next: "Next",
+        tutorial_skip: "Skip",
+        tutorial_got_it: "Got it!",
+
+        // Accessibility
+        settings_high_contrast: "High Contrast",
+        aria_settings: "Settings",
+        aria_photo: "Take space photo",
+        aria_gallery: "Open photo gallery",
+        aria_compare: "Compare planets",
+        aria_collectibles: "View collectibles",
+        aria_nav_prev: "Previous planet",
+        aria_nav_next: "Next planet",
+        aria_manual_nav: "Toggle manual navigation",
 
         // Language
         language: "Language",

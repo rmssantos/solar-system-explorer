@@ -390,7 +390,7 @@ Tem uma atmosfera super grossa de nuvens tóxicas que funcionam como um cobertor
             ], descricaoLonga: "A primeira sonda a atravessar a cintura de asteroides e a visitar Júpiter. Foi uma verdadeira pioneira!", factosUau: ["👾 Leva uma placa com desenhos de humanos para aliens.", "⚡ Usa energia nuclear."] }
         }
     },
-    // ===== ENGLISH (Simplified for brevity but covers structure) =====
+    // ===== ENGLISH =====
     en: {
         ui: {
             back_to_solar: "← Back to Solar System",
@@ -425,60 +425,572 @@ Tem uma atmosfera super grossa de nuvens tóxicas que funcionam como um cobertor
             click_to_learn: "Click to learn more"
         },
         objects: {
-            "sol": { id: "sol", nome: "Sun", tipo: "Star", categoria: "star", emoji: "☀️", imagem: REAL_PHOTOS.sun, estatisticas: { raio: "696,340 km" }, factosUau: ["🔥 Hot enough to evaporate you from millions of km away!", "💪 Contains 99.86% of Solar System mass."], comparacao: "A soccer ball vs pinhead Earth." },
-            "mercurio": { id: "mercurio", nome: "Mercury", tipo: "Rocky Planet", categoria: "planets", emoji: "☿️", imagem: REAL_PHOTOS.mercury, estatisticas: { raio: "2,439 km" }, factosUau: ["🥶 Pizza oven by day, freezer by night!", "🏃‍♂️ Fastest planet (170,000 km/h)."] },
-            "venus": { id: "venus", nome: "Venus", tipo: "Rocky Planet", categoria: "planets", emoji: "♀️", imagem: REAL_PHOTOS.venus, estatisticas: { raio: "6,051 km" }, factosUau: ["🌋 More volcanoes than any planet!", "🍳 Hot enough to melt lead!"] },
-            "terra": { id: "terra", nome: "Earth", tipo: "Rocky Planet", categoria: "planets", emoji: "🌍", imagem: REAL_PHOTOS.earth, estatisticas: { raio: "6,371 km" }, factosUau: ["⚡ 100 lightning strikes per second!", "🦕 Dinosaurs lived here for 165 million years!"] },
-            "marte": { id: "marte", nome: "Mars", tipo: "Rocky Planet", categoria: "planets", emoji: "♂️", imagem: REAL_PHOTOS.mars, estatisticas: { raio: "3,389 km" }, factosUau: ["🏔️ Highest mountain in the Solar System!", "👽 Only planet inhabited solely by robots."] },
-            "jupiter": { id: "jupiter", nome: "Jupiter", tipo: "Gas Giant", categoria: "planets", emoji: "♃", imagem: REAL_PHOTOS.jupiter, estatisticas: { raio: "69,911 km" }, factosUau: ["🌪️ Great Red Spot is a hurricane bigger than Earth!", "🎈 Can fit 1,300 Earths inside."] },
-            "saturno": { id: "saturno", nome: "Saturn", tipo: "Gas Giant", categoria: "planets", emoji: "♄", imagem: REAL_PHOTOS.saturn, estatisticas: { raio: "58,232 km" }, factosUau: ["🛁 Would float in a giant bathtub!", "💎 Rains diamonds!"] },
-            "urano": { id: "urano", nome: "Uranus", tipo: "Ice Giant", categoria: "planets", emoji: "♅", imagem: REAL_PHOTOS.uranus, estatisticas: { raio: "25,362 km" }, factosUau: ["🛌 Rolls on its side!", "👃 Smells like rotten eggs."] },
-            "neptuno": { id: "neptuno", nome: "Neptune", tipo: "Ice Giant", categoria: "planets", emoji: "♆", imagem: REAL_PHOTOS.neptune, estatisticas: { raio: "24,622 km" }, factosUau: ["💨 Fastest winds (2,100 km/h)!", "🥶 Moon Triton is super cold (-235°C)."] },
+            "sol": {
+                id: "sol",
+                nome: "Sun",
+                tipo: "Star",
+                categoria: "star",
+                emoji: "☀️",
+                imagem: REAL_PHOTOS.sun,
+                descricaoLonga: `The Sun is our star! It's a GIANT ball of super hot gas that is always "burning" (actually, it does nuclear fusion). Without the Sun, there would be no life on Earth - it gives us light, heat and energy!
 
-            // DWARFS EN
-            "plutao": { id: "plutao", nome: "Pluto", tipo: "Dwarf Planet", categoria: "dwarfs", emoji: "🌑", imagem: REAL_PHOTOS.pluto, factosUau: ["❤️ Heart-shaped glacier!", "❄️ Red snow!"] },
-            "ceres": { id: "ceres", nome: "Ceres", tipo: "Dwarf Planet", categoria: "dwarfs", emoji: "🪨", imagem: REAL_PHOTOS.ceres, factosUau: ["💧 May have more fresh water than Earth!"] },
-            "eris": { id: "eris", nome: "Eris", tipo: "Dwarf Planet", categoria: "dwarfs", emoji: "❄️", imagem: REAL_PHOTOS.eris, factosUau: ["📏 Farther than Pluto!", "🥶 Atmosphere freezes and falls as snow."] },
-            "makemake": { id: "makemake", nome: "Makemake", tipo: "Dwarf Planet", categoria: "dwarfs", emoji: "🗿", imagem: REAL_PHOTOS.makemake, factosUau: ["🏎️ Short day (22h) like Earth."] },
-            "haumea": { id: "haumea", nome: "Haumea", tipo: "Dwarf Planet", categoria: "dwarfs", emoji: "🏉", imagem: REAL_PHOTOS.haumea, factosUau: ["🌪️ Spins super fast (4h day)!", "🏉 Rugby ball shape."] },
+The Sun is SO big that more than 1 MILLION Earths could fit inside it! And it's 150 million kilometers away from us - so far that light takes 8 minutes to get here!`,
+                historia: `Humans have always loved the Sun! Ancient civilizations like the Egyptians worshipped it as a god called Ra. The Greeks called it Helios and imagined it crossing the sky in a chariot of fire.`,
+                estatisticas: {
+                    raio: "696,340 km",
+                    temperatura: "5,500°C (surface) / 15M°C (core)",
+                    idade: "4.6 billion years",
+                    tipo: "Yellow Dwarf Star (G2V)",
+                    composicao: "73% Hydrogen, 25% Helium"
+                },
+                curiosidades: [
+                    "The Sun contains 99.86% of all the mass in the Solar System!",
+                    "Every second, the Sun converts 600 million tons of hydrogen into helium.",
+                    "The Sun rotates on its own axis - it takes 25 days at the equator and 35 days at the poles!",
+                    "The sunlight you see right now took 8 minutes and 20 seconds to reach you."
+                ],
+                factosUau: [
+                    "🔥 The Sun is so HOT that if you could go there, you'd evaporate millions of km away!",
+                    "💪 The Sun's gravity is 28x stronger than Earth's - you'd weigh 2 TONS there!",
+                    "⚡ The energy the Sun produces in ONE SECOND would be enough for all of humanity for 500,000 years!",
+                    "🌈 The Sun looks yellow, but in space it's WHITE! Earth's atmosphere changes the color.",
+                    "💥 The Sun has GIANT explosions called solar flares - some are bigger than Earth!"
+                ],
+                comparacao: "If the Sun were a soccer ball, Earth would be the size of a pinhead 25 meters away!"
+            },
+            "mercurio": {
+                id: "mercurio",
+                nome: "Mercury",
+                tipo: "Rocky Planet",
+                categoria: "planets",
+                emoji: "☿️",
+                imagem: REAL_PHOTOS.mercury,
+                descricaoLonga: `Mercury is the smallest planet and the closest to the Sun! It's like the "Moon" of the Solar System, because it's gray and full of craters.
 
-            // MOONS EN
-            "lua": { id: "lua", nome: "Moon", tipo: "Moon", categoria: "moons", emoji: "🌝", imagem: REAL_PHOTOS.moon, galeria: [
-                { url: REAL_PHOTOS.aldrin, caption: "Buzz Aldrin na Lua - Apollo 11, 1969. Sabias que no visor dele vês o reflexo de Neil Armstrong a tirar a foto? Por isso quase não há fotos do Neil na Lua!", captionEN: "Buzz Aldrin on the Moon - Apollo 11, 1969. Did you know you can see Neil Armstrong's reflection taking the photo? That's why there are almost no photos of Neil on the Moon!" },
-                { url: REAL_PHOTOS.bootprint, caption: "Pegada de Buzz Aldrin no solo lunar. Sabias que ainda lá está hoje? Sem vento nem chuva na Lua, pode durar milhões de anos!", captionEN: "Buzz Aldrin's bootprint on lunar soil. Did you know it's still there today? With no wind or rain on the Moon, it could last millions of years!" },
-                { url: REAL_PHOTOS.rover, caption: "Carro lunar das missões Apollo. Sabias que ficou na Lua para sempre? Custava muito combustível trazê-lo de volta!", captionEN: "Lunar Rover from Apollo missions. Did you know it was left on the Moon forever? It cost too much fuel to bring back!" }
-            ], factosUau: ["👣 Footprints stay forever.", "🌊 Controls tides."] },
-            "fobos": { id: "fobos", nome: "Phobos", tipo: "Mars Moon", categoria: "moons", emoji: "🥔", imagem: REAL_PHOTOS.phobos, factosUau: ["💥 Will crash into Mars one day."] },
-            "deimos": { id: "deimos", nome: "Deimos", tipo: "Mars Moon", categoria: "moons", emoji: "🥔", imagem: REAL_PHOTOS.deimos, factosUau: ["👻 Named 'Terror'."] },
-            "io": { id: "io", nome: "Io", tipo: "Jupiter Moon", categoria: "moons", emoji: "🌋", imagem: REAL_PHOTOS.io, factosUau: ["🌋 Most volcanic place!", "👃 Smells like sulfur."] },
-            "europa": { id: "europa", nome: "Europa", tipo: "Jupiter Moon", categoria: "moons", emoji: "🧊", imagem: REAL_PHOTOS.europa, factosUau: ["🌊 2x more water than Earth!", "🦑 Life might exist in its ocean."] },
-            "ganimedes": { id: "ganimedes", nome: "Ganymede", tipo: "Jupiter Moon", categoria: "moons", emoji: "⚪", imagem: REAL_PHOTOS.ganymede, factosUau: ["🛡️ Only moon with magnetic field."] },
-            "calisto": { id: "calisto", nome: "Callisto", tipo: "Jupiter Moon", categoria: "moons", emoji: "🌑", imagem: REAL_PHOTOS.callisto, factosUau: ["🤕 Most cratered object."] },
-            "tita": { id: "tita", nome: "Titan", tipo: "Saturn Moon", categoria: "moons", emoji: "🟡", imagem: REAL_PHOTOS.titan, factosUau: ["🌧️ Rains methane!", "✈️ You could fly with wings."] },
-            "encelado": { id: "encelado", nome: "Enceladus", tipo: "Saturn Moon", categoria: "moons", emoji: "❄️", imagem: REAL_PHOTOS.enceladus, factosUau: ["⛲ Ice geysers form Saturn's E-ring!"] },
-            "mimas": { id: "mimas", nome: "Mimas", tipo: "Saturn Moon", categoria: "moons", emoji: "💀", imagem: REAL_PHOTOS.mimas, factosUau: ["🎥 Looks like the Death Star!"] },
-            "miranda": { id: "miranda", nome: "Miranda", tipo: "Uranus Moon", categoria: "moons", emoji: "🧩", factosUau: ["🧗 Highest cliff in solar system (20km)."] },
-            "tritao": { id: "tritao", nome: "Triton", tipo: "Neptune Moon", categoria: "moons", emoji: "🥶", imagem: REAL_PHOTOS.triton, factosUau: ["❄️ Coldest object measured (-235°C)."] },
-            "caronte": { id: "caronte", nome: "Charon", tipo: "Pluto Moon", categoria: "moons", emoji: "👫", imagem: REAL_PHOTOS.charon, factosUau: ["🔒 Locked in a dance with Pluto."] },
+Even though it's right next to the Sun, it's not the hottest! Since it has almost no atmosphere (air), it can't keep the heat. During the day it's super hot, but at night it freezes!`,
+                estatisticas: {
+                    raio: "2,439 km",
+                    distancia: "58 million km",
+                    dia: "59 Earth days",
+                    ano: "88 Earth days",
+                    temperatura: "-173°C to 427°C",
+                    luas: "0"
+                },
+                factosUau: [
+                    "🥶 During the day you could bake pizzas outside, at night you'd instantly turn into an ice cube!",
+                    "🏃‍♂️ It's the fastest planet of all - it travels at 170,000 km/h!",
+                    "🕳️ It has a crater called 'Caloris' that's as big as Portugal and Spain put together!",
+                    "🌑 The sky on Mercury is always black, even during the day, because it has no atmosphere to scatter light."
+                ],
+                comparacao: "Mercury is only a little bigger than our Moon. If Earth were an orange, Mercury would be a grape!"
+            },
+            "venus": {
+                id: "venus",
+                nome: "Venus",
+                tipo: "Rocky Planet",
+                categoria: "planets",
+                emoji: "♀️",
+                imagem: REAL_PHOTOS.venus,
+                descricaoLonga: `Venus is Earth's "sibling" because it's almost the same size, but it's a very angry sibling! It's the hottest planet in the entire Solar System.
 
-            // PROBES EN
-            "voyager": { id: "voyager", nome: "Voyager 1", tipo: "Probe", categoria: "probes", emoji: "🛰️", imagem: REAL_PHOTOS.voyager, galeria: [
-                { src: REAL_PHOTOS.voyager_launch, caption: "Lançamento da Voyager em 1977. Sabias que leva um disco dourado com músicas e sons da Terra para aliens nos conhecerem?", captionEN: "Voyager launch in 1977. Did you know it carries a golden record with music and sounds from Earth for aliens to learn about us?" },
-                { src: REAL_PHOTOS.pale_blue_dot, caption: "Pale Blue Dot - a Terra a 6 mil milhões de km! Sabias que Carl Sagan pediu à Voyager para se virar e tirar esta foto? Aquele pontinho somos todos nós!", captionEN: "Pale Blue Dot - Earth from 6 billion km! Did you know Carl Sagan asked Voyager to turn around and take this photo? That tiny dot is all of us!" }
-            ], factosUau: ["💿 Carries Earth sounds for aliens.", "🌌 In interstellar space."] },
-            "iss": { id: "iss", nome: "Space Station", tipo: "Station", categoria: "probes", emoji: "🛸", imagem: REAL_PHOTOS.iss, galeria: [
-                { src: REAL_PHOTOS.iss_interior, caption: "Interior da ISS. Sabias que os astronautas flutuam porque estão em queda livre constante à volta da Terra? É como estar num elevador a cair para sempre!", captionEN: "Inside the ISS. Did you know astronauts float because they're constantly falling around Earth? It's like being in an elevator falling forever!" },
-                { src: REAL_PHOTOS.iss_2, caption: "Cúpula da ISS - a melhor janela do universo! Sabias que os astronautas passam horas aqui a ver a Terra e tirar fotos? Dá para ver auroras, tempestades e cidades à noite!", captionEN: "ISS Cupola - the best window in the universe! Did you know astronauts spend hours here watching Earth and taking photos? You can see auroras, storms and cities at night!" }
-            ], factosUau: ["🌅 16 sunrises a day!", "💧 Pee recycled into water."] },
-            "hubble": { id: "hubble", nome: "Hubble", tipo: "Telescope", categoria: "probes", emoji: "🔭", imagem: REAL_PHOTOS.hubble, galeria: [
-                { src: REAL_PHOTOS.hubble_deploy, caption: "Space Shuttle a lançar o Hubble em 1990. Sabias que o Hubble tinha um defeito no espelho e as primeiras fotos saíam desfocadas? Astronautas foram lá arranjá-lo!", captionEN: "Space Shuttle deploying Hubble in 1990. Did you know Hubble had a mirror defect and the first photos were blurry? Astronauts went up to fix it!" }
-            ], factosUau: ["👓 Showed us the accelerated universe."] },
-            "curiosity": { id: "curiosity", nome: "Curiosity", tipo: "Rover", categoria: "probes", emoji: "🚙", imagem: REAL_PHOTOS.mars, galeria: [
-                { src: REAL_PHOTOS.curiosity_selfie, caption: "Selfie do Curiosity em Marte! Sabias que ele usa um braço robótico para tirar várias fotos e depois junta-as? Por isso o braço não aparece na foto!", captionEN: "Curiosity selfie on Mars! Did you know it uses a robotic arm to take multiple photos and stitches them together? That's why the arm doesn't appear in the photo!" }
-            ], factosUau: ["🎂 Sang Happy Birthday to itself on Mars!"] },
-            "pioneer": { id: "pioneer", nome: "Pioneer 10", tipo: "Probe", categoria: "probes", emoji: "📡", imagem: REAL_PHOTOS.pioneer, galeria: [
-                { src: REAL_PHOTOS.pioneer2, caption: "Placa da Pioneer - mensagem para aliens! Sabias que mostra um homem e uma mulher, a posição do Sol na galáxia, e o átomo de hidrogénio? É como um postal da humanidade!", captionEN: "Pioneer plaque - message for aliens! Did you know it shows a man and woman, the Sun's position in the galaxy, and the hydrogen atom? It's like a postcard from humanity!" }
-            ], factosUau: ["👾 Carries a plaque with drawings of humans.", "⚡ Nuclear powered."] }
+It has a super thick atmosphere of toxic clouds that works like a blanket, trapping all the heat.`,
+                estatisticas: {
+                    raio: "6,051 km",
+                    distancia: "108 million km",
+                    dia: "243 Earth days",
+                    ano: "225 Earth days",
+                    temperatura: "462°C (constant)",
+                    luas: "0"
+                },
+                factosUau: [
+                    "🌋 Venus has more volcanoes than any other planet - more than 1,600!",
+                    "🍳 It's hot enough to melt solid lead!",
+                    "💨 Winds in the clouds blow at 360 km/h - faster than a hurricane!",
+                    "🌧️ It rains sulfuric acid (battery acid), but it evaporates before touching the ground!"
+                ],
+                comparacao: "Venus and Earth are almost twins in size."
+            },
+            "terra": {
+                id: "terra",
+                nome: "Earth",
+                tipo: "Rocky Planet",
+                categoria: "planets",
+                emoji: "🌍",
+                imagem: REAL_PHOTOS.earth,
+                descricaoLonga: `Earth is our home - the only planet where we know life exists! It's the third planet from the Sun and the only one with liquid water on its surface.`,
+                estatisticas: {
+                    raio: "6,371 km",
+                    distancia: "150 million km",
+                    dia: "24 hours",
+                    ano: "365 days",
+                    temperatura: "-88°C to 58°C",
+                    luas: "1 (The Moon)"
+                },
+                factosUau: [
+                    "⚡ Earth gets hit by 100 lightning bolts every second!",
+                    "🌊 We know the surface of Mars better than the bottom of our own oceans!",
+                    "💎 The center of the Earth is as hot as the surface of the Sun!",
+                    "🦕 Earth has been around for so long that dinosaurs lived here for 165 million years!"
+                ],
+                comparacao: "If Earth were a basketball, the Moon would be a tennis ball 7 meters away.",
+                luas: ["lua"]
+            },
+            "marte": {
+                id: "marte",
+                nome: "Mars",
+                tipo: "Rocky Planet",
+                categoria: "planets",
+                emoji: "♂️",
+                imagem: REAL_PHOTOS.mars,
+                descricaoLonga: `Mars is the "Red Planet"! It's the most likely place to find life or for humans to live in the future. It's a cold, dusty desert.`,
+                estatisticas: {
+                    raio: "3,389 km",
+                    distancia: "228 million km",
+                    dia: "24h 37m",
+                    ano: "687 Earth days",
+                    temperatura: "-63°C",
+                    luas: "2"
+                },
+                factosUau: [
+                    "🏔️ Mount Olympus is so tall it pokes out of Mars' atmosphere!",
+                    "🏜️ It has a canyon (Valles Marineris) that would stretch across the entire United States!",
+                    "❄️ It has polar ice caps made of 'dry ice' (frozen carbon dioxide)!",
+                    "👽 It's the only planet inhabited entirely by robots (the ones we sent)!"
+                ],
+                comparacao: "Mars is about half the size of Earth.",
+                luas: ["fobos", "deimos"]
+            },
+            "jupiter": {
+                id: "jupiter",
+                nome: "Jupiter",
+                tipo: "Gas Giant",
+                categoria: "planets",
+                emoji: "♃",
+                imagem: REAL_PHOTOS.jupiter,
+                descricaoLonga: `Jupiter is the KING of the planets. It's the biggest of them all and it's made of gas. It has no solid ground - if you tried to stand on it, you'd fall forever!`,
+                estatisticas: {
+                    raio: "69,911 km",
+                    distancia: "778 million km",
+                    dia: "9h 55m",
+                    ano: "12 Earth years",
+                    temperatura: "-108°C",
+                    luas: "95"
+                },
+                factosUau: [
+                    "🏋️ Jupiter weighs more than ALL the other planets combined times 2.5!",
+                    "🌪️ The 'Great Red Spot' is a hurricane bigger than the entire Earth!",
+                    "🎈 If Jupiter were hollow, 1,300 Earths could fit inside!",
+                    "⚡ It has auroras (lights) at the poles that are bigger than our entire planet!"
+                ],
+                comparacao: "Jupiter is 11 times bigger than Earth.",
+                luas: ["io", "europa", "ganimedes", "calisto"]
+            },
+            "saturno": {
+                id: "saturno",
+                nome: "Saturn",
+                tipo: "Gas Giant",
+                categoria: "planets",
+                emoji: "♄",
+                imagem: REAL_PHOTOS.saturn,
+                descricaoLonga: `Saturn is the jewel of the Solar System! Famous for its spectacular rings made of ice and rock.`,
+                estatisticas: {
+                    raio: "58,232 km",
+                    distancia: "1.4 billion km",
+                    dia: "10h 33m",
+                    ano: "29 Earth years",
+                    temperatura: "-139°C",
+                    luas: "146"
+                },
+                factosUau: [
+                    "🛁 If there were a giant bathtub, Saturn would FLOAT in the water!",
+                    "💍 The rings stretch 280,000 km but in some places are thinner than a building!",
+                    "💎 It rains diamonds on Saturn due to extreme pressure!",
+                    "👑 It's the king of moons - it has 146 moons, more than any other planet!"
+                ],
+                comparacao: "Saturn is almost as big as Jupiter, but much lighter.",
+                luas: ["tita", "encelado", "mimas"]
+            },
+            "urano": {
+                id: "urano",
+                nome: "Uranus",
+                tipo: "Ice Giant",
+                categoria: "planets",
+                emoji: "♅",
+                imagem: REAL_PHOTOS.uranus,
+                descricaoLonga: `Uranus is the "Ice Giant". It rolls on its side! It's super cold and has a beautiful blue-green color.`,
+                estatisticas: {
+                    raio: "25,362 km",
+                    distancia: "2.9 billion km",
+                    dia: "17h 14m",
+                    ano: "84 Earth years",
+                    temperatura: "-224°C",
+                    luas: "27"
+                },
+                factosUau: [
+                    "🛌 Uranus rolls on its side, like a ball rolling on the ground!",
+                    "❄️ It's the coldest planet in the Solar System, reaching -224°C!",
+                    "👃 It smells like rotten eggs! (Hydrogen sulfide gas)",
+                    "🌑 Its moons are named after characters from Shakespeare!"
+                ],
+                comparacao: "Uranus is 4 times bigger than Earth.",
+                luas: ["miranda", "ariel", "titania"]
+            },
+            "neptuno": {
+                id: "neptuno",
+                nome: "Neptune",
+                tipo: "Ice Giant",
+                categoria: "planets",
+                emoji: "♆",
+                imagem: REAL_PHOTOS.neptune,
+                descricaoLonga: `Neptune is the last planet, windy and deep blue. It has the fastest winds in the solar system!`,
+                estatisticas: {
+                    raio: "24,622 km",
+                    distancia: "4.5 billion km",
+                    dia: "16 hours",
+                    ano: "165 Earth years",
+                    temperatura: "-214°C",
+                    luas: "14"
+                },
+                factosUau: [
+                    "💨 Winds blow at 2,100 km/h - faster than a fighter jet!",
+                    "💎 Just like Saturn, it probably rains diamonds inside!",
+                    "🥶 Its moon Triton is super cold (-235°C)!",
+                    "🔭 It was only visited by one probe (Voyager 2) in 1989!"
+                ],
+                comparacao: "Neptune is Uranus' twin sibling.",
+                luas: ["tritao"]
+            },
+
+            // === DWARF PLANETS ===
+            "plutao": {
+                id: "plutao",
+                nome: "Pluto",
+                tipo: "Dwarf Planet",
+                categoria: "dwarfs",
+                emoji: "🌑",
+                imagem: REAL_PHOTOS.pluto,
+                descricaoLonga: `Pluto used to be the 9th planet and is the most famous of the dwarfs. It has a giant heart made of ice on its surface!`,
+                estatisticas: { raio: "1,188 km", temperatura: "-232°C" },
+                factosUau: [
+                    "❤️ It has a glacier shaped like a heart!",
+                    "❄️ It snows red snow!",
+                    "🏔️ It has ice mountains 3,500m tall!"
+                ],
+                luas: ["caronte"]
+            },
+            "ceres": {
+                id: "ceres",
+                nome: "Ceres",
+                tipo: "Dwarf Planet",
+                categoria: "dwarfs",
+                emoji: "🪨",
+                imagem: REAL_PHOTOS.ceres,
+                descricaoLonga: `Ceres is the only dwarf planet that lives in the asteroid belt (between Mars and Jupiter). It's the biggest asteroid of all!`,
+                estatisticas: { raio: "473 km", temperatura: "-105°C" },
+                factosUau: [
+                    "💧 It may have more fresh water than Earth (frozen)!",
+                    "💡 It has 'mysterious lights' (bright salt spots) on its surface."
+                ]
+            },
+            "eris": {
+                id: "eris",
+                nome: "Eris",
+                tipo: "Dwarf Planet",
+                categoria: "dwarfs",
+                emoji: "❄️",
+                imagem: REAL_PHOTOS.eris,
+                descricaoLonga: `Eris was the 'troublemaker' that made Pluto stop being a planet! It's almost the same size as Pluto but much farther away.`,
+                estatisticas: { raio: "1,163 km", temperatura: "-243°C" },
+                factosUau: [
+                    "📏 It's 3x farther from the Sun than Pluto!",
+                    "🥶 Its atmosphere freezes and falls like snow when it moves away from the Sun."
+                ]
+            },
+            "makemake": {
+                id: "makemake",
+                nome: "Makemake",
+                tipo: "Dwarf Planet",
+                categoria: "dwarfs",
+                emoji: "🗿",
+                imagem: REAL_PHOTOS.makemake,
+                descricaoLonga: `A small icy world in the Kuiper Belt. It was named after the creator god of Easter Island.`,
+                estatisticas: { raio: "715 km", temperatura: "-239°C" },
+                factosUau: [
+                    "🏎️ A day lasts 22 and a half hours, similar to Earth!",
+                    "🔴 It's reddish like Pluto."
+                ]
+            },
+            "haumea": {
+                id: "haumea",
+                nome: "Haumea",
+                tipo: "Dwarf Planet",
+                categoria: "dwarfs",
+                emoji: "🏉",
+                imagem: REAL_PHOTOS.haumea,
+                descricaoLonga: `Haumea is weird because it looks like a rugby ball! It spins so fast that it got stretched out.`,
+                estatisticas: { raio: "816 km (average)", dia: "4 hours!" },
+                factosUau: [
+                    "🌪️ It spins super fast: a day lasts only 4 hours!",
+                    "💍 It has rings, which is rare for such a small object!"
+                ]
+            },
+
+            // === MOONS ===
+            "lua": {
+                id: "lua",
+                nome: "Moon",
+                tipo: "Moon",
+                categoria: "moons",
+                emoji: "🌝",
+                imagem: REAL_PHOTOS.moon,
+                galeria: [
+                    { url: REAL_PHOTOS.aldrin, caption: "Buzz Aldrin on the Moon - Apollo 11, 1969. Did you know you can see Neil Armstrong's reflection in his visor taking the photo? That's why there are almost no photos of Neil on the Moon!", captionEN: "Buzz Aldrin on the Moon - Apollo 11, 1969. Did you know you can see Neil Armstrong's reflection taking the photo? That's why there are almost no photos of Neil on the Moon!" },
+                    { url: REAL_PHOTOS.bootprint, caption: "Buzz Aldrin's bootprint on lunar soil. Did you know it's still there today? With no wind or rain on the Moon, it could last millions of years!", captionEN: "Buzz Aldrin's bootprint on lunar soil. Did you know it's still there today? With no wind or rain on the Moon, it could last millions of years!" },
+                    { url: REAL_PHOTOS.rover, caption: "Lunar Rover from Apollo missions. Did you know it was left on the Moon forever? It cost too much fuel to bring back!", captionEN: "Lunar Rover from Apollo missions. Did you know it was left on the Moon forever? It cost too much fuel to bring back!" }
+                ],
+                estatisticas: { raio: "1,737 km" },
+                factosUau: [
+                    "👣 Footprints last forever on the Moon!",
+                    "🌊 It creates the ocean tides."
+                ]
+            },
+            "fobos": {
+                id: "fobos",
+                nome: "Phobos",
+                tipo: "Mars Moon",
+                categoria: "moons",
+                emoji: "🥔",
+                imagem: REAL_PHOTOS.phobos,
+                descricaoLonga: "One of Mars' two moons. It looks like a potato and is slowly falling towards Mars!",
+                factosUau: [
+                    "💥 One day it will crash into Mars or break apart into a ring."
+                ]
+            },
+            "deimos": {
+                id: "deimos",
+                nome: "Deimos",
+                tipo: "Mars Moon",
+                categoria: "moons",
+                emoji: "🥔",
+                imagem: REAL_PHOTOS.deimos,
+                descricaoLonga: "Mars' other potato. It's smaller and smoother than Phobos.",
+                factosUau: [
+                    "👻 Its name means 'Terror' in Greek."
+                ]
+            },
+            // Jupiter Moons
+            "io": {
+                id: "io",
+                nome: "Io",
+                tipo: "Jupiter Moon",
+                categoria: "moons",
+                emoji: "🌋",
+                imagem: REAL_PHOTOS.io,
+                descricaoLonga: "The most volcanic world of all! It has hundreds of active volcanoes blasting out lava.",
+                factosUau: [
+                    "🌋 The surface constantly renews itself with lava.",
+                    "👃 It smells like rotten eggs (sulfur)."
+                ]
+            },
+            "europa": {
+                id: "europa",
+                nome: "Europa",
+                tipo: "Jupiter Moon",
+                categoria: "moons",
+                emoji: "🧊",
+                imagem: REAL_PHOTOS.europa,
+                descricaoLonga: "The best bet for life! It has a giant ocean of salt water hidden under the ice.",
+                factosUau: [
+                    "🌊 It has 2x more water than Earth!",
+                    "🦑 There could be life in its dark ocean."
+                ]
+            },
+            "ganimedes": {
+                id: "ganimedes",
+                nome: "Ganymede",
+                tipo: "Jupiter Moon",
+                categoria: "moons",
+                emoji: "⚪",
+                imagem: REAL_PHOTOS.ganymede,
+                descricaoLonga: "The biggest moon in the Solar System! It's bigger than the planet Mercury.",
+                factosUau: [
+                    "🛡️ It's the only moon with its own magnetic field."
+                ]
+            },
+            "calisto": {
+                id: "calisto",
+                nome: "Callisto",
+                tipo: "Jupiter Moon",
+                categoria: "moons",
+                emoji: "🌑",
+                imagem: REAL_PHOTOS.callisto,
+                descricaoLonga: "The cosmic golf ball! It's the most cratered object we know of.",
+                factosUau: [
+                    "🤕 The oldest and most 'bombarded' surface in the solar system."
+                ]
+            },
+            // Saturn Moons
+            "tita": {
+                id: "tita",
+                nome: "Titan",
+                tipo: "Saturn Moon",
+                categoria: "moons",
+                emoji: "🟡",
+                imagem: REAL_PHOTOS.titan,
+                estatisticas: { raio: "2,574 km" },
+                factosUau: [
+                    "🌧️ It rains methane!",
+                    "✈️ You could fly with wings on your arms!"
+                ]
+            },
+            "encelado": {
+                id: "encelado",
+                nome: "Enceladus",
+                tipo: "Saturn Moon",
+                categoria: "moons",
+                emoji: "❄️",
+                imagem: REAL_PHOTOS.enceladus,
+                descricaoLonga: "A bright white snowball. It shoots ice geysers into space!",
+                factosUau: [
+                    "⛲ Its geysers create one of Saturn's rings!",
+                    "🌊 It has an underground ocean."
+                ]
+            },
+            "mimas": {
+                id: "mimas",
+                nome: "Mimas",
+                tipo: "Saturn Moon",
+                categoria: "moons",
+                emoji: "💀",
+                imagem: REAL_PHOTOS.mimas,
+                descricaoLonga: "The 'Death Star'! It has a giant crater that makes it look like the Star Wars space station.",
+                factosUau: [
+                    "🎥 It really looks like the Death Star!",
+                    "💥 The 'Herschel' crater nearly split the moon in half."
+                ]
+            },
+            // Uranus/Neptune/Pluto Moons
+            "miranda": {
+                id: "miranda",
+                nome: "Miranda",
+                tipo: "Uranus Moon",
+                categoria: "moons",
+                emoji: "🧩",
+                descricaoLonga: "The Frankenstein moon! It looks like it was broken apart and glued back together the wrong way.",
+                factosUau: [
+                    "🧗 It has the tallest cliff in the solar system (20km high!)."
+                ]
+            },
+            "tritao": {
+                id: "tritao",
+                nome: "Triton",
+                tipo: "Neptune Moon",
+                categoria: "moons",
+                emoji: "🥶",
+                imagem: REAL_PHOTOS.triton,
+                descricaoLonga: "It spins backwards! It's a captured world by Neptune. It spits out black nitrogen.",
+                factosUau: [
+                    "❄️ It's the coldest object ever measured (-235°C).",
+                    "🌋 It has ice volcanoes (cryovolcanoes)!"
+                ]
+            },
+            "caronte": {
+                id: "caronte",
+                nome: "Charon",
+                tipo: "Pluto Moon",
+                categoria: "moons",
+                emoji: "👫",
+                imagem: REAL_PHOTOS.charon,
+                descricaoLonga: "It's so big compared to Pluto that they dance around each other.",
+                factosUau: [
+                    "🔒 It always shows the same face to Pluto and vice versa.",
+                    "🏞️ It has a canyon 4x deeper than the Grand Canyon."
+                ]
+            },
+
+            // === PROBES AND OTHERS ===
+            "voyager": {
+                id: "voyager",
+                nome: "Voyager 1",
+                tipo: "Probe",
+                categoria: "probes",
+                emoji: "🛰️",
+                imagem: REAL_PHOTOS.voyager,
+                galeria: [
+                    { src: REAL_PHOTOS.voyager_launch, caption: "Voyager launch in 1977. Did you know it carries a golden record with music and sounds from Earth for aliens to learn about us?", captionEN: "Voyager launch in 1977. Did you know it carries a golden record with music and sounds from Earth for aliens to learn about us?" },
+                    { src: REAL_PHOTOS.pale_blue_dot, caption: "Pale Blue Dot - Earth from 6 billion km! Did you know Carl Sagan asked Voyager to turn around and take this photo? That tiny dot is all of us!", captionEN: "Pale Blue Dot - Earth from 6 billion km! Did you know Carl Sagan asked Voyager to turn around and take this photo? That tiny dot is all of us!" }
+                ],
+                descricaoLonga: "The most distant human-made object. It has left the Solar System!",
+                factosUau: [
+                    "💿 It carries music and sounds from Earth for aliens.",
+                    "📸 It took the famous 'Pale Blue Dot' photo."
+                ]
+            },
+            "iss": {
+                id: "iss",
+                nome: "Space Station",
+                tipo: "Station",
+                categoria: "probes",
+                emoji: "🛸",
+                imagem: REAL_PHOTOS.iss,
+                galeria: [
+                    { src: REAL_PHOTOS.iss_interior, caption: "Inside the ISS. Did you know astronauts float because they're constantly falling around Earth? It's like being in an elevator falling forever!", captionEN: "Inside the ISS. Did you know astronauts float because they're constantly falling around Earth? It's like being in an elevator falling forever!" },
+                    { src: REAL_PHOTOS.iss_2, caption: "ISS Cupola - the best window in the universe! Did you know astronauts spend hours here watching Earth and taking photos? You can see auroras, storms and cities at night!", captionEN: "ISS Cupola - the best window in the universe! Did you know astronauts spend hours here watching Earth and taking photos? You can see auroras, storms and cities at night!" }
+                ],
+                descricaoLonga: "A home in space for astronauts. It's a giant laboratory that orbits the Earth every 90 minutes!\n\n⚠️ Sad Note: The ISS is getting old and will be 'retired' (deactivated) around 2031. It will fall into the ocean in a controlled way.",
+                factosUau: [
+                    "🌅 16 sunrises every day!",
+                    "💧 They recycle pee into drinking water."
+                ]
+            },
+            "hubble": {
+                id: "hubble",
+                nome: "Hubble",
+                tipo: "Telescope",
+                categoria: "probes",
+                emoji: "🔭",
+                imagem: REAL_PHOTOS.hubble,
+                galeria: [
+                    { src: REAL_PHOTOS.hubble_deploy, caption: "Space Shuttle deploying Hubble in 1990. Did you know Hubble had a mirror defect and the first photos were blurry? Astronauts went up to fix it!", captionEN: "Space Shuttle deploying Hubble in 1990. Did you know Hubble had a mirror defect and the first photos were blurry? Astronauts went up to fix it!" }
+                ],
+                descricaoLonga: "Earth's eye in space. It saw super distant galaxies.",
+                factosUau: [
+                    "👓 We can see the past with it!",
+                    "🌌 It discovered that the universe is accelerating."
+                ]
+            },
+            "curiosity": {
+                id: "curiosity",
+                nome: "Curiosity",
+                tipo: "Rover",
+                categoria: "probes",
+                emoji: "🚙",
+                imagem: REAL_PHOTOS.mars,
+                galeria: [
+                    { src: REAL_PHOTOS.curiosity_selfie, caption: "Curiosity selfie on Mars! Did you know it uses a robotic arm to take multiple photos and stitches them together? That's why the arm doesn't appear in the photo!", captionEN: "Curiosity selfie on Mars! Did you know it uses a robotic arm to take multiple photos and stitches them together? That's why the arm doesn't appear in the photo!" }
+                ],
+                descricaoLonga: "A laboratory on wheels on Mars.",
+                factosUau: [
+                    "🎂 It sang Happy Birthday to itself on Mars!",
+                    "🔫 It has a laser to vaporize rocks."
+                ]
+            },
+            "pioneer": {
+                id: "pioneer",
+                nome: "Pioneer 10",
+                tipo: "Probe",
+                categoria: "probes",
+                emoji: "📡",
+                imagem: REAL_PHOTOS.pioneer,
+                galeria: [
+                    { src: REAL_PHOTOS.pioneer2, caption: "Pioneer plaque - message for aliens! Did you know it shows a man and woman, the Sun's position in the galaxy, and the hydrogen atom? It's like a postcard from humanity!", captionEN: "Pioneer plaque - message for aliens! Did you know it shows a man and woman, the Sun's position in the galaxy, and the hydrogen atom? It's like a postcard from humanity!" }
+                ],
+                descricaoLonga: "The first probe to cross the asteroid belt and visit Jupiter. It was a true pioneer!",
+                factosUau: [
+                    "👾 It carries a plaque with drawings of humans for aliens.",
+                    "⚡ It uses nuclear energy."
+                ]
+            }
         }
     }
 };

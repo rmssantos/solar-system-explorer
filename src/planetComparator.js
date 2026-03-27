@@ -34,6 +34,7 @@ export class PlanetComparator {
         compareBtn.className = 'compare-btn';
         compareBtn.innerHTML = '⚖️';
         compareBtn.title = i18n.t('compare_planets');
+        compareBtn.setAttribute('aria-label', i18n.t('aria_compare'));
         compareBtn.style.cssText = `
             position: fixed;
             bottom: 320px;

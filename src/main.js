@@ -31,6 +31,7 @@ import { ManualNavigation } from './manualNavigation.js';
 import { UISettings } from './uiSettings.js';
 import { resourceManager } from './resourceManager.js';
 import { Mascot } from './mascot.js';
+import { Tutorial } from './tutorial.js';
 
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
@@ -204,6 +205,17 @@ class App {
                 window.dispatchEvent(new CustomEvent('app:first-visit'));
             }, 2000);
 
+            // 20. Show tutorial on first visit
+            if (Tutorial.shouldShow()) {
+                setTimeout(() => {
+                    const tutorial = new Tutorial();
+                    tutorial.show();
+                }, 2500);
+            }
+
+            // 21. Setup global keyboard accessibility (Enter/Space on role="button")
+            this.setupAccessibilityKeyboard();
+
         } catch (e) {
             console.error("CRITICAL APP ERROR:", e);
             alert("Erro fatal na aplicação. Verifica a consola.");
@@ -316,7 +328,8 @@ class App {
         settingsBtn.className = 'settings-btn';
         settingsBtn.innerHTML = '⚙️';
         settingsBtn.title = 'Definições';
-        
+        settingsBtn.setAttribute('aria-label', i18n.t('aria_settings'));
+
         settingsBtn.addEventListener('click', () => this.showSettings());
         document.body.appendChild(settingsBtn);
     }
@@ -372,6 +385,15 @@ class App {
                 </div>
                 
                 <div class="settings-group">
+                    <h3>♿ ${i18n.t('settings_high_contrast')}</h3>
+                    <label class="settings-toggle">
+                        <span>🔲 ${i18n.t('settings_high_contrast')}</span>
+                        <input type="checkbox" id="toggle-high-contrast" ${document.body.classList.contains('high-contrast') ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="settings-group">
                     <h3>📊 ${i18n.t('progress')}</h3>
                     <p>${i18n.t('planets_discovered')}: ${this.gameManager.visited.size}</p>
                     <p>XP Total: ${this.xpSystem.xp}</p>
@@ -414,6 +436,16 @@ class App {
 
         overlay.querySelector('#toggle-sfx').addEventListener('change', (e) => {
             this.audioManager.toggleSFX();
+        });
+
+        // High contrast toggle
+        overlay.querySelector('#toggle-high-contrast').addEventListener('change', (e) => {
+            document.body.classList.toggle('high-contrast', e.target.checked);
+            try {
+                localStorage.setItem('spaceExplorer_highContrast', e.target.checked ? 'true' : 'false');
+            } catch (err) {
+                // Ignore storage errors
+            }
         });
 
         // Volume sliders
@@ -728,7 +760,7 @@ class App {
         const scaledDeltaTime = deltaTime * timeScale;
 
         // Systems that should respect time scale (orbital movements, etc.)
-        if (this.solarSystem) this.solarSystem.update(scaledDeltaTime);
+        if (this.solarSystem) this.solarSystem.update(scaledDeltaTime, this.camera);
         
         // Spaceship follows camera - check if moving fast in manual navigation
         const isMovingFast = this.manualNavigation?.enabled && this.manualNavigation?.currentSpeed > 100;
@@ -751,6 +783,31 @@ class App {
         } else if (this.renderer && !this.isDisposed) {
             this.renderer.render(this.scene, this.camera);
         }
+    }
+
+    /**
+     * Setup global keyboard accessibility
+     * Enter/Space triggers click on elements with role="button"
+     */
+    setupAccessibilityKeyboard() {
+        // Restore high-contrast preference
+        try {
+            if (localStorage.getItem('spaceExplorer_highContrast') === 'true') {
+                document.body.classList.add('high-contrast');
+            }
+        } catch {
+            // Ignore
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const el = document.activeElement;
+                if (el && el.getAttribute('role') === 'button') {
+                    e.preventDefault();
+                    el.click();
+                }
+            }
+        });
     }
 
     /**
@@ -849,7 +906,8 @@ function cleanupDynamicUI() {
         'collectibles-modal',
         'collectible-notification',
         'manual-nav-toggle',
-        'manual-nav-hud'
+        'manual-nav-hud',
+        'tutorial-overlay'
     ];
 
     dynamicClasses.forEach(className => {

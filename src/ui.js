@@ -86,11 +86,13 @@ export class UIManager {
         const btnPrev = document.createElement('button');
         btnPrev.className = 'nav-arrow';
         btnPrev.innerText = '\u25C0';
+        btnPrev.setAttribute('aria-label', i18n.t('aria_nav_prev'));
         btnPrev.onclick = () => { playClick(); this.navigate(-1); };
 
         const btnNext = document.createElement('button');
         btnNext.className = 'nav-arrow';
         btnNext.innerText = '\u25B6';
+        btnNext.setAttribute('aria-label', i18n.t('aria_nav_next'));
         btnNext.onclick = () => { playClick(); this.navigate(1); };
 
         const label = document.createElement('span');

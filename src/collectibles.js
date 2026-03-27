@@ -195,6 +195,7 @@ export class CollectiblesSystem {
         // Collection counter button
         this.counterBtn = document.createElement('button');
         this.counterBtn.className = 'collectibles-counter';
+        this.counterBtn.setAttribute('aria-label', i18n.t('aria_collectibles'));
         this.counterBtn.innerHTML = `🎁 <span id="collected-count">${this.collected.length}</span>/${this.getCollectibleLocations().length}`;
         this.counterBtn.style.cssText = `
             position: fixed;

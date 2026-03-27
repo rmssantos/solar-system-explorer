@@ -5,6 +5,20 @@
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
 
+/** Exported rank definitions for testing */
+export const RANKS = [
+    { level: 1, name: { pt: 'Cadete Espacial', en: 'Space Cadet' }, icon: '👶', minXP: 0 },
+    { level: 2, name: { pt: 'Aprendiz de Piloto', en: 'Pilot Apprentice' }, icon: '🧑‍🎓', minXP: 100 },
+    { level: 3, name: { pt: 'Piloto Júnior', en: 'Junior Pilot' }, icon: '👨‍✈️', minXP: 250 },
+    { level: 4, name: { pt: 'Piloto', en: 'Pilot' }, icon: '🚀', minXP: 450 },
+    { level: 5, name: { pt: 'Piloto Sénior', en: 'Senior Pilot' }, icon: '⭐', minXP: 700 },
+    { level: 6, name: { pt: 'Comandante', en: 'Commander' }, icon: '🎖️', minXP: 1000 },
+    { level: 7, name: { pt: 'Capitão', en: 'Captain' }, icon: '👨‍🚀', minXP: 1400 },
+    { level: 8, name: { pt: 'Almirante', en: 'Admiral' }, icon: '🏅', minXP: 1900 },
+    { level: 9, name: { pt: 'Almirante Espacial', en: 'Space Admiral' }, icon: '🌟', minXP: 2500 },
+    { level: 10, name: { pt: 'Lenda do Espaço', en: 'Space Legend' }, icon: '👑', minXP: 3200 }
+];
+
 export class XPSystem {
     constructor() {
         this.xp = 0;

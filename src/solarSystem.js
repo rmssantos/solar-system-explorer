@@ -50,6 +50,13 @@ export class SolarSystem {
 
         // Accumulated time for UFO/probe animation (instead of Date.now())
         this._animTime = 0;
+
+        // Lazy texture loading: outer planets load textures only when camera is close
+        // Inner planets (sun, mercury, venus, earth, mars) load eagerly
+        this._outerPlanets = new Set(['jupiter', 'saturn', 'uranus', 'neptune']);
+        this._lazyTextureThreshold = 2000; // units
+        this._lazyTextureMeshes = []; // { mesh, textureUrl, loaded }
+        this._worldPos = new THREE.Vector3(); // reusable vector for distance checks
     }
 
     async createSolarSystem() {
@@ -70,6 +77,7 @@ export class SolarSystem {
         }
 
         const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+        sunMesh.frustumCulled = true;
         resourceManager.trackGeometry(sunGeometry);
         resourceManager.trackMaterial(sunMaterial);
 
@@ -131,6 +139,40 @@ export class SolarSystem {
         // 7. Create Easter Egg: UFO near Earth!
         this._ufoSystem = new UFOSystem(this.solarSystemGroup, this.objects, this._hitboxMaterial);
         this._ufoSystem.createUFO();
+
+        // 8. Frustum culling hints: set bounding spheres on complex groups
+        // This helps the renderer skip off-screen groups more efficiently
+        this._setGroupBoundingSpheres();
+    }
+
+    /**
+     * Set bounding spheres on complex groups (probes, UFO) to improve frustum culling.
+     * Three.js uses these to quickly determine if a group is visible.
+     */
+    _setGroupBoundingSpheres() {
+        // Probe groups: each probe is a small group of meshes
+        if (this._probeSystem && this._probeSystem.probes) {
+            for (const probe of this._probeSystem.probes) {
+                if (probe.group) {
+                    // Probes are scaled to 0.4, largest element is solar panel ~9 units
+                    // Bounding sphere of ~15 units covers the whole probe comfortably
+                    probe.group.traverse((child) => {
+                        if (child.isMesh) {
+                            child.frustumCulled = true;
+                        }
+                    });
+                }
+            }
+        }
+
+        // UFO group: classic saucer shape ~12 units wide (before 3x scale)
+        if (this._ufoSystem && this._ufoSystem.ufoGroup) {
+            this._ufoSystem.ufoGroup.traverse((child) => {
+                if (child.isMesh) {
+                    child.frustumCulled = true;
+                }
+            });
+        }
     }
 
     createDwarfPlanet(name, data, sunMesh) {
@@ -169,8 +211,19 @@ export class SolarSystem {
 
         const planetMesh = new THREE.Mesh(geometry, material);
         planetMesh.castShadow = true;
+        planetMesh.frustumCulled = true;
         planetMesh.position.set(distance, 0, 0);
         orbitGroup.add(planetMesh);
+
+        // Register for lazy texture loading (all dwarf planets are distant)
+        if (data.textureUrl) {
+            this._lazyTextureMeshes.push({
+                mesh: planetMesh,
+                material: material,
+                textureUrl: data.textureUrl,
+                loaded: false
+            });
+        }
 
         // Store references
         this.objects[name] = planetMesh;
@@ -233,8 +286,12 @@ export class SolarSystem {
         const geometryHi = new THREE.SphereGeometry(size, 32, 32);
         const geometryLo = new THREE.SphereGeometry(size, 12, 12);
 
+        // Lazy texture loading: outer planets start with solid color, load texture when camera is near
+        const isOuterPlanet = this._outerPlanets.has(name);
+
         let material;
-        if (data.textureUrl) {
+        if (data.textureUrl && !isOuterPlanet) {
+            // Inner planets: load texture eagerly (visible immediately)
             const map = resourceManager.loadTexture(data.textureUrl);
             material = new THREE.MeshStandardMaterial({
                 map: map,
@@ -243,8 +300,10 @@ export class SolarSystem {
                 metalness: 0.1
             });
         } else {
+            // Outer planets with texture: solid color first, texture loaded lazily
+            // Planets without texture: just solid color
             material = new THREE.MeshStandardMaterial({
-                color: data.cor || 0x888888, // Fallback color
+                color: data.cor || 0x888888,
                 roughness: 0.7,
                 metalness: 0.1
             });
@@ -256,6 +315,8 @@ export class SolarSystem {
         const meshLo = new THREE.Mesh(geometryLo, material);
         meshHi.castShadow = true;
         meshLo.castShadow = true;
+        meshHi.frustumCulled = true;
+        meshLo.frustumCulled = true;
         lod.addLevel(meshHi, 0);       // Full detail when close
         lod.addLevel(meshLo, 500);     // Low detail beyond 500 units from camera
         resourceManager.trackGeometry(geometryHi);
@@ -265,6 +326,16 @@ export class SolarSystem {
         const planetMesh = lod;
         planetMesh.castShadow = true;
         planetMesh.receiveShadow = true;
+
+        // Register for lazy texture loading if this is an outer planet with a texture
+        if (isOuterPlanet && data.textureUrl) {
+            this._lazyTextureMeshes.push({
+                mesh: planetMesh,
+                material: material,
+                textureUrl: data.textureUrl,
+                loaded: false
+            });
+        }
 
         // Position planet
         planetMesh.position.set(distance, 0, 0);
@@ -441,6 +512,7 @@ export class SolarSystem {
         resourceManager.trackMaterial(material);
         moonMesh.castShadow = true;
         moonMesh.receiveShadow = true;
+        moonMesh.frustumCulled = true;
 
         moonMesh.position.set(distance, 0, 0);
         moonOrbitGroup.add(moonMesh);
@@ -625,7 +697,7 @@ export class SolarSystem {
         
     }
 
-    update(deltaTime) {
+    update(deltaTime, camera) {
         // Accumulate time for animations (replaces Date.now() calls)
         this._animTime += deltaTime;
 
@@ -637,6 +709,11 @@ export class SolarSystem {
             for (const [name, mesh] of Object.entries(this.objects)) {
                 this._meshToName.set(mesh, name);
             }
+        }
+
+        // Lazy texture loading: check camera distance to outer planets
+        if (camera && this._lazyTextureMeshes.length > 0) {
+            this._updateLazyTextures(camera);
         }
 
         // Rotate Planets around Sun
@@ -673,6 +750,37 @@ export class SolarSystem {
             if (mesh && !excludeKeys.has(name)) {
                 mesh.rotation.y += 0.5 * deltaTime;
             }
+        }
+    }
+
+    /**
+     * Check camera distance to planets with deferred textures and load when close enough.
+     * Once all lazy textures are loaded, the array is emptied and no further checks occur.
+     */
+    _updateLazyTextures(camera) {
+        let allLoaded = true;
+        for (const entry of this._lazyTextureMeshes) {
+            if (entry.loaded) continue;
+            allLoaded = false;
+
+            // Get world position of the planet mesh
+            entry.mesh.getWorldPosition(this._worldPos);
+            const dist = camera.position.distanceTo(this._worldPos);
+
+            if (dist < this._lazyTextureThreshold) {
+                // Load texture and swap onto the material
+                resourceManager.loadTexture(entry.textureUrl, (tex) => {
+                    entry.material.map = tex;
+                    entry.material.color.set(0xffffff);
+                    entry.material.needsUpdate = true;
+                });
+                entry.loaded = true;
+            }
+        }
+
+        // Once every lazy texture has been loaded, clear the array to skip future checks
+        if (allLoaded && this._lazyTextureMeshes.length > 0) {
+            this._lazyTextureMeshes = [];
         }
     }
 

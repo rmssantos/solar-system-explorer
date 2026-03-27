@@ -458,3 +458,30 @@ export class MissionSystem {
         return this.activeMission?.target === planetName;
     }
 }
+
+/**
+ * Exported mission definitions for testing.
+ * These mirror the missions created in MissionSystem.createMissions().
+ */
+export const MISSION_DEFINITIONS = [
+    { id: 'first_flight', target: 'mercury' },
+    { id: 'hot_planet', target: 'venus' },
+    { id: 'home_sweet_home', target: 'earth' },
+    { id: 'red_planet', target: 'mars' },
+    { id: 'gas_giant', target: 'jupiter' },
+    { id: 'ring_master', target: 'saturn' },
+    { id: 'sideways_planet', target: 'uranus' },
+    { id: 'windy_world', target: 'neptune' },
+    { id: 'our_moon', target: 'moon' },
+    { id: 'volcanic_moon', target: 'io' },
+    { id: 'ocean_moon', target: 'europa' },
+    { id: 'biggest_moon', target: 'ganymede' },
+    { id: 'titan_explorer', target: 'titan' },
+    { id: 'death_star', target: 'mimas' },
+    { id: 'sun_seeker', target: 'sun' },
+    { id: 'pluto_explorer', target: 'pluto' },
+    { id: 'ceres_belt', target: 'ceres' },
+    { id: 'eris_discord', target: 'eris' },
+    { id: 'makemake_easter', target: 'makemake' },
+    { id: 'haumea_rugby', target: 'haumea' },
+];
