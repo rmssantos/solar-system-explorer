@@ -1,9 +1,11 @@
 /**
  * Welcome Screen - Captain Personalization
  * Allows the player to enter their name and customize their experience
+ * Features a cinematic intro flythrough animation for first-time visitors
  */
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
+import { IntroAnimation } from './introAnimation.js';
 
 export class WelcomeScreen {
     constructor(onComplete) {
@@ -11,7 +13,9 @@ export class WelcomeScreen {
         this.playerName = '';
         this.shipColor = '#ff4444';
         this.overlay = null;
-        
+        this.introAnimation = null;
+        this.introContainer = null;
+
         // Check if player data exists
         this.loadSavedData();
     }
@@ -36,37 +40,73 @@ export class WelcomeScreen {
     }
 
     show() {
-        // If already has saved name, skip welcome
+        // If already has saved name, skip welcome entirely
         if (this.playerName) {
             this.onComplete(this.playerName, this.shipColor);
             return;
         }
 
-        this.createOverlay();
+        // Start cinematic intro, then show form on top
+        this.startIntro();
     }
 
-    createOverlay() {
+    startIntro() {
+        // Create fullscreen container for the intro animation
+        this.introContainer = document.createElement('div');
+        this.introContainer.className = 'intro-container';
+        document.body.appendChild(this.introContainer);
+
+        // Add skip button
+        const skipBtn = document.createElement('button');
+        skipBtn.className = 'intro-skip-btn';
+        skipBtn.textContent = i18n.t('intro_skip');
+        this.introContainer.appendChild(skipBtn);
+
+        skipBtn.addEventListener('click', () => {
+            if (this.introAnimation) {
+                this.introAnimation.skip();
+            }
+        });
+
+        // Create and start the intro animation
+        this.introAnimation = new IntroAnimation(this.introContainer);
+        this.introAnimation.start().then(() => {
+            // Animation complete (or skipped) - show the form overlay on top
+            this.showFormOverIntro();
+        });
+    }
+
+    showFormOverIntro() {
+        // Remove skip button
+        const skipBtn = this.introContainer.querySelector('.intro-skip-btn');
+        if (skipBtn) skipBtn.remove();
+
+        // Create the overlay form on top of the frozen last frame
+        this.createOverlay(true);
+    }
+
+    createOverlay(overIntro = false) {
         this.overlay = document.createElement('div');
-        this.overlay.className = 'welcome-overlay';
+        this.overlay.className = 'welcome-overlay' + (overIntro ? ' welcome-overlay--over-intro' : '');
         this.overlay.innerHTML = `
             <div class="welcome-container">
                 <div class="welcome-stars"></div>
                 <div class="welcome-content">
                     <div class="welcome-lang-selector">
-                        <button class="lang-mini-btn ${i18n.lang === 'pt' ? 'active' : ''}" data-lang="pt">🇵🇹</button>
-                        <button class="lang-mini-btn ${i18n.lang === 'en' ? 'active' : ''}" data-lang="en">🇬🇧</button>
+                        <button class="lang-mini-btn ${i18n.lang === 'pt' ? 'active' : ''}" data-lang="pt">\u{1F1F5}\u{1F1F9}</button>
+                        <button class="lang-mini-btn ${i18n.lang === 'en' ? 'active' : ''}" data-lang="en">\u{1F1EC}\u{1F1E7}</button>
                     </div>
-                    <div class="welcome-rocket">🚀</div>
+                    <div class="welcome-rocket">\u{1F680}</div>
                     <h1 class="welcome-title">${i18n.t('welcome_title')}</h1>
                     <p class="welcome-subtitle">${i18n.t('welcome_subtitle')}</p>
-                    
+
                     <div class="welcome-form">
                         <label class="welcome-label">
-                            <span>👨‍🚀 ${i18n.t('captain_name')}</span>
-                            <input type="text" id="captain-name" class="welcome-input" 
+                            <span>\u{1F468}\u{200D}\u{1F680} ${i18n.t('captain_name')}</span>
+                            <input type="text" id="captain-name" class="welcome-input"
                                    placeholder="${i18n.t('captain_placeholder')}" maxlength="20" autofocus>
                         </label>
-                        
+
                         <label class="welcome-label">
                             <span>${i18n.t('ship_color')}</span>
                             <div class="ship-colors">
@@ -80,12 +120,12 @@ export class WelcomeScreen {
                                 <button class="color-btn" data-color="#ffffff" style="background: #ffffff" title="${i18n.t('color_white')}"></button>
                             </div>
                         </label>
-                        
+
                         <button id="start-adventure" class="welcome-btn" disabled>
                             <span class="btn-text">${i18n.t('start_mission')}</span>
                         </button>
                     </div>
-                    
+
                     <div class="welcome-hints">
                         <p>${i18n.t('tip_arrows')}</p>
                         <p>${i18n.t('tip_click')}</p>
@@ -96,7 +136,7 @@ export class WelcomeScreen {
 
         document.body.appendChild(this.overlay);
         this.initListeners();
-        
+
         // Animate in
         requestAnimationFrame(() => {
             this.overlay.classList.add('visible');
@@ -117,8 +157,9 @@ export class WelcomeScreen {
                 // Re-render the overlay
                 const currentName = nameInput.value;
                 const currentColor = this.shipColor;
+                const wasOverIntro = this.overlay.classList.contains('welcome-overlay--over-intro');
                 this.overlay.remove();
-                this.createOverlay();
+                this.createOverlay(wasOverIntro);
                 // Restore values
                 this.overlay.querySelector('#captain-name').value = currentName;
                 this.playerName = currentName;
@@ -162,12 +203,24 @@ export class WelcomeScreen {
 
     startGame() {
         this.saveData();
-        
+
         // Animate out
         this.overlay.classList.add('fade-out');
-        
+        if (this.introContainer) {
+            this.introContainer.classList.add('intro-container--fade-out');
+        }
+
         setTimeout(() => {
             this.overlay.remove();
+            // Clean up intro animation
+            if (this.introAnimation) {
+                this.introAnimation.dispose();
+                this.introAnimation = null;
+            }
+            if (this.introContainer) {
+                this.introContainer.remove();
+                this.introContainer = null;
+            }
             this.onComplete(this.playerName, this.shipColor);
         }, 800);
     }
