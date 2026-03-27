@@ -180,18 +180,6 @@ export const TRANSLATIONS = {
         continue: "Continuar",
         continue_adventure: "Continuar Aventura!",
 
-        // Ranks
-        rank_1: "Cadete Espacial",
-        rank_2: "Piloto Júnior",
-        rank_3: "Navegador",
-        rank_4: "Explorador",
-        rank_5: "Capitão",
-        rank_6: "Comandante",
-        rank_7: "Almirante",
-        rank_8: "Mestre Estelar",
-        rank_9: "Grande Explorador",
-        rank_10: "Lenda do Espaço",
-
         // Quiz
         quiz_badge: "QUIZ ESPACIAL",
         quiz_correct: "Correto! Excelente!",
@@ -245,9 +233,6 @@ export const TRANSLATIONS = {
         mission_hot_planet_desc: "Descobre qual é o planeta mais quente do Sistema Solar. Dica: não é o mais perto do Sol!",
         mission_hot_planet_hint: "O efeito de estufa faz um planeta ficar MUITO quente...",
 
-        mission_home_title: "🏠 Lar Doce Lar",
-        mission_home_desc: "Visita o nosso planeta - a Terra! O único com vida conhecida.",
-        mission_home_hint: "É o terceiro planeta a contar do Sol.",
         mission_home_sweet_home_title: "🏠 Lar Doce Lar",
         mission_home_sweet_home_desc: "Visita o nosso planeta - a Terra! O único com vida conhecida.",
         mission_home_sweet_home_hint: "É o terceiro planeta a contar do Sol.",
@@ -264,39 +249,17 @@ export const TRANSLATIONS = {
         mission_ring_master_desc: "Visita Saturno e os seus magníficos anéis! São feitos de gelo e rochas.",
         mission_ring_master_hint: "Este planeta é tão leve que flutuaria em água!",
 
-        mission_sideways_title: "🔄 Planeta Deitado",
-        mission_sideways_desc: "Encontra Úrano, o planeta que roda \"deitado\"! O seu eixo está quase na horizontal.",
-        mission_sideways_hint: "A sua cor azul-esverdeada vem do metano.",
         mission_sideways_planet_title: "🔄 Planeta Deitado",
         mission_sideways_planet_desc: "Encontra Úrano, o planeta que roda \"deitado\"! O seu eixo está quase na horizontal.",
         mission_sideways_planet_hint: "A sua cor azul-esverdeada vem do metano.",
 
-        mission_windy_title: "💨 Mundo dos Ventos",
-        mission_windy_desc: "Viaja até Neptuno, onde os ventos chegam a 2100 km/h! O mais distante dos planetas.",
-        mission_windy_hint: "É o planeta mais azul do Sistema Solar.",
         mission_windy_world_title: "💨 Mundo dos Ventos",
         mission_windy_world_desc: "Viaja até Neptuno, onde os ventos chegam a 2100 km/h! O mais distante dos planetas.",
         mission_windy_world_hint: "É o planeta mais azul do Sistema Solar.",
 
-        mission_moon_title: "🌙 A Nossa Lua",
-        mission_moon_desc: "Visita a Lua, o único satélite natural da Terra! Humanos já caminharam lá.",
-        mission_moon_hint: "Está a cerca de 384.000 km da Terra.",
-
-        mission_volcanic_title: "🌋 Lua Vulcânica",
-        mission_volcanic_desc: "Descobre Io, a lua mais vulcânica do Sistema Solar! Tem centenas de vulcões activos.",
-        mission_volcanic_hint: "É uma lua de Júpiter.",
-
-        mission_ocean_title: "🌊 Lua com Oceano",
-        mission_ocean_desc: "Encontra Europa! Os cientistas acham que tem um oceano escondido debaixo do gelo.",
-        mission_ocean_hint: "Também orbita Júpiter. Pode ter vida alienígena!",
-
         mission_biggest_moon_title: "🏆 Maior Lua",
         mission_biggest_moon_desc: "Visita Ganimedes, a maior lua do Sistema Solar! É maior que Mercúrio!",
         mission_biggest_moon_hint: "Orbita o maior planeta...",
-
-        mission_titan_title: "🪐 Explorador de Titã",
-        mission_titan_desc: "Descobre Titã, a única lua com atmosfera densa! Tem lagos de metano líquido.",
-        mission_titan_hint: "É a maior lua de Saturno.",
 
         mission_death_star_title: "⭐ Estrela da Morte",
         mission_death_star_desc: "Encontra Mimas, a lua que parece a Estrela da Morte do Star Wars!",
@@ -517,18 +480,6 @@ export const TRANSLATIONS = {
         continue: "Continue",
         continue_adventure: "Continue Adventure!",
 
-        // Ranks
-        rank_1: "Space Cadet",
-        rank_2: "Junior Pilot",
-        rank_3: "Navigator",
-        rank_4: "Explorer",
-        rank_5: "Captain",
-        rank_6: "Commander",
-        rank_7: "Admiral",
-        rank_8: "Star Master",
-        rank_9: "Great Explorer",
-        rank_10: "Space Legend",
-
         // Quiz
         quiz_badge: "SPACE QUIZ",
         quiz_correct: "Correct! Excellent!",
@@ -582,9 +533,6 @@ export const TRANSLATIONS = {
         mission_hot_planet_desc: "Discover the hottest planet in the Solar System. Hint: it's not the closest to the Sun!",
         mission_hot_planet_hint: "The greenhouse effect makes a planet VERY hot...",
 
-        mission_home_title: "🏠 Home Sweet Home",
-        mission_home_desc: "Visit our planet - Earth! The only one with known life.",
-        mission_home_hint: "It's the third planet from the Sun.",
         mission_home_sweet_home_title: "🏠 Home Sweet Home",
         mission_home_sweet_home_desc: "Visit our planet - Earth! The only one with known life.",
         mission_home_sweet_home_hint: "It's the third planet from the Sun.",
@@ -601,39 +549,17 @@ export const TRANSLATIONS = {
         mission_ring_master_desc: "Visit Saturn and its magnificent rings! They're made of ice and rocks.",
         mission_ring_master_hint: "This planet is so light it would float on water!",
 
-        mission_sideways_title: "🔄 Sideways Planet",
-        mission_sideways_desc: "Find Uranus, the planet that rotates \"on its side\"! Its axis is almost horizontal.",
-        mission_sideways_hint: "Its blue-green color comes from methane.",
         mission_sideways_planet_title: "🔄 Sideways Planet",
         mission_sideways_planet_desc: "Find Uranus, the planet that rotates \"on its side\"! Its axis is almost horizontal.",
         mission_sideways_planet_hint: "Its blue-green color comes from methane.",
 
-        mission_windy_title: "💨 World of Winds",
-        mission_windy_desc: "Travel to Neptune, where winds reach 2100 km/h! The most distant planet.",
-        mission_windy_hint: "It's the bluest planet in the Solar System.",
         mission_windy_world_title: "💨 World of Winds",
         mission_windy_world_desc: "Travel to Neptune, where winds reach 2100 km/h! The most distant planet.",
         mission_windy_world_hint: "It's the bluest planet in the Solar System.",
 
-        mission_moon_title: "🌙 Our Moon",
-        mission_moon_desc: "Visit the Moon, Earth's only natural satellite! Humans have walked there.",
-        mission_moon_hint: "It's about 384,000 km from Earth.",
-
-        mission_volcanic_title: "🌋 Volcanic Moon",
-        mission_volcanic_desc: "Discover Io, the most volcanic moon in the Solar System! It has hundreds of active volcanoes.",
-        mission_volcanic_hint: "It's a moon of Jupiter.",
-
-        mission_ocean_title: "🌊 Ocean Moon",
-        mission_ocean_desc: "Find Europa! Scientists think it has an ocean hidden under the ice.",
-        mission_ocean_hint: "It also orbits Jupiter. It might have alien life!",
-
         mission_biggest_moon_title: "🏆 Biggest Moon",
         mission_biggest_moon_desc: "Visit Ganymede, the largest moon in the Solar System! It's bigger than Mercury!",
         mission_biggest_moon_hint: "It orbits the largest planet...",
-
-        mission_titan_title: "🪐 Titan Explorer",
-        mission_titan_desc: "Discover Titan, the only moon with a dense atmosphere! It has lakes of liquid methane.",
-        mission_titan_hint: "It's Saturn's largest moon.",
 
         mission_death_star_title: "⭐ Death Star",
         mission_death_star_desc: "Find Mimas, the moon that looks like the Death Star from Star Wars!",
