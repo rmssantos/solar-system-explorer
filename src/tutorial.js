@@ -102,6 +102,13 @@ export class Tutorial {
         this.hand.innerHTML = '<span class="tutorial-hand-icon">👆</span>';
         this.overlay.appendChild(this.hand);
 
+        // Click on overlay background dismisses tutorial
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay || e.target === this.spotlight) {
+                this.complete();
+            }
+        });
+
         document.body.appendChild(this.overlay);
 
         // Animate in

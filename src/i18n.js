@@ -298,6 +298,9 @@ export const TRANSLATIONS = {
         mission_haumea_rugby_desc: "Encontra Haumea, o planeta anão em forma de bola de rugby!",
         mission_haumea_rugby_hint: "Roda tão rápido que esticou!",
 
+        // Loading
+        loading_solar_system: "A carregar o Sistema Solar...",
+
         // Tutorial
         tutorial_title: "Tutorial",
         tutorial_step1: "Bem-vindo! Toca nas setas para explorar os planetas!",
@@ -618,6 +621,9 @@ export const TRANSLATIONS = {
         mission_haumea_rugby_title: "🏈 Space Rugby Ball",
         mission_haumea_rugby_desc: "Find Haumea, the rugby ball-shaped dwarf planet!",
         mission_haumea_rugby_hint: "It spins so fast that it stretched!",
+
+        // Loading
+        loading_solar_system: "Loading the Solar System...",
 
         // Tutorial
         tutorial_title: "Tutorial",
