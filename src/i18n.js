@@ -326,6 +326,20 @@ export const TRANSLATIONS = {
         aria_nav_next: "Próximo planeta",
         aria_manual_nav: "Ativar navegação manual",
 
+        // Mission Overlay
+        mission_overlay_title: "A Tua Primeira Missão!",
+        mission_overlay_go: "Vamos lá!",
+        mission_overlay_new: "Nova Missão!",
+
+        // Mission Indicator
+        mission_indicator_target: "Objectivo",
+        mission_indicator_find: "Encontra",
+
+        // Mission Panel (redesign)
+        mission_progress: "Progresso",
+        mission_completed_all: "Todas as missões completas!",
+        mission_next: "Próxima missão",
+
         // Language
         language: "Idioma",
         lang_pt: "Português",
@@ -653,6 +667,20 @@ export const TRANSLATIONS = {
         aria_nav_prev: "Previous planet",
         aria_nav_next: "Next planet",
         aria_manual_nav: "Toggle manual navigation",
+
+        // Mission Overlay
+        mission_overlay_title: "Your First Mission!",
+        mission_overlay_go: "Let's Go!",
+        mission_overlay_new: "New Mission!",
+
+        // Mission Indicator
+        mission_indicator_target: "Target",
+        mission_indicator_find: "Find",
+
+        // Mission Panel (redesign)
+        mission_progress: "Progress",
+        mission_completed_all: "All missions complete!",
+        mission_next: "Next mission",
 
         // Language
         language: "Language",

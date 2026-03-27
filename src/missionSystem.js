@@ -339,13 +339,22 @@ export class MissionSystem {
         this.updateMissionUI();
     }
 
-    updateMissionUI() {
+    updateMissionUI(animate = false) {
+        const progress = this.getProgress();
+        const pct = progress.total > 0
+            ? Math.round((progress.completed / progress.total) * 100)
+            : 0;
+
         if (!this.activeMission) {
             this.missionPanel.innerHTML = `
+                <div class="mission-progress-bar-wrap">
+                    <div class="mission-progress-label">${i18n.t('mission_progress')}: ${progress.completed}/${progress.total}</div>
+                    <div class="mission-progress-bar"><div class="mission-progress-fill" style="width:${pct}%"></div></div>
+                </div>
                 <div class="mission-complete-all">
                     <span class="mission-icon">🎉</span>
                     <div class="mission-info">
-                        <span class="mission-title">${i18n.t('all_missions_complete')}</span>
+                        <span class="mission-title">${i18n.t('mission_completed_all')}</span>
                         <span class="mission-desc">${i18n.t('true_explorer')}</span>
                     </div>
                 </div>
@@ -353,22 +362,43 @@ export class MissionSystem {
             return;
         }
 
-        const progress = this.getProgress();
+        // Slide-out animation when mission changes
+        if (animate) {
+            this.missionPanel.classList.add('mission-slide-out');
+            setTimeout(() => {
+                this.missionPanel.classList.remove('mission-slide-out');
+                this._renderActiveMission(progress, pct);
+                this.missionPanel.classList.add('mission-slide-in');
+                setTimeout(() => {
+                    this.missionPanel.classList.remove('mission-slide-in');
+                }, 400);
+            }, 300);
+        } else {
+            this._renderActiveMission(progress, pct);
+        }
+    }
 
+    _renderActiveMission(progress, pct) {
         this.missionPanel.innerHTML = `
+            <div class="mission-progress-bar-wrap">
+                <div class="mission-progress-label">${i18n.t('mission_progress')}: ${progress.completed}/${progress.total}</div>
+                <div class="mission-progress-bar"><div class="mission-progress-fill" style="width:${pct}%"></div></div>
+            </div>
             <div class="mission-header">
                 <span class="mission-badge">${i18n.t('mission')} ${progress.completed + 1}/${progress.total}</span>
-                <button class="mission-hint-btn" title="${i18n.t('see_hint')}">💡</button>
+                <button class="mission-hint-btn" title="${i18n.t('see_hint')}" aria-label="${i18n.t('see_hint')}">💡</button>
             </div>
-            <div class="mission-content">
-                <span class="mission-icon">${this.activeMission.title.split(' ')[0]}</span>
-                <div class="mission-info">
-                    <span class="mission-title">${this.getMissionTitle(this.activeMission)}</span>
-                    <span class="mission-desc">${this.getMissionDesc(this.activeMission)}</span>
+            <div class="mission-active-card">
+                <div class="mission-content">
+                    <span class="mission-icon-large">${this.activeMission.title.split(' ')[0]}</span>
+                    <div class="mission-info">
+                        <span class="mission-title">${this.getMissionTitle(this.activeMission)}</span>
+                        <span class="mission-desc">${this.getMissionDesc(this.activeMission)}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="mission-reward">
-                <span>⭐ ${i18n.t('mission_reward')}: ${this.activeMission.xpReward} XP</span>
+                <div class="mission-reward">
+                    <span>⭐ ${i18n.t('mission_reward')}: ${this.activeMission.xpReward} XP</span>
+                </div>
             </div>
             <div class="mission-hint hidden">
                 <span>💡 ${this.getMissionHint(this.activeMission)}</span>
@@ -424,10 +454,16 @@ export class MissionSystem {
         }
 
         if (completedMission) {
+            // Gold glow on complete
+            this.missionPanel.classList.add('mission-gold-glow');
+            setTimeout(() => {
+                this.missionPanel.classList.remove('mission-gold-glow');
+            }, 1500);
+
             // Update active mission to next uncompleted
             this.activeMission = this.getNextMission();
             this.saveProgress();
-            this.updateMissionUI();
+            this.updateMissionUI(true); // animate transition
 
             // Trigger mascot celebration
             window.dispatchEvent(new CustomEvent('app:mission-complete', { detail: completedMission }));
