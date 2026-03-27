@@ -153,10 +153,22 @@ export class BibliotecaPanel {
                 this.renderBody();
             });
 
-            const emoji = document.createElement('div');
-            emoji.className = 'biblioteca-card-emoji';
-            emoji.textContent = obj.emoji || '';
-            card.appendChild(emoji);
+            // Show photo if available, otherwise emoji
+            if (obj.imagem) {
+                const imgWrap = document.createElement('div');
+                imgWrap.className = 'biblioteca-card-img';
+                const img = document.createElement('img');
+                img.src = obj.imagem;
+                img.alt = obj.nome;
+                img.loading = 'lazy';
+                imgWrap.appendChild(img);
+                card.appendChild(imgWrap);
+            } else {
+                const emoji = document.createElement('div');
+                emoji.className = 'biblioteca-card-emoji';
+                emoji.textContent = obj.emoji || '';
+                card.appendChild(emoji);
+            }
 
             const name = document.createElement('div');
             name.className = 'biblioteca-card-name';
@@ -201,14 +213,24 @@ export class BibliotecaPanel {
         });
         detail.appendChild(backBtn);
 
-        // Header (emoji + name + type)
+        // Header with photo (or emoji fallback)
         const header = document.createElement('div');
         header.className = 'biblioteca-detail-header';
-        header.innerHTML = `
-            <div class="detail-emoji">${obj.emoji || ''}</div>
+        if (obj.imagem) {
+            const headerImg = document.createElement('img');
+            headerImg.className = 'detail-header-img';
+            headerImg.src = obj.imagem;
+            headerImg.alt = obj.nome;
+            header.appendChild(headerImg);
+        }
+        const headerText = document.createElement('div');
+        headerText.className = 'detail-header-text';
+        headerText.innerHTML = `
+            <span class="detail-emoji">${obj.emoji || ''}</span>
             <h3>${obj.nome}</h3>
             <div class="detail-type">${obj.tipo || ''}</div>
         `;
+        header.appendChild(headerText);
         detail.appendChild(header);
 
         // Description
@@ -297,17 +319,27 @@ export class BibliotecaPanel {
             detail.appendChild(section);
         }
 
-        // Gallery
+        // Gallery (items can be strings or {url, caption} objects)
         if (obj.galeria && obj.galeria.length > 0) {
-            const section = this.createSection(ui.section_gallery);
+            const section = this.createSection(ui.section_gallery || '📸 Gallery');
             const gallery = document.createElement('div');
             gallery.className = 'biblioteca-detail-gallery';
-            obj.galeria.forEach(src => {
+            obj.galeria.forEach(item => {
+                const imgUrl = typeof item === 'string' ? item : (item.url || item.src);
+                const caption = typeof item === 'string' ? obj.nome : (i18n.lang === 'en' ? (item.captionEN || item.caption) : item.caption);
+                const figure = document.createElement('figure');
+                figure.className = 'biblioteca-gallery-item';
                 const img = document.createElement('img');
-                img.src = src;
-                img.alt = obj.nome;
+                img.src = imgUrl;
+                img.alt = caption || obj.nome;
                 img.loading = 'lazy';
-                gallery.appendChild(img);
+                figure.appendChild(img);
+                if (caption) {
+                    const figcaption = document.createElement('figcaption');
+                    figcaption.textContent = caption;
+                    figure.appendChild(figcaption);
+                }
+                gallery.appendChild(figure);
             });
             section.appendChild(gallery);
             detail.appendChild(section);
