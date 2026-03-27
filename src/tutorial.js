@@ -211,13 +211,11 @@ export class Tutorial {
      */
     positionCard(rect, position) {
         const isMobile = window.innerWidth <= 768;
-        const cardW = 380;
-        const cardH = 250;
         const margin = 20;
         const vw = window.innerWidth;
         const vh = window.innerHeight;
 
-        // Reset styles
+        // Reset all positioning
         this.card.style.transform = '';
         this.card.style.left = '';
         this.card.style.top = '';
@@ -225,31 +223,51 @@ export class Tutorial {
         this.card.style.right = '';
 
         if (isMobile) {
-            // On mobile, always place card at the bottom of screen
+            // Mobile: always centered at bottom
             this.card.style.left = '50%';
             this.card.style.bottom = `${margin}px`;
             this.card.style.transform = 'translateX(-50%)';
-        } else {
-            if (position === 'above') {
-                let left = Math.max(margin, Math.min(rect.left + rect.width / 2 - cardW / 2, vw - cardW - margin));
-                let bottom = vh - rect.top + margin;
-                // If would go above viewport, place below instead
-                if (vh - bottom + cardH > vh) bottom = margin;
-                this.card.style.left = `${left}px`;
-                this.card.style.bottom = `${bottom}px`;
-            } else if (position === 'beside') {
-                let left = rect.right + margin;
-                let top = Math.max(margin, Math.min(rect.top, vh - cardH - margin));
-                // If would go off right edge, place to the left of target instead
-                if (left + cardW > vw) left = Math.max(margin, rect.left - cardW - margin);
-                this.card.style.left = `${left}px`;
-                this.card.style.top = `${top}px`;
-            } else {
-                this.card.style.left = '50%';
-                this.card.style.top = '50%';
-                this.card.style.transform = 'translate(-50%, -50%)';
+            return;
+        }
+
+        if (position === 'center' || !rect) {
+            this.card.style.left = '50%';
+            this.card.style.top = '50%';
+            this.card.style.transform = 'translate(-50%, -50%)';
+            return;
+        }
+
+        // Get actual card dimensions after render
+        const cardRect = this.card.getBoundingClientRect();
+        const cardW = cardRect.width || 380;
+        const cardH = cardRect.height || 250;
+
+        let left, top;
+
+        if (position === 'above') {
+            // Try above the target, centered horizontally
+            left = rect.left + rect.width / 2 - cardW / 2;
+            top = rect.top - cardH - margin;
+            // If goes above viewport, place below instead
+            if (top < margin) {
+                top = rect.bottom + margin;
+            }
+        } else if (position === 'beside') {
+            // Try to the right of the target
+            left = rect.right + margin;
+            top = rect.top;
+            // If goes off right edge, place to the left
+            if (left + cardW > vw - margin) {
+                left = rect.left - cardW - margin;
             }
         }
+
+        // ALWAYS clamp to viewport bounds (never go off-screen)
+        left = Math.max(margin, Math.min(left, vw - cardW - margin));
+        top = Math.max(margin, Math.min(top, vh - cardH - margin));
+
+        this.card.style.left = `${left}px`;
+        this.card.style.top = `${top}px`;
     }
 
     /**
