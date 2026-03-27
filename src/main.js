@@ -892,6 +892,305 @@ class App {
     }
 
     /**
+     * Show endgame completion screen with certificate
+     */
+    showCompletionScreen() {
+        const stats = {
+            planetsVisited: this.gameManager.visited.size,
+            missionsCompleted: this.missionSystem.completedMissions.size,
+            xpTotal: this.xpSystem.xp,
+            quizStreak: this.quizSystem?.streak || 0
+        };
+
+        const certDataUrl = this.certificateGenerator.generate(this.playerName, stats);
+
+        const overlay = document.createElement('div');
+        overlay.className = 'endgame-overlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 15000;
+            opacity: 0; transition: opacity 0.5s ease;
+        `;
+
+        const certImg = document.createElement('img');
+        certImg.src = certDataUrl;
+        certImg.alt = i18n.t('cert_title');
+        certImg.style.cssText = 'max-width: 90%; max-height: 55vh; border-radius: 12px; box-shadow: 0 0 40px rgba(212, 165, 55, 0.4);';
+        overlay.appendChild(certImg);
+
+        const msgEl = document.createElement('p');
+        msgEl.style.cssText = 'color: #ffd700; font-size: 1.3rem; text-align: center; margin: 20px 20px 0; font-family: "Segoe UI", Arial, sans-serif; font-weight: bold;';
+        msgEl.textContent = i18n.t('endgame_congrats');
+        overlay.appendChild(msgEl);
+
+        const btnRow = document.createElement('div');
+        btnRow.style.cssText = 'display: flex; gap: 16px; margin-top: 20px;';
+
+        const downloadBtn = document.createElement('button');
+        downloadBtn.style.cssText = `
+            background: linear-gradient(135deg, #d4a537, #b8860b);
+            border: none; border-radius: 8px; padding: 12px 24px;
+            color: white; font-size: 1rem; cursor: pointer; font-weight: bold;
+            font-family: "Segoe UI", Arial, sans-serif;
+        `;
+        downloadBtn.textContent = i18n.t('cert_download');
+        downloadBtn.addEventListener('click', () => {
+            this.certificateGenerator.download(this.playerName, stats);
+        });
+        btnRow.appendChild(downloadBtn);
+
+        const continueBtn = document.createElement('button');
+        continueBtn.style.cssText = `
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none; border-radius: 8px; padding: 12px 24px;
+            color: white; font-size: 1rem; cursor: pointer; font-weight: bold;
+            font-family: "Segoe UI", Arial, sans-serif;
+        `;
+        continueBtn.textContent = i18n.t('endgame_continue');
+        continueBtn.addEventListener('click', () => {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 500);
+        });
+        btnRow.appendChild(continueBtn);
+
+        overlay.appendChild(btnRow);
+        document.body.appendChild(overlay);
+
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+        });
+    }
+
+    /**
+     * Show daily challenge card if all missions are complete
+     * and the player hasn't completed today's challenge yet.
+     */
+    showDailyChallenge() {
+        const today = new Date().toISOString().slice(0, 10);
+        const dailyData = storage.getItem('dailyChallenge', null);
+
+        // Skip if already completed today
+        if (dailyData && dailyData.date === today && dailyData.completed) return;
+
+        // Get all available quiz planets
+        const quizzes = this.quizSystem?.getQuizzesForLang?.();
+        if (!quizzes) return;
+
+        const planetKeys = Object.keys(quizzes).filter(k => quizzes[k] && quizzes[k].length > 0);
+        if (planetKeys.length === 0) return;
+
+        // Use date as seed for consistent daily selection
+        const dateNum = parseInt(today.replace(/-/g, ''), 10);
+        const planetIdx = dateNum % planetKeys.length;
+        const planet = planetKeys[planetIdx];
+        const questions = quizzes[planet];
+        const questionIdx = dateNum % questions.length;
+        const quiz = questions[questionIdx];
+
+        // Calculate streak
+        const streak = dailyData?.streak || 0;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'daily-challenge-overlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: flex; align-items: center;
+            justify-content: center; z-index: 15000;
+            opacity: 0; transition: opacity 0.3s ease;
+        `;
+
+        const card = document.createElement('div');
+        card.style.cssText = `
+            background: linear-gradient(135deg, #1a1a3e, #0a0e2a);
+            border: 2px solid rgba(255, 165, 0, 0.5);
+            border-radius: 16px; padding: 32px; text-align: center;
+            max-width: 450px; width: 90%; color: #e2e8f0;
+            font-family: "Segoe UI", Arial, sans-serif;
+        `;
+
+        const title = document.createElement('h2');
+        title.style.cssText = 'color: #ffa500; margin: 0 0 8px; font-size: 1.4rem;';
+        title.textContent = `\u2B50 ${i18n.t('daily_title')}`;
+        card.appendChild(title);
+
+        if (streak > 0) {
+            const streakEl = document.createElement('p');
+            streakEl.style.cssText = 'color: #ff6b6b; font-size: 0.9rem; margin: 0 0 12px;';
+            streakEl.textContent = `\uD83D\uDD25 ${i18n.t('daily_streak')}: ${streak}`;
+            card.appendChild(streakEl);
+        }
+
+        const questionLabel = document.createElement('p');
+        questionLabel.style.cssText = 'color: #94a3b8; font-size: 0.85rem; margin: 0 0 4px;';
+        questionLabel.textContent = i18n.t('daily_question');
+        card.appendChild(questionLabel);
+
+        const questionEl = document.createElement('p');
+        questionEl.style.cssText = 'color: #fff; font-size: 1.1rem; margin: 0 0 20px; font-weight: bold;';
+        questionEl.textContent = quiz.question;
+        card.appendChild(questionEl);
+
+        // Shuffle options
+        const correct = quiz.options[quiz.correct];
+        const shuffled = [...quiz.options].sort(() => Math.random() - 0.5);
+        const correctIdx = shuffled.indexOf(correct);
+
+        const optionsDiv = document.createElement('div');
+        optionsDiv.style.cssText = 'display: flex; flex-direction: column; gap: 8px;';
+
+        shuffled.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.style.cssText = `
+                background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+                border-radius: 8px; padding: 10px 16px; color: #e2e8f0;
+                font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+                font-family: "Segoe UI", Arial, sans-serif;
+            `;
+            btn.textContent = opt;
+            btn.addEventListener('click', () => {
+                // Disable all buttons
+                optionsDiv.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.cursor = 'default'; });
+
+                const isCorrect = i === correctIdx;
+                btn.style.background = isCorrect ? 'rgba(74, 222, 128, 0.3)' : 'rgba(248, 113, 113, 0.3)';
+                btn.style.borderColor = isCorrect ? '#4ade80' : '#f87171';
+
+                if (!isCorrect) {
+                    // Highlight correct
+                    optionsDiv.querySelectorAll('button')[correctIdx].style.background = 'rgba(74, 222, 128, 0.3)';
+                    optionsDiv.querySelectorAll('button')[correctIdx].style.borderColor = '#4ade80';
+                }
+
+                // Save completion
+                const prevData = storage.getItem('dailyChallenge', null);
+                const prevDate = prevData?.date;
+                const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+                let newStreak = isCorrect ? ((prevDate === yesterday ? (prevData?.streak || 0) : 0) + 1) : 0;
+
+                storage.setItem('dailyChallenge', {
+                    date: today,
+                    completed: true,
+                    correct: isCorrect,
+                    streak: newStreak
+                });
+
+                // Show result
+                setTimeout(() => {
+                    const resultEl = document.createElement('p');
+                    resultEl.style.cssText = `color: ${isCorrect ? '#4ade80' : '#f87171'}; font-weight: bold; margin: 12px 0 0;`;
+                    resultEl.textContent = i18n.t('daily_completed');
+                    card.appendChild(resultEl);
+
+                    if (isCorrect && this.xpSystem) {
+                        this.xpSystem.addXP(30, i18n.t('daily_title'));
+                    }
+
+                    setTimeout(() => {
+                        overlay.style.opacity = '0';
+                        setTimeout(() => overlay.remove(), 300);
+                    }, 1500);
+                }, 800);
+            });
+            optionsDiv.appendChild(btn);
+        });
+
+        card.appendChild(optionsDiv);
+
+        // Close/skip button
+        const closeBtn = document.createElement('button');
+        closeBtn.style.cssText = `
+            background: none; border: none; color: #64748b;
+            font-size: 0.85rem; margin-top: 16px; cursor: pointer;
+            font-family: "Segoe UI", Arial, sans-serif;
+        `;
+        closeBtn.textContent = i18n.t('close');
+        closeBtn.addEventListener('click', () => {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 300);
+        });
+        card.appendChild(closeBtn);
+
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+        });
+    }
+
+    /**
+     * Show share progress panel (called from toolbar)
+     */
+    showShareProgress() {
+        const cardDataUrl = this.shareManager.generateProgressCard(this);
+        const shareUrl = this.shareManager.shareURL(this);
+
+        const overlay = document.createElement('div');
+        overlay.className = 'share-overlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 15000;
+            opacity: 0; transition: opacity 0.3s ease;
+        `;
+
+        const cardImg = document.createElement('img');
+        cardImg.src = cardDataUrl;
+        cardImg.alt = i18n.t('share_card_title');
+        cardImg.style.cssText = 'max-width: 90%; max-height: 50vh; border-radius: 12px; box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);';
+        overlay.appendChild(cardImg);
+
+        const btnRow = document.createElement('div');
+        btnRow.style.cssText = 'display: flex; gap: 12px; margin-top: 20px;';
+
+        const copyBtn = document.createElement('button');
+        copyBtn.style.cssText = `
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none; border-radius: 8px; padding: 10px 24px;
+            color: white; font-size: 0.95rem; cursor: pointer; font-weight: bold;
+            font-family: "Segoe UI", Arial, sans-serif;
+        `;
+        copyBtn.textContent = i18n.t('share_progress');
+        copyBtn.addEventListener('click', async () => {
+            const ok = await this.shareManager.copyToClipboard(shareUrl);
+            if (ok) {
+                copyBtn.textContent = i18n.t('share_copied');
+                copyBtn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            }
+        });
+        btnRow.appendChild(copyBtn);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.style.cssText = `
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px; padding: 10px 24px;
+            color: #e2e8f0; font-size: 0.95rem; cursor: pointer;
+            font-family: "Segoe UI", Arial, sans-serif;
+        `;
+        closeBtn.textContent = i18n.t('close');
+        closeBtn.addEventListener('click', () => {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 300);
+        });
+        btnRow.appendChild(closeBtn);
+
+        overlay.appendChild(btnRow);
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 300);
+            }
+        });
+
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+        });
+    }
+
+    /**
      * Dispose all resources to prevent memory leaks
      * Called on page unload or when app is destroyed
      */
@@ -1037,7 +1336,11 @@ function initApp() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', () => {
+    // Check for shared progress URL before starting
+    ShareManager.checkSharedProgress();
+    initApp();
+});
 
 // Handle bfcache (back-forward cache) - reinitialize when page is restored from cache
 window.addEventListener('pageshow', (event) => {

@@ -2346,6 +2346,28 @@ canvas {
     opacity: 0.8;
 }
 
+.photo-frame-btn {
+    background: linear-gradient(135deg, #d4a537, #b8860b);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.photo-frame-btn:hover {
+    background: linear-gradient(135deg, #e4b547, #c8960b);
+}
+
+.photo-frame-btn:disabled {
+    cursor: default;
+    opacity: 0.8;
+}
+
 /* Gallery Overlay */
 .gallery-overlay {
     position: fixed;

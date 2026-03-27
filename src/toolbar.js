@@ -35,6 +35,7 @@ export class Toolbar {
         const compareBtn = document.getElementById('toolbar-compare');
         const achievementsBtn = document.getElementById('toolbar-achievements');
         const libraryBtn = document.getElementById('toolbar-library');
+        const shareBtn = document.getElementById('toolbar-share');
         const settingsBtn = document.getElementById('toolbar-settings');
 
         if (photoBtn) photoBtn.title = i18n.t('take_photo');
@@ -42,6 +43,7 @@ export class Toolbar {
         if (compareBtn) compareBtn.title = i18n.t('compare_planets');
         if (achievementsBtn) achievementsBtn.title = i18n.t('achievements');
         if (libraryBtn) libraryBtn.title = i18n.t('biblioteca_btn');
+        if (shareBtn) shareBtn.title = i18n.t('share_progress');
         if (settingsBtn) settingsBtn.title = i18n.t('settings');
 
         this.toggleBtn.title = this.isExpanded ? i18n.t('hide_menu') : i18n.t('show_menu');
@@ -79,8 +81,13 @@ export class Toolbar {
             this.bibliotecaPanel.open();
         });
 
+        // Share Progress button
+        this.addButton('\uD83D\uDCE4', 'share', i18n.t('share_progress'), () => {
+            if (this.app.showShareProgress) this.app.showShareProgress();
+        });
+
         // Settings button
-        this.addButton('⚙️', 'settings', i18n.t('settings', 'Configurações'), () => {
+        this.addButton('\u2699\uFE0F', 'settings', i18n.t('settings', 'Configura\u00e7\u00f5es'), () => {
             if (this.app.uiSettings) this.app.uiSettings.togglePanel();
         });
         

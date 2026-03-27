@@ -91,7 +91,7 @@ export class CertificateGenerator {
             { label: i18n.t('cert_planets'), value: String(stats.planetsVisited), icon: '\uD83C\uDF0D' },
             { label: i18n.t('cert_missions'), value: String(stats.missionsCompleted), icon: '\uD83D\uDE80' },
             { label: 'XP', value: String(stats.xpTotal), icon: '\u2B50' },
-            { label: i18n.t('quiz_streak'), value: String(stats.quizStreak), icon: '\uD83D\uDD25' }
+            { label: i18n.t('daily_streak'), value: String(stats.quizStreak), icon: '\uD83D\uDD25' }
         ];
 
         statItems.forEach((stat, i) => {
