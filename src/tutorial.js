@@ -211,6 +211,11 @@ export class Tutorial {
      */
     positionCard(rect, position) {
         const isMobile = window.innerWidth <= 768;
+        const cardW = 380;
+        const cardH = 250;
+        const margin = 20;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
 
         // Reset styles
         this.card.style.transform = '';
@@ -222,16 +227,23 @@ export class Tutorial {
         if (isMobile) {
             // On mobile, always place card at the bottom of screen
             this.card.style.left = '50%';
-            this.card.style.bottom = '20px';
+            this.card.style.bottom = `${margin}px`;
             this.card.style.transform = 'translateX(-50%)';
         } else {
             if (position === 'above') {
-                this.card.style.left = `${rect.left + rect.width / 2}px`;
-                this.card.style.bottom = `${window.innerHeight - rect.top + 20}px`;
-                this.card.style.transform = 'translateX(-50%)';
+                let left = Math.max(margin, Math.min(rect.left + rect.width / 2 - cardW / 2, vw - cardW - margin));
+                let bottom = vh - rect.top + margin;
+                // If would go above viewport, place below instead
+                if (vh - bottom + cardH > vh) bottom = margin;
+                this.card.style.left = `${left}px`;
+                this.card.style.bottom = `${bottom}px`;
             } else if (position === 'beside') {
-                this.card.style.left = `${rect.right + 20}px`;
-                this.card.style.top = `${rect.top}px`;
+                let left = rect.right + margin;
+                let top = Math.max(margin, Math.min(rect.top, vh - cardH - margin));
+                // If would go off right edge, place to the left of target instead
+                if (left + cardW > vw) left = Math.max(margin, rect.left - cardW - margin);
+                this.card.style.left = `${left}px`;
+                this.card.style.top = `${top}px`;
             } else {
                 this.card.style.left = '50%';
                 this.card.style.top = '50%';
