@@ -5179,3 +5179,277 @@ canvas {
         right: 380px; /* Slightly closer on smaller screens */
     }
 }
+
+/* =============================================
+   ACCESSIBILITY - Reduced Motion
+   ============================================= */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* =============================================
+   ACCESSIBILITY - High Contrast Mode
+   ============================================= */
+body.high-contrast {
+    --text: #ffffff;
+    --bg: #000000;
+}
+
+body.high-contrast .info-panel {
+    background: #000 !important;
+    border: 2px solid #fff !important;
+}
+
+body.high-contrast button {
+    border: 2px solid #fff !important;
+}
+
+body.high-contrast .settings-panel {
+    background: #000 !important;
+    border: 2px solid #fff !important;
+}
+
+body.high-contrast .nav-controls {
+    background: rgba(0, 0, 0, 0.9) !important;
+    border: 1px solid #fff !important;
+}
+
+body.high-contrast #hud-panel {
+    background: rgba(0, 0, 0, 0.95) !important;
+    border: 1px solid #fff !important;
+}
+
+body.high-contrast #passport-panel {
+    background: rgba(0, 0, 0, 0.95) !important;
+    border: 1px solid #fff !important;
+}
+
+/* =============================================
+   TUTORIAL OVERLAY
+   ============================================= */
+.tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20000;
+    background: rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: auto;
+}
+
+.tutorial-overlay.visible {
+    opacity: 1;
+}
+
+.tutorial-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Spotlight - highlights the target UI element */
+.tutorial-spotlight {
+    position: fixed;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+    border-radius: 12px;
+    z-index: 20001;
+    transition: all 0.4s ease;
+    pointer-events: none;
+}
+
+/* Tutorial card - the message box */
+.tutorial-card {
+    position: fixed;
+    z-index: 20002;
+    background: linear-gradient(135deg, rgba(20, 20, 50, 0.97), rgba(40, 30, 80, 0.97));
+    border: 2px solid rgba(100, 120, 255, 0.4);
+    border-radius: 20px;
+    padding: 24px 28px;
+    max-width: 380px;
+    width: calc(100% - 40px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(100, 100, 255, 0.15);
+    color: #fff;
+    text-align: center;
+}
+
+.tutorial-card-enter {
+    animation: tutorialCardPop 0.35s ease forwards;
+}
+
+@keyframes tutorialCardPop {
+    0% {
+        transform: translate(-50%, -50%) scale(0.85);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Step dots */
+.tutorial-step-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.tutorial-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.tutorial-dot.active {
+    background: #6366f1;
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+    transform: scale(1.3);
+}
+
+.tutorial-dot.done {
+    background: #22c55e;
+}
+
+/* Tutorial icon */
+.tutorial-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    animation: tutorialBounce 1.2s infinite;
+}
+
+@keyframes tutorialBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* Tutorial text */
+.tutorial-text {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+/* Tutorial buttons */
+.tutorial-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.tutorial-next-btn {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-width: 120px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.tutorial-next-btn:hover,
+.tutorial-next-btn:focus {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    outline: 2px solid #a5b4fc;
+    outline-offset: 2px;
+}
+
+.tutorial-skip-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 14px 24px;
+    border-radius: 14px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.tutorial-skip-btn:hover,
+.tutorial-skip-btn:focus {
+    background: rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+    outline: 2px solid rgba(255, 255, 255, 0.3);
+    outline-offset: 2px;
+}
+
+/* Animated hand pointer */
+.tutorial-hand {
+    position: fixed;
+    z-index: 20003;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: left 0.4s ease, top 0.4s ease;
+}
+
+.tutorial-hand-icon {
+    font-size: 2rem;
+    display: block;
+    animation: tutorialTap 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+
+@keyframes tutorialTap {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    30% {
+        transform: translateY(8px) scale(0.9);
+        opacity: 0.8;
+    }
+    60% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Mobile-first: ensure tutorial works on small screens */
+@media (max-width: 768px) {
+    .tutorial-card {
+        max-width: calc(100% - 32px);
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .tutorial-text {
+        font-size: 1.05rem;
+    }
+
+    .tutorial-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .tutorial-next-btn,
+    .tutorial-skip-btn {
+        width: 100%;
+        padding: 16px;
+        font-size: 1.1rem;
+    }
+
+    .tutorial-icon {
+        font-size: 2rem;
+    }
+
+    .tutorial-hand-icon {
+        font-size: 2.5rem;
+    }
+}

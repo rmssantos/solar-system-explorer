@@ -176,6 +176,7 @@ export class ManualNavigation {
         this.toggleBtn.className = 'manual-nav-toggle';
         this.toggleBtn.innerHTML = '🎮';
         this.toggleBtn.title = i18n.t('manual_nav_tooltip') || i18n.t('manual_nav') || 'Navegação Manual (M)';
+        this.toggleBtn.setAttribute('aria-label', i18n.t('aria_manual_nav'));
         this.toggleBtn.onclick = () => this.toggle();
         document.body.appendChild(this.toggleBtn);
         

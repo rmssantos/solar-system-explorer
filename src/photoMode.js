@@ -49,6 +49,7 @@ export class PhotoMode {
         photoBtn.className = 'photo-btn';
         photoBtn.innerHTML = '📸';
         photoBtn.title = i18n.t('take_photo');
+        photoBtn.setAttribute('aria-label', i18n.t('aria_photo'));
         photoBtn.style.cssText = `
             position: fixed;
             bottom: 200px;
@@ -76,6 +77,7 @@ export class PhotoMode {
         galleryBtn.className = 'gallery-btn';
         galleryBtn.innerHTML = '🖼️';
         galleryBtn.title = i18n.t('gallery');
+        galleryBtn.setAttribute('aria-label', i18n.t('aria_gallery'));
         galleryBtn.style.cssText = `
             position: fixed;
             bottom: 260px;

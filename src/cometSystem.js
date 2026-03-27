@@ -8,6 +8,16 @@ export class CometSystem {
         this.solarSystemGroup = solarSystemGroup;
         this.objects = objects;
         this.comets = [];
+
+        // Pre-generate random spread buffer to avoid Math.random() calls per frame.
+        // 450 particles * 3 axes = 1350 random values needed per frame.
+        // Use a larger buffer (4096) so the pattern doesn't repeat noticeably.
+        this._randomBufferSize = 4096;
+        this._randomBuffer = new Float32Array(this._randomBufferSize);
+        for (let i = 0; i < this._randomBufferSize; i++) {
+            this._randomBuffer[i] = Math.random() - 0.5; // pre-centered around 0
+        }
+        this._randomOffset = 0;
     }
 
     createComets() {
@@ -212,6 +222,8 @@ export class CometSystem {
 
             // Update tail particles - follow position history with solar wind push
             const positions = comet.tailGeom.attributes.position.array;
+            const rBuf = this._randomBuffer;
+            const rBufSize = this._randomBufferSize;
 
             for (let i = 0; i < comet.tailCount; i++) {
                 const t = i / comet.tailCount;
@@ -227,13 +239,14 @@ export class CometSystem {
                 const trailY = historyPos.y + dirFromSun.y * solarPush * blendFactor;
                 const trailZ = historyPos.z + dirFromSun.z * solarPush * blendFactor;
 
-                // Add subtle randomness for natural look
+                // Add subtle randomness for natural look using pre-generated buffer
+                // (eliminates 450 * 3 = 1350 Math.random() calls per frame)
                 const spread = t * 2;
-
-                // Calculate positions with NaN protection
-                const px = trailX + (Math.random() - 0.5) * spread;
-                const py = trailY + (Math.random() - 0.5) * spread;
-                const pz = trailZ + (Math.random() - 0.5) * spread;
+                const ri = this._randomOffset;
+                const px = trailX + rBuf[ri % rBufSize] * spread;
+                const py = trailY + rBuf[(ri + 1) % rBufSize] * spread;
+                const pz = trailZ + rBuf[(ri + 2) % rBufSize] * spread;
+                this._randomOffset = (ri + 3) % rBufSize;
 
                 // Only set if values are valid numbers
                 positions[i * 3] = isFinite(px) ? px : 0;

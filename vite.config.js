@@ -22,7 +22,6 @@ export default defineConfig({
             input: {
                 main: 'index.html',
                 biblioteca: 'biblioteca.html',
-                escala: 'escala.html',
             },
         },
     },
