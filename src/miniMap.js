@@ -354,8 +354,8 @@ export class MiniMap {
         const centerY = h / 2;
         const scale = this.isExpanded ? 1 : 0.5;
 
-        // Update orbit time (fallback for when 3D objects not available)
-        this.orbitTime = Date.now() * 0.0001;
+        // Accumulate orbit time (avoid Date.now() per frame)
+        this.orbitTime += 0.016 * 0.006; // ~60fps equivalent
 
         // Clear
         ctx.fillStyle = 'rgba(10, 10, 30, 0.95)';
@@ -423,7 +423,7 @@ export class MiniMap {
 
             if (isCurrent) {
                 // Current planet - pulsing glow
-                const pulse = Math.sin(Date.now() * 0.005) * 0.3 + 0.7;
+                const pulse = Math.sin(this.orbitTime * 50) * 0.3 + 0.7;
                 ctx.shadowColor = '#4a90e2';
                 ctx.shadowBlur = 15 * pulse;
                 ctx.fillStyle = planet.color;

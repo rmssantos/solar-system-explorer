@@ -189,6 +189,36 @@ export class QuizSystem {
                         correct: 1,
                         explanation: 'Tritão orbita ao contrário! Provavelmente foi capturado por Neptuno.'
                     }
+                ],
+                'pluto': [
+                    {
+                        question: 'O que aconteceu a Plutão em 2006?',
+                        options: ['Explodiu', 'Foi despromovido a planeta anão', 'Foi descoberto', 'Colidiu com Neptuno'],
+                        correct: 1,
+                        explanation: 'Em 2006, os cientistas decidiram que Plutão é um planeta anão!'
+                    },
+                    {
+                        question: 'Que forma tem a marca famosa na superfície de Plutão?',
+                        options: ['Uma estrela', 'Um coração', 'Um círculo', 'Um triângulo'],
+                        correct: 1,
+                        explanation: 'Plutão tem uma enorme mancha em forma de coração chamada Tombaugh Regio!'
+                    }
+                ],
+                'ceres': [
+                    {
+                        question: 'Onde fica Ceres no Sistema Solar?',
+                        options: ['Depois de Neptuno', 'Entre Marte e Júpiter', 'Perto do Sol', 'Entre Saturno e Úrano'],
+                        correct: 1,
+                        explanation: 'Ceres está no cinturão de asteroides, entre Marte e Júpiter!'
+                    }
+                ],
+                'eris': [
+                    {
+                        question: 'Porque é que a descoberta de Éris foi tão importante?',
+                        options: ['Tem vida', 'Fez Plutão perder o título de planeta', 'É maior que a Terra', 'Tem anéis bonitos'],
+                        correct: 1,
+                        explanation: 'Éris é tão grande como Plutão, e a sua descoberta levou os cientistas a criar a categoria de planeta anão!'
+                    }
                 ]
             },
             en: {
@@ -360,6 +390,36 @@ export class QuizSystem {
                         options: ['It\'s square', 'It goes in the opposite direction', 'It\'s very fast', 'It changes size'],
                         correct: 1,
                         explanation: 'Triton orbits backwards! It was probably captured by Neptune.'
+                    }
+                ],
+                'pluto': [
+                    {
+                        question: 'What happened to Pluto in 2006?',
+                        options: ['It exploded', 'It was demoted to a dwarf planet', 'It was discovered', 'It crashed into Neptune'],
+                        correct: 1,
+                        explanation: 'In 2006, scientists decided that Pluto is a dwarf planet!'
+                    },
+                    {
+                        question: 'What shape is the famous mark on Pluto\'s surface?',
+                        options: ['A star', 'A heart', 'A circle', 'A triangle'],
+                        correct: 1,
+                        explanation: 'Pluto has a huge heart-shaped area called Tombaugh Regio!'
+                    }
+                ],
+                'ceres': [
+                    {
+                        question: 'Where is Ceres located in the Solar System?',
+                        options: ['Beyond Neptune', 'Between Mars and Jupiter', 'Near the Sun', 'Between Saturn and Uranus'],
+                        correct: 1,
+                        explanation: 'Ceres is in the asteroid belt, between Mars and Jupiter!'
+                    }
+                ],
+                'eris': [
+                    {
+                        question: 'Why was the discovery of Eris so important?',
+                        options: ['It has life', 'It made Pluto lose its planet title', 'It\'s bigger than Earth', 'It has beautiful rings'],
+                        correct: 1,
+                        explanation: 'Eris is as big as Pluto, and its discovery led scientists to create the dwarf planet category!'
                     }
                 ]
             }

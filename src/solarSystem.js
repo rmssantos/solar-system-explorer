@@ -45,6 +45,9 @@ export class SolarSystem {
         this._orbitEntries = [];
         this._objectValues = [];
 
+        // Reverse map: mesh → name for O(1) click lookup (built after scene creation)
+        this._meshToName = new Map();
+
         // Accumulated time for UFO/probe animation (instead of Date.now())
         this._animTime = 0;
     }
@@ -67,6 +70,8 @@ export class SolarSystem {
         }
 
         const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+        resourceManager.trackGeometry(sunGeometry);
+        resourceManager.trackMaterial(sunMaterial);
 
         // Subtle corona/glow (visual only)
         const coronaGeom1 = new THREE.SphereGeometry(sunRadius * 1.12, 32, 32);
@@ -253,6 +258,9 @@ export class SolarSystem {
         meshLo.castShadow = true;
         lod.addLevel(meshHi, 0);       // Full detail when close
         lod.addLevel(meshLo, 500);     // Low detail beyond 500 units from camera
+        resourceManager.trackGeometry(geometryHi);
+        resourceManager.trackGeometry(geometryLo);
+        resourceManager.trackMaterial(material);
 
         const planetMesh = lod;
         planetMesh.castShadow = true;
@@ -429,6 +437,8 @@ export class SolarSystem {
         }
 
         const moonMesh = new THREE.Mesh(geometry, material);
+        resourceManager.trackGeometry(geometry);
+        resourceManager.trackMaterial(material);
         moonMesh.castShadow = true;
         moonMesh.receiveShadow = true;
 
@@ -623,6 +633,10 @@ export class SolarSystem {
         if (this._orbitEntries.length === 0 && Object.keys(this.orbitSpeeds).length > 0) {
             this._orbitEntries = Object.entries(this.orbitSpeeds);
             this._objectValues = Object.values(this.objects);
+            // Build reverse mesh→name map for O(1) click lookups
+            for (const [name, mesh] of Object.entries(this.objects)) {
+                this._meshToName.set(mesh, name);
+            }
         }
 
         // Rotate Planets around Sun
@@ -686,38 +700,23 @@ export class SolarSystem {
             
             // If we hit a hitbox, return its parent (the actual clickable object)
             if (hitObject.userData.isHitbox && hitObject.parent) {
-                // For probes, the hitbox is in the group, but body is stored in objects
-                // For moons/planets, hitbox is child of the mesh itself
                 const parent = hitObject.parent;
-                
-                // Check if parent is a registered object
-                for (const [name, mesh] of Object.entries(this.objects)) {
-                    if (mesh === parent) {
-                        return mesh;
-                    }
-                }
-                
-                // For probes, the body mesh is the first BoxGeometry child
+
+                // O(1) lookup via reverse map
+                if (this._meshToName.has(parent)) return parent;
+
+                // For probes: check children of parent group
                 if (parent.children) {
                     for (const child of parent.children) {
-                        for (const [name, mesh] of Object.entries(this.objects)) {
-                            if (mesh === child) {
-                                return mesh;
-                            }
-                        }
+                        if (this._meshToName.has(child)) return child;
                     }
                 }
             }
 
-            // If we hit a decorative/child mesh (e.g. Sun corona), bubble up to a registered object.
-            // This keeps selection working even when visual effects are added as children.
+            // Bubble up to a registered object (O(1) per level via Map)
             let current = hitObject;
             while (current) {
-                for (const mesh of Object.values(this.objects)) {
-                    if (mesh === current) {
-                        return mesh;
-                    }
-                }
+                if (this._meshToName.has(current)) return current;
                 current = current.parent;
             }
             

@@ -249,13 +249,14 @@ export class CollectiblesSystem {
         const grid = this.modal.querySelector('#collectibles-grid');
         const types = Object.entries(this.collectibleTypes);
         const lang = i18n.lang;
-        
+        const locations = this.getCollectibleLocations(); // Cache once, reuse below
+
         grid.innerHTML = types.map(([key, info]) => {
             const count = this.collected.filter(id => {
-                const loc = this.getCollectibleLocations().find((l, i) => `collectible_${i}` === id);
+                const loc = locations.find((l, i) => `collectible_${i}` === id);
                 return loc && loc.type === key;
             }).length;
-            const total = this.getCollectibleLocations().filter(l => l.type === key).length;
+            const total = locations.filter(l => l.type === key).length;
             const found = count > 0;
             
             return `
@@ -268,7 +269,7 @@ export class CollectiblesSystem {
         }).join('');
         
         const progress = this.modal.querySelector('#collection-progress');
-        const total = this.getCollectibleLocations().length;
+        const total = locations.length;
         const percent = Math.round((this.collected.length / total) * 100);
         progress.innerHTML = `
             ${i18n.t('collected', 'Encontrados')}: ${this.collected.length}/${total} (${percent}%)

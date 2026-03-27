@@ -1444,7 +1444,8 @@ export class ManualNavigation {
         const clampedY = Math.sin(angle) * clampedDistance;
         
         // Move the joystick stick visual
-        const stick = document.querySelector('.joystick-stick');
+        if (!this._joystickStick) this._joystickStick = document.querySelector('.joystick-stick');
+        const stick = this._joystickStick;
         if (stick) {
             stick.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
         }
@@ -1466,7 +1467,8 @@ export class ManualNavigation {
         this.moveRight = false;
         
         // Reset joystick visual
-        const stick = document.querySelector('.joystick-stick');
+        if (!this._joystickStick) this._joystickStick = document.querySelector('.joystick-stick');
+        const stick = this._joystickStick;
         if (stick) {
             stick.style.transform = 'translate(0, 0)';
         }
@@ -2515,8 +2517,17 @@ export class ManualNavigation {
             return;
         }
 
-        // Get target position
-        const targetPos = new THREE.Vector3();
+        // Get target position (pre-allocated vectors)
+        if (!this._apVecs) {
+            this._apVecs = {
+                targetPos: new THREE.Vector3(),
+                direction: new THREE.Vector3(),
+                quat: new THREE.Quaternion(),
+                matrix: new THREE.Matrix4(),
+                up: new THREE.Vector3(0, 1, 0)
+            };
+        }
+        const targetPos = this._apVecs.targetPos;
         mesh.getWorldPosition(targetPos);
 
         const distance = this.camera.position.distanceTo(targetPos);
@@ -2534,15 +2545,15 @@ export class ManualNavigation {
             return;
         }
 
-        // Calculate direction to target
-        const direction = targetPos.clone().sub(this.camera.position).normalize();
+        // Calculate direction to target (reuse pre-allocated vectors)
+        const direction = this._apVecs.direction.copy(targetPos).sub(this.camera.position).normalize();
 
         // Smoothly rotate towards target
-        const targetQuaternion = new THREE.Quaternion();
-        const lookMatrix = new THREE.Matrix4().lookAt(
+        const targetQuaternion = this._apVecs.quat;
+        const lookMatrix = this._apVecs.matrix.lookAt(
             this.camera.position,
             targetPos,
-            new THREE.Vector3(0, 1, 0)
+            this._apVecs.up
         );
         targetQuaternion.setFromRotationMatrix(lookMatrix);
 

@@ -263,7 +263,7 @@ export class AchievementSystem {
                 id: 'completionist',
                 icon: '🌟',
                 xpReward: 500,
-                requirement: { type: 'totalVisits', count: 38 },
+                requirement: { type: 'totalVisits', count: 37 }, // sun(1) + planets(8) + dwarfs(5) + moons(14) + probes(8) + ufo(1)
                 category: 'progress'
             }
         ];
