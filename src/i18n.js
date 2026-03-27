@@ -207,6 +207,10 @@ export const TRANSLATIONS = {
         welcome_back: "Bem-vindo de volta",
         ready_to_explore: "Pronto para mais aventuras!",
 
+        // Intro Animation
+        intro_skip: "Saltar >",
+        intro_loading: "A preparar viagem...",
+
         // Colors
         color_red: "Vermelho",
         color_green: "Verde",
@@ -530,6 +534,10 @@ export const TRANSLATIONS = {
         // Toast
         welcome_back: "Welcome back",
         ready_to_explore: "Ready for more adventures!",
+
+        // Intro Animation
+        intro_skip: "Skip >",
+        intro_loading: "Preparing journey...",
 
         // Colors
         color_red: "Red",
