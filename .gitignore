@@ -29,6 +29,7 @@ npm-debug.log*
 # Local/dev files
 .claude/
 .local/
+CLAUDE.md
 Screenshot*.png
 src/assets/textures/
 
