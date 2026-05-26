@@ -801,112 +801,112 @@ export const TRANSLATIONS = {
 export const PLANET_TRANSLATIONS = {
     pt: {
         "Sol": {
-            nome: "Sol",
-            tipo: "Estrela"
+            name: "Sol",
+            type: "Estrela"
         },
         "Mercúrio": {
-            nome: "Mercúrio",
-            tipo: "Planeta Rochoso"
+            name: "Mercúrio",
+            type: "Planeta Rochoso"
         },
         "Vénus": {
-            nome: "Vénus",
-            tipo: "Planeta Rochoso"
+            name: "Vénus",
+            type: "Planeta Rochoso"
         },
         "Terra": {
-            nome: "Terra",
-            tipo: "Planeta Rochoso"
+            name: "Terra",
+            type: "Planeta Rochoso"
         },
         "Marte": {
-            nome: "Marte",
-            tipo: "Planeta Rochoso"
+            name: "Marte",
+            type: "Planeta Rochoso"
         },
         "Júpiter": {
-            nome: "Júpiter",
-            tipo: "Gigante Gasoso"
+            name: "Júpiter",
+            type: "Gigante Gasoso"
         },
         "Saturno": {
-            nome: "Saturno",
-            tipo: "Gigante Gasoso"
+            name: "Saturno",
+            type: "Gigante Gasoso"
         },
         "Úrano": {
-            nome: "Úrano",
-            tipo: "Gigante de Gelo"
+            name: "Úrano",
+            type: "Gigante de Gelo"
         },
         "Neptuno": {
-            nome: "Neptuno",
-            tipo: "Gigante de Gelo"
+            name: "Neptuno",
+            type: "Gigante de Gelo"
         }
     },
     en: {
         "Sol": {
-            nome: "Sun",
-            tipo: "Star"
+            name: "Sun",
+            type: "Star"
         },
         "Mercúrio": {
-            nome: "Mercury",
-            tipo: "Rocky Planet"
+            name: "Mercury",
+            type: "Rocky Planet"
         },
         "Vénus": {
-            nome: "Venus",
-            tipo: "Rocky Planet"
+            name: "Venus",
+            type: "Rocky Planet"
         },
         "Terra": {
-            nome: "Earth",
-            tipo: "Rocky Planet"
+            name: "Earth",
+            type: "Rocky Planet"
         },
         "Marte": {
-            nome: "Mars",
-            tipo: "Rocky Planet"
+            name: "Mars",
+            type: "Rocky Planet"
         },
         "Júpiter": {
-            nome: "Jupiter",
-            tipo: "Gas Giant"
+            name: "Jupiter",
+            type: "Gas Giant"
         },
         "Saturno": {
-            nome: "Saturn",
-            tipo: "Gas Giant"
+            name: "Saturn",
+            type: "Gas Giant"
         },
         "Úrano": {
-            nome: "Uranus",
-            tipo: "Ice Giant"
+            name: "Uranus",
+            type: "Ice Giant"
         },
         "Neptuno": {
-            nome: "Neptune",
-            tipo: "Ice Giant"
+            name: "Neptune",
+            type: "Ice Giant"
         },
         // Moons
-        "Lua": { nome: "Moon" },
-        "Fobos": { nome: "Phobos" },
-        "Deimos": { nome: "Deimos" },
-        "Io": { nome: "Io" },
-        "Europa": { nome: "Europa" },
-        "Ganimedes": { nome: "Ganymede" },
-        "Calisto": { nome: "Callisto" },
-        "Titã": { nome: "Titan" },
-        "Encélado": { nome: "Enceladus" },
-        "Mimas": { nome: "Mimas" },
-        "Titânia": { nome: "Titania" },
-        "Oberon": { nome: "Oberon" },
-        "Tritão": { nome: "Triton" },
-        "Proteu": { nome: "Proteus" },
-        "Caronte": { nome: "Charon" },
-        "Disnomia": { nome: "Dysnomia" },
+        "Lua": { name: "Moon" },
+        "Fobos": { name: "Phobos" },
+        "Deimos": { name: "Deimos" },
+        "Io": { name: "Io" },
+        "Europa": { name: "Europa" },
+        "Ganimedes": { name: "Ganymede" },
+        "Calisto": { name: "Callisto" },
+        "Titã": { name: "Titan" },
+        "Encélado": { name: "Enceladus" },
+        "Mimas": { name: "Mimas" },
+        "Titânia": { name: "Titania" },
+        "Oberon": { name: "Oberon" },
+        "Tritão": { name: "Triton" },
+        "Proteu": { name: "Proteus" },
+        "Caronte": { name: "Charon" },
+        "Disnomia": { name: "Dysnomia" },
         // Dwarf planets
-        "Plutão": { nome: "Pluto", tipo: "Dwarf Planet" },
-        "Ceres": { nome: "Ceres", tipo: "Dwarf Planet" },
-        "Éris": { nome: "Eris", tipo: "Dwarf Planet" },
-        "Makemake": { nome: "Makemake", tipo: "Dwarf Planet" },
-        "Haumea": { nome: "Haumea", tipo: "Dwarf Planet" },
+        "Plutão": { name: "Pluto", type: "Dwarf Planet" },
+        "Ceres": { name: "Ceres", type: "Dwarf Planet" },
+        "Éris": { name: "Eris", type: "Dwarf Planet" },
+        "Makemake": { name: "Makemake", type: "Dwarf Planet" },
+        "Haumea": { name: "Haumea", type: "Dwarf Planet" },
         // Probes
-        "Voyager 1": { nome: "Voyager 1" },
-        "Voyager 2": { nome: "Voyager 2" },
-        "New Horizons": { nome: "New Horizons" },
-        "Pioneer 10": { nome: "Pioneer 10" },
-        "Juno": { nome: "Juno" },
-        "Cassini": { nome: "Cassini" },
-        "Estação Espacial Internacional": { nome: "International Space Station" },
-        "Telescópio Espacial Hubble": { nome: "Hubble Space Telescope" },
-        "OVNI Misterioso": { nome: "Mysterious UFO" }
+        "Voyager 1": { name: "Voyager 1" },
+        "Voyager 2": { name: "Voyager 2" },
+        "New Horizons": { name: "New Horizons" },
+        "Pioneer 10": { name: "Pioneer 10" },
+        "Juno": { name: "Juno" },
+        "Cassini": { name: "Cassini" },
+        "Estação Espacial Internacional": { name: "International Space Station" },
+        "Telescópio Espacial Hubble": { name: "Hubble Space Telescope" },
+        "OVNI Misterioso": { name: "Mysterious UFO" }
     }
 };
 
@@ -956,7 +956,7 @@ class I18n {
 
     getPlanetName(internalName) {
         const trans = PLANET_TRANSLATIONS[this.currentLang][internalName];
-        return trans ? trans.nome : internalName;
+        return trans ? trans.name : internalName;
     }
 
     onLangChange(callback) {

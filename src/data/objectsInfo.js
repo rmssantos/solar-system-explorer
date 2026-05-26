@@ -373,7 +373,7 @@ export const SOLAR_SYSTEM_DATA = {
         radiusKm: 58232,
         color: 0xF4C430,
         temAneis: true,
-        tipoAneis: 'bright', // Saturn has bright, prominent rings
+        ringType: 'bright', // Saturn has bright, prominent rings
         textureUrl: TEXTURES.saturn,
         realPhoto: REAL_PHOTOS.saturn,
         moons: [
@@ -447,7 +447,7 @@ export const SOLAR_SYSTEM_DATA = {
         radiusKm: 25362,
         color: 0x40E0D0,
         temAneis: true,
-        tipoAneis: 'dark', // Uranus has dark, thin rings
+        ringType: 'dark', // Uranus has dark, thin rings
         textureUrl: TEXTURES.uranus,
         realPhoto: REAL_PHOTOS.uranus,
         moons: [
@@ -503,7 +503,7 @@ export const SOLAR_SYSTEM_DATA = {
         radiusKm: 24622,
         color: 0x00008B,
         temAneis: true,
-        tipoAneis: 'faint', // Neptune has very faint, thin rings
+        ringType: 'faint', // Neptune has very faint, thin rings
         textureUrl: TEXTURES.neptune,
         realPhoto: REAL_PHOTOS.neptune,
         moons: [

@@ -49,16 +49,16 @@ export class PassportUI {
             badge.className = 'passport-badge locked';
             badge.id = `badge-${id}`;
 
-            // Get translated name for tooltip using the data.nome
+            // Get translated name for tooltip using the data.name
             const data = SOLAR_SYSTEM_DATA[id];
-            const translatedName = data ? (i18n.lang === 'en' ? i18n.getPlanetName(data.nome) : data.nome) : id;
+            const translatedName = data ? (i18n.lang === 'en' ? i18n.getPlanetName(data.name) : data.name) : id;
             badge.title = translatedName;
 
             // Simple Circle Icon
             const icon = document.createElement('div');
             icon.className = 'badge-icon';
             // Set color based on data? default gray
-            if (data) icon.style.backgroundColor = '#' + data.cor.toString(16).padStart(6, '0');
+            if (data) icon.style.backgroundColor = '#' + data.color.toString(16).padStart(6, '0');
 
             const label = document.createElement('span');
             label.innerText = translatedName.substring(0, 3); // Mer, Ven...
@@ -117,7 +117,7 @@ export class PassportUI {
             const badge = document.getElementById(`badge-${id}`);
             if (badge) {
                 const data = SOLAR_SYSTEM_DATA[id];
-                const translatedName = data ? (i18n.lang === 'en' ? i18n.getPlanetName(data.nome) : data.nome) : id;
+                const translatedName = data ? (i18n.lang === 'en' ? i18n.getPlanetName(data.name) : data.name) : id;
                 badge.title = translatedName;
                 const label = badge.querySelector('span');
                 if (label) {

@@ -14,8 +14,8 @@ export class CelebrationUI {
         const objectData = SOLAR_SYSTEM_DATA[name];
         let discoveryKey = 'discovered_planet';
 
-        if (objectData && objectData.tipo) {
-            const tipo = objectData.tipo.toLowerCase();
+        if (objectData && objectData.type) {
+            const tipo = objectData.type.toLowerCase();
             if (tipo.includes('lua') || tipo.includes('moon') || tipo.includes('sat\u00e9lite')) {
                 discoveryKey = 'discovered_moon';
             } else if (tipo.includes('an\u00e3o') || tipo.includes('dwarf')) {

@@ -19,9 +19,9 @@ export class MiniMap {
         const distMap = { sun: 0, mercury: 25, venus: 35, earth: 45, mars: 55, jupiter: 75, saturn: 95, uranus: 115, neptune: 135 };
         this.planetData = planetOrder.map(key => {
             const data = SOLAR_SYSTEM_DATA[key];
-            const colorHex = data?.cor ? '#' + data.cor.toString(16).padStart(6, '0') : '#888888';
+            const colorHex = data?.color ? '#' + data.color.toString(16).padStart(6, '0') : '#888888';
             return {
-                name: data?.nome || key,
+                name: data?.name || key,
                 key: key,
                 distance: distMap[key] || 0,
                 color: colorHex,
@@ -315,7 +315,7 @@ export class MiniMap {
         if (this.app.uiManager) {
             const navList = this.app.uiManager.navigationList;
             const index = navList.findIndex(item => 
-                item.name === planetKey || item.data?.nome === planetKey
+                item.name === planetKey || item.data?.name === planetKey
             );
             
             if (index !== -1) {
