@@ -39,6 +39,7 @@ import { CertificateGenerator } from './certificateGenerator.js';
 import { ShareManager } from './shareManager.js';
 import { CanvasMirror } from './canvasMirror.js';
 import { PWAUI } from './pwaUI.js';
+import { FtueOrchestrator } from './ftueOrchestrator.js';
 
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
@@ -177,10 +178,8 @@ class App {
             // 7. Create settings button
             this.createSettingsUI();
 
-            // 8. Show welcome message
-            this.showWelcomeMessage();
-
-            // 9. Restore passport progress from localStorage
+            // 8. Restore passport progress from localStorage. Done before the FTUE
+            //    orchestrator runs so it can tell first-time vs returning users.
             this.restorePassportProgress();
 
             // 10. Initialize Photo Mode
@@ -210,36 +209,16 @@ class App {
             // 18. Initialize UI Settings (panel visibility controls)
             this.uiSettings = new UISettings(this);
 
-            // 19. Initialize Mascot (Astro the space guide)
+            // 19. Initialize Mascot (Astro the space guide). The FTUE orchestrator
+            //     decides when (and whether) to show the first-visit greeting; we
+            //     no longer dispatch 'app:first-visit' as a fire-and-forget event.
             this.mascot = new Mascot(this);
 
-            // Show welcome message from Astro on first visit
-            setTimeout(() => {
-                window.dispatchEvent(new CustomEvent('app:first-visit'));
-            }, 2000);
-
-            // 20. Show tutorial on first visit
-            if (Tutorial.shouldShow()) {
-                setTimeout(() => {
-                    const tutorial = new Tutorial();
-                    tutorial.show();
-                }, 2500);
-            }
-
-            // 21. Setup global keyboard accessibility (Enter/Space on role="button")
+            // 20. Setup global keyboard accessibility (Enter/Space on role="button")
             this.setupAccessibilityKeyboard();
 
-            // 22. Mission Overlay - show after tutorial (or immediately if no tutorial)
+            // 21. Mission Overlay instance (shown by FTUE orchestrator).
             this.missionOverlay = new MissionOverlay();
-            const overlayDelay = Tutorial.shouldShow() ? 5000 : 3000;
-            setTimeout(() => {
-                if (this.missionSystem.activeMission) {
-                    this.missionOverlay.show(
-                        this.missionSystem.activeMission,
-                        this.missionSystem.completedMissions.size === 0
-                    );
-                }
-            }, overlayDelay);
 
             // 23. Mission Indicator - 3D arrow pointing to target planet
             this.missionIndicator = new MissionIndicator(
@@ -258,15 +237,22 @@ class App {
             // 26. PWA UI: install prompt button + SW update banner.
             this.pwaUI = new PWAUI();
 
-            // 25. Listen for all-missions-complete event (endgame)
+            // 27. Endgame listener: certificate screen after all missions complete.
             window.addEventListener('app:all-missions-complete', () => {
                 setTimeout(() => this.showCompletionScreen(), 2000);
             });
 
-            // 26. Daily Challenge (only if all missions already complete)
-            if (this.missionSystem.completedMissions.size === this.missionSystem.missions.length) {
-                setTimeout(() => this.showDailyChallenge(), 3000);
-            }
+            // 28. FTUE orchestrator — sequences welcome / mascot intro / tutorial /
+            //     mission overlay so they never stack. Replaces 4 parallel setTimeouts.
+            this.ftue = new FtueOrchestrator(this);
+            // Fire-and-forget; the orchestrator awaits each step internally.
+            this.ftue.run().then(() => {
+                // 29. Daily Challenge — only if all missions already complete. Deferred
+                //     until after the FTUE so it never lands on top of onboarding popups.
+                if (this.missionSystem.completedMissions.size === this.missionSystem.missions.length) {
+                    this.showDailyChallenge();
+                }
+            }).catch((e) => console.warn('[FTUE] run failed:', e));
 
         } catch (e) {
             console.error("CRITICAL APP ERROR:", e);
@@ -579,30 +565,6 @@ class App {
                 setTimeout(() => overlay.remove(), 300);
             }
         });
-    }
-
-    showWelcomeMessage() {
-        const rank = this.xpSystem.getCurrentRank();
-        const rankName = this.xpSystem.getRankName(rank);
-        const toast = document.createElement('div');
-        toast.className = 'welcome-toast';
-        toast.innerHTML = `
-            <span class="toast-icon">🚀</span>
-            <span class="toast-text"></span>
-        `;
-        // Safely set text to avoid XSS via playerName
-        toast.querySelector('.toast-text').textContent = `${i18n.t('welcome_back')}, ${rank.icon} ${rankName} ${this.playerName}!`;
-        
-        document.body.appendChild(toast);
-        
-        requestAnimationFrame(() => {
-            toast.classList.add('visible');
-        });
-
-        setTimeout(() => {
-            toast.classList.add('fade-out');
-            setTimeout(() => toast.remove(), 500);
-        }, 3000);
     }
 
     restorePassportProgress() {

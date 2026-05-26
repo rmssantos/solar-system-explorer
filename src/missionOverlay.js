@@ -13,12 +13,15 @@ export class MissionOverlay {
 
     /**
      * Show the mission overlay for the given mission.
-     * Only shows once per session (first call).
+     * Only shows once per session (first call). Returns a Promise that
+     * resolves when the overlay is dismissed (clicked away or auto-timeout) —
+     * used by the FTUE orchestrator to chain popups.
      * @param {object} mission - The active mission object
      * @param {boolean} isFirst - Whether this is the very first mission
+     * @returns {Promise<void>}
      */
     show(mission, isFirst = true) {
-        if (this._shownThisSession || !mission) return;
+        if (this._shownThisSession || !mission) return Promise.resolve();
         this._shownThisSession = true;
 
         const emoji = mission.title.split(' ')[0];
@@ -68,6 +71,10 @@ export class MissionOverlay {
 
         // Auto-dismiss after 8 seconds
         this._dismissTimer = setTimeout(() => this.dismiss(), 8000);
+
+        return new Promise((resolve) => {
+            this._onDismiss = resolve;
+        });
     }
 
     dismiss() {
@@ -81,6 +88,11 @@ export class MissionOverlay {
                 this._overlay?.remove();
                 this._overlay = null;
             }, 400);
+        }
+        if (this._onDismiss) {
+            const cb = this._onDismiss;
+            this._onDismiss = null;
+            cb();
         }
     }
 }
