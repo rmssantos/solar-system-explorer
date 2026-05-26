@@ -81,6 +81,53 @@ describe('SOLAR_SYSTEM_DATA schema (post-rename)', () => {
     });
 });
 
+describe('No PT field accesses remain in any source file', () => {
+    /**
+     * Regression guard for the rename migration. Scans src/ for `data.<ptField>`
+     * style accesses. If ANY consumer reads an old PT field, this catches it
+     * before it crashes at runtime (which was how passportUI.js / miniMap.js /
+     * ui.js failed the first time).
+     */
+    it('no .data access uses old PT property names', async () => {
+        const { readFileSync, readdirSync, statSync } = await import('node:fs');
+        const { resolve } = await import('node:path');
+        const PT_FIELDS = [
+            'nome', 'tipo', 'cor', 'raioKm', 'duracaoDia', 'duracaoAno',
+            'distanciaMediaAoSol', 'temperaturaMediaAproximada',
+            'numeroLuasConhecidas', 'principaisLuas', 'curiosidades',
+            'factosUau', 'comparacao', 'imagemReal', 'ehPlanetoAnao',
+            'descricao', 'distanciaKm', 'tipoAneis',
+        ];
+        // Build a single regex: \.(field1|field2|...)\b after an identifier.
+        // Use a capturing group so we can name the offender in the failure.
+        const re = new RegExp(`\\b\\w+\\.(${PT_FIELDS.join('|')})\\b`, 'g');
+
+        function walk(dir) {
+            const hits = [];
+            for (const entry of readdirSync(dir)) {
+                const full = resolve(dir, entry);
+                const st = statSync(full);
+                if (st.isDirectory()) {
+                    hits.push(...walk(full));
+                } else if (entry.endsWith('.js')) {
+                    const src = readFileSync(full, 'utf8');
+                    let m;
+                    while ((m = re.exec(src)) !== null) {
+                        // Locate line number.
+                        const line = src.slice(0, m.index).split('\n').length;
+                        hits.push(`${full.replace(/.*[/\\]src[/\\]/, 'src/')}:${line} → ${m[0]}`);
+                    }
+                }
+            }
+            return hits;
+        }
+
+        const srcDir = resolve(process.cwd(), 'src');
+        const hits = walk(srcDir);
+        expect(hits, `PT field accesses found:\n  ${hits.join('\n  ')}`).toEqual([]);
+    });
+});
+
 describe('SOLAR_SYSTEM_DATA_EN parity', () => {
     it('the English data file uses the same English schema (no PT leaks)', () => {
         const leaks = [];

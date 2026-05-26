@@ -362,7 +362,7 @@ export class SolarSystem {
 
         // Rings for planets (Saturn, Uranus, Neptune)
         if (data.temAneis) {
-            this.createPlanetRings(planetMesh, size, data.tipoAneis || 'bright', name);
+            this.createPlanetRings(planetMesh, size, data.ringType || 'bright', name);
         }
 
         // Moons
