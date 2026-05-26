@@ -13,16 +13,14 @@
     
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icons/icon.svg">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Solar Explorer">
     
     <link rel="stylesheet" href="styles/style.css">
 
-    <!-- Suppress NaN warnings (must be inline to run before ANY module parsing) -->
-    <script>var _w=console.warn;console.warn=function(){if(arguments[0]&&typeof arguments[0]==='string'&&arguments[0].indexOf('computeBoundingSphere')!==-1)return;_w.apply(console,arguments)};</script>
-    <!-- SW registration + other init (external for CSP) -->
+    <!-- Init: console.warn patch + SW registration. External so CSP can drop 'unsafe-inline'. -->
     <script src="/init.js"></script>
 </head>
 

@@ -82,7 +82,9 @@ class App {
         this.clock = new THREE.Clock();
 
         // Adaptive performance / quality (no UI; automatic)
-        this.qualityLevel = 2; // 0=low, 1=medium, 2=high
+        // Touch devices start at medium; adaptive system promotes to high if FPS allows.
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        this.qualityLevel = isTouchDevice ? 1 : 2; // 0=low, 1=medium, 2=high
         this.postFxScale = 1.0;
         this.bloomPass = null;
         this.sunLight = null;
