@@ -41,8 +41,8 @@ export class UISettings {
             if (header) header.textContent = `⚙️ ${i18n.t('ui_settings')}`;
 
             const labels = this.panel.querySelectorAll('.ui-toggle-row span');
-            const keys = ['passport_title', 'minimap', 'time_control', 'language', 'controls_title'];
-            const icons = ['🛂', '🗺️', '⏱️', '🌐', '🎮'];
+            const keys = ['passport_title', 'minimap', 'time_control', 'controls_title'];
+            const icons = ['🛂', '🗺️', '⏱️', '🎮'];
             labels.forEach((label, i) => {
                 if (keys[i]) label.textContent = `${icons[i]} ${i18n.t(keys[i])}`;
             });
@@ -65,7 +65,6 @@ export class UISettings {
             minimap: true,
             minimapExpanded: true,
             timeControl: true,
-            langSelector: true,
             hudPanel: true
         };
     }
@@ -108,10 +107,6 @@ export class UISettings {
                 <label class="ui-toggle-row">
                     <input type="checkbox" data-panel="timeControl" ${this.panelStates.timeControl ? 'checked' : ''}>
                     <span>⏱️ ${i18n.t('time_control')}</span>
-                </label>
-                <label class="ui-toggle-row">
-                    <input type="checkbox" data-panel="langSelector" ${this.panelStates.langSelector ? 'checked' : ''}>
-                    <span>🌐 ${i18n.t('language')}</span>
                 </label>
                 <label class="ui-toggle-row">
                     <input type="checkbox" data-panel="hudPanel" ${this.panelStates.hudPanel ? 'checked' : ''}>
@@ -168,13 +163,6 @@ export class UISettings {
                 const timeControl = document.querySelector('.time-control, #time-control-compact');
                 if (timeControl) {
                     timeControl.classList.toggle('panel-hidden', !visible);
-                }
-                break;
-                
-            case 'langSelector':
-                const langSelector = document.querySelector('.lang-selector');
-                if (langSelector) {
-                    langSelector.classList.toggle('panel-hidden', !visible);
                 }
                 break;
                 

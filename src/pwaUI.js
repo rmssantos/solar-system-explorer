@@ -25,27 +25,32 @@ export class PWAUI {
         if (document.getElementById('pwa-ui-style')) return;
         const css = `
             .pwa-install-btn {
+                /* Top-left corner — bottom-right is taken by .time-control and the
+                   manual-nav toggle; top-right by the settings button + minimap. */
                 position: fixed;
-                bottom: 20px;
-                right: 20px;
+                top: 12px;
+                left: 12px;
                 z-index: 1100;
                 background: linear-gradient(135deg, #6366f1, #a855f7);
                 color: white;
                 border: none;
                 border-radius: 999px;
-                padding: 10px 16px 10px 12px;
-                font-size: 0.88rem;
+                padding: 8px 14px 8px 10px;
+                font-size: 0.82rem;
                 font-weight: 600;
                 cursor: pointer;
-                box-shadow: 0 10px 24px rgba(99, 102, 241, 0.35);
+                box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
                 display: inline-flex;
                 align-items: center;
-                gap: 8px;
-                transform: translateY(20px);
+                gap: 6px;
+                transform: translateY(-20px);
                 opacity: 0;
                 transition: transform 0.25s ease, opacity 0.25s ease;
             }
             .pwa-install-btn.visible { transform: translateY(0); opacity: 1; }
+            @media (max-width: 600px) {
+                .pwa-install-btn { padding: 6px 12px 6px 8px; font-size: 0.75rem; }
+            }
             .pwa-install-btn:hover { filter: brightness(1.1); }
             .pwa-install-btn:focus-visible { outline: 2px solid #f0f4ff; outline-offset: 3px; }
             .pwa-install-btn .icon { font-size: 1.1rem; }
