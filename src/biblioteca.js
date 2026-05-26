@@ -169,8 +169,8 @@ function filterCards() {
 
         // Filtro de pesquisa
         const searchMatch = !searchTerm ||
-            obj.nome.toLowerCase().includes(searchTerm) ||
-            obj.tipo.toLowerCase().includes(searchTerm) ||
+            obj.name.toLowerCase().includes(searchTerm) ||
+            obj.type.toLowerCase().includes(searchTerm) ||
             (obj.descricaoLonga && obj.descricaoLonga.toLowerCase().includes(searchTerm));
 
         card.classList.toggle('hidden', !(categoryMatch && searchMatch));
@@ -194,25 +194,25 @@ function renderContent() {
         card.setAttribute('data-category', obj.categoria);
 
         // Escolher um facto aleatório para mostrar no card
-        const randomFact = obj.factosUau ?
-            obj.factosUau[Math.floor(Math.random() * obj.factosUau.length)] : '';
+        const randomFact = obj.wowFacts ?
+            obj.wowFacts[Math.floor(Math.random() * obj.wowFacts.length)] : '';
 
         // Accessibility attributes
         card.setAttribute('tabindex', '0');
         card.setAttribute('role', 'button');
-        card.setAttribute('aria-label', `${obj.nome} - ${obj.tipo}. ${ui.click_to_learn || 'Clica para saber mais'}`);
+        card.setAttribute('aria-label', `${obj.name} - ${obj.type}. ${ui.click_to_learn || 'Clica para saber mais'}`);
 
         card.innerHTML = `
             <div class="card-image">
                 ${obj.imagem ?
-                `<img src="${obj.imagem}" alt="${obj.nome}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'emoji-placeholder\\'>${obj.emoji}</span>'">` :
+                `<img src="${obj.imagem}" alt="${obj.name}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'emoji-placeholder\\'>${obj.emoji}</span>'">` :
                 `<span class="emoji-placeholder">${obj.emoji}</span>`
             }
-                <span class="card-type-badge">${obj.tipo}</span>
+                <span class="card-type-badge">${obj.type}</span>
             </div>
             <div class="card-body">
-                <h3 class="card-title">${obj.emoji} ${obj.nome}</h3>
-                <p class="card-subtitle">${obj.tipo}</p>
+                <h3 class="card-title">${obj.emoji} ${obj.name}</h3>
+                <p class="card-subtitle">${obj.type}</p>
 
                 <div class="card-stats">
                     ${obj.estatisticas?.raio ? `
@@ -253,7 +253,7 @@ function openModal(objectId) {
     if (obj.galeria?.length) {
         modalGalleryData = obj.galeria.map(item => {
             const imgUrl = typeof item === 'string' ? item : (item.url || item.src);
-            const caption = typeof item === 'string' ? obj.nome : (currentLang === 'en' ? (item.captionEN || item.caption) : item.caption);
+            const caption = typeof item === 'string' ? obj.name : (currentLang === 'en' ? (item.captionEN || item.caption) : item.caption);
             return { src: imgUrl, caption };
         });
     } else {
@@ -261,16 +261,16 @@ function openModal(objectId) {
     }
 
     modalBody.innerHTML = `
-        <div class="modal-header ${obj.imagem ? 'clickable' : ''}" ${obj.imagem ? `data-action="open-lightbox" data-src="${obj.imagem}" data-caption="${escapeAttr(obj.nome + ' - Foto real da NASA')}"` : ''}>
+        <div class="modal-header ${obj.imagem ? 'clickable' : ''}" ${obj.imagem ? `data-action="open-lightbox" data-src="${obj.imagem}" data-caption="${escapeAttr(obj.name + ' - Foto real da NASA')}"` : ''}>
             ${obj.imagem ?
-            `<img src="${obj.imagem}" alt="${obj.nome}">
+            `<img src="${obj.imagem}" alt="${obj.name}">
              <div class="modal-header-zoom">🔍 Clica para ampliar</div>` :
             `<div style="background: linear-gradient(135deg, #1a1a3a, #0a0a20); display: flex; align-items: center; justify-content: center; height: 100%;"><span style="font-size: 8rem;">${obj.emoji}</span></div>`
         }
             <div class="modal-header-gradient"></div>
             <div class="modal-header-content">
-                <h1 class="modal-title">${obj.emoji} ${obj.nome}</h1>
-                <p class="modal-type">${obj.tipo}</p>
+                <h1 class="modal-title">${obj.emoji} ${obj.name}</h1>
+                <p class="modal-type">${obj.type}</p>
             </div>
         </div>
 
@@ -290,7 +290,7 @@ function openModal(objectId) {
             ` : ''}
 
             <!-- Descrição -->
-            <h2 class="section-title">📖 ${obj.nome}</h2>
+            <h2 class="section-title">📖 ${obj.name}</h2>
             <p class="description-text">${obj.descricaoLonga?.replace(/\n\n/g, '</p><p class="description-text">') || ''}</p>
 
             <!-- História -->
@@ -300,18 +300,18 @@ function openModal(objectId) {
             ` : ''}
 
             <!-- Curiosidades -->
-            ${obj.curiosidades?.length ? `
+            ${obj.trivia?.length ? `
                 <h2 class="section-title">${ui.section_curiosities}</h2>
                 <ul class="facts-list">
-                    ${obj.curiosidades.map(c => `<li>${c}</li>`).join('')}
+                    ${obj.trivia.map(c => `<li>${c}</li>`).join('')}
                 </ul>
             ` : ''}
 
             <!-- Factos Uau -->
-            ${obj.factosUau?.length ? `
+            ${obj.wowFacts?.length ? `
                 <h2 class="section-title">${ui.section_wow_facts}</h2>
                 <div class="wow-facts-grid">
-                    ${obj.factosUau.map(f => `<div class="wow-fact">${f}</div>`).join('')}
+                    ${obj.wowFacts.map(f => `<div class="wow-fact">${f}</div>`).join('')}
                 </div>
             ` : ''}
 
@@ -321,7 +321,7 @@ function openModal(objectId) {
                 <div class="moons-grid">
                     ${obj.luas.map(moon => `
                         <div class="moon-chip" data-action="open-modal" data-object-id="${moon}">
-                            <div class="moon-name">🌙 ${BIBLIOTECA_DATA[currentLang].objects[moon]?.nome || moon}</div>
+                            <div class="moon-name">🌙 ${BIBLIOTECA_DATA[currentLang].objects[moon]?.name || moon}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -340,9 +340,9 @@ function openModal(objectId) {
             ` : ''}
 
             <!-- Comparação -->
-            ${obj.comparacao ? `
+            ${obj.comparison ? `
                 <h2 class="section-title">${ui.section_comparison}</h2>
-                <div class="comparison-box">${obj.comparacao}</div>
+                <div class="comparison-box">${obj.comparison}</div>
             ` : ''}
         </div>
     `;
@@ -385,7 +385,7 @@ function getStatIcon(key) {
         temperatura: '🌡️',
         luas: '🌙',
         idade: '⏳',
-        tipo: '⭐',
+        type: '⭐',
         composicao: '🧪',
         velocidade: '🏎️',
         lancamento: '🚀',
@@ -404,7 +404,7 @@ function formatStatLabel(key, ui) {
         temperatura: ui.stat_temp,
         luas: ui.stat_moons,
         idade: ui.stat_age,
-        tipo: ui.stat_type,
+        type: ui.stat_type,
         composicao: ui.stat_composition,
         velocidade: ui.stat_speed,
         lancamento: ui.stat_launch,

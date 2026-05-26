@@ -131,8 +131,8 @@ export class BibliotecaPanel {
             }
             // Search filter
             if (this.searchQuery) {
-                const name = (obj.nome || '').toLowerCase();
-                const type = (obj.tipo || '').toLowerCase();
+                const name = (obj.name || '').toLowerCase();
+                const type = (obj.type || '').toLowerCase();
                 return name.includes(this.searchQuery) || type.includes(this.searchQuery);
             }
             return true;
@@ -159,7 +159,7 @@ export class BibliotecaPanel {
                 imgWrap.className = 'biblioteca-card-img';
                 const img = document.createElement('img');
                 img.src = obj.imagem;
-                img.alt = obj.nome;
+                img.alt = obj.name;
                 img.loading = 'lazy';
                 imgWrap.appendChild(img);
                 card.appendChild(imgWrap);
@@ -172,17 +172,17 @@ export class BibliotecaPanel {
 
             const name = document.createElement('div');
             name.className = 'biblioteca-card-name';
-            name.textContent = obj.nome;
+            name.textContent = obj.name;
             card.appendChild(name);
 
             const type = document.createElement('div');
             type.className = 'biblioteca-card-type';
-            type.textContent = obj.tipo || '';
+            type.textContent = obj.type || '';
             card.appendChild(type);
 
             // One random wow fact
-            if (obj.factosUau && obj.factosUau.length > 0) {
-                const randomFact = obj.factosUau[Math.floor(Math.random() * obj.factosUau.length)];
+            if (obj.wowFacts && obj.wowFacts.length > 0) {
+                const randomFact = obj.wowFacts[Math.floor(Math.random() * obj.wowFacts.length)];
                 const fact = document.createElement('div');
                 fact.className = 'biblioteca-card-fact';
                 fact.textContent = randomFact;
@@ -220,15 +220,15 @@ export class BibliotecaPanel {
             const headerImg = document.createElement('img');
             headerImg.className = 'detail-header-img';
             headerImg.src = obj.imagem;
-            headerImg.alt = obj.nome;
+            headerImg.alt = obj.name;
             header.appendChild(headerImg);
         }
         const headerText = document.createElement('div');
         headerText.className = 'detail-header-text';
         headerText.innerHTML = `
             <span class="detail-emoji">${obj.emoji || ''}</span>
-            <h3>${obj.nome}</h3>
-            <div class="detail-type">${obj.tipo || ''}</div>
+            <h3>${obj.name}</h3>
+            <div class="detail-type">${obj.type || ''}</div>
         `;
         header.appendChild(headerText);
         detail.appendChild(header);
@@ -253,7 +253,7 @@ export class BibliotecaPanel {
                 temperatura: ui.stat_temp,
                 luas: ui.stat_moons,
                 idade: ui.stat_age,
-                tipo: ui.stat_type,
+                type: ui.stat_type,
                 composicao: ui.stat_composition,
                 velocidade: ui.stat_speed,
                 lancamento: ui.stat_launch,
@@ -276,10 +276,10 @@ export class BibliotecaPanel {
         }
 
         // Curiosities
-        if (obj.curiosidades && obj.curiosidades.length > 0) {
+        if (obj.trivia && obj.trivia.length > 0) {
             const section = this.createSection(ui.section_curiosities);
             const ul = document.createElement('ul');
-            obj.curiosidades.forEach(c => {
+            obj.trivia.forEach(c => {
                 const li = document.createElement('li');
                 li.textContent = c;
                 ul.appendChild(li);
@@ -289,10 +289,10 @@ export class BibliotecaPanel {
         }
 
         // Wow Facts
-        if (obj.factosUau && obj.factosUau.length > 0) {
+        if (obj.wowFacts && obj.wowFacts.length > 0) {
             const section = this.createSection(ui.section_wow_facts);
             const ul = document.createElement('ul');
-            obj.factosUau.forEach(f => {
+            obj.wowFacts.forEach(f => {
                 const li = document.createElement('li');
                 li.textContent = f;
                 ul.appendChild(li);
@@ -311,10 +311,10 @@ export class BibliotecaPanel {
         }
 
         // Comparison
-        if (obj.comparacao) {
+        if (obj.comparison) {
             const section = this.createSection(ui.section_comparison);
             const p = document.createElement('p');
-            p.textContent = obj.comparacao;
+            p.textContent = obj.comparison;
             section.appendChild(p);
             detail.appendChild(section);
         }
@@ -326,12 +326,12 @@ export class BibliotecaPanel {
             gallery.className = 'biblioteca-detail-gallery';
             obj.galeria.forEach(item => {
                 const imgUrl = typeof item === 'string' ? item : (item.url || item.src);
-                const caption = typeof item === 'string' ? obj.nome : (i18n.lang === 'en' ? (item.captionEN || item.caption) : item.caption);
+                const caption = typeof item === 'string' ? obj.name : (i18n.lang === 'en' ? (item.captionEN || item.caption) : item.caption);
                 const figure = document.createElement('figure');
                 figure.className = 'biblioteca-gallery-item';
                 const img = document.createElement('img');
                 img.src = imgUrl;
-                img.alt = caption || obj.nome;
+                img.alt = caption || obj.name;
                 img.loading = 'lazy';
                 figure.appendChild(img);
                 if (caption) {

@@ -65,7 +65,7 @@ export class SolarSystem {
 
         // 2. Create Sun
         const sunData = SOLAR_SYSTEM_DATA['sun'];
-        const sunRadius = sunData.raioKm * this.sunScale * 0.0001;
+        const sunRadius = sunData.radiusKm * this.sunScale * 0.0001;
         const sunGeometry = new THREE.SphereGeometry(sunRadius, 32, 32);
 
         let sunMaterial;
@@ -73,7 +73,7 @@ export class SolarSystem {
             const sunMap = resourceManager.loadTexture(sunData.textureUrl);
             sunMaterial = new THREE.MeshBasicMaterial({ map: sunMap, color: 0xffffff });
         } else {
-            sunMaterial = new THREE.MeshBasicMaterial({ color: sunData.cor });
+            sunMaterial = new THREE.MeshBasicMaterial({ color: sunData.color });
         }
 
         const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
@@ -113,9 +113,9 @@ export class SolarSystem {
         for (const [key, data] of Object.entries(SOLAR_SYSTEM_DATA)) {
             // Skip Sun, dwarf planets, space probes, and special objects (UFO)
             if (key !== 'sun' && 
-                !data.ehPlanetoAnao && 
-                data.tipo !== 'Sonda Espacial' && 
-                data.tipo !== 'Nave Alienígena' &&
+                !data.isDwarfPlanet && 
+                data.type !== 'Sonda Espacial' && 
+                data.type !== 'Nave Alienígena' &&
                 !data.isEasterEgg) {
                 this.createPlanet(key, data, sunMesh);
             }
@@ -126,7 +126,7 @@ export class SolarSystem {
 
         // 5. Create Dwarf Planets (after asteroid belt for visual order)
         for (const [key, data] of Object.entries(SOLAR_SYSTEM_DATA)) {
-            if (data.ehPlanetoAnao) {
+            if (data.isDwarfPlanet) {
                 this.createDwarfPlanet(key, data, sunMesh);
             }
         }
@@ -177,7 +177,7 @@ export class SolarSystem {
 
     createDwarfPlanet(name, data, sunMesh) {
         // Dwarf planets have dashed orbit lines and smaller scale
-        const distance = data.distanciaMediaAoSol * 2;
+        const distance = data.avgDistanceFromSun * 2;
 
         const orbitGroup = new THREE.Group();
         this.solarSystemGroup.add(orbitGroup);
@@ -199,12 +199,12 @@ export class SolarSystem {
         this.solarSystemGroup.add(orbitLine);
 
         // Dwarf planet mesh - smaller scale
-        const raioKm = data.raioKm || 500; // Fallback value if undefined
-        const size = Math.max(raioKm * 0.002, 2); // Slightly larger scale for visibility
+        const radiusKm = data.radiusKm || 500; // Fallback value if undefined
+        const size = Math.max(radiusKm * 0.002, 2); // Slightly larger scale for visibility
         const geometry = new THREE.SphereGeometry(size, 24, 24);
 
         const material = new THREE.MeshStandardMaterial({
-            color: data.cor || 0x888888, // Fallback color
+            color: data.color || 0x888888, // Fallback color
             roughness: 0.8,
             metalness: 0.1
         });
@@ -227,7 +227,7 @@ export class SolarSystem {
 
         // Store references
         this.objects[name] = planetMesh;
-        const dist = data.distanciaMediaAoSol || 1000; // Fallback to prevent division by zero
+        const dist = data.avgDistanceFromSun || 1000; // Fallback to prevent division by zero
         this.orbitSpeeds[name] = (1 / dist) * 50;
         this.parents[name] = orbitGroup;
 
@@ -260,7 +260,7 @@ export class SolarSystem {
     }
 
     createPlanet(name, data, sunMesh) {
-        const distance = data.distanciaMediaAoSol * 2;
+        const distance = data.avgDistanceFromSun * 2;
 
         // Pivot group for orbit rotation
         const orbitGroup = new THREE.Group();
@@ -281,8 +281,8 @@ export class SolarSystem {
         this.solarSystemGroup.add(orbitLine);
 
         // Planet Mesh with LOD (high/low detail geometry)
-        const raioKm = data.raioKm || 5000; // Fallback if undefined
-        const size = raioKm * 0.001;
+        const radiusKm = data.radiusKm || 5000; // Fallback if undefined
+        const size = radiusKm * 0.001;
         const geometryHi = new THREE.SphereGeometry(size, 32, 32);
         const geometryLo = new THREE.SphereGeometry(size, 12, 12);
 
@@ -303,7 +303,7 @@ export class SolarSystem {
             // Outer planets with texture: solid color first, texture loaded lazily
             // Planets without texture: just solid color
             material = new THREE.MeshStandardMaterial({
-                color: data.cor || 0x888888,
+                color: data.color || 0x888888,
                 roughness: 0.7,
                 metalness: 0.1
             });
@@ -343,7 +343,7 @@ export class SolarSystem {
 
         // Store references
         this.objects[name] = planetMesh;
-        const dist = data.distanciaMediaAoSol || 100; // Fallback to prevent division by zero
+        const dist = data.avgDistanceFromSun || 100; // Fallback to prevent division by zero
         this.orbitSpeeds[name] = (1 / dist) * 50;
         this.parents[name] = orbitGroup;
 
@@ -470,10 +470,10 @@ export class SolarSystem {
         // Get parent planet visual size - use correct scale based on type
         // Dwarf planets use 0.002 scale (see createDwarfPlanet), regular planets use 0.001
         let parentSize;
-        if (parentData.ehPlanetoAnao) {
-            parentSize = Math.max(parentData.raioKm * 0.002, 2);
+        if (parentData.isDwarfPlanet) {
+            parentSize = Math.max(parentData.radiusKm * 0.002, 2);
         } else {
-            parentSize = parentData.raioKm * 0.001;
+            parentSize = parentData.radiusKm * 0.001;
         }
         
         // Calculate moon distance - use progressive spacing from planet surface
@@ -486,7 +486,7 @@ export class SolarSystem {
         const distance = baseDistance + (moonIndex * spacing);
         
         // Moon size - scale up small moons for visibility
-        const raioKm = data.raioKm || 100; // Fallback if undefined
+        const raioKm = data.radiusKm || 100; // Fallback if undefined
         let size = raioKm * 0.001;
         
         // Minimum visible size depends on parent size
@@ -504,7 +504,7 @@ export class SolarSystem {
             const map = resourceManager.loadTexture(data.textureUrl);
             material = new THREE.MeshStandardMaterial({ map: map, color: 0xffffff });
         } else {
-            material = new THREE.MeshStandardMaterial({ color: data.cor || 0xaaaaaa }); // Fallback color
+            material = new THREE.MeshStandardMaterial({ color: data.color || 0xaaaaaa }); // Fallback color
         }
 
         const moonMesh = new THREE.Mesh(geometry, material);
@@ -540,7 +540,7 @@ export class SolarSystem {
 
         // Store references (no visible orbit ring for moons)
         // Use moon id if available, otherwise fall back to nome
-        const moonId = data.id || data.nome;
+        const moonId = data.id || data.name;
         this.objects[moonId] = moonMesh;
         
         // Orbital speed - closer moons orbit faster (Kepler's law approximation)

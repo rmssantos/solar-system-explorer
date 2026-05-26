@@ -26,7 +26,7 @@ export class InfoPanelUI {
     show(objectName, data, navigationList) {
         if (!data) return;
 
-        this.infoTitle.innerText = data.nome;
+        this.infoTitle.innerText = data.name;
         this.infoContent.innerHTML = '';
         this.infoPanel.classList.remove('hidden');
 
@@ -55,14 +55,14 @@ export class InfoPanelUI {
         slides.push({
             title: i18n.t('slide_basic_data'),
             content: (container) => {
-                if (data.tipo) this.createRow(container, i18n.t('info_type'), data.tipo);
-                if (data.distanciaMediaAoSol) this.createRow(container, i18n.t('info_distance'), `${data.distanciaMediaAoSol} M km`);
-                if (data.distanciaKm) this.createRow(container, i18n.t('slide_distance'), `${data.distanciaKm} km`);
+                if (data.type) this.createRow(container, i18n.t('info_type'), data.type);
+                if (data.avgDistanceFromSun) this.createRow(container, i18n.t('info_distance'), `${data.avgDistanceFromSun} M km`);
+                if (data.distanceKm) this.createRow(container, i18n.t('slide_distance'), `${data.distanceKm} km`);
             }
         });
 
         // Slide 2: Real Photo
-        if (data.imagemReal) {
+        if (data.realPhoto) {
             slides.push({
                 title: i18n.t('slide_real_photo'),
                 content: (container) => {
@@ -70,12 +70,12 @@ export class InfoPanelUI {
                     photoContainer.className = 'real-photo-container';
 
                     // Support for multiple photos (array)
-                    const photos = Array.isArray(data.imagemReal) ? data.imagemReal : [data.imagemReal];
+                    const photos = Array.isArray(data.realPhoto) ? data.realPhoto : [data.realPhoto];
                     let currentPhotoIndex = 0;
 
                     const img = document.createElement('img');
                     img.src = photos[0];
-                    img.alt = data.nome;
+                    img.alt = data.name;
                     img.className = 'real-photo';
                     img.loading = 'lazy';
 
@@ -141,14 +141,14 @@ export class InfoPanelUI {
         slides.push({
             title: i18n.t('slide_climate_time'),
             content: (container) => {
-                if (data.duracaoDia) this.createRow(container, i18n.t('info_day'), data.duracaoDia);
-                if (data.duracaoAno) this.createRow(container, i18n.t('info_year'), data.duracaoAno);
-                if (data.temperaturaMediaAproximada) this.createRow(container, i18n.t('info_temp'), data.temperaturaMediaAproximada);
+                if (data.dayLength) this.createRow(container, i18n.t('info_day'), data.dayLength);
+                if (data.yearLength) this.createRow(container, i18n.t('info_year'), data.yearLength);
+                if (data.avgTemperature) this.createRow(container, i18n.t('info_temp'), data.avgTemperature);
             }
         });
 
         // Slide: WOW Facts for Kids!
-        if (data.factosUau && data.factosUau.length > 0) {
+        if (data.wowFacts && data.wowFacts.length > 0) {
             slides.push({
                 title: i18n.t('info_wow_facts'),
                 content: (container) => {
@@ -156,7 +156,7 @@ export class InfoPanelUI {
                     wowContainer.className = 'wow-facts';
 
                     // Show 2 random facts
-                    const shuffled = [...data.factosUau].sort(() => Math.random() - 0.5);
+                    const shuffled = [...data.wowFacts].sort(() => Math.random() - 0.5);
                     const factsToShow = shuffled.slice(0, 2);
 
                     factsToShow.forEach(fact => {
@@ -167,10 +167,10 @@ export class InfoPanelUI {
                     });
 
                     // Add comparison if exists
-                    if (data.comparacao) {
+                    if (data.comparison) {
                         const compDiv = document.createElement('div');
                         compDiv.className = 'wow-comparison';
-                        compDiv.textContent = `\uD83D\uDCCF ${data.comparacao}`;
+                        compDiv.textContent = `\uD83D\uDCCF ${data.comparison}`;
                         wowContainer.appendChild(compDiv);
                     }
 
@@ -180,13 +180,13 @@ export class InfoPanelUI {
         }
 
         // Slide: Curiosities
-        if (data.curiosidades && data.curiosidades.length > 0) {
+        if (data.trivia && data.trivia.length > 0) {
             slides.push({
                 title: i18n.t('info_curiosities'),
                 content: (container) => {
                     const ul = document.createElement('ul');
                     ul.className = 'curiosities-list';
-                    data.curiosidades.forEach(c => {
+                    data.trivia.forEach(c => {
                         const li = document.createElement('li');
                         li.innerText = c;
                         ul.appendChild(li);
@@ -197,13 +197,13 @@ export class InfoPanelUI {
         }
 
         // Slide: Description (Final)
-        if (data.descricao) {
+        if (data.description) {
             slides.push({
                 title: i18n.t('slide_about'),
                 content: (container) => {
                     const p = document.createElement('p');
                     p.className = 'info-desc';
-                    p.innerText = data.descricao;
+                    p.innerText = data.description;
                     container.appendChild(p);
                 }
             });
@@ -522,7 +522,7 @@ export class InfoPanelUI {
 
         // Use the object key for tracking, not the translated name
         const key = this.currentObjectKey;
-        const displayName = this.currentSlideData.nome;
+        const displayName = this.currentSlideData.name;
         const isNew = this.app.gameManager.visit(key);
 
         if (isNew) {
@@ -546,11 +546,11 @@ export class InfoPanelUI {
         previewContainer.className = 'object-preview';
 
         // Special case: Lua - show Apollo mission photos
-        if (data.nome === 'Lua' || data.id === 'moon') {
+        if (data.name === 'Lua' || data.id === 'moon') {
             this.renderMoonGallery(previewContainer);
         }
         // Special case: ET UFO
-        else if (data.nome?.includes('OVNI') || data.tipo === 'Nave Alien\u00edgena') {
+        else if (data.name?.includes('OVNI') || data.type === 'Nave Alien\u00edgena') {
             this.renderUFOPreview(previewContainer);
         }
         // Default: Show texture as rotating sphere preview
@@ -559,7 +559,7 @@ export class InfoPanelUI {
             textureImg.className = 'planet-preview';
             textureImg.innerHTML = `
                 <div class="planet-sphere" style="background-image: url('${data.textureUrl}')"></div>
-                <div class="planet-glow" style="--planet-color: #${(data.cor || 0x4488ff).toString(16).padStart(6, '0')}"></div>
+                <div class="planet-glow" style="--planet-color: #${(data.color || 0x4488ff).toString(16).padStart(6, '0')}"></div>
             `;
             previewContainer.appendChild(textureImg);
         }
