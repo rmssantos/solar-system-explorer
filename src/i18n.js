@@ -327,6 +327,8 @@ export const TRANSLATIONS = {
 
         // Accessibility
         settings_high_contrast: "Alto Contraste",
+        mirror_heading: "Sistema Solar (teclado)",
+        mirror_aria_label: "Navegação acessível do Sistema Solar",
         aria_settings: "Definições",
         aria_photo: "Tirar foto espacial",
         aria_gallery: "Abrir galeria de fotos",
@@ -721,6 +723,8 @@ export const TRANSLATIONS = {
 
         // Accessibility
         settings_high_contrast: "High Contrast",
+        mirror_heading: "Solar System (keyboard)",
+        mirror_aria_label: "Accessible Solar System navigation",
         aria_settings: "Settings",
         aria_photo: "Take space photo",
         aria_gallery: "Open photo gallery",
@@ -914,6 +918,10 @@ class I18n {
             this.currentLang = 'pt';
         }
         this.listeners = [];
+        // Initial html[lang] sync (in case stored lang differs from index.html default).
+        if (typeof document !== 'undefined' && document.documentElement) {
+            document.documentElement.lang = this.currentLang === 'pt' ? 'pt-PT' : 'en';
+        }
     }
 
     get lang() {
@@ -929,6 +937,10 @@ class I18n {
             localStorage.setItem('spaceExplorer_lang', lang);
         } catch (e) {
             console.warn('[i18n] Failed to save language:', e.message);
+        }
+        // Keep html[lang] in sync so screen readers pronounce content correctly.
+        if (typeof document !== 'undefined' && document.documentElement) {
+            document.documentElement.lang = lang === 'pt' ? 'pt-PT' : 'en';
         }
         this.updateAllTranslations();
         this.notifyListeners();

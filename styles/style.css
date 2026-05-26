@@ -2127,9 +2127,8 @@ canvas {
         height: 45px;
     }
 
+    /* .settings-btn mobile position handled by the final !important block; only size left here. */
     .settings-btn {
-        bottom: 10px;
-        right: 60px;
         width: 45px;
         height: 45px;
     }
@@ -3389,15 +3388,6 @@ canvas {
     right: auto !important;
     z-index: 1050 !important;
     max-width: 350px;
-}
-
-/* ===== SETTINGS BUTTON - Top Right ===== */
-#settings-btn.repositioned,
-.settings-btn.repositioned {
-    position: fixed !important;
-    top: 15px !important;
-    right: 15px !important;
-    z-index: 1050 !important;
 }
 
 /* ===== MINIMAP - Right Side, Below Settings ===== */
