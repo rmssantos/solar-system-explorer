@@ -68,13 +68,18 @@ export class Tutorial {
     }
 
     /**
-     * Start the tutorial
+     * Start the tutorial. Returns a Promise that resolves once the user
+     * dismisses or completes it — used by the FTUE orchestrator to sequence
+     * popups.
      */
     show() {
         this.steps = this.getSteps(); // Refresh translations
         this.currentStep = 0;
         this.createOverlay();
         this.showStep(0);
+        return new Promise((resolve) => {
+            this._onDismiss = resolve;
+        });
     }
 
     /**
@@ -334,6 +339,11 @@ export class Tutorial {
                 this.overlay.remove();
                 this.overlay = null;
             }, 400);
+        }
+        if (this._onDismiss) {
+            const cb = this._onDismiss;
+            this._onDismiss = null;
+            cb();
         }
     }
 }

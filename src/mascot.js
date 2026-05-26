@@ -74,7 +74,8 @@ export class Mascot {
         window.addEventListener('app:quiz-correct', () => this.onQuizCorrect());
         window.addEventListener('app:quiz-wrong', () => this.onQuizWrong());
         window.addEventListener('app:easter-egg', (e) => this.onEasterEgg(e.detail));
-        window.addEventListener('app:first-visit', () => this.onFirstVisit());
+        // 'app:first-visit' was removed when the FTUE orchestrator took over the
+        // first-time greeting. See FtueOrchestrator._astroIntro for the replacement.
 
         // Language change
         i18n.onLangChange(() => this.updateTranslations());
@@ -125,6 +126,25 @@ export class Mascot {
         if (!this.isProcessingQueue) {
             this.processQueue();
         }
+    }
+
+    /**
+     * Promise-returning variant of show(). Resolves once the message has been
+     * displayed and auto-hidden. Used by the FTUE orchestrator to chain
+     * onboarding popups sequentially.
+     */
+    showAwaitable(message, pose = 'neutral', options = {}) {
+        const duration = options.duration ?? 5000;
+        return new Promise((resolve) => {
+            const wrappedOpts = {
+                ...options,
+                _onHide: resolve,
+            };
+            this.messageQueue.push({ message, pose, options: wrappedOpts });
+            if (!this.isProcessingQueue) this.processQueue();
+            // Safety net — never block FTUE longer than 2x the configured duration.
+            setTimeout(resolve, duration * 2 + 1000);
+        });
     }
 
     /**
@@ -211,6 +231,7 @@ export class Mascot {
         if (duration > 0) {
             this.hideTimeout = setTimeout(() => {
                 this.hide();
+                if (options._onHide) options._onHide();
                 // Small delay before processing next message
                 setTimeout(() => this.processQueue(), 300);
             }, duration);
@@ -295,13 +316,6 @@ export class Mascot {
             ? `Uau! Descobriste um segredo: ${name}!`
             : `Wow! You found a secret: ${name}!`;
         this.show(msg, 'surprised', { duration: 5000, position: 'auto' });
-    }
-
-    onFirstVisit() {
-        const msg = i18n.lang === 'pt'
-            ? 'Olá! Sou o Astro, o teu guia espacial! Vamos explorar o Sistema Solar!'
-            : 'Hello! I\'m Astro, your space guide! Let\'s explore the Solar System!';
-        this.show(msg, 'neutral', { duration: 6000, position: 'auto' });
     }
 
     /**
