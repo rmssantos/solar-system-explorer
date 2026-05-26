@@ -38,6 +38,7 @@ import { MissionIndicator } from './missionIndicator.js';
 import { CertificateGenerator } from './certificateGenerator.js';
 import { ShareManager } from './shareManager.js';
 import { CanvasMirror } from './canvasMirror.js';
+import { PWAUI } from './pwaUI.js';
 
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
@@ -253,6 +254,9 @@ class App {
 
             // 25. Accessibility mirror tree for the 3D canvas (screen reader / keyboard).
             this.canvasMirror = new CanvasMirror(this);
+
+            // 26. PWA UI: install prompt button + SW update banner.
+            this.pwaUI = new PWAUI();
 
             // 25. Listen for all-missions-complete event (endgame)
             window.addEventListener('app:all-missions-complete', () => {
@@ -667,6 +671,10 @@ class App {
             // GPU cost. PhotoMode now renders + toDataURL synchronously in the same
             // task, which captures the just-drawn buffer without the permanent flag.
             preserveDrawingBuffer: false,
+            // Mitigates z-fighting in manual mode where camera.far reaches 5,000,000
+            // and the scaled solar system spans orders of magnitude. Slight per-fragment
+            // cost on mid-tier GPUs but the depth precision win at scale is decisive.
+            logarithmicDepthBuffer: true,
         });
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
         // Cap DPR for performance on HiDPI screens (especially mobile)

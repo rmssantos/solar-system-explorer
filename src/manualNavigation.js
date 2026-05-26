@@ -100,8 +100,8 @@ export class ManualNavigation {
         // Realistic size multipliers (manual mode)
         //
         // Base (exploration) scale factors are inconsistent:
-        // - Sun radius: raioKm * 0.25 * 0.0001  → 0.000025
-        // - Planets/moons: raioKm * 0.001       → 0.001
+        // - Sun radius: radiusKm * 0.25 * 0.0001  → 0.000025
+        // - Planets/moons: radiusKm * 0.001       → 0.001
         // So planets end up ~40x too large relative to the Sun.
         //
         // For manual mode we want proportions closer to reality:
@@ -1900,17 +1900,17 @@ export class ManualNavigation {
         const statsEl = panel.querySelector('.planet-info-stats');
         const curiosityEl = panel.querySelector('.planet-info-curiosity');
 
-        if (nameEl) nameEl.textContent = planetData.nome || planetName;
-        if (typeEl) typeEl.textContent = planetData.tipo || '';
+        if (nameEl) nameEl.textContent = planetData.name || planetName;
+        if (typeEl) typeEl.textContent = planetData.type || '';
 
         if (statsEl) {
             const stats = [
-                { key: 'info_distance', val: planetData.distanciaMediaAoSol, suffix: ' M km' },
-                { key: 'info_temp', val: planetData.temperaturaMediaAproximada },
-                { key: 'info_day', val: planetData.duracaoDia },
-                { key: 'info_year', val: planetData.duracaoAno },
-                { key: 'info_moons', val: planetData.numeroLuasConhecidas },
-                { key: 'radius', val: planetData.raioKm, fmt: v => v.toLocaleString() + ' km' },
+                { key: 'info_distance', val: planetData.avgDistanceFromSun, suffix: ' M km' },
+                { key: 'info_temp', val: planetData.avgTemperature },
+                { key: 'info_day', val: planetData.dayLength },
+                { key: 'info_year', val: planetData.yearLength },
+                { key: 'info_moons', val: planetData.knownMoonCount },
+                { key: 'radius', val: planetData.radiusKm, fmt: v => v.toLocaleString() + ' km' },
             ];
             statsEl.innerHTML = stats
                 .filter(s => s.val !== undefined && s.val !== null)
@@ -1920,8 +1920,8 @@ export class ManualNavigation {
                 </div>`).join('');
         }
 
-        if (curiosityEl && planetData.curiosidades?.length > 0) {
-            const randomCuriosity = planetData.curiosidades[Math.floor(Math.random() * planetData.curiosidades.length)];
+        if (curiosityEl && planetData.trivia?.length > 0) {
+            const randomCuriosity = planetData.trivia[Math.floor(Math.random() * planetData.trivia.length)];
             curiosityEl.innerHTML = `<div class="planet-info-curiosity-title">${i18n.t('info_wow_facts')}</div>${randomCuriosity}`;
             curiosityEl.style.display = 'block';
         } else if (curiosityEl) {

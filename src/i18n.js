@@ -942,7 +942,7 @@ class I18n {
         if (typeof document !== 'undefined' && document.documentElement) {
             document.documentElement.lang = lang === 'pt' ? 'pt-PT' : 'en';
         }
-        this.updateAllTranslations();
+        if (typeof document !== 'undefined') this.updateAllTranslations();
         this.notifyListeners();
     }
 
