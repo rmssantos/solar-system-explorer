@@ -37,6 +37,7 @@ import { MissionIndicator } from './missionIndicator.js';
 
 import { CertificateGenerator } from './certificateGenerator.js';
 import { ShareManager } from './shareManager.js';
+import { CanvasMirror } from './canvasMirror.js';
 
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
@@ -250,6 +251,9 @@ class App {
             this.certificateGenerator = new CertificateGenerator();
             this.shareManager = new ShareManager();
 
+            // 25. Accessibility mirror tree for the 3D canvas (screen reader / keyboard).
+            this.canvasMirror = new CanvasMirror(this);
+
             // 25. Listen for all-missions-complete event (endgame)
             window.addEventListener('app:all-missions-complete', () => {
                 setTimeout(() => this.showCompletionScreen(), 2000);
@@ -333,6 +337,9 @@ class App {
 
         // Check achievements
         this.achievementSystem.checkPlanetVisit(planetName, this.gameManager.visited);
+
+        // Refresh accessible mirror tree so visited state updates for AT users.
+        this.canvasMirror?.refresh();
 
         // Quiz is now integrated into the info panel slides (quiz slide).
         // The old delayed overlay is no longer triggered here.
@@ -653,10 +660,13 @@ class App {
         this.camera.position.set(0, 400, 800);
         this.camera.lookAt(0, 0, 0);
 
-        this.renderer = new THREE.WebGLRenderer({ 
-            antialias: true, 
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: true,
             alpha: true,
-            preserveDrawingBuffer: true // Required for PhotoMode screenshots (toDataURL)
+            // preserveDrawingBuffer was true for PhotoMode screenshots, paid per-frame
+            // GPU cost. PhotoMode now renders + toDataURL synchronously in the same
+            // task, which captures the just-drawn buffer without the permanent flag.
+            preserveDrawingBuffer: false,
         });
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
         // Cap DPR for performance on HiDPI screens (especially mobile)
@@ -859,6 +869,27 @@ class App {
 
         // Update mission indicator arrow
         if (this.missionIndicator) this.missionIndicator.update();
+
+        // Render-on-demand: when fully idle (paused + no drag/fly/manual + no live
+        // particles) throttle composer.render() to ~10 Hz. Saves GPU + battery on
+        // mobile when the user is reading the info panel and not interacting.
+        const cc = this.cameraControls;
+        const mn = this.manualNavigation;
+        const idle = (
+            timeScale === 0 &&
+            !mn?.enabled &&
+            !cc?.isDragging &&
+            !cc?.isFlying &&
+            (!this.particleEffects || this.particleEffects.particles.length === 0)
+        );
+
+        if (idle) {
+            this._idleAccum = (this._idleAccum || 0) + deltaTime;
+            if (this._idleAccum < 0.1) return; // skip render this frame
+            this._idleAccum = 0;
+        } else {
+            this._idleAccum = 0;
+        }
 
         // Render via Composer for Bloom
         if (this.composer && !this.isDisposed) {

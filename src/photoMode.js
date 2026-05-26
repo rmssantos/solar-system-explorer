@@ -145,14 +145,13 @@ export class PhotoMode {
         // Play camera sound
         this.playCameraSound();
 
-        // Force a render before capturing
+        // Force a fresh render in the SAME task as toDataURL — required because
+        // preserveDrawingBuffer is false (the GL buffer is otherwise cleared on swap).
         if (this.app.composer) {
             this.app.composer.render();
         } else if (this.app.renderer) {
             this.app.renderer.render(this.app.scene, this.app.camera);
         }
-
-        // Capture the canvas
         const canvas = this.app.renderer.domElement;
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
 
