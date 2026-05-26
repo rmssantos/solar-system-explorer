@@ -8,16 +8,8 @@
 import * as THREE from 'three';
 import { i18n } from './i18n.js';
 import { getTranslatedObjectData } from './data/objectsInfo.js';
-
-// Get translated warp speed name
-function getWarpName(level) {
-    const lang = i18n.lang || 'pt';
-    const names = {
-        en: ['Impulse', 'Warp 1', 'Warp 2', 'Warp 3', 'Warp 4', 'Warp 5', 'Warp 6', 'Warp 7', 'Warp 9 (Light!)'],
-        pt: ['Impulso', 'Warp 1', 'Warp 2', 'Warp 3', 'Warp 4', 'Warp 5', 'Warp 6', 'Warp 7', 'Warp 9 (Luz!)']
-    };
-    return names[lang]?.[level - 1] || names.pt[level - 1];
-}
+import { WARP_SPEEDS, getWarpName } from './manualNavigation/WarpModel.js';
+import './manualNavigation.css';
 
 export class ManualNavigation {
     constructor(app) {
@@ -58,20 +50,8 @@ export class ManualNavigation {
         this.warpLevel = 1;  // 1-9
         this.maxWarpLevel = 9;
         
-        // Speed settings - much faster for space travel!
-        // In manual mode (with 50x system scaling), 1 unit ≈ 10,000 km.
-        // Note: the km/s numbers shown in the HUD are “fun comparisons” and not a strict physics sim.
-        this.warpSpeeds = [
-            { level: 1, speed: 500,     realKmS: 10000,     name: 'Impulso',       color: '#4a90e2' },
-            { level: 2, speed: 1500,    realKmS: 50000,     name: 'Warp 1',        color: '#5a9df2' },
-            { level: 3, speed: 4000,    realKmS: 100000,    name: 'Warp 2',        color: '#6ab0ff' },
-            { level: 4, speed: 10000,   realKmS: 500000,    name: 'Warp 3',        color: '#7ac3ff' },
-            { level: 5, speed: 25000,   realKmS: 1000000,   name: 'Warp 4',        color: '#8ad6ff' },
-            { level: 6, speed: 60000,   realKmS: 5000000,   name: 'Warp 5',        color: '#ffa500' },
-            { level: 7, speed: 150000,  realKmS: 20000000,  name: 'Warp 6',        color: '#ff8c00' },
-            { level: 8, speed: 350000,  realKmS: 50000000,  name: 'Warp 7',        color: '#ff6347' },
-            { level: 9, speed: 800000,  realKmS: 299792,    name: 'Warp 9 (Luz!)', color: '#ff00ff' }  // Speed of light! (299,792 km/s)
-        ];
+        // Speed settings — sourced from extracted WarpModel module.
+        this.warpSpeeds = WARP_SPEEDS;
         
         this.currentSpeed = 0;
         this.acceleration = 500;
@@ -308,965 +288,8 @@ export class ManualNavigation {
         this.speedDisplay = this.hud.querySelector('.speed-value');
         this.speedComparison = this.hud.querySelector('.speed-comparison');
         this.touchWarpLevel = this.hud.querySelector('.touch-warp-level');
-        
-        // Add styles
-        this.addStyles();
     }
-    
-    addStyles() {
-        if (document.getElementById('manual-nav-styles')) return;
-        
-        const style = document.createElement('style');
-        style.id = 'manual-nav-styles';
-        style.textContent = `
-            .manual-nav-toggle {
-                position: fixed;
-                bottom: 130px;
-                right: 20px;
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #1a1a2e, #16213e);
-                border: 2px solid #4a90e2;
-                color: white;
-                font-size: 24px;
-                cursor: pointer;
-                z-index: 1000;
-                transition: all 0.3s ease;
-                box-shadow: 0 0 15px rgba(74, 144, 226, 0.3);
-            }
-            
-            /* Mobile adjustments for toggle button */
-            @media (hover: none) and (pointer: coarse) {
-                .manual-nav-toggle {
-                    bottom: 200px;
-                    right: 15px;
-                    width: 45px;
-                    height: 45px;
-                    font-size: 20px;
-                }
-            }
-            
-            @media (max-height: 500px) and (hover: none) and (pointer: coarse) {
-                .manual-nav-toggle {
-                    bottom: 80px;
-                    right: 15px;
-                    width: 40px;
-                    height: 40px;
-                    font-size: 18px;
-                }
-            }
-            
-            .manual-nav-toggle:hover {
-                transform: scale(1.1);
-                box-shadow: 0 0 25px rgba(74, 144, 226, 0.6);
-            }
-            
-            .manual-nav-toggle.active {
-                background: linear-gradient(135deg, #4a90e2, #357abd);
-                animation: pulse 1.5s infinite;
-            }
-            
-            @keyframes pulse {
-                0%, 100% { box-shadow: 0 0 15px rgba(74, 144, 226, 0.5); }
-                50% { box-shadow: 0 0 30px rgba(74, 144, 226, 0.8); }
-            }
-            
-            .manual-nav-hud {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                pointer-events: none;
-                z-index: 999;
-            }
-            
-            .manual-nav-hud.hidden {
-                display: none;
-            }
-            
-            .nav-warp-display {
-                position: absolute;
-                top: 15px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(0, 0, 0, 0.8);
-                padding: 8px 20px;
-                border-radius: 20px;
-                border: 1px solid rgba(74, 144, 226, 0.5);
-                font-family: 'Orbitron', monospace, sans-serif;
-                text-align: center;
-                display: flex;
-                align-items: center;
-                gap: 15px;
-            }
 
-            .nav-mode-badge {
-                font-size: 10px;
-                color: #aaa;
-                letter-spacing: 1px;
-                text-transform: uppercase;
-                opacity: 0.9;
-                margin-right: 5px;
-                white-space: nowrap;
-            }
-            
-            .warp-level {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            
-            .warp-name {
-                color: #4a90e2;
-                font-size: 12px;
-                font-weight: bold;
-                text-transform: uppercase;
-            }
-            
-            .warp-number {
-                background: linear-gradient(135deg, #4a90e2, #357abd);
-                color: white;
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 14px;
-                font-weight: bold;
-            }
-            
-            .warp-bar {
-                width: 80px;
-                height: 6px;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 3px;
-                overflow: hidden;
-            }
-            
-            .warp-fill {
-                height: 100%;
-                width: 0%;
-                background: linear-gradient(90deg, #4a90e2, #00ff88);
-                border-radius: 3px;
-                transition: width 0.2s ease, background 0.3s ease;
-            }
-            
-            .warp-speed {
-                display: flex;
-                align-items: baseline;
-                gap: 3px;
-            }
-            
-            .speed-value {
-                color: #4a90e2;
-                font-size: 16px;
-                font-weight: bold;
-            }
-            
-            .speed-unit {
-                color: #666;
-                font-size: 10px;
-            }
-            
-            .speed-comparison {
-                font-size: 10px;
-                color: #888;
-                max-width: 150px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            
-            .nav-controls-help {
-                position: absolute;
-                bottom: 100px;
-                left: 20px;
-                background: rgba(0, 0, 0, 0.8);
-                padding: 15px;
-                border-radius: 10px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                font-size: 12px;
-            }
-            
-            .control-row {
-                display: flex;
-                gap: 10px;
-                margin: 5px 0;
-                color: #aaa;
-            }
-            
-            .control-row .key {
-                background: rgba(74, 144, 226, 0.3);
-                padding: 2px 8px;
-                border-radius: 4px;
-                color: #4a90e2;
-                font-family: monospace;
-                min-width: 50px;
-                text-align: center;
-            }
-            
-            .nav-crosshair {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                font-size: 30px;
-                color: rgba(74, 144, 226, 0.5);
-                font-weight: 100;
-                text-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
-                pointer-events: none;
-                transition: all 0.2s ease;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .nav-crosshair.targeting {
-                color: #4ade80;
-                text-shadow: 0 0 15px rgba(74, 222, 128, 0.8);
-                transform: translate(-50%, -50%) scale(1.2);
-            }
-
-            .crosshair-hint {
-                font-size: 12px;
-                color: #4ade80;
-                background: rgba(0, 0, 0, 0.7);
-                padding: 4px 10px;
-                border-radius: 12px;
-                white-space: nowrap;
-                opacity: 0;
-                transition: opacity 0.2s ease;
-            }
-
-            .nav-crosshair.targeting .crosshair-hint {
-                opacity: 1;
-            }
-            
-            /* Hide other UI elements when in manual mode */
-            body.manual-nav-active #hud-panel,
-            body.manual-nav-active #passport-panel,
-            body.manual-nav-active .mission-panel,
-            body.manual-nav-active .xp-bar-container,
-            body.manual-nav-active .comparator-button,
-            body.manual-nav-active .settings-btn,
-            body.manual-nav-active .manual-nav-toggle,
-            body.manual-nav-active .toolbar,
-            body.manual-nav-active .toolbar-main,
-            body.manual-nav-active .time-compact,
-            body.manual-nav-active .time-control-panel,
-            body.manual-nav-active .photo-btn,
-            body.manual-nav-active .gallery-btn,
-            body.manual-nav-active .planet-info-panel,
-            body.manual-nav-active .info-panel,
-            body.manual-nav-active .quiz-panel,
-            body.manual-nav-active .celebration-overlay,
-            body.manual-nav-active .collectibles-panel,
-            body.manual-nav-active .achievements-panel,
-            body.manual-nav-active .level-up-modal,
-            body.manual-nav-active #navigation-hint {
-                opacity: 0 !important;
-                pointer-events: none !important;
-                visibility: hidden !important;
-            }
-            
-            /* ========== TOUCH CONTROLS (Mobile/Tablet) ========== */
-            .desktop-only {
-                display: block;
-            }
-            .mobile-only {
-                display: none;
-            }
-            
-            @media (hover: none) and (pointer: coarse) {
-                .desktop-only { display: none !important; }
-                .mobile-only { display: flex !important; }
-                .nav-crosshair { font-size: 24px; }
-                .nav-warp-display { 
-                    top: 80px; 
-                    transform: translateX(-50%) scale(0.9);
-                }
-            }
-            
-            .touch-controls {
-                pointer-events: auto;
-                display: none;
-                flex-direction: column;
-            }
-            
-            /* Virtual Joystick - Left side, bottom */
-            .touch-joystick {
-                position: absolute;
-                bottom: 40px;
-                left: 20px;
-                width: 130px;
-                height: 130px;
-            }
-            
-            .joystick-base {
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.6);
-                border: 3px solid rgba(74, 144, 226, 0.6);
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                touch-action: none;
-            }
-            
-            .joystick-stick {
-                width: 55px;
-                height: 55px;
-                background: linear-gradient(135deg, #4a90e2, #357abd);
-                border-radius: 50%;
-                box-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
-                transition: transform 0.05s ease-out;
-            }
-            
-            /* Warp controls - Horizontal bar at bottom center */
-            .touch-warp-controls {
-                position: absolute;
-                bottom: 40px;
-                left: 50%;
-                transform: translateX(-50%);
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                background: rgba(0, 0, 0, 0.8);
-                padding: 6px 12px;
-                border-radius: 25px;
-                border: 2px solid rgba(74, 144, 226, 0.5);
-            }
-            
-            .touch-warp-btn {
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                border: 2px solid #4a90e2;
-                background: rgba(74, 144, 226, 0.3);
-                color: white;
-                font-size: 20px;
-                font-weight: bold;
-                cursor: pointer;
-                touch-action: manipulation;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .touch-warp-btn:active {
-                background: #4a90e2;
-                transform: scale(0.95);
-            }
-            
-            .touch-warp-level {
-                font-size: 20px;
-                font-weight: bold;
-                color: #4a90e2;
-                min-width: 28px;
-                text-align: center;
-                font-family: 'Orbitron', monospace;
-            }
-            
-            /* Action buttons - Right side, organized vertically with spacing */
-            .touch-action-buttons {
-                position: absolute;
-                bottom: 40px;
-                right: 20px;
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-                align-items: center;
-            }
-            
-            .touch-btn {
-                width: 60px;
-                height: 60px;
-                border-radius: 50%;
-                border: 3px solid rgba(74, 144, 226, 0.6);
-                background: rgba(0, 0, 0, 0.7);
-                font-size: 24px;
-                cursor: pointer;
-                touch-action: manipulation;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .touch-btn:active, .touch-btn.active {
-                background: rgba(74, 144, 226, 0.5);
-                transform: scale(0.95);
-            }
-            
-            .touch-boost {
-                border-color: #ffa500;
-                order: 2; /* Middle */
-            }
-            .touch-boost.active {
-                background: rgba(255, 165, 0, 0.5);
-                box-shadow: 0 0 20px rgba(255, 165, 0, 0.7);
-            }
-            
-            .touch-up {
-                border-color: #00ff88;
-                order: 1; /* Top */
-            }
-            
-            .touch-down {
-                border-color: #ff6b6b;
-                order: 3; /* Bottom */
-            }
-            
-            /* Exit button - Top left corner to avoid conflict with warp display */
-            .touch-exit-btn {
-                position: absolute;
-                top: 15px;
-                left: 15px;
-                width: 45px;
-                height: 45px;
-                border-radius: 50%;
-                border: 2px solid #ff6b6b;
-                background: rgba(255, 50, 50, 0.8);
-                color: white;
-                font-size: 20px;
-                font-weight: bold;
-                cursor: pointer;
-                touch-action: manipulation;
-                z-index: 1001;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .touch-exit-btn:active {
-                transform: scale(0.9);
-            }
-            
-            /* Tablet-specific adjustments */
-            @media (min-width: 768px) and (hover: none) and (pointer: coarse) {
-                .touch-joystick {
-                    width: 150px;
-                    height: 150px;
-                    bottom: 50px;
-                    left: 30px;
-                }
-                .joystick-stick {
-                    width: 65px;
-                    height: 65px;
-                }
-                .touch-btn {
-                    width: 70px;
-                    height: 70px;
-                    font-size: 28px;
-                }
-                .touch-action-buttons {
-                    gap: 15px;
-                    right: 30px;
-                    bottom: 50px;
-                }
-                .touch-warp-controls {
-                    padding: 10px 18px;
-                    gap: 12px;
-                    bottom: 50px;
-                }
-                .touch-warp-btn {
-                    width: 44px;
-                    height: 44px;
-                    font-size: 24px;
-                }
-                .touch-warp-level {
-                    font-size: 24px;
-                    min-width: 35px;
-                }
-                .touch-exit-btn {
-                    width: 50px;
-                    height: 50px;
-                    font-size: 22px;
-                }
-                .nav-warp-display {
-                    transform: translateX(-50%) scale(1);
-                }
-            }
-            
-            /* Landscape phone adjustments */
-            @media (max-height: 500px) and (hover: none) and (pointer: coarse) {
-                .touch-joystick {
-                    width: 100px;
-                    height: 100px;
-                    bottom: 20px;
-                    left: 15px;
-                }
-                .joystick-stick {
-                    width: 45px;
-                    height: 45px;
-                }
-                .touch-btn {
-                    width: 50px;
-                    height: 50px;
-                    font-size: 20px;
-                }
-                .touch-action-buttons {
-                    gap: 8px;
-                    right: 15px;
-                    bottom: 20px;
-                }
-                .touch-warp-controls {
-                    padding: 5px 10px;
-                    gap: 6px;
-                    bottom: 20px;
-                }
-                .touch-warp-btn {
-                    width: 32px;
-                    height: 32px;
-                    font-size: 18px;
-                }
-                .touch-warp-level {
-                    font-size: 18px;
-                    min-width: 24px;
-                }
-                .touch-exit-btn {
-                    width: 40px;
-                    height: 40px;
-                    font-size: 18px;
-                    top: 10px;
-                    left: 10px;
-                }
-                .nav-warp-display {
-                    top: 10px;
-                    padding: 5px 15px;
-                    gap: 10px;
-                }
-                .nav-warp-display .warp-name { font-size: 10px; }
-                .nav-warp-display .warp-number { width: 20px; height: 20px; font-size: 12px; }
-                .nav-warp-display .speed-value { font-size: 14px; }
-            }
-
-            /* Speedometer gauge */
-            .nav-speedometer {
-                position: fixed;
-                top: 100px;
-                left: 20px;
-                width: 120px;
-                background: rgba(10, 15, 30, 0.85);
-                border: 1px solid rgba(100, 150, 255, 0.3);
-                border-radius: 10px;
-                padding: 10px;
-                backdrop-filter: blur(8px);
-            }
-            .speedometer-svg {
-                width: 100%;
-                height: 60px;
-            }
-            .speedometer-bg {
-                fill: none;
-                stroke: rgba(100, 150, 255, 0.2);
-                stroke-width: 8;
-                stroke-linecap: round;
-            }
-            .speedometer-fill {
-                fill: none;
-                stroke: #4a90e2;
-                stroke-width: 8;
-                stroke-linecap: round;
-                stroke-dasharray: 126;
-                stroke-dashoffset: 126;
-                transition: stroke-dashoffset 0.3s ease, stroke 0.3s ease;
-            }
-            .speedometer-needle {
-                fill: #fff;
-                filter: drop-shadow(0 0 3px #fff);
-            }
-            .speedometer-label {
-                text-align: center;
-                color: rgba(150, 180, 255, 0.8);
-                font-size: 10px;
-                margin-top: 5px;
-                letter-spacing: 2px;
-            }
-
-            /* Space compass - positioned on left side below speedometer */
-            .nav-compass {
-                position: fixed;
-                top: 220px;
-                left: 20px;
-                width: 80px;
-                height: 80px;
-                background: rgba(10, 15, 30, 0.85);
-                border: 1px solid rgba(100, 150, 255, 0.3);
-                border-radius: 50%;
-                backdrop-filter: blur(8px);
-            }
-            .compass-ring {
-                position: absolute;
-                inset: 5px;
-                border: 2px solid rgba(100, 150, 255, 0.3);
-                border-radius: 50%;
-            }
-            .compass-indicator {
-                position: absolute;
-                font-size: 16px;
-                transform: translate(-50%, -50%);
-                transition: all 0.1s ease;
-                text-shadow: 0 0 10px rgba(255, 200, 50, 0.8);
-            }
-            .compass-center {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                color: rgba(150, 180, 255, 0.6);
-                font-size: 8px;
-            }
-            .compass-label {
-                position: absolute;
-                bottom: -18px;
-                left: 50%;
-                transform: translateX(-50%);
-                color: rgba(150, 180, 255, 0.7);
-                font-size: 9px;
-                letter-spacing: 1px;
-                white-space: nowrap;
-            }
-
-            /* Distance display - horizontal bar at bottom */
-            .nav-distances {
-                position: fixed;
-                bottom: 15px;
-                right: 80px;
-                background: rgba(10, 15, 30, 0.9);
-                border: 1px solid rgba(100, 150, 255, 0.3);
-                border-radius: 20px;
-                padding: 6px 12px;
-                backdrop-filter: blur(8px);
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .distance-title {
-                color: rgba(150, 180, 255, 0.8);
-                font-size: 9px;
-                letter-spacing: 1px;
-            }
-            .distance-list {
-                display: flex;
-                gap: 5px;
-            }
-            .distance-item {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                cursor: pointer;
-                padding: 3px 8px;
-                border-radius: 8px;
-                transition: all 0.2s;
-                border: 1px solid transparent;
-            }
-            .distance-item:hover {
-                background: rgba(74, 144, 226, 0.3);
-                border-color: rgba(74, 144, 226, 0.5);
-            }
-            .distance-item .planet-name {
-                color: #fff;
-                font-size: 9px;
-                font-weight: bold;
-            }
-            .distance-item .planet-dist {
-                color: rgba(150, 180, 255, 0.6);
-                font-size: 8px;
-            }
-
-            /* Auto-pilot panel */
-            .nav-autopilot {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(10, 20, 40, 0.95);
-                border: 2px solid #4a90e2;
-                border-radius: 15px;
-                padding: 20px;
-                text-align: center;
-                z-index: 1002;
-                min-width: 200px;
-            }
-            .nav-autopilot.hidden { display: none; }
-            .autopilot-header {
-                color: #4a90e2;
-                font-size: 14px;
-                margin-bottom: 10px;
-                letter-spacing: 2px;
-            }
-            .autopilot-target {
-                color: #fff;
-                font-size: 18px;
-                margin-bottom: 5px;
-            }
-            .autopilot-distance {
-                color: rgba(150, 180, 255, 0.8);
-                font-size: 12px;
-                margin-bottom: 15px;
-            }
-            .autopilot-cancel {
-                background: rgba(255, 100, 100, 0.3);
-                border: 1px solid #ff6b6b;
-                color: #ff6b6b;
-                padding: 8px 20px;
-                border-radius: 20px;
-                cursor: pointer;
-                font-size: 12px;
-                transition: all 0.2s;
-            }
-            .autopilot-cancel:hover {
-                background: rgba(255, 100, 100, 0.5);
-            }
-
-            /* Planet markers in 3D space */
-            .planet-marker {
-                position: fixed;
-                pointer-events: auto;
-                cursor: pointer;
-                transition: transform 0.1s ease;
-                z-index: 100;
-            }
-            .planet-marker:hover {
-                transform: scale(1.2);
-            }
-            .planet-marker-content {
-                background: rgba(10, 20, 40, 0.9);
-                border: 1px solid rgba(100, 150, 255, 0.5);
-                border-radius: 8px;
-                padding: 5px 10px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                white-space: nowrap;
-            }
-            .planet-marker-icon {
-                font-size: 16px;
-            }
-            .planet-marker-name {
-                color: #fff;
-                font-size: 11px;
-                font-weight: bold;
-            }
-            .planet-marker-dist {
-                color: rgba(150, 180, 255, 0.7);
-                font-size: 9px;
-            }
-            .planet-marker-arrow {
-                position: absolute;
-                bottom: -8px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 0;
-                height: 0;
-                border-left: 6px solid transparent;
-                border-right: 6px solid transparent;
-                border-top: 8px solid rgba(100, 150, 255, 0.5);
-            }
-
-            /* Speed lines effect */
-            .speed-lines-container {
-                position: fixed;
-                inset: 0;
-                pointer-events: none;
-                z-index: 50;
-                overflow: hidden;
-            }
-            .speed-line {
-                position: absolute;
-                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
-                height: 1px;
-                animation: speedLineMove 0.3s linear infinite;
-            }
-            @keyframes speedLineMove {
-                from { transform: translateX(-100vw); }
-                to { transform: translateX(100vw); }
-            }
-
-            /* Warp flash effect */
-            .warp-flash {
-                position: fixed;
-                inset: 0;
-                background: radial-gradient(circle, rgba(100, 150, 255, 0.3) 0%, transparent 70%);
-                pointer-events: none;
-                z-index: 99;
-                opacity: 0;
-                transition: opacity 0.15s ease;
-            }
-            .warp-flash.active {
-                opacity: 1;
-            }
-
-            /* Emergency brake effect */
-            .emergency-brake-effect {
-                position: fixed;
-                inset: 0;
-                border: 4px solid #ff4444;
-                pointer-events: none;
-                z-index: 98;
-                opacity: 0;
-                transition: opacity 0.1s;
-            }
-            .emergency-brake-effect.active {
-                opacity: 1;
-                animation: brakeFlash 0.2s ease-out;
-            }
-            @keyframes brakeFlash {
-                0%, 100% { border-color: #ff4444; }
-                50% { border-color: #ff8888; }
-            }
-
-            /* Planet info panel */
-            .nav-planet-info {
-                position: fixed;
-                top: 50%;
-                right: 20px;
-                transform: translateY(-50%);
-                width: 280px;
-                max-height: 70vh;
-                background: rgba(10, 20, 40, 0.95);
-                border: 2px solid rgba(100, 150, 255, 0.5);
-                border-radius: 15px;
-                padding: 15px;
-                pointer-events: auto;
-                overflow-y: auto;
-                z-index: 1003;
-                animation: slideIn 0.2s ease;
-            }
-            .nav-planet-info.hidden { display: none; }
-            @keyframes slideIn {
-                from { opacity: 0; transform: translateY(-50%) translateX(20px); }
-                to { opacity: 1; transform: translateY(-50%) translateX(0); }
-            }
-            .planet-info-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 10px;
-                padding-bottom: 10px;
-                border-bottom: 1px solid rgba(100, 150, 255, 0.3);
-            }
-            .planet-info-name {
-                font-size: 18px;
-                font-weight: bold;
-                color: #fff;
-            }
-            .planet-info-close {
-                background: rgba(255, 100, 100, 0.3);
-                border: 1px solid #ff6b6b;
-                color: #ff6b6b;
-                width: 28px;
-                height: 28px;
-                border-radius: 50%;
-                cursor: pointer;
-                font-size: 14px;
-                transition: all 0.2s;
-            }
-            .planet-info-close:hover {
-                background: rgba(255, 100, 100, 0.5);
-            }
-            .planet-info-type {
-                color: rgba(150, 180, 255, 0.8);
-                font-size: 12px;
-                margin-bottom: 12px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-            .planet-info-stats {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-                margin-bottom: 15px;
-            }
-            .planet-info-stat {
-                background: rgba(100, 150, 255, 0.1);
-                padding: 8px;
-                border-radius: 8px;
-            }
-            .planet-info-stat-label {
-                color: rgba(150, 180, 255, 0.6);
-                font-size: 9px;
-                text-transform: uppercase;
-            }
-            .planet-info-stat-value {
-                color: #fff;
-                font-size: 12px;
-                font-weight: bold;
-            }
-            .planet-info-curiosity {
-                background: rgba(255, 200, 50, 0.1);
-                border-left: 3px solid #ffc832;
-                padding: 10px;
-                border-radius: 0 8px 8px 0;
-                font-size: 11px;
-                color: rgba(255, 255, 255, 0.9);
-                line-height: 1.4;
-            }
-            .planet-info-curiosity-title {
-                color: #ffc832;
-                font-size: 10px;
-                font-weight: bold;
-                margin-bottom: 5px;
-            }
-
-            /* Proximity hint */
-            .nav-proximity-hint {
-                position: fixed;
-                bottom: 60px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(10, 20, 40, 0.9);
-                border: 1px solid rgba(100, 150, 255, 0.5);
-                border-radius: 20px;
-                padding: 8px 20px;
-                pointer-events: none;
-                z-index: 1001;
-                animation: fadeInUp 0.3s ease;
-            }
-            .nav-proximity-hint.hidden { display: none; }
-            @keyframes fadeInUp {
-                from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-                to { opacity: 1; transform: translateX(-50%) translateY(0); }
-            }
-            .proximity-text {
-                color: #fff;
-                font-size: 13px;
-            }
-            .proximity-text .key-hint {
-                background: rgba(74, 144, 226, 0.4);
-                padding: 2px 8px;
-                border-radius: 4px;
-                color: #4a90e2;
-                font-weight: bold;
-            }
-
-            /* Touch info button */
-            .touch-info {
-                border-color: #4a90e2 !important;
-                order: 0; /* First in the list */
-            }
-            .touch-info.active {
-                background: rgba(74, 144, 226, 0.5);
-                box-shadow: 0 0 20px rgba(74, 144, 226, 0.7);
-            }
-
-            /* Hide new elements on mobile for now */
-            @media (hover: none) and (pointer: coarse) {
-                .nav-speedometer,
-                .nav-compass,
-                .nav-distances {
-                    display: none;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
     initEventListeners() {
         // Store bound references so we can remove them later
         this._boundKeyDown = (e) => {
@@ -1335,14 +358,11 @@ export class ManualNavigation {
     initTouchListeners() {
         // Get touch elements after they're in DOM
         setTimeout(() => {
-            // Joystick
-            const joystick = document.getElementById('touch-joystick');
-            if (joystick) {
-                joystick.addEventListener('touchstart', (e) => this.onJoystickStart(e), { passive: false });
-                joystick.addEventListener('touchmove', (e) => this.onJoystickMove(e), { passive: false });
-                joystick.addEventListener('touchend', (e) => this.onJoystickEnd(e), { passive: false });
-            }
-            
+            // Floating joystick: spawns at touch point on left half of the screen.
+            // No direct listener on the joystick element — routed via document touch handler below.
+            this._joystickTouchId = null;
+            this._lookTouchId = null;
+
             // Warp buttons
             const warpBtns = document.querySelectorAll('.touch-warp-btn');
             warpBtns.forEach(btn => {
@@ -1412,102 +432,106 @@ export class ManualNavigation {
         }, 100);
     }
     
-    onJoystickStart(e) {
-        if (!this.enabled) return;
-        e.preventDefault();
-        const touch = e.touches[0];
-        const joystick = document.getElementById('touch-joystick');
-        const rect = joystick.getBoundingClientRect();
-        
-        this.touchJoystickActive = true;
-        this.joystickOrigin = {
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2
-        };
-        this.moveForward = true; // Start moving when touching joystick
+    // --- Floating joystick: spawns at first touch on left half of screen ---
+
+    _isOnInteractive(target) {
+        return !!(target && target.closest && target.closest(
+            '.touch-warp-controls, .touch-action-buttons, .touch-exit-btn, .touch-controls button, .nav-info-overlay, .manual-nav-toggle'
+        ));
     }
-    
-    onJoystickMove(e) {
-        if (!this.enabled || !this.touchJoystickActive) return;
-        e.preventDefault();
-        
-        const touch = e.touches[0];
+
+    _spawnJoystick(x, y) {
+        const joystick = document.getElementById('touch-joystick');
+        if (!joystick) return;
+        joystick.style.left = `${x}px`;
+        joystick.style.top = `${y}px`;
+        joystick.classList.add('active');
+        this.touchJoystickActive = true;
+        this.joystickOrigin = { x, y };
+        if (!this._joystickStick) this._joystickStick = joystick.querySelector('.joystick-stick');
+        if (this._joystickStick) this._joystickStick.style.transform = 'translate(0, 0)';
+        this.moveForward = true; // initial nudge forward — mirrors prior behavior
+    }
+
+    _updateJoystick(touch) {
         const dx = touch.clientX - this.joystickOrigin.x;
         const dy = touch.clientY - this.joystickOrigin.y;
-        
-        // Limit to joystick radius
         const maxRadius = 50;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distance = Math.hypot(dx, dy);
         const clampedDistance = Math.min(distance, maxRadius);
         const angle = Math.atan2(dy, dx);
-        
-        const clampedX = Math.cos(angle) * clampedDistance;
-        const clampedY = Math.sin(angle) * clampedDistance;
-        
-        // Move the joystick stick visual
-        if (!this._joystickStick) this._joystickStick = document.querySelector('.joystick-stick');
-        const stick = this._joystickStick;
-        if (stick) {
-            stick.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
-        }
-        
-        // Convert to movement
+        const cx = Math.cos(angle) * clampedDistance;
+        const cy = Math.sin(angle) * clampedDistance;
+        if (this._joystickStick) this._joystickStick.style.transform = `translate(${cx}px, ${cy}px)`;
         const threshold = 15;
         this.moveForward = dy < -threshold;
         this.moveBackward = dy > threshold;
         this.moveLeft = dx < -threshold;
         this.moveRight = dx > threshold;
     }
-    
-    onJoystickEnd(e) {
-        if (!this.enabled) return;
+
+    _releaseJoystick() {
+        const joystick = document.getElementById('touch-joystick');
+        if (joystick) joystick.classList.remove('active');
         this.touchJoystickActive = false;
         this.moveForward = false;
         this.moveBackward = false;
         this.moveLeft = false;
         this.moveRight = false;
-        
-        // Reset joystick visual
-        if (!this._joystickStick) this._joystickStick = document.querySelector('.joystick-stick');
-        const stick = this._joystickStick;
-        if (stick) {
-            stick.style.transform = 'translate(0, 0)';
-        }
+        if (this._joystickStick) this._joystickStick.style.transform = 'translate(0, 0)';
     }
-    
+
     onTouchLookStart(e) {
         if (!this.enabled) return;
-        
-        // Only handle touches on right half of screen (for looking)
-        const touch = e.touches[0];
-        if (touch.clientX < window.innerWidth / 2) return;
-        
-        // Don't interfere with buttons
-        if (e.target.closest('.touch-controls button, .touch-warp-controls, .touch-action-buttons, .touch-exit-btn')) return;
-        
-        this.touchLookActive = true;
-        this.lastTouchLook = { x: touch.clientX, y: touch.clientY };
+
+        // Multi-touch aware: first touch on left half spawns joystick; first on right side starts look.
+        for (const touch of e.changedTouches) {
+            if (this._isOnInteractive(touch.target)) continue;
+            const onLeft = touch.clientX < window.innerWidth / 2;
+            if (onLeft && this._joystickTouchId === null) {
+                this._joystickTouchId = touch.identifier;
+                this._spawnJoystick(touch.clientX, touch.clientY);
+                e.preventDefault();
+            } else if (!onLeft && this._lookTouchId === null) {
+                this._lookTouchId = touch.identifier;
+                this.touchLookActive = true;
+                this.lastTouchLook = { x: touch.clientX, y: touch.clientY };
+                e.preventDefault();
+            }
+        }
     }
-    
+
     onTouchLookMove(e) {
-        if (!this.enabled || !this.touchLookActive) return;
-        
-        const touch = e.touches[0];
-        const dx = touch.clientX - this.lastTouchLook.x;
-        const dy = touch.clientY - this.lastTouchLook.y;
-        
-        // Apply rotation (similar to mouse look)
-        this.euler.y -= dx * this.mouseSensitivity * 2;
-        this.euler.x -= dy * this.mouseSensitivity * 2;
-        this.euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.euler.x));
-        
-        this.camera.quaternion.setFromEuler(this.euler);
-        
-        this.lastTouchLook = { x: touch.clientX, y: touch.clientY };
+        if (!this.enabled) return;
+        let consumed = false;
+        for (const touch of e.changedTouches) {
+            if (touch.identifier === this._joystickTouchId) {
+                this._updateJoystick(touch);
+                consumed = true;
+            } else if (touch.identifier === this._lookTouchId && this.touchLookActive) {
+                const dx = touch.clientX - this.lastTouchLook.x;
+                const dy = touch.clientY - this.lastTouchLook.y;
+                this.euler.y -= dx * this.mouseSensitivity * 2;
+                this.euler.x -= dy * this.mouseSensitivity * 2;
+                this.euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.euler.x));
+                this.camera.quaternion.setFromEuler(this.euler);
+                this.lastTouchLook = { x: touch.clientX, y: touch.clientY };
+                consumed = true;
+            }
+        }
+        if (consumed) e.preventDefault();
     }
-    
+
     onTouchLookEnd(e) {
-        this.touchLookActive = false;
+        for (const touch of e.changedTouches) {
+            if (touch.identifier === this._joystickTouchId) {
+                this._joystickTouchId = null;
+                this._releaseJoystick();
+            } else if (touch.identifier === this._lookTouchId) {
+                this._lookTouchId = null;
+                this.touchLookActive = false;
+            }
+        }
     }
     
     toggle() {
@@ -1580,6 +604,31 @@ export class ManualNavigation {
 
         // Show mouse controls hint only if pointer lock is blocked (less UI noise)
 
+        // Touch devices: nudge to landscape on small portrait screens.
+        if (this.isTouchDevice) this.maybeShowLandscapeHint();
+    }
+
+    maybeShowLandscapeHint() {
+        const isPortrait = window.innerHeight > window.innerWidth;
+        const isSmall = Math.min(window.innerWidth, window.innerHeight) < 600;
+        if (!isPortrait || !isSmall) return;
+        if (document.getElementById('landscape-toast')) return;
+        const toast = document.createElement('div');
+        toast.id = 'landscape-toast';
+        toast.className = 'landscape-toast';
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
+        const en = i18n.lang === 'en';
+        toast.innerHTML = `
+            <span class="icon" aria-hidden="true">📱</span>
+            <strong>${en ? 'Rotate your device' : 'Roda o telemóvel'}</strong><br>
+            <span style="opacity:0.85;font-size:0.85rem;">${en ? 'Landscape works best for manual flight.' : 'Modo horizontal funciona melhor para pilotar.'}</span>
+        `;
+        document.body.appendChild(toast);
+        const remove = () => { toast.remove(); window.removeEventListener('resize', onResize); };
+        const onResize = () => { if (window.innerWidth >= window.innerHeight) remove(); };
+        window.addEventListener('resize', onResize);
+        setTimeout(remove, 4500);
     }
 
     showMouseControlsHint() {
@@ -1675,6 +724,10 @@ export class ManualNavigation {
         // Reset touch states
         this.touchJoystickActive = false;
         this.touchLookActive = false;
+        this._joystickTouchId = null;
+        this._lookTouchId = null;
+        const joystickEl = document.getElementById('touch-joystick');
+        if (joystickEl) joystickEl.classList.remove('active');
         this.moveForward = false;
         this.moveBackward = false;
         this.moveLeft = false;
