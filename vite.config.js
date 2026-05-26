@@ -13,19 +13,20 @@ export default defineConfig({
     },
     // Clear cache on every build
     cacheDir: 'node_modules/.vite_nocache',
-    // Optimize deps
-    optimizeDeps: {
-        force: true,
-    },
     // Build configuration
     build: {
-        // Suppress chunk size warning (educational app with many features)
-        chunkSizeWarningLimit: 1000,
-        // Multi-page build
+        // App code is ~200 KB gzip; vendor chunk handles the rest. Warn over 500 KB raw.
+        chunkSizeWarningLimit: 500,
+        // Multi-page build with vendor split so Three.js stays cached across app deploys.
         rollupOptions: {
             input: {
                 main: 'index.html',
                 biblioteca: 'biblioteca.html',
+            },
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules/three')) return 'three-vendor';
+                },
             },
         },
     },

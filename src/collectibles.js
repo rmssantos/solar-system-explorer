@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { i18n } from './i18n.js';
+import * as storage from './utils/storage.js';
 
 export class CollectiblesSystem {
     constructor(app) {
@@ -185,7 +186,8 @@ export class CollectiblesSystem {
             glow,
             particles,
             collected: false,
-            time: Math.random() * Math.PI * 2
+            time: Math.random() * Math.PI * 2,
+            initialY: position.y
         };
     }
     
@@ -193,6 +195,7 @@ export class CollectiblesSystem {
         // Collection counter button
         this.counterBtn = document.createElement('button');
         this.counterBtn.className = 'collectibles-counter';
+        this.counterBtn.setAttribute('aria-label', i18n.t('aria_collectibles'));
         this.counterBtn.innerHTML = `🎁 <span id="collected-count">${this.collected.length}</span>/${this.getCollectibleLocations().length}`;
         this.counterBtn.style.cssText = `
             position: fixed;
@@ -247,13 +250,14 @@ export class CollectiblesSystem {
         const grid = this.modal.querySelector('#collectibles-grid');
         const types = Object.entries(this.collectibleTypes);
         const lang = i18n.lang;
-        
+        const locations = this.getCollectibleLocations(); // Cache once, reuse below
+
         grid.innerHTML = types.map(([key, info]) => {
             const count = this.collected.filter(id => {
-                const loc = this.getCollectibleLocations().find((l, i) => `collectible_${i}` === id);
+                const loc = locations.find((l, i) => `collectible_${i}` === id);
                 return loc && loc.type === key;
             }).length;
-            const total = this.getCollectibleLocations().filter(l => l.type === key).length;
+            const total = locations.filter(l => l.type === key).length;
             const found = count > 0;
             
             return `
@@ -266,7 +270,7 @@ export class CollectiblesSystem {
         }).join('');
         
         const progress = this.modal.querySelector('#collection-progress');
-        const total = this.getCollectibleLocations().length;
+        const total = locations.length;
         const percent = Math.round((this.collected.length / total) * 100);
         progress.innerHTML = `
             ${i18n.t('collected', 'Encontrados')}: ${this.collected.length}/${total} (${percent}%)
@@ -297,8 +301,8 @@ export class CollectiblesSystem {
             // Update animation
             c.time += deltaTime * 2;
             
-            // Bobbing animation
-            c.group.position.y += Math.sin(c.time * 3) * 0.002;
+            // Bobbing animation (absolute position to prevent drift)
+            c.group.position.y = c.initialY + Math.sin(c.time * 3) * 0.5;
             
             // Rotate particles
             c.particles.rotation.z += deltaTime;
@@ -309,8 +313,12 @@ export class CollectiblesSystem {
             c.glow.material.opacity = 0.2 + Math.sin(c.time * 3) * 0.1;
             
             // Check for collection (player proximity)
-            const distance = cameraPos.distanceTo(c.group.position);
-            if (distance < 3) {
+            // Use distanceToSquared to avoid sqrt per frame
+            const distSq = cameraPos.distanceToSquared(c.group.position);
+            // Adjust threshold for manual nav mode (scene scaled 50x)
+            // Exploration mode: 25 units (camera min zoom is 20). Manual nav: 150 units (50x scale)
+            const threshold = this.app.manualNavigation?.enabled ? (150 * 150) : (25 * 25);
+            if (distSq < threshold) {
                 this.collectItem(c);
             }
         });
@@ -393,7 +401,7 @@ export class CollectiblesSystem {
     
     loadCollected() {
         try {
-            return JSON.parse(localStorage.getItem('solarCollectibles') || '[]');
+            return storage.getItem('collectibles', []);
         } catch {
             return [];
         }
@@ -401,7 +409,7 @@ export class CollectiblesSystem {
 
     saveCollected() {
         try {
-            localStorage.setItem('solarCollectibles', JSON.stringify(this.collected));
+            storage.setItem('collectibles', this.collected);
         } catch (e) {
             console.warn('[Collectibles] Failed to save:', e.message);
         }

@@ -13,7 +13,8 @@ export class QuizSystem {
         this.audioManager = audioManager;
         this.quizzes = this.createQuizzes();
         this.answeredQuizzes = new Set();
-        
+        this.streak = 0;
+
         this.loadProgress();
     }
 
@@ -189,6 +190,36 @@ export class QuizSystem {
                         correct: 1,
                         explanation: 'Tritão orbita ao contrário! Provavelmente foi capturado por Neptuno.'
                     }
+                ],
+                'pluto': [
+                    {
+                        question: 'O que aconteceu a Plutão em 2006?',
+                        options: ['Explodiu', 'Foi despromovido a planeta anão', 'Foi descoberto', 'Colidiu com Neptuno'],
+                        correct: 1,
+                        explanation: 'Em 2006, os cientistas decidiram que Plutão é um planeta anão!'
+                    },
+                    {
+                        question: 'Que forma tem a marca famosa na superfície de Plutão?',
+                        options: ['Uma estrela', 'Um coração', 'Um círculo', 'Um triângulo'],
+                        correct: 1,
+                        explanation: 'Plutão tem uma enorme mancha em forma de coração chamada Tombaugh Regio!'
+                    }
+                ],
+                'ceres': [
+                    {
+                        question: 'Onde fica Ceres no Sistema Solar?',
+                        options: ['Depois de Neptuno', 'Entre Marte e Júpiter', 'Perto do Sol', 'Entre Saturno e Úrano'],
+                        correct: 1,
+                        explanation: 'Ceres está no cinturão de asteroides, entre Marte e Júpiter!'
+                    }
+                ],
+                'eris': [
+                    {
+                        question: 'Porque é que a descoberta de Éris foi tão importante?',
+                        options: ['Tem vida', 'Fez Plutão perder o título de planeta', 'É maior que a Terra', 'Tem anéis bonitos'],
+                        correct: 1,
+                        explanation: 'Éris é tão grande como Plutão, e a sua descoberta levou os cientistas a criar a categoria de planeta anão!'
+                    }
                 ]
             },
             en: {
@@ -361,6 +392,36 @@ export class QuizSystem {
                         correct: 1,
                         explanation: 'Triton orbits backwards! It was probably captured by Neptune.'
                     }
+                ],
+                'pluto': [
+                    {
+                        question: 'What happened to Pluto in 2006?',
+                        options: ['It exploded', 'It was demoted to a dwarf planet', 'It was discovered', 'It crashed into Neptune'],
+                        correct: 1,
+                        explanation: 'In 2006, scientists decided that Pluto is a dwarf planet!'
+                    },
+                    {
+                        question: 'What shape is the famous mark on Pluto\'s surface?',
+                        options: ['A star', 'A heart', 'A circle', 'A triangle'],
+                        correct: 1,
+                        explanation: 'Pluto has a huge heart-shaped area called Tombaugh Regio!'
+                    }
+                ],
+                'ceres': [
+                    {
+                        question: 'Where is Ceres located in the Solar System?',
+                        options: ['Beyond Neptune', 'Between Mars and Jupiter', 'Near the Sun', 'Between Saturn and Uranus'],
+                        correct: 1,
+                        explanation: 'Ceres is in the asteroid belt, between Mars and Jupiter!'
+                    }
+                ],
+                'eris': [
+                    {
+                        question: 'Why was the discovery of Eris so important?',
+                        options: ['It has life', 'It made Pluto lose its planet title', 'It\'s bigger than Earth', 'It has beautiful rings'],
+                        correct: 1,
+                        explanation: 'Eris is as big as Pluto, and its discovery led scientists to create the dwarf planet category!'
+                    }
                 ]
             }
         };
@@ -371,10 +432,13 @@ export class QuizSystem {
         if (saved) {
             this.answeredQuizzes = new Set(saved);
         }
+        const savedStreak = storage.getItem('quizStreak', 0);
+        this.streak = typeof savedStreak === 'number' ? savedStreak : 0;
     }
 
     saveProgress() {
         storage.setItem('quizzes', [...this.answeredQuizzes]);
+        storage.setItem('quizStreak', this.streak);
     }
 
     getQuizzesForLang() {
@@ -402,6 +466,68 @@ export class QuizSystem {
         // All answered, return random one for replay (no XP)
         const randomIndex = Math.floor(Math.random() * quizzes.length);
         return { ...quizzes[randomIndex], id: `${planetName}_${randomIndex}`, replay: true };
+    }
+
+    /**
+     * Returns quiz data for the info panel slide without creating any DOM.
+     * @param {string} planetName - Internal planet key
+     * @returns {{ question: string, options: string[], correctIndex: number, id: string, replay: boolean, answered: boolean } | null}
+     */
+    getQuizForSlide(planetName) {
+        const quizzes = this.getQuizzesForLang()[planetName];
+        if (!quizzes || quizzes.length === 0) return null;
+
+        // Try to find an unanswered quiz
+        for (let i = 0; i < quizzes.length; i++) {
+            const quizId = `${planetName}_${i}`;
+            if (!this.answeredQuizzes.has(quizId)) {
+                const shuffled = this.shuffleWithCorrect(quizzes[i].options, quizzes[i].correct);
+                return {
+                    question: quizzes[i].question,
+                    options: shuffled.options,
+                    correctIndex: shuffled.correctIndex,
+                    explanation: quizzes[i].explanation,
+                    id: quizId,
+                    replay: false,
+                    answered: false
+                };
+            }
+        }
+
+        // All answered - return first quiz as answered/replay
+        const firstQuiz = quizzes[0];
+        const shuffled = this.shuffleWithCorrect(firstQuiz.options, firstQuiz.correct);
+        return {
+            question: firstQuiz.question,
+            options: shuffled.options,
+            correctIndex: shuffled.correctIndex,
+            explanation: firstQuiz.explanation,
+            id: `${planetName}_0`,
+            replay: true,
+            answered: true
+        };
+    }
+
+    /**
+     * Record a correct answer: increment streak.
+     */
+    recordCorrectAnswer(quizId) {
+        this.answeredQuizzes.add(quizId);
+        this.streak++;
+        this.saveProgress();
+
+        // Award XP
+        if (this.xpSystem) {
+            this.xpSystem.addXP(25, i18n.lang === 'en' ? 'Correct quiz' : 'Quiz correcto');
+        }
+    }
+
+    /**
+     * Record a wrong answer: reset streak.
+     */
+    recordWrongAnswer() {
+        this.streak = 0;
+        this.saveProgress();
     }
 
     showQuiz(planetName, onComplete) {

@@ -13,18 +13,22 @@ export class MiniMap {
         this.ctx = null;
         this.isExpanded = false;
         
-        // Planet positions (simplified orbital distances)
-        this.planetData = [
-            { name: 'Sol', key: 'Sol', distance: 0, color: '#FFD700', size: 8 },
-            { name: 'Mercúrio', key: 'Mercurio', distance: 25, color: '#A9A9A9', size: 2 },
-            { name: 'Vénus', key: 'Venus', distance: 35, color: '#DEB887', size: 3 },
-            { name: 'Terra', key: 'Terra', distance: 45, color: '#4169E1', size: 3 },
-            { name: 'Marte', key: 'Marte', distance: 55, color: '#CD5C5C', size: 2.5 },
-            { name: 'Júpiter', key: 'Jupiter', distance: 75, color: '#DAA520', size: 6 },
-            { name: 'Saturno', key: 'Saturno', distance: 95, color: '#F4C430', size: 5, rings: true },
-            { name: 'Úrano', key: 'Urano', distance: 115, color: '#40E0D0', size: 4 },
-            { name: 'Neptuno', key: 'Neptuno', distance: 135, color: '#1E90FF', size: 4 }
-        ];
+        // Derive planet data from SOLAR_SYSTEM_DATA for consistency
+        const planetOrder = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+        const sizeMap = { sun: 8, mercury: 2, venus: 3, earth: 3, mars: 2.5, jupiter: 6, saturn: 5, uranus: 4, neptune: 4 };
+        const distMap = { sun: 0, mercury: 25, venus: 35, earth: 45, mars: 55, jupiter: 75, saturn: 95, uranus: 115, neptune: 135 };
+        this.planetData = planetOrder.map(key => {
+            const data = SOLAR_SYSTEM_DATA[key];
+            const colorHex = data?.color ? '#' + data.color.toString(16).padStart(6, '0') : '#888888';
+            return {
+                name: data?.name || key,
+                key: key,
+                distance: distMap[key] || 0,
+                color: colorHex,
+                size: sizeMap[key] || 3,
+                rings: key === 'saturn'
+            };
+        });
         
         this.currentTarget = null;
         this.animationFrame = null;
@@ -41,7 +45,7 @@ export class MiniMap {
         this.mapScale = 1;
 
         this.createUI();
-        this.startAnimation();
+        // Note: animation is driven by main.js calling externalUpdate() - no own rAF loop needed
 
         // Listen for language changes
         i18n.onLangChange(() => this.updateTranslations());
@@ -311,7 +315,7 @@ export class MiniMap {
         if (this.app.uiManager) {
             const navList = this.app.uiManager.navigationList;
             const index = navList.findIndex(item => 
-                item.name === planetKey || item.data?.nome === planetKey
+                item.name === planetKey || item.data?.name === planetKey
             );
             
             if (index !== -1) {
@@ -325,11 +329,21 @@ export class MiniMap {
     }
 
     startAnimation() {
+        // Use a throttled rAF loop - skip frames when minimized
         const animate = () => {
-            this.draw();
+            if (!this.isMinimized) {
+                this.draw();
+            }
             this.animationFrame = requestAnimationFrame(animate);
         };
         animate();
+    }
+
+    /** Called from main animation loop to allow external throttling */
+    externalUpdate() {
+        if (!this.isMinimized) {
+            this.draw();
+        }
     }
 
     draw() {
@@ -340,8 +354,8 @@ export class MiniMap {
         const centerY = h / 2;
         const scale = this.isExpanded ? 1 : 0.5;
 
-        // Update orbit time (fallback for when 3D objects not available)
-        this.orbitTime = Date.now() * 0.0001;
+        // Accumulate orbit time (avoid Date.now() per frame)
+        this.orbitTime += 0.016 * 0.006; // ~60fps equivalent
 
         // Clear
         ctx.fillStyle = 'rgba(10, 10, 30, 0.95)';
@@ -409,7 +423,7 @@ export class MiniMap {
 
             if (isCurrent) {
                 // Current planet - pulsing glow
-                const pulse = Math.sin(Date.now() * 0.005) * 0.3 + 0.7;
+                const pulse = Math.sin(this.orbitTime * 50) * 0.3 + 0.7;
                 ctx.shadowColor = '#4a90e2';
                 ctx.shadowBlur = 15 * pulse;
                 ctx.fillStyle = planet.color;

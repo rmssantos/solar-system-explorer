@@ -135,9 +135,9 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// Listen for messages from the app
+// Listen for messages from the app (validate source)
 self.addEventListener('message', (event) => {
-    if (event.data === 'skipWaiting') {
+    if (event.source && event.data === 'skipWaiting') {
         self.skipWaiting();
     }
 });

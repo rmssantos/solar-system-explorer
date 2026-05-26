@@ -5,6 +5,7 @@
  */
 
 import { i18n } from './i18n.js';
+import * as storage from './utils/storage.js';
 
 export class UISettings {
     constructor(app) {
@@ -24,13 +25,35 @@ export class UISettings {
         window.addEventListener('manualNavModeChanged', (e) => {
             this.onManualNavModeChanged(e.detail.active);
         });
+
+        // Re-render on language change
+        i18n.onLangChange(() => this.updateTranslations());
+    }
+
+    updateTranslations() {
+        // Update button tooltip
+        if (this.settingsBtn) {
+            this.settingsBtn.title = i18n.t('ui_settings') || 'UI Settings';
+        }
+        // Re-render panel labels
+        if (this.panel) {
+            const header = this.panel.querySelector('.ui-settings-header span');
+            if (header) header.textContent = `⚙️ ${i18n.t('ui_settings')}`;
+
+            const labels = this.panel.querySelectorAll('.ui-toggle-row span');
+            const keys = ['passport_title', 'minimap', 'time_control', 'language', 'controls_title'];
+            const icons = ['🛂', '🗺️', '⏱️', '🌐', '🎮'];
+            labels.forEach((label, i) => {
+                if (keys[i]) label.textContent = `${icons[i]} ${i18n.t(keys[i])}`;
+            });
+        }
     }
     
     loadStates() {
         try {
-            const saved = localStorage.getItem('ui-panel-states');
+            const saved = storage.getItem('uiPanelStates', null);
             if (saved) {
-                return JSON.parse(saved);
+                return saved;
             }
         } catch (e) {
             console.warn('Failed to load UI states:', e);
@@ -49,7 +72,7 @@ export class UISettings {
     
     saveStates() {
         try {
-            localStorage.setItem('ui-panel-states', JSON.stringify(this.panelStates));
+            storage.setItem('uiPanelStates', this.panelStates);
         } catch (e) {
             console.warn('Failed to save UI states:', e);
         }
@@ -110,9 +133,6 @@ export class UISettings {
         });
         
         document.body.appendChild(this.panel);
-        
-        // Add styles
-        this.addStyles();
     }
     
     togglePanel() {
@@ -183,120 +203,5 @@ export class UISettings {
             minimap.classList.toggle('minimized', !this.panelStates.minimapExpanded);
             this.saveStates();
         }
-    }
-    
-    addStyles() {
-        if (document.getElementById('ui-settings-styles')) return;
-        
-        const style = document.createElement('style');
-        style.id = 'ui-settings-styles';
-        style.textContent = `
-            /* Settings button - HIDDEN (now in toolbar) */
-            .ui-settings-btn {
-                display: none !important;
-            }
-            
-            /* Settings panel - positioned next to left toolbar */
-            .ui-settings-panel {
-                position: fixed;
-                top: 50%;
-                left: 80px;
-                transform: translateY(-50%);
-                width: 220px;
-                background: rgba(15, 15, 35, 0.95);
-                border: 1px solid rgba(74, 144, 226, 0.3);
-                border-radius: 12px;
-                backdrop-filter: blur(15px);
-                z-index: 1200;
-                overflow: hidden;
-                transition: all 0.3s ease;
-            }
-            
-            .ui-settings-panel.hidden {
-                opacity: 0;
-                transform: translateY(-50%) translateX(-20px) scale(0.95);
-                pointer-events: none;
-            }
-            
-            .ui-settings-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 12px 15px;
-                background: rgba(40, 40, 80, 0.5);
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                font-size: 0.9rem;
-                font-weight: 500;
-            }
-            
-            .ui-settings-close {
-                background: none;
-                border: none;
-                color: rgba(255, 255, 255, 0.6);
-                font-size: 1.3rem;
-                cursor: pointer;
-                padding: 0;
-                line-height: 1;
-            }
-            
-            .ui-settings-close:hover {
-                color: white;
-            }
-            
-            .ui-settings-body {
-                padding: 10px;
-            }
-            
-            .ui-toggle-row {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 8px 10px;
-                border-radius: 8px;
-                cursor: pointer;
-                transition: background 0.2s ease;
-                font-size: 0.85rem;
-            }
-            
-            .ui-toggle-row:hover {
-                background: rgba(255, 255, 255, 0.05);
-            }
-            
-            .ui-toggle-row input[type="checkbox"] {
-                width: 18px;
-                height: 18px;
-                accent-color: #4a90e2;
-                cursor: pointer;
-            }
-            
-            /* Hidden state for panels */
-            .panel-hidden {
-                opacity: 0 !important;
-                pointer-events: none !important;
-                transform: scale(0.9);
-            }
-            
-            /* Ensure passport has hidden state */
-            #passport-panel.panel-hidden {
-                transform: translateX(-50%) translateY(-20px) scale(0.9);
-            }
-            
-            /* Minimap hidden state */
-            .minimap-container.panel-hidden {
-                transform: translateX(-100%);
-            }
-            
-            /* Time control hidden */
-            #time-control-compact.panel-hidden,
-            .time-control.panel-hidden {
-                transform: translateX(100%);
-            }
-            
-            /* HUD panel hidden */
-            #hud-panel.panel-hidden {
-                transform: translateX(-100%);
-            }
-        `;
-        document.head.appendChild(style);
     }
 }

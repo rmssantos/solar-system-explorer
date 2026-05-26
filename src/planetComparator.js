@@ -34,6 +34,7 @@ export class PlanetComparator {
         compareBtn.className = 'compare-btn';
         compareBtn.innerHTML = '⚖️';
         compareBtn.title = i18n.t('compare_planets');
+        compareBtn.setAttribute('aria-label', i18n.t('aria_compare'));
         compareBtn.style.cssText = `
             position: fixed;
             bottom: 320px;
@@ -56,16 +57,13 @@ export class PlanetComparator {
         compareBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Compare button clicked!');
             this.openComparator();
         });
         
         document.body.appendChild(compareBtn);
-        console.log('Compare button created and added to DOM');
     }
 
     openComparator() {
-        console.log('Opening comparator, isOpen:', this.isOpen);
         if (this.isOpen) return;
         this.isOpen = true;
 
@@ -89,10 +87,10 @@ export class PlanetComparator {
 
         // Get list of celestial bodies
         const bodies = Object.entries(SOLAR_SYSTEM_DATA)
-            .filter(([key, data]) => data.raioKm) // Has radius = is a main body
+            .filter(([key, data]) => data.radiusKm) // Has radius = is a main body
             .map(([key, data]) => {
                 const translated = getTranslatedObjectData(key);
-                return { key, name: translated?.nome || data.nome || key, data };
+                return { key, name: translated?.name || data.name || key, data };
             });
         
         const labels = {
@@ -184,8 +182,8 @@ export class PlanetComparator {
         const p2 = this.planet2;
 
         // Calculate comparisons
-        const sizeRatio = p1.raioKm / p2.raioKm;
-        const distRatio = (p1.distanciaMediaAoSol || 1) / (p2.distanciaMediaAoSol || 1);
+        const sizeRatio = p1.radiusKm / p2.radiusKm;
+        const distRatio = (p1.avgDistanceFromSun || 1) / (p2.avgDistanceFromSun || 1);
         
         // Labels using i18n
         const labels = {
@@ -202,24 +200,24 @@ export class PlanetComparator {
         const comparisons = [
             {
                 label: labels.size,
-                value1: `${p1.raioKm.toLocaleString()} km`,
-                value2: `${p2.raioKm.toLocaleString()} km`,
+                value1: `${p1.radiusKm.toLocaleString()} km`,
+                value2: `${p2.radiusKm.toLocaleString()} km`,
                 percent1: sizeRatio > 1 ? 100 : (sizeRatio * 100),
                 percent2: sizeRatio > 1 ? (100 / sizeRatio) : 100,
                 winner: sizeRatio > 1 ? 1 : 2
             },
             {
                 label: labels.temp,
-                value1: p1.temperaturaMediaAproximada || 'N/A',
-                value2: p2.temperaturaMediaAproximada || 'N/A',
+                value1: p1.avgTemperature || 'N/A',
+                value2: p2.avgTemperature || 'N/A',
                 percent1: 50,
                 percent2: 50,
                 winner: 0
             },
             {
                 label: labels.distance,
-                value1: p1.distanciaMediaAoSol ? `${p1.distanciaMediaAoSol} M km` : 'N/A',
-                value2: p2.distanciaMediaAoSol ? `${p2.distanciaMediaAoSol} M km` : 'N/A',
+                value1: p1.avgDistanceFromSun ? `${p1.avgDistanceFromSun} M km` : 'N/A',
+                value2: p2.avgDistanceFromSun ? `${p2.avgDistanceFromSun} M km` : 'N/A',
                 percent1: distRatio < 1 ? 100 : (100 / distRatio),
                 percent2: distRatio < 1 ? (distRatio * 100) : 100,
                 winner: distRatio < 1 ? 1 : 2,
@@ -227,25 +225,25 @@ export class PlanetComparator {
             },
             {
                 label: labels.moons,
-                value1: p1.numeroLuasConhecidas?.toString() || '0',
-                value2: p2.numeroLuasConhecidas?.toString() || '0',
-                percent1: this.calcPercent(p1.numeroLuasConhecidas || 0, p2.numeroLuasConhecidas || 0),
-                percent2: this.calcPercent(p2.numeroLuasConhecidas || 0, p1.numeroLuasConhecidas || 0),
-                winner: (p1.numeroLuasConhecidas || 0) > (p2.numeroLuasConhecidas || 0) ? 1 : 
-                        (p1.numeroLuasConhecidas || 0) < (p2.numeroLuasConhecidas || 0) ? 2 : 0
+                value1: p1.knownMoonCount?.toString() || '0',
+                value2: p2.knownMoonCount?.toString() || '0',
+                percent1: this.calcPercent(p1.knownMoonCount || 0, p2.knownMoonCount || 0),
+                percent2: this.calcPercent(p2.knownMoonCount || 0, p1.knownMoonCount || 0),
+                winner: (p1.knownMoonCount || 0) > (p2.knownMoonCount || 0) ? 1 : 
+                        (p1.knownMoonCount || 0) < (p2.knownMoonCount || 0) ? 2 : 0
             },
             {
                 label: labels.day,
-                value1: p1.duracaoDia || 'N/A',
-                value2: p2.duracaoDia || 'N/A',
+                value1: p1.dayLength || 'N/A',
+                value2: p2.dayLength || 'N/A',
                 percent1: 50,
                 percent2: 50,
                 winner: 0
             },
             {
                 label: labels.year,
-                value1: p1.duracaoAno || 'N/A',
-                value2: p2.duracaoAno || 'N/A',
+                value1: p1.yearLength || 'N/A',
+                value2: p2.yearLength || 'N/A',
                 percent1: 50,
                 percent2: 50,
                 winner: 0
@@ -273,21 +271,21 @@ export class PlanetComparator {
         `).join('');
 
         // Size comparison visual
-        const maxSize = Math.max(p1.raioKm, p2.raioKm);
-        const size1 = (p1.raioKm / maxSize) * 100;
-        const size2 = (p2.raioKm / maxSize) * 100;
+        const maxSize = Math.max(p1.radiusKm, p2.radiusKm);
+        const size1 = (p1.radiusKm / maxSize) * 100;
+        const size2 = (p2.radiusKm / maxSize) * 100;
 
         resultsDiv.innerHTML = `
             <div class="comparison-visual">
                 <div class="planet-visual" style="--size: ${size1}%">
-                    <div class="planet-circle" style="background: #${p1.cor?.toString(16).padStart(6, '0') || '888888'}"></div>
-                    <span class="planet-name">${p1.nome}</span>
-                    <span class="planet-type">${p1.tipo}</span>
+                    <div class="planet-circle" style="background: #${p1.color?.toString(16).padStart(6, '0') || '888888'}"></div>
+                    <span class="planet-name">${p1.name}</span>
+                    <span class="planet-type">${p1.type}</span>
                 </div>
                 <div class="planet-visual" style="--size: ${size2}%">
-                    <div class="planet-circle" style="background: #${p2.cor?.toString(16).padStart(6, '0') || '888888'}"></div>
-                    <span class="planet-name">${p2.nome}</span>
-                    <span class="planet-type">${p2.tipo}</span>
+                    <div class="planet-circle" style="background: #${p2.color?.toString(16).padStart(6, '0') || '888888'}"></div>
+                    <span class="planet-name">${p2.name}</span>
+                    <span class="planet-type">${p2.type}</span>
                 </div>
             </div>
 
@@ -311,28 +309,28 @@ export class PlanetComparator {
     getFunFact(p1, p2) {
         const facts = [];
         
-        if (p1.raioKm && p2.raioKm) {
-            const bigger = p1.raioKm > p2.raioKm ? p1 : p2;
-            const smaller = p1.raioKm > p2.raioKm ? p2 : p1;
-            const ratio = Math.round(bigger.raioKm / smaller.raioKm);
+        if (p1.radiusKm && p2.radiusKm) {
+            const bigger = p1.radiusKm > p2.radiusKm ? p1 : p2;
+            const smaller = p1.radiusKm > p2.radiusKm ? p2 : p1;
+            const ratio = Math.round(bigger.radiusKm / smaller.radiusKm);
             if (ratio > 1) {
-                facts.push(`${bigger.nome} é ${ratio}x maior que ${smaller.nome}!`);
+                facts.push(`${bigger.name} é ${ratio}x maior que ${smaller.name}!`);
             }
         }
 
-        if ((p1.numeroLuasConhecidas || 0) + (p2.numeroLuasConhecidas || 0) > 50) {
-            facts.push(`Juntos têm ${(p1.numeroLuasConhecidas || 0) + (p2.numeroLuasConhecidas || 0)} luas!`);
+        if ((p1.knownMoonCount || 0) + (p2.knownMoonCount || 0) > 50) {
+            facts.push(`Juntos têm ${(p1.knownMoonCount || 0) + (p2.knownMoonCount || 0)} luas!`);
         }
 
-        if (p1.distanciaMediaAoSol && p2.distanciaMediaAoSol) {
-            const diff = Math.abs(p1.distanciaMediaAoSol - p2.distanciaMediaAoSol);
+        if (p1.avgDistanceFromSun && p2.avgDistanceFromSun) {
+            const diff = Math.abs(p1.avgDistanceFromSun - p2.avgDistanceFromSun);
             if (diff > 1000) {
                 facts.push(`Estão a ${diff.toLocaleString()} milhões de km de distância um do outro!`);
             }
         }
 
         return facts.length > 0 ? facts[Math.floor(Math.random() * facts.length)] : 
-            `${p1.nome} e ${p2.nome} são ambos fascinantes!`;
+            `${p1.name} e ${p2.name} são ambos fascinantes!`;
     }
 
     close() {

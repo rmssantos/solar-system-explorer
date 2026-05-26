@@ -49,6 +49,7 @@ export class PhotoMode {
         photoBtn.className = 'photo-btn';
         photoBtn.innerHTML = '📸';
         photoBtn.title = i18n.t('take_photo');
+        photoBtn.setAttribute('aria-label', i18n.t('aria_photo'));
         photoBtn.style.cssText = `
             position: fixed;
             bottom: 200px;
@@ -76,6 +77,7 @@ export class PhotoMode {
         galleryBtn.className = 'gallery-btn';
         galleryBtn.innerHTML = '🖼️';
         galleryBtn.title = i18n.t('gallery');
+        galleryBtn.setAttribute('aria-label', i18n.t('aria_gallery'));
         galleryBtn.style.cssText = `
             position: fixed;
             bottom: 260px;
@@ -143,14 +145,13 @@ export class PhotoMode {
         // Play camera sound
         this.playCameraSound();
 
-        // Force a render before capturing
+        // Force a fresh render in the SAME task as toDataURL — required because
+        // preserveDrawingBuffer is false (the GL buffer is otherwise cleared on swap).
         if (this.app.composer) {
             this.app.composer.render();
         } else if (this.app.renderer) {
             this.app.renderer.render(this.app.scene, this.app.camera);
         }
-
-        // Capture the canvas
         const canvas = this.app.renderer.domElement;
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
 
@@ -186,25 +187,125 @@ export class PhotoMode {
         }
     }
 
+    /**
+     * Apply a themed frame to a photo using Canvas.
+     * @param {string} imageDataUrl - The original photo data URL
+     * @param {object} photo - Photo metadata (location, timestamp, captain)
+     * @returns {string} New data URL with frame applied
+     */
+    applyFrame(imageDataUrl, photo) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const padding = 40;
+                const headerHeight = 50;
+                const footerHeight = 40;
+                canvas.width = img.width + padding * 2;
+                canvas.height = img.height + headerHeight + footerHeight + padding;
+                const ctx = canvas.getContext('2d');
+
+                // Dark space background with gradient
+                const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                bgGrad.addColorStop(0, '#0a0e2a');
+                bgGrad.addColorStop(1, '#151a3a');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Star pattern
+                for (let i = 0; i < 50; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const r = Math.random() * 1 + 0.2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.4 + 0.1})`;
+                    ctx.fill();
+                }
+
+                // Gold border
+                ctx.strokeStyle = '#d4a537';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+
+                // Draw the photo
+                ctx.drawImage(img, padding, headerHeight);
+
+                // Header - player name and location
+                ctx.textAlign = 'left';
+                ctx.font = 'bold 16px "Segoe UI", Arial, sans-serif';
+                ctx.fillStyle = '#ffd700';
+                ctx.fillText(photo.captain || '', padding, 30);
+
+                ctx.textAlign = 'right';
+                ctx.font = '13px "Segoe UI", Arial, sans-serif';
+                ctx.fillStyle = '#a0aec0';
+                ctx.fillText(photo.location || '', canvas.width - padding, 30);
+
+                // Footer - date and branding
+                const footerY = canvas.height - 15;
+                ctx.textAlign = 'left';
+                ctx.font = '11px "Segoe UI", Arial, sans-serif';
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText(photo.timestamp || '', padding, footerY);
+
+                ctx.textAlign = 'right';
+                ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
+                const logoGrad = ctx.createLinearGradient(canvas.width - 200, 0, canvas.width - padding, 0);
+                logoGrad.addColorStop(0, '#6366f1');
+                logoGrad.addColorStop(1, '#a855f7');
+                ctx.fillStyle = logoGrad;
+                ctx.fillText('Solar System Explorer', canvas.width - padding, footerY);
+
+                resolve(canvas.toDataURL('image/jpeg', 0.92));
+            };
+            img.src = imageDataUrl;
+        });
+    }
+
     showPhotoToast(photo) {
         const toast = document.createElement('div');
         toast.className = 'photo-toast';
         toast.innerHTML = `
             <img src="${photo.image}" alt="Preview" class="photo-preview">
             <div class="photo-toast-info">
-                <span class="photo-toast-title">📸 ${i18n.t('photo_saved')}</span>
-                <span class="photo-toast-location">📍 ${photo.location}</span>
+                <span class="photo-toast-title">\uD83D\uDCF8 ${i18n.t('photo_saved')}</span>
+                <span class="photo-toast-location"></span>
             </div>
+            <button class="photo-frame-btn">${i18n.t('photo_add_frame')}</button>
         `;
-        
+
+        // Safely set location text (avoid XSS from localStorage-persisted data)
+        const locSpan = toast.querySelector('.photo-toast-location');
+        if (locSpan) locSpan.textContent = `\uD83D\uDCCD ${photo.location}`;
+
+        // Frame button handler
+        const frameBtn = toast.querySelector('.photo-frame-btn');
+        if (frameBtn) {
+            frameBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                frameBtn.disabled = true;
+                const framedUrl = await this.applyFrame(photo.image, photo);
+                // Update the photo in gallery
+                const idx = this.gallery.findIndex(p => p.id === photo.id);
+                if (idx !== -1) {
+                    this.gallery[idx].image = framedUrl;
+                    this.saveGallery();
+                }
+                // Show a small feedback
+                frameBtn.textContent = i18n.t('photo_frame_applied');
+                frameBtn.style.color = '#4ade80';
+            });
+        }
+
         document.body.appendChild(toast);
-        
+
         requestAnimationFrame(() => toast.classList.add('visible'));
-        
+
         setTimeout(() => {
             toast.classList.remove('visible');
             setTimeout(() => toast.remove(), 300);
-        }, 2500);
+        }, 3500);
     }
 
     showGallery() {
@@ -225,7 +326,7 @@ export class PhotoMode {
                 <div class="gallery-item" data-index="${index}">
                     <img src="${photo.image}" alt="${i18n.t('photo')} ${index + 1}">
                     <div class="gallery-item-info">
-                        <span class="gallery-location">📍 ${photo.location}</span>
+                        <span class="gallery-location"></span>
                         <span class="gallery-time">${photo.timestamp}</span>
                     </div>
                     <div class="gallery-item-actions">
@@ -240,7 +341,7 @@ export class PhotoMode {
             <div class="gallery-container">
                 <div class="gallery-header">
                     <h2>🖼️ ${i18n.t('space_gallery')}</h2>
-                    <span class="gallery-subtitle">${i18n.t('captain')} ${this.app.playerName} - ${this.gallery.length} ${i18n.t('photos')}</span>
+                    <span class="gallery-subtitle"></span>
                     <button class="gallery-close">✕</button>
                 </div>
                 <div class="gallery-grid">
@@ -250,6 +351,14 @@ export class PhotoMode {
         `;
 
         document.body.appendChild(overlay);
+
+        // Safely set text content (avoid XSS via playerName and photo.location)
+        const subtitleEl = overlay.querySelector('.gallery-subtitle');
+        if (subtitleEl) subtitleEl.textContent = `${i18n.t('captain')} ${this.app.playerName} - ${this.gallery.length} ${i18n.t('photos')}`;
+        overlay.querySelectorAll('.gallery-location').forEach((el, i) => {
+            const idx = this.gallery.length - 1 - i; // reversed order
+            if (this.gallery[idx]) el.textContent = `📍 ${this.gallery[idx].location}`;
+        });
 
         // Event listeners
         overlay.querySelector('.gallery-close').onclick = () => {

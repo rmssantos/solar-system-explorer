@@ -263,7 +263,7 @@ export class AchievementSystem {
                 id: 'completionist',
                 icon: '🌟',
                 xpReward: 500,
-                requirement: { type: 'totalVisits', count: 38 },
+                requirement: { type: 'totalVisits', count: 39 }, // sun(1) + planets(8) + dwarfs(5) + moons(16) + probes(8) + ufo(1)
                 category: 'progress'
             }
         ];
@@ -459,6 +459,10 @@ export class AchievementSystem {
         if (visitedPlanets.size === 1) {
             this.unlock('first_discovery');
             // Start speedrun timer
+            this.speedrunStart = Date.now();
+            this.speedrunCount = 1;
+        } else if (!this.speedrunStart && visitedPlanets.size < 3 && !this.unlockedAchievements?.has('speedrunner')) {
+            // Returning session: initialize timer if not too late and achievement not yet unlocked
             this.speedrunStart = Date.now();
             this.speedrunCount = 1;
         } else if (this.speedrunStart) {

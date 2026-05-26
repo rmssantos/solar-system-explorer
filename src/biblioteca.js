@@ -9,19 +9,90 @@ try {
 }
 let currentCategory = 'all';
 
+// Module-scoped gallery state (replaces window._bibliotecaState)
+let modalGalleryData = [];
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     // Set initial active lang button
     setLanguage(currentLang);
-    // renderContent is called inside setLanguage
+
+    // Use addEventListener instead of inline onclick (CSP-safe)
+    document.querySelectorAll('.lang-btn[data-lang]').forEach(btn => {
+        btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+    });
+    document.querySelectorAll('.cat-tab[data-category]').forEach(btn => {
+        btn.addEventListener('click', () => showCategory(btn.dataset.category));
+    });
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.addEventListener('input', filterContent);
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+
+    // Event delegation for dynamically generated content in the modal body
+    const modalBody = document.getElementById('modalBody');
+    if (modalBody) {
+        modalBody.addEventListener('click', handleModalBodyClick);
+    }
+
+    // Event delegation for content grid (cards are generated dynamically)
+    const contentGrid = document.getElementById('contentGrid');
+    if (contentGrid) {
+        contentGrid.addEventListener('click', handleContentGridClick);
+        contentGrid.addEventListener('keydown', handleContentGridKeydown);
+    }
 });
 
-// Expor funções globalmente para os onclick do HTML
-window.setLanguage = setLanguage;
-window.filterContent = filterContent;
-window.showCategory = showCategory;
-window.openModal = openModal;
-window.closeModal = closeModal;
+// Event delegation handler for modal body (moon chips, gallery items, header image)
+function handleModalBodyClick(e) {
+    const target = e.target;
+
+    // Moon chip click -> open modal for that moon
+    const moonChip = target.closest('[data-action="open-modal"]');
+    if (moonChip) {
+        const objectId = moonChip.dataset.objectId;
+        if (objectId) openModal(objectId);
+        return;
+    }
+
+    // Gallery item click -> open lightbox with gallery navigation
+    const galleryItem = target.closest('[data-action="open-gallery"]');
+    if (galleryItem) {
+        const index = parseInt(galleryItem.dataset.galleryIndex, 10);
+        const src = galleryItem.dataset.src;
+        const caption = galleryItem.dataset.caption;
+        openLightbox(src, caption, modalGalleryData, index);
+        return;
+    }
+
+    // Modal header image click -> open lightbox for single image
+    const headerAction = target.closest('[data-action="open-lightbox"]');
+    if (headerAction) {
+        const src = headerAction.dataset.src;
+        const caption = headerAction.dataset.caption;
+        openLightbox(src, caption);
+        return;
+    }
+}
+
+// Event delegation handler for content grid (card clicks)
+function handleContentGridClick(e) {
+    const card = e.target.closest('.object-card[data-id]');
+    if (card) {
+        openModal(card.dataset.id);
+    }
+}
+
+// Keyboard support for content grid cards
+function handleContentGridKeydown(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+        const card = e.target.closest('.object-card[data-id]');
+        if (card) {
+            e.preventDefault();
+            openModal(card.dataset.id);
+        }
+    }
+}
 
 // Trocar idioma
 function setLanguage(lang) {
@@ -32,19 +103,9 @@ function setLanguage(lang) {
         // Private browsing or storage disabled
     }
 
-    // Atualizar botões
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        // Simple check: if btn text contains flag of lang
-        const isPt = lang === 'pt' && btn.textContent.includes('🇵🇹');
-        const isEn = lang === 'en' && btn.textContent.includes('🇬🇧');
-
-        // Simpler approach: check the onclick attribute or just toggle classes manually
-        // The original HTML uses onclick="setLanguage('pt')"
-        if (btn.getAttribute('onclick').includes(`'${lang}'`)) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
+    // Atualizar botões - use data-lang attribute
+    document.querySelectorAll('.lang-btn[data-lang]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
     });
 
     // Atualizar UI
@@ -77,9 +138,9 @@ function updateUIStrings() {
 function showCategory(category) {
     currentCategory = category;
 
-    // Atualizar tabs
-    document.querySelectorAll('.cat-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.getAttribute('onclick').includes(`'${category}'`));
+    // Atualizar tabs - use data-category attribute
+    document.querySelectorAll('.cat-tab[data-category]').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.category === category);
     });
 
     // Filtrar cards
@@ -108,8 +169,8 @@ function filterCards() {
 
         // Filtro de pesquisa
         const searchMatch = !searchTerm ||
-            obj.nome.toLowerCase().includes(searchTerm) ||
-            obj.tipo.toLowerCase().includes(searchTerm) ||
+            obj.name.toLowerCase().includes(searchTerm) ||
+            obj.type.toLowerCase().includes(searchTerm) ||
             (obj.descricaoLonga && obj.descricaoLonga.toLowerCase().includes(searchTerm));
 
         card.classList.toggle('hidden', !(categoryMatch && searchMatch));
@@ -131,28 +192,27 @@ function renderContent() {
         card.className = 'object-card';
         card.setAttribute('data-id', key);
         card.setAttribute('data-category', obj.categoria);
-        card.onclick = () => openModal(key);
 
         // Escolher um facto aleatório para mostrar no card
-        const randomFact = obj.factosUau ?
-            obj.factosUau[Math.floor(Math.random() * obj.factosUau.length)] : '';
+        const randomFact = obj.wowFacts ?
+            obj.wowFacts[Math.floor(Math.random() * obj.wowFacts.length)] : '';
 
         // Accessibility attributes
         card.setAttribute('tabindex', '0');
         card.setAttribute('role', 'button');
-        card.setAttribute('aria-label', `${obj.nome} - ${obj.tipo}. ${ui.click_to_learn || 'Clica para saber mais'}`);
+        card.setAttribute('aria-label', `${obj.name} - ${obj.type}. ${ui.click_to_learn || 'Clica para saber mais'}`);
 
         card.innerHTML = `
             <div class="card-image">
                 ${obj.imagem ?
-                `<img src="${obj.imagem}" alt="${obj.nome}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'emoji-placeholder\\'>${obj.emoji}</span>'">` :
+                `<img src="${obj.imagem}" alt="${obj.name}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'emoji-placeholder\\'>${obj.emoji}</span>'">` :
                 `<span class="emoji-placeholder">${obj.emoji}</span>`
             }
-                <span class="card-type-badge">${obj.tipo}</span>
+                <span class="card-type-badge">${obj.type}</span>
             </div>
             <div class="card-body">
-                <h3 class="card-title">${obj.emoji} ${obj.nome}</h3>
-                <p class="card-subtitle">${obj.tipo}</p>
+                <h3 class="card-title">${obj.emoji} ${obj.name}</h3>
+                <p class="card-subtitle">${obj.type}</p>
 
                 <div class="card-stats">
                     ${obj.estatisticas?.raio ? `
@@ -173,14 +233,6 @@ function renderContent() {
             </div>
         `;
 
-        // Keyboard support
-        card.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                openModal(key);
-            }
-        });
-
         grid.appendChild(card);
     }
 
@@ -197,20 +249,31 @@ function openModal(objectId) {
 
     if (!obj) return;
 
+    // Prepare gallery data for lightbox navigation (module-scoped)
+    if (obj.galeria?.length) {
+        modalGalleryData = obj.galeria.map(item => {
+            const imgUrl = typeof item === 'string' ? item : (item.url || item.src);
+            const caption = typeof item === 'string' ? obj.name : (currentLang === 'en' ? (item.captionEN || item.caption) : item.caption);
+            return { src: imgUrl, caption };
+        });
+    } else {
+        modalGalleryData = [];
+    }
+
     modalBody.innerHTML = `
-        <div class="modal-header ${obj.imagem ? 'clickable' : ''}" ${obj.imagem ? `onclick="openLightbox('${obj.imagem}', '${obj.nome} - Foto real da NASA')"` : ''}>
+        <div class="modal-header ${obj.imagem ? 'clickable' : ''}" ${obj.imagem ? `data-action="open-lightbox" data-src="${obj.imagem}" data-caption="${escapeAttr(obj.name + ' - Foto real da NASA')}"` : ''}>
             ${obj.imagem ?
-            `<img src="${obj.imagem}" alt="${obj.nome}">
+            `<img src="${obj.imagem}" alt="${obj.name}">
              <div class="modal-header-zoom">🔍 Clica para ampliar</div>` :
             `<div style="background: linear-gradient(135deg, #1a1a3a, #0a0a20); display: flex; align-items: center; justify-content: center; height: 100%;"><span style="font-size: 8rem;">${obj.emoji}</span></div>`
         }
             <div class="modal-header-gradient"></div>
             <div class="modal-header-content">
-                <h1 class="modal-title">${obj.emoji} ${obj.nome}</h1>
-                <p class="modal-type">${obj.tipo}</p>
+                <h1 class="modal-title">${obj.emoji} ${obj.name}</h1>
+                <p class="modal-type">${obj.type}</p>
             </div>
         </div>
-        
+
         <div class="modal-body-content">
             <!-- Estatísticas -->
             ${obj.estatisticas ? `
@@ -225,76 +288,72 @@ function openModal(objectId) {
                     `).join('')}
                 </div>
             ` : ''}
-            
+
             <!-- Descrição -->
-            <h2 class="section-title">📖 ${obj.nome}</h2>
+            <h2 class="section-title">📖 ${obj.name}</h2>
             <p class="description-text">${obj.descricaoLonga?.replace(/\n\n/g, '</p><p class="description-text">') || ''}</p>
-            
+
             <!-- História -->
             ${obj.historia ? `
                 <h2 class="section-title">${ui.section_history}</h2>
                 <p class="description-text">${obj.historia.replace(/\n\n/g, '</p><p class="description-text">')}</p>
             ` : ''}
-            
+
             <!-- Curiosidades -->
-            ${obj.curiosidades?.length ? `
+            ${obj.trivia?.length ? `
                 <h2 class="section-title">${ui.section_curiosities}</h2>
                 <ul class="facts-list">
-                    ${obj.curiosidades.map(c => `<li>${c}</li>`).join('')}
+                    ${obj.trivia.map(c => `<li>${c}</li>`).join('')}
                 </ul>
             ` : ''}
-            
+
             <!-- Factos Uau -->
-            ${obj.factosUau?.length ? `
+            ${obj.wowFacts?.length ? `
                 <h2 class="section-title">${ui.section_wow_facts}</h2>
                 <div class="wow-facts-grid">
-                    ${obj.factosUau.map(f => `<div class="wow-fact">${f}</div>`).join('')}
+                    ${obj.wowFacts.map(f => `<div class="wow-fact">${f}</div>`).join('')}
                 </div>
             ` : ''}
-            
+
             <!-- Luas -->
             ${obj.luas?.length ? `
                 <h2 class="section-title">${ui.section_moons}</h2>
                 <div class="moons-grid">
                     ${obj.luas.map(moon => `
-                        <div class="moon-chip" onclick="openModal('${moon}')">
-                            <div class="moon-name">🌙 ${BIBLIOTECA_DATA[currentLang].objects[moon]?.nome || moon}</div>
+                        <div class="moon-chip" data-action="open-modal" data-object-id="${moon}">
+                            <div class="moon-name">🌙 ${BIBLIOTECA_DATA[currentLang].objects[moon]?.name || moon}</div>
                         </div>
                     `).join('')}
                 </div>
             ` : ''}
-            
-            <!-- Galeria -->
-            ${obj.galeria?.length ? (() => {
-                // Prepare gallery data for lightbox navigation
-                const galleryData = obj.galeria.map(item => {
-                    const imgUrl = typeof item === 'string' ? item : (item.url || item.src);
-                    const caption = typeof item === 'string' ? obj.nome : (currentLang === 'en' ? (item.captionEN || item.caption) : item.caption);
-                    return { src: imgUrl, caption };
-                });
-                window._currentGallery = galleryData;
 
-                return `
+            <!-- Galeria -->
+            ${modalGalleryData.length ? `
                 <h2 class="section-title">${ui.section_gallery}</h2>
                 <div class="gallery-grid">
-                    ${galleryData.map((item, index) => `
-                        <div class="gallery-item" onclick="openLightbox('${item.src}', '${item.caption.replace(/'/g, "\\'")}', window._currentGallery, ${index})" tabindex="0" role="button" aria-label="Ver ${item.caption}">
-                            <img src="${item.src}" alt="${item.caption}" loading="lazy">
+                    ${modalGalleryData.map((item, index) => `
+                        <div class="gallery-item" data-action="open-gallery" data-gallery-index="${index}" data-src="${item.src}" data-caption="${escapeAttr(item.caption)}" tabindex="0" role="button" aria-label="Ver ${escapeAttr(item.caption)}">
+                            <img src="${item.src}" alt="${escapeAttr(item.caption)}" loading="lazy">
                         </div>
                     `).join('')}
                 </div>
-            `;})() : ''}
+            ` : ''}
 
             <!-- Comparação -->
-            ${obj.comparacao ? `
+            ${obj.comparison ? `
                 <h2 class="section-title">${ui.section_comparison}</h2>
-                <div class="comparison-box">${obj.comparacao}</div>
+                <div class="comparison-box">${obj.comparison}</div>
             ` : ''}
         </div>
     `;
 
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+}
+
+// Escape a string for safe use in HTML attributes
+function escapeAttr(str) {
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // Fechar modal
@@ -326,7 +385,7 @@ function getStatIcon(key) {
         temperatura: '🌡️',
         luas: '🌙',
         idade: '⏳',
-        tipo: '⭐',
+        type: '⭐',
         composicao: '🧪',
         velocidade: '🏎️',
         lancamento: '🚀',
@@ -345,7 +404,7 @@ function formatStatLabel(key, ui) {
         temperatura: ui.stat_temp,
         luas: ui.stat_moons,
         idade: ui.stat_age,
-        tipo: ui.stat_type,
+        type: ui.stat_type,
         composicao: ui.stat_composition,
         velocidade: ui.stat_speed,
         lancamento: ui.stat_launch,
@@ -366,18 +425,34 @@ function createLightbox() {
     lightboxElement.id = 'imageLightbox';
     lightboxElement.className = 'lightbox hidden';
     lightboxElement.innerHTML = `
-        <div class="lightbox-overlay" onclick="closeLightbox()"></div>
+        <div class="lightbox-overlay" data-action="close-lightbox"></div>
         <div class="lightbox-content">
-            <button class="lightbox-close" onclick="closeLightbox()" aria-label="Fechar">✕</button>
-            <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)" aria-label="Anterior">❮</button>
+            <button class="lightbox-close" data-action="close-lightbox" aria-label="Fechar">✕</button>
+            <button class="lightbox-nav lightbox-prev" data-action="lightbox-prev" aria-label="Anterior">❮</button>
             <img class="lightbox-image" src="" alt="">
-            <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)" aria-label="Seguinte">❯</button>
+            <button class="lightbox-nav lightbox-next" data-action="lightbox-next" aria-label="Seguinte">❯</button>
             <div class="lightbox-footer">
                 <p class="lightbox-caption"></p>
                 <p class="lightbox-counter"></p>
             </div>
         </div>
     `;
+
+    // Event delegation for lightbox actions
+    lightboxElement.addEventListener('click', (e) => {
+        const actionEl = e.target.closest('[data-action]');
+        if (!actionEl) return;
+
+        const action = actionEl.dataset.action;
+        if (action === 'close-lightbox') {
+            closeLightbox();
+        } else if (action === 'lightbox-prev') {
+            navigateLightbox(-1);
+        } else if (action === 'lightbox-next') {
+            navigateLightbox(1);
+        }
+    });
+
     document.body.appendChild(lightboxElement);
 
     // Keyboard navigation
@@ -437,8 +512,3 @@ function closeLightbox() {
         lightboxElement.classList.add('hidden');
     }
 }
-
-// Expose lightbox functions globally
-window.openLightbox = openLightbox;
-window.closeLightbox = closeLightbox;
-window.navigateLightbox = navigateLightbox;

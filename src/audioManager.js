@@ -3,23 +3,13 @@
  * Uses Web Audio API for synthesized sounds and ambient music.
  * Includes unique ambient sounds per celestial body.
  */
+import * as storage from './utils/storage.js';
+
 export class AudioManager {
     constructor() {
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        this.masterGain = this.ctx.createGain();
-        this.masterGain.connect(this.ctx.destination);
-
-        // Music gain (separate control)
-        this.musicGain = this.ctx.createGain();
-        this.musicGain.connect(this.masterGain);
-
-        // SFX gain
-        this.sfxGain = this.ctx.createGain();
-        this.sfxGain.connect(this.masterGain);
-        
-        // Planet ambient gain (separate from music)
-        this.planetAmbientGain = this.ctx.createGain();
-        this.planetAmbientGain.connect(this.masterGain);
+        // Defer AudioContext creation until first user gesture (required by iOS Safari)
+        this.ctx = null;
+        this._ctxReady = false;
 
         // User-controlled volumes (persisted)
         this.masterVolume = 0.3;
@@ -30,6 +20,12 @@ export class AudioManager {
         // Manual mode ducking (keeps manual navigation readable / less fatiguing)
         this._manualModeActive = false;
         this._manualDuckFactor = 0.65;
+
+        // Gain nodes (created lazily with context)
+        this.masterGain = null;
+        this.musicGain = null;
+        this.sfxGain = null;
+        this.planetAmbientGain = null;
 
         // Spaceship engine loop (procedural) for manual navigation
         this._ship = {
@@ -45,7 +41,6 @@ export class AudioManager {
         };
 
         this.loadAudioSettings();
-        this.applyAllVolumes({ ramp: false });
 
         this.isMusicPlaying = false;
         this.musicNodes = [];
@@ -58,7 +53,10 @@ export class AudioManager {
 
         // Timer IDs for cleanup
         this.planetTimers = [];
-        
+
+        // Lazy-init the context on first user gesture
+        this._initContext();
+
         // Define unique sound profiles for each celestial body
         this.planetSounds = {
             'sun': {
@@ -145,6 +143,7 @@ export class AudioManager {
     }
 
     ensureAudioRunning() {
+        if (!this.ctx) return;
         if (this.ctx.state === 'suspended') this.ctx.resume();
     }
 
@@ -326,11 +325,29 @@ export class AudioManager {
         };
     }
 
+    _initContext() {
+        if (this._ctxReady) return;
+        try {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.connect(this.ctx.destination);
+            this.musicGain = this.ctx.createGain();
+            this.musicGain.connect(this.masterGain);
+            this.sfxGain = this.ctx.createGain();
+            this.sfxGain.connect(this.masterGain);
+            this.planetAmbientGain = this.ctx.createGain();
+            this.planetAmbientGain.connect(this.masterGain);
+            this._ctxReady = true;
+            this.applyAllVolumes({ ramp: false });
+        } catch (e) {
+            // AudioContext not available
+        }
+    }
+
     loadAudioSettings() {
         try {
-            const raw = localStorage.getItem('audio-settings');
-            if (!raw) return;
-            const parsed = JSON.parse(raw);
+            const parsed = storage.getItem('audioSettings', null);
+            if (!parsed) return;
 
             if (typeof parsed.masterVolume === 'number') this.masterVolume = this.clamp01(parsed.masterVolume);
             if (typeof parsed.musicVolume === 'number') this.musicVolume = this.clamp01(parsed.musicVolume);
@@ -345,14 +362,14 @@ export class AudioManager {
 
     saveAudioSettings() {
         try {
-            localStorage.setItem('audio-settings', JSON.stringify({
+            storage.setItem('audioSettings', {
                 masterVolume: this.masterVolume,
                 musicVolume: this.musicVolume,
                 sfxVolume: this.sfxVolume,
                 planetAmbientVolume: this.planetAmbientVolume,
                 musicEnabled: this.musicEnabled,
                 sfxEnabled: this.sfxEnabled
-            }));
+            });
         } catch (e) {
             console.warn('[AudioManager] Failed to save settings:', e.message);
         }
@@ -550,7 +567,6 @@ export class AudioManager {
         // Create sparkle layer
         this.startSparkles();
 
-        console.log('🎵 Ambient space music started');
     }
 
     createDrone(freq, type) {
@@ -619,24 +635,28 @@ export class AudioManager {
 
     stopAmbientMusic() {
         this.isMusicPlaying = false;
+        if (!this.ctx) return;
 
-        // Stop all drones
-        this.musicNodes.forEach(node => {
-            const now = this.ctx.currentTime;
-            node.gain.gain.linearRampToValueAtTime(0, now + 1);
-            setTimeout(() => {
-                node.osc.stop();
-                node.lfo.stop();
-            }, 1100);
-        });
+        // Stop all drones - capture nodes before clearing array
+        const nodesToStop = this.musicNodes.slice();
         this.musicNodes = [];
+
+        nodesToStop.forEach(node => {
+            try {
+                const now = this.ctx.currentTime;
+                node.gain.gain.linearRampToValueAtTime(0, now + 1);
+                setTimeout(() => {
+                    try { node.osc.stop(); } catch {}
+                    try { node.lfo.stop(); } catch {}
+                }, 1100);
+            } catch {}
+        });
 
         // Stop sparkles
         if (this.sparkleTimeout) {
             clearTimeout(this.sparkleTimeout);
         }
 
-        console.log('🎵 Ambient music stopped');
     }
 
     toggleMusic() {
@@ -678,15 +698,16 @@ export class AudioManager {
      * @param {string} planetName - Internal name of the planet (e.g., "Sol", "Terra")
      */
     startPlanetAmbient(planetName) {
+        if (!this.ctx) return;
         // Don't restart if same planet
         if (this.currentPlanetAmbient === planetName) return;
-        
+
         // Stop previous ambient
         this.stopPlanetAmbient();
-        
+
         const profile = this.planetSounds[planetName];
         if (!profile || !this.musicEnabled) return;
-        
+
         if (this.ctx.state === 'suspended') this.ctx.resume();
         
         this.currentPlanetAmbient = planetName;
@@ -720,7 +741,6 @@ export class AudioManager {
                 this.createGenericAmbient(profile);
         }
         
-        console.log(`🔊 Planet ambient: ${planetName}`);
     }
     
     /**
@@ -733,6 +753,7 @@ export class AudioManager {
         this.planetTimers.forEach(id => clearTimeout(id));
         this.planetTimers = [];
 
+        if (!this.ctx) return;
         const now = this.ctx.currentTime;
 
         // Fade out all planet ambient nodes

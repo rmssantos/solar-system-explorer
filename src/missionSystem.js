@@ -23,11 +23,13 @@ export class MissionSystem {
         // Check if active mission target was already visited
         this.checkAlreadyVisitedMissions();
 
-        // Debug helper
-        window.resetMissions = () => {
-            storage.removeItem('missions');
-            location.reload();
-        };
+        // Debug helper (only in development)
+        if (import.meta.env?.DEV) {
+            window.resetMissions = () => {
+                storage.removeItem('missions');
+                location.reload();
+            };
+        }
     }
 
     // Check all missions to see if any targets were already visited before
@@ -52,7 +54,6 @@ export class MissionSystem {
             if (this.gameManager.isVisited && this.gameManager.isVisited(mission.target)) {
                 this.completedMissions.add(mission.id);
                 hasChanges = true;
-                console.log(`✅ Missão "${mission.title}" auto-completada (${mission.target} já visitado)`);
             }
         }
 
@@ -292,7 +293,6 @@ export class MissionSystem {
             }
             // If saved active IS completed, it will be corrected by validateState()
 
-            console.log(`📋 Missões carregadas: ${this.completedMissions.size} completadas`);
         }
 
         // Validate state to ensure consistency
@@ -303,13 +303,12 @@ export class MissionSystem {
     validateState() {
         // If we have no active mission, or the active mission is already completed
         if (!this.activeMission || this.completedMissions.has(this.activeMission.id)) {
-            console.warn('⚠️ Estado de missão inválido detetado (missão ativa já completada). Corrigindo...');
+            // Normal startup correction: advance to next uncompleted mission
             const nextMission = this.getNextMission();
 
             if (nextMission) {
                 this.activeMission = nextMission;
                 this.saveProgress();
-                console.log(`🔧 Corrigido para: ${nextMission.title}`);
             } else {
                 this.activeMission = null; // No more missions
             }
@@ -340,13 +339,22 @@ export class MissionSystem {
         this.updateMissionUI();
     }
 
-    updateMissionUI() {
+    updateMissionUI(animate = false) {
+        const progress = this.getProgress();
+        const pct = progress.total > 0
+            ? Math.round((progress.completed / progress.total) * 100)
+            : 0;
+
         if (!this.activeMission) {
             this.missionPanel.innerHTML = `
+                <div class="mission-progress-bar-wrap">
+                    <div class="mission-progress-label">${i18n.t('mission_progress')}: ${progress.completed}/${progress.total}</div>
+                    <div class="mission-progress-bar"><div class="mission-progress-fill" style="width:${pct}%"></div></div>
+                </div>
                 <div class="mission-complete-all">
                     <span class="mission-icon">🎉</span>
                     <div class="mission-info">
-                        <span class="mission-title">${i18n.t('all_missions_complete')}</span>
+                        <span class="mission-title">${i18n.t('mission_completed_all')}</span>
                         <span class="mission-desc">${i18n.t('true_explorer')}</span>
                     </div>
                 </div>
@@ -354,22 +362,43 @@ export class MissionSystem {
             return;
         }
 
-        const progress = this.getProgress();
+        // Slide-out animation when mission changes
+        if (animate) {
+            this.missionPanel.classList.add('mission-slide-out');
+            setTimeout(() => {
+                this.missionPanel.classList.remove('mission-slide-out');
+                this._renderActiveMission(progress, pct);
+                this.missionPanel.classList.add('mission-slide-in');
+                setTimeout(() => {
+                    this.missionPanel.classList.remove('mission-slide-in');
+                }, 400);
+            }, 300);
+        } else {
+            this._renderActiveMission(progress, pct);
+        }
+    }
 
+    _renderActiveMission(progress, pct) {
         this.missionPanel.innerHTML = `
+            <div class="mission-progress-bar-wrap">
+                <div class="mission-progress-label">${i18n.t('mission_progress')}: ${progress.completed}/${progress.total}</div>
+                <div class="mission-progress-bar"><div class="mission-progress-fill" style="width:${pct}%"></div></div>
+            </div>
             <div class="mission-header">
                 <span class="mission-badge">${i18n.t('mission')} ${progress.completed + 1}/${progress.total}</span>
-                <button class="mission-hint-btn" title="${i18n.t('see_hint')}">💡</button>
+                <button class="mission-hint-btn" title="${i18n.t('see_hint')}" aria-label="${i18n.t('see_hint')}">💡</button>
             </div>
-            <div class="mission-content">
-                <span class="mission-icon">${this.activeMission.title.split(' ')[0]}</span>
-                <div class="mission-info">
-                    <span class="mission-title">${this.getMissionTitle(this.activeMission)}</span>
-                    <span class="mission-desc">${this.getMissionDesc(this.activeMission)}</span>
+            <div class="mission-active-card">
+                <div class="mission-content">
+                    <span class="mission-icon-large">${this.activeMission.title.split(' ')[0]}</span>
+                    <div class="mission-info">
+                        <span class="mission-title">${this.getMissionTitle(this.activeMission)}</span>
+                        <span class="mission-desc">${this.getMissionDesc(this.activeMission)}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="mission-reward">
-                <span>⭐ ${i18n.t('mission_reward')}: ${this.activeMission.xpReward} XP</span>
+                <div class="mission-reward">
+                    <span>⭐ ${i18n.t('mission_reward')}: ${this.activeMission.xpReward} XP</span>
+                </div>
             </div>
             <div class="mission-hint hidden">
                 <span>💡 ${this.getMissionHint(this.activeMission)}</span>
@@ -386,29 +415,27 @@ export class MissionSystem {
         });
     }
 
-    // Get translated mission title
+    // Get translated mission title (i18n is the single source of truth)
     getMissionTitle(mission) {
         const key = `mission_${mission.id}_title`;
         const translated = i18n.t(key);
-        // If no translation, use the original (remove emoji prefix)
-        if (translated === key) {
-            return mission.title.split(' ').slice(1).join(' ');
-        }
-        return translated.replace(/^[^\s]+ /, ''); // Remove emoji
+        if (translated !== key) return translated.replace(/^[^\s]+ /, ''); // Remove emoji
+        // Fallback: strip emoji from hardcoded title
+        return mission.title.split(' ').slice(1).join(' ');
     }
 
     // Get translated mission description
     getMissionDesc(mission) {
         const key = `mission_${mission.id}_desc`;
         const translated = i18n.t(key);
-        return translated === key ? mission.description : translated;
+        return translated !== key ? translated : mission.description;
     }
 
     // Get translated mission hint
     getMissionHint(mission) {
         const key = `mission_${mission.id}_hint`;
         const translated = i18n.t(key);
-        return translated === key ? mission.hint : translated;
+        return translated !== key ? translated : mission.hint;
     }
 
     checkMissionComplete(planetName) {
@@ -422,20 +449,29 @@ export class MissionSystem {
             if (mission.target === planetName) {
                 this.completedMissions.add(mission.id);
                 completedMission = mission;
-                console.log(`✅ Missão completada: ${mission.title}`);
                 break; // Only complete one mission at a time
             }
         }
 
         if (completedMission) {
+            // Gold glow on complete
+            this.missionPanel.classList.add('mission-gold-glow');
+            setTimeout(() => {
+                this.missionPanel.classList.remove('mission-gold-glow');
+            }, 1500);
+
             // Update active mission to next uncompleted
             this.activeMission = this.getNextMission();
-            console.log(`🎯 Nova missão ativa: ${this.activeMission?.title || 'Nenhuma'} (ID: ${this.activeMission?.id})`);
             this.saveProgress();
-            this.updateMissionUI();
+            this.updateMissionUI(true); // animate transition
 
             // Trigger mascot celebration
             window.dispatchEvent(new CustomEvent('app:mission-complete', { detail: completedMission }));
+
+            // Check if all missions are now complete
+            if (this.completedMissions.size === this.missions.length) {
+                window.dispatchEvent(new CustomEvent('app:all-missions-complete'));
+            }
 
             return completedMission;
         }
@@ -463,3 +499,30 @@ export class MissionSystem {
         return this.activeMission?.target === planetName;
     }
 }
+
+/**
+ * Exported mission definitions for testing.
+ * These mirror the missions created in MissionSystem.createMissions().
+ */
+export const MISSION_DEFINITIONS = [
+    { id: 'first_flight', target: 'mercury' },
+    { id: 'hot_planet', target: 'venus' },
+    { id: 'home_sweet_home', target: 'earth' },
+    { id: 'red_planet', target: 'mars' },
+    { id: 'gas_giant', target: 'jupiter' },
+    { id: 'ring_master', target: 'saturn' },
+    { id: 'sideways_planet', target: 'uranus' },
+    { id: 'windy_world', target: 'neptune' },
+    { id: 'our_moon', target: 'moon' },
+    { id: 'volcanic_moon', target: 'io' },
+    { id: 'ocean_moon', target: 'europa' },
+    { id: 'biggest_moon', target: 'ganymede' },
+    { id: 'titan_explorer', target: 'titan' },
+    { id: 'death_star', target: 'mimas' },
+    { id: 'sun_seeker', target: 'sun' },
+    { id: 'pluto_explorer', target: 'pluto' },
+    { id: 'ceres_belt', target: 'ceres' },
+    { id: 'eris_discord', target: 'eris' },
+    { id: 'makemake_easter', target: 'makemake' },
+    { id: 'haumea_rugby', target: 'haumea' },
+];

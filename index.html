@@ -4,9 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Sistema Solar Interactivo 3D</title>
     <meta name="description" content="Explora o Sistema Solar em 3D! Uma aventura espacial educativa para crianças.">
     <meta name="theme-color" content="#1a0a2e">
@@ -16,38 +13,15 @@
     
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icons/icon.svg">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Solar Explorer">
     
     <link rel="stylesheet" href="styles/style.css">
 
-    <!-- Three.js CDN -->
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
-    
-    <!-- Service Worker Registration (disabled in development) -->
-    <script>
-        if ('serviceWorker' in navigator && !window.location.hostname.includes('localhost')) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('✅ Service Worker registado:', reg.scope))
-                    .catch(err => console.log('❌ Service Worker falhou:', err));
-            });
-        } else if ('serviceWorker' in navigator) {
-            // Unregister SW in development to avoid cache issues
-            navigator.serviceWorker.getRegistrations().then(registrations => {
-                registrations.forEach(reg => reg.unregister());
-            });
-        }
-    </script>
+    <!-- Init: console.warn patch + SW registration. External so CSP can drop 'unsafe-inline'. -->
+    <script src="/init.js"></script>
 </head>
 
 <body>

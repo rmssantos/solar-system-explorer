@@ -46,7 +46,7 @@ export const TRANSLATIONS = {
         minimap: "Mini-mapa",
         time_control: "Controlo Tempo",
         ui_settings: "Config. UI",
-        photo_saved: "Foto Guardada!",
+        photo_saved_flash: "Foto Guardada!",
         no_photos_yet: "Ainda não tiraste fotos!",
         explore_capture: "Explora o Sistema Solar e captura os momentos especiais.",
         space_gallery: "Galeria Espacial",
@@ -102,6 +102,11 @@ export const TRANSLATIONS = {
         library: "Biblioteca",
 
         // Info Panel
+        slide_basic_data: "Dados Básicos",
+        slide_real_photo: "Fotografia Real",
+        slide_climate_time: "Clima e Tempo",
+        slide_about: "Sobre",
+        slide_distance: "Distância",
         info_type: "Tipo",
         info_distance: "Distância ao Sol",
         info_day: "Duração do Dia",
@@ -175,22 +180,20 @@ export const TRANSLATIONS = {
         continue: "Continuar",
         continue_adventure: "Continuar Aventura!",
 
-        // Ranks
-        rank_1: "Cadete Espacial",
-        rank_2: "Piloto Júnior",
-        rank_3: "Navegador",
-        rank_4: "Explorador",
-        rank_5: "Capitão",
-        rank_6: "Comandante",
-        rank_7: "Almirante",
-        rank_8: "Mestre Estelar",
-        rank_9: "Grande Explorador",
-        rank_10: "Lenda do Espaço",
-
         // Quiz
         quiz_badge: "QUIZ ESPACIAL",
         quiz_correct: "Correto! Excelente!",
         quiz_wrong: "Não foi desta vez...",
+        quiz_slide_title: "\uD83E\uDDE0 Testa o Teu Conhecimento!",
+        quiz_streak: "\uD83D\uDD25 {count} seguidas!",
+        quiz_space_genius: "G\u00e9nio Espacial!",
+        quiz_cosmic_brain: "C\u00e9rebro C\u00f3smico!",
+        quiz_correct_feedback: "Correto! Excelente!",
+        quiz_wrong_feedback: "Quase! A resposta \u00e9:",
+        quiz_xp_earned: "+{xp} XP",
+        quiz_no_quiz: "Sem quiz dispon\u00edvel",
+        quiz_already_answered: "J\u00e1 respondeste a este quiz!",
+        quiz_learn_more: "Sabe mais nos Factos Uau!",
 
         // Achievements
         achievements: "Conquistas",
@@ -198,7 +201,6 @@ export const TRANSLATIONS = {
 
         // Settings
         settings: "Definições",
-        captain: "Capitão",
         sound: "Som",
         music: "Música",
         sfx: "Efeitos Sonoros",
@@ -214,6 +216,10 @@ export const TRANSLATIONS = {
         // Toast
         welcome_back: "Bem-vindo de volta",
         ready_to_explore: "Pronto para mais aventuras!",
+
+        // Intro Animation
+        intro_skip: "Saltar >",
+        intro_loading: "A preparar viagem...",
 
         // Colors
         color_red: "Vermelho",
@@ -241,9 +247,9 @@ export const TRANSLATIONS = {
         mission_hot_planet_desc: "Descobre qual é o planeta mais quente do Sistema Solar. Dica: não é o mais perto do Sol!",
         mission_hot_planet_hint: "O efeito de estufa faz um planeta ficar MUITO quente...",
 
-        mission_home_title: "🏠 Lar Doce Lar",
-        mission_home_desc: "Visita o nosso planeta - a Terra! O único com vida conhecida.",
-        mission_home_hint: "É o terceiro planeta a contar do Sol.",
+        mission_home_sweet_home_title: "🏠 Lar Doce Lar",
+        mission_home_sweet_home_desc: "Visita o nosso planeta - a Terra! O único com vida conhecida.",
+        mission_home_sweet_home_hint: "É o terceiro planeta a contar do Sol.",
 
         mission_red_planet_title: "🔴 Planeta Vermelho",
         mission_red_planet_desc: "Viaja até Marte, o Planeta Vermelho! Os cientistas querem enviar pessoas para lá.",
@@ -257,45 +263,140 @@ export const TRANSLATIONS = {
         mission_ring_master_desc: "Visita Saturno e os seus magníficos anéis! São feitos de gelo e rochas.",
         mission_ring_master_hint: "Este planeta é tão leve que flutuaria em água!",
 
-        mission_sideways_title: "🔄 Planeta Deitado",
-        mission_sideways_desc: "Encontra Úrano, o planeta que roda \"deitado\"! O seu eixo está quase na horizontal.",
-        mission_sideways_hint: "A sua cor azul-esverdeada vem do metano.",
+        mission_sideways_planet_title: "🔄 Planeta Deitado",
+        mission_sideways_planet_desc: "Encontra Úrano, o planeta que roda \"deitado\"! O seu eixo está quase na horizontal.",
+        mission_sideways_planet_hint: "A sua cor azul-esverdeada vem do metano.",
 
-        mission_windy_title: "💨 Mundo dos Ventos",
-        mission_windy_desc: "Viaja até Neptuno, onde os ventos chegam a 2100 km/h! O mais distante dos planetas.",
-        mission_windy_hint: "É o planeta mais azul do Sistema Solar.",
-
-        mission_moon_title: "🌙 A Nossa Lua",
-        mission_moon_desc: "Visita a Lua, o único satélite natural da Terra! Humanos já caminharam lá.",
-        mission_moon_hint: "Está a cerca de 384.000 km da Terra.",
-
-        mission_volcanic_title: "🌋 Lua Vulcânica",
-        mission_volcanic_desc: "Descobre Io, a lua mais vulcânica do Sistema Solar! Tem centenas de vulcões activos.",
-        mission_volcanic_hint: "É uma lua de Júpiter.",
-
-        mission_ocean_title: "🌊 Lua com Oceano",
-        mission_ocean_desc: "Encontra Europa! Os cientistas acham que tem um oceano escondido debaixo do gelo.",
-        mission_ocean_hint: "Também orbita Júpiter. Pode ter vida alienígena!",
+        mission_windy_world_title: "💨 Mundo dos Ventos",
+        mission_windy_world_desc: "Viaja até Neptuno, onde os ventos chegam a 2100 km/h! O mais distante dos planetas.",
+        mission_windy_world_hint: "É o planeta mais azul do Sistema Solar.",
 
         mission_biggest_moon_title: "🏆 Maior Lua",
         mission_biggest_moon_desc: "Visita Ganimedes, a maior lua do Sistema Solar! É maior que Mercúrio!",
         mission_biggest_moon_hint: "Orbita o maior planeta...",
 
-        mission_titan_title: "🪐 Explorador de Titã",
-        mission_titan_desc: "Descobre Titã, a única lua com atmosfera densa! Tem lagos de metano líquido.",
-        mission_titan_hint: "É a maior lua de Saturno.",
-
         mission_death_star_title: "⭐ Estrela da Morte",
         mission_death_star_desc: "Encontra Mimas, a lua que parece a Estrela da Morte do Star Wars!",
         mission_death_star_hint: "A cratera Herschel dá-lhe esse aspecto. Orbita Saturno.",
 
-        mission_sun_title: "☀️ Caçador do Sol",
-        mission_sun_desc: "Visita o Sol, a nossa estrela! Contém 99,86% de toda a massa do Sistema Solar.",
-        mission_sun_hint: "Está no centro de tudo!",
+        // Alias keys for missions whose ID doesn't match the key pattern
+        mission_sun_seeker_title: "☀️ Caçador do Sol",
+        mission_sun_seeker_desc: "Visita o Sol, a nossa estrela! Contém 99,86% de toda a massa do Sistema Solar.",
+        mission_sun_seeker_hint: "Está no centro de tudo!",
+        mission_our_moon_title: "🌙 A Nossa Lua",
+        mission_our_moon_desc: "Visita a Lua, o único satélite natural da Terra! Humanos já caminharam lá.",
+        mission_our_moon_hint: "Está a cerca de 384.000 km da Terra.",
+        mission_volcanic_moon_title: "🌋 Lua Vulcânica",
+        mission_volcanic_moon_desc: "Descobre Io, a lua mais vulcânica do Sistema Solar! Tem centenas de vulcões activos.",
+        mission_volcanic_moon_hint: "É uma lua de Júpiter.",
+        mission_ocean_moon_title: "🌊 Lua com Oceano",
+        mission_ocean_moon_desc: "Encontra Europa! Os cientistas acham que tem um oceano escondido debaixo do gelo.",
+        mission_ocean_moon_hint: "Também orbita Júpiter. Pode ter vida alienígena!",
+        mission_titan_explorer_title: "🪐 Explorador de Titã",
+        mission_titan_explorer_desc: "Descobre Titã, a única lua com atmosfera densa! Tem lagos de metano líquido.",
+        mission_titan_explorer_hint: "É a maior lua de Saturno.",
+        // Dwarf planet missions (new)
+        mission_pluto_explorer_title: "💔 O Ex-Planeta",
+        mission_pluto_explorer_desc: "Descobre Plutão, o famoso planeta anão! Foi 'despromovido' em 2006.",
+        mission_pluto_explorer_hint: "Está muito além de Neptuno e tem um coração de gelo!",
+        mission_ceres_belt_title: "🪨 Rainha dos Asteroides",
+        mission_ceres_belt_desc: "Encontra Ceres, o maior objeto no cinturão de asteroides!",
+        mission_ceres_belt_hint: "Está entre Marte e Júpiter.",
+        mission_eris_discord_title: "😈 Deusa da Discórdia",
+        mission_eris_discord_desc: "Viaja até Éris, o planeta anão que causou a 'despromição' de Plutão!",
+        mission_eris_discord_hint: "É o mais distante dos planetas anões conhecidos.",
+        mission_makemake_easter_title: "🐣 Descoberta Pascal",
+        mission_makemake_easter_desc: "Descobre Makemake, o planeta anão descoberto na Páscoa!",
+        mission_makemake_easter_hint: "Tem o nome do deus da Ilha de Páscoa.",
+        mission_haumea_rugby_title: "🏈 Bola de Rugby Espacial",
+        mission_haumea_rugby_desc: "Encontra Haumea, o planeta anão em forma de bola de rugby!",
+        mission_haumea_rugby_hint: "Roda tão rápido que esticou!",
+
+        // Loading
+        loading_solar_system: "A carregar o Sistema Solar...",
+
+        // Tutorial
+        tutorial_title: "Tutorial",
+        tutorial_step1: "Bem-vindo! Toca nas setas para explorar os planetas!",
+        tutorial_step2: "Toca num planeta para aprender sobre ele!",
+        tutorial_step3: "Completa missões para ganhar XP!",
+        tutorial_step4: "Carrega M para voar a tua nave manualmente!",
+        tutorial_next: "Próximo",
+        tutorial_skip: "Saltar",
+        tutorial_got_it: "Entendido!",
+
+        // Accessibility
+        settings_high_contrast: "Alto Contraste",
+        mirror_heading: "Sistema Solar (teclado)",
+        mirror_aria_label: "Navegação acessível do Sistema Solar",
+        aria_settings: "Definições",
+        aria_photo: "Tirar foto espacial",
+        aria_gallery: "Abrir galeria de fotos",
+        aria_compare: "Comparar planetas",
+        aria_collectibles: "Ver colecionáveis",
+        aria_nav_prev: "Planeta anterior",
+        aria_nav_next: "Próximo planeta",
+        aria_manual_nav: "Ativar navegação manual",
+
+        // Mission Overlay
+        mission_overlay_title: "A Tua Primeira Missão!",
+        mission_overlay_go: "Vamos lá!",
+        mission_overlay_new: "Nova Missão!",
+
+        // Mission Indicator
+        mission_indicator_target: "Objectivo",
+        mission_indicator_find: "Encontra",
+
+        // Mission Panel (redesign)
+        mission_progress: "Progresso",
+        mission_completed_all: "Todas as missões completas!",
+        mission_next: "Próxima missão",
+
+        // TTS
+        tts_read: "\uD83D\uDD0A L\u00ea para mim",
+        tts_stop: "\uD83D\uDD07 Parar",
+        tts_not_supported: "Voz não disponível",
+        tts_settings: "Voz / Narração",
+        tts_voice: "Voz",
+        tts_speed: "Velocidade",
+        tts_test: "Testar Voz",
+        tts_test_phrase: "Olá! Eu sou a tua guia pelo Sistema Solar!",
+
+        // Biblioteca In-App
+        biblioteca_btn: "\uD83D\uDCDA Biblioteca",
+        biblioteca_search: "Procurar...",
+        biblioteca_close: "Voltar ao jogo",
+        biblioteca_detail_back: "\u2190 Voltar",
+
+        // Certificate & Endgame
+        cert_title: "Certificado de Explorador Espacial",
+        cert_awarded: "Concedido a",
+        cert_completed: "Explorou todo o Sistema Solar!",
+        cert_planets: "Planetas Visitados",
+        cert_missions: "Miss\u00f5es Completas",
+        cert_download: "Descarregar Certificado",
+        cert_date: "Data",
+        endgame_congrats: "Parab\u00e9ns! Exploraste todo o Sistema Solar!",
+        endgame_continue: "Continuar a Explorar",
+
+        // Daily Challenge
+        daily_title: "Desafio Di\u00e1rio",
+        daily_question: "Pergunta de Hoje",
+        daily_completed: "Desafio de hoje completo!",
+        daily_streak: "Dias seguidos",
+
+        // Share & Photo Frame
+        share_progress: "Partilhar Progresso",
+        share_copied: "Link copiado!",
+        share_card_title: "O Meu Progresso",
+        share_friend_title: "O teu amigo explorou o espa\u00e7o!",
+        share_friend_visited: "visitou {count} planetas",
+        photo_add_frame: "\uD83D\uDDBC\uFE0F Moldura",
+        photo_frame_applied: "Moldura aplicada!",
 
         // Language
         language: "Idioma",
-        lang_pt: "Português",
+        lang_pt: "Portugu\u00eas",
         lang_en: "English"
     },
 
@@ -341,7 +442,7 @@ export const TRANSLATIONS = {
         minimap: "Minimap",
         time_control: "Time Control",
         ui_settings: "UI Settings",
-        photo_saved: "Photo Saved!",
+        photo_saved_flash: "Photo Saved!",
         no_photos_yet: "You haven't taken any photos yet!",
         explore_capture: "Explore the Solar System and capture special moments.",
         space_gallery: "Space Gallery",
@@ -397,6 +498,11 @@ export const TRANSLATIONS = {
         library: "Library",
 
         // Info Panel
+        slide_basic_data: "Basic Data",
+        slide_real_photo: "Real Photo",
+        slide_climate_time: "Climate & Time",
+        slide_about: "About",
+        slide_distance: "Distance",
         info_type: "Type",
         info_distance: "Distance to Sun",
         info_day: "Day Length",
@@ -470,22 +576,20 @@ export const TRANSLATIONS = {
         continue: "Continue",
         continue_adventure: "Continue Adventure!",
 
-        // Ranks
-        rank_1: "Space Cadet",
-        rank_2: "Junior Pilot",
-        rank_3: "Navigator",
-        rank_4: "Explorer",
-        rank_5: "Captain",
-        rank_6: "Commander",
-        rank_7: "Admiral",
-        rank_8: "Star Master",
-        rank_9: "Great Explorer",
-        rank_10: "Space Legend",
-
         // Quiz
         quiz_badge: "SPACE QUIZ",
         quiz_correct: "Correct! Excellent!",
         quiz_wrong: "Not this time...",
+        quiz_slide_title: "\uD83E\uDDE0 Test Your Knowledge!",
+        quiz_streak: "\uD83D\uDD25 {count} in a row!",
+        quiz_space_genius: "Space Genius!",
+        quiz_cosmic_brain: "Cosmic Brain!",
+        quiz_correct_feedback: "Correct! Excellent!",
+        quiz_wrong_feedback: "Almost! The answer is:",
+        quiz_xp_earned: "+{xp} XP",
+        quiz_no_quiz: "No quiz available",
+        quiz_already_answered: "You already answered this quiz!",
+        quiz_learn_more: "Learn more in Wow Facts!",
 
         // Achievements
         achievements: "Achievements",
@@ -493,7 +597,6 @@ export const TRANSLATIONS = {
 
         // Settings
         settings: "Settings",
-        captain: "Captain",
         sound: "Sound",
         music: "Music",
         sfx: "Sound Effects",
@@ -509,6 +612,10 @@ export const TRANSLATIONS = {
         // Toast
         welcome_back: "Welcome back",
         ready_to_explore: "Ready for more adventures!",
+
+        // Intro Animation
+        intro_skip: "Skip >",
+        intro_loading: "Preparing journey...",
 
         // Colors
         color_red: "Red",
@@ -536,9 +643,9 @@ export const TRANSLATIONS = {
         mission_hot_planet_desc: "Discover the hottest planet in the Solar System. Hint: it's not the closest to the Sun!",
         mission_hot_planet_hint: "The greenhouse effect makes a planet VERY hot...",
 
-        mission_home_title: "🏠 Home Sweet Home",
-        mission_home_desc: "Visit our planet - Earth! The only one with known life.",
-        mission_home_hint: "It's the third planet from the Sun.",
+        mission_home_sweet_home_title: "🏠 Home Sweet Home",
+        mission_home_sweet_home_desc: "Visit our planet - Earth! The only one with known life.",
+        mission_home_sweet_home_hint: "It's the third planet from the Sun.",
 
         mission_red_planet_title: "🔴 Red Planet",
         mission_red_planet_desc: "Travel to Mars, the Red Planet! Scientists want to send people there.",
@@ -552,45 +659,140 @@ export const TRANSLATIONS = {
         mission_ring_master_desc: "Visit Saturn and its magnificent rings! They're made of ice and rocks.",
         mission_ring_master_hint: "This planet is so light it would float on water!",
 
-        mission_sideways_title: "🔄 Sideways Planet",
-        mission_sideways_desc: "Find Uranus, the planet that rotates \"on its side\"! Its axis is almost horizontal.",
-        mission_sideways_hint: "Its blue-green color comes from methane.",
+        mission_sideways_planet_title: "🔄 Sideways Planet",
+        mission_sideways_planet_desc: "Find Uranus, the planet that rotates \"on its side\"! Its axis is almost horizontal.",
+        mission_sideways_planet_hint: "Its blue-green color comes from methane.",
 
-        mission_windy_title: "💨 World of Winds",
-        mission_windy_desc: "Travel to Neptune, where winds reach 2100 km/h! The most distant planet.",
-        mission_windy_hint: "It's the bluest planet in the Solar System.",
-
-        mission_moon_title: "🌙 Our Moon",
-        mission_moon_desc: "Visit the Moon, Earth's only natural satellite! Humans have walked there.",
-        mission_moon_hint: "It's about 384,000 km from Earth.",
-
-        mission_volcanic_title: "🌋 Volcanic Moon",
-        mission_volcanic_desc: "Discover Io, the most volcanic moon in the Solar System! It has hundreds of active volcanoes.",
-        mission_volcanic_hint: "It's a moon of Jupiter.",
-
-        mission_ocean_title: "🌊 Ocean Moon",
-        mission_ocean_desc: "Find Europa! Scientists think it has an ocean hidden under the ice.",
-        mission_ocean_hint: "It also orbits Jupiter. It might have alien life!",
+        mission_windy_world_title: "💨 World of Winds",
+        mission_windy_world_desc: "Travel to Neptune, where winds reach 2100 km/h! The most distant planet.",
+        mission_windy_world_hint: "It's the bluest planet in the Solar System.",
 
         mission_biggest_moon_title: "🏆 Biggest Moon",
         mission_biggest_moon_desc: "Visit Ganymede, the largest moon in the Solar System! It's bigger than Mercury!",
         mission_biggest_moon_hint: "It orbits the largest planet...",
 
-        mission_titan_title: "🪐 Titan Explorer",
-        mission_titan_desc: "Discover Titan, the only moon with a dense atmosphere! It has lakes of liquid methane.",
-        mission_titan_hint: "It's Saturn's largest moon.",
-
         mission_death_star_title: "⭐ Death Star",
         mission_death_star_desc: "Find Mimas, the moon that looks like the Death Star from Star Wars!",
         mission_death_star_hint: "The Herschel crater gives it that look. It orbits Saturn.",
 
-        mission_sun_title: "☀️ Sun Seeker",
-        mission_sun_desc: "Visit the Sun, our star! It contains 99.86% of all mass in the Solar System.",
-        mission_sun_hint: "It's at the center of everything!",
+        // Alias keys for missions whose ID doesn't match the key pattern
+        mission_sun_seeker_title: "☀️ Sun Seeker",
+        mission_sun_seeker_desc: "Visit the Sun, our star! It contains 99.86% of all mass in the Solar System.",
+        mission_sun_seeker_hint: "It's at the center of everything!",
+        mission_our_moon_title: "🌙 Our Moon",
+        mission_our_moon_desc: "Visit the Moon, Earth's only natural satellite! Humans have walked there.",
+        mission_our_moon_hint: "It's about 384,000 km from Earth.",
+        mission_volcanic_moon_title: "🌋 Volcanic Moon",
+        mission_volcanic_moon_desc: "Discover Io, the most volcanic moon in the Solar System! It has hundreds of active volcanoes.",
+        mission_volcanic_moon_hint: "It's one of Jupiter's moons.",
+        mission_ocean_moon_title: "🌊 Ocean Moon",
+        mission_ocean_moon_desc: "Find Europa! Scientists believe it has a hidden ocean beneath its ice.",
+        mission_ocean_moon_hint: "Also orbits Jupiter. It might have alien life!",
+        mission_titan_explorer_title: "🪐 Titan Explorer",
+        mission_titan_explorer_desc: "Discover Titan, the only moon with a dense atmosphere! It has lakes of liquid methane.",
+        mission_titan_explorer_hint: "It's Saturn's largest moon.",
+        // Dwarf planet missions
+        mission_pluto_explorer_title: "💔 The Ex-Planet",
+        mission_pluto_explorer_desc: "Discover Pluto, the famous dwarf planet! It was 'demoted' in 2006.",
+        mission_pluto_explorer_hint: "It's far beyond Neptune and has a heart of ice!",
+        mission_ceres_belt_title: "🪨 Queen of the Asteroids",
+        mission_ceres_belt_desc: "Find Ceres, the largest object in the asteroid belt!",
+        mission_ceres_belt_hint: "It's between Mars and Jupiter.",
+        mission_eris_discord_title: "😈 Goddess of Discord",
+        mission_eris_discord_desc: "Travel to Eris, the dwarf planet that caused Pluto's 'demotion'!",
+        mission_eris_discord_hint: "It's the most distant known dwarf planet.",
+        mission_makemake_easter_title: "🐣 Easter Discovery",
+        mission_makemake_easter_desc: "Discover Makemake, the dwarf planet discovered at Easter!",
+        mission_makemake_easter_hint: "Named after the god of Easter Island.",
+        mission_haumea_rugby_title: "🏈 Space Rugby Ball",
+        mission_haumea_rugby_desc: "Find Haumea, the rugby ball-shaped dwarf planet!",
+        mission_haumea_rugby_hint: "It spins so fast that it stretched!",
+
+        // Loading
+        loading_solar_system: "Loading the Solar System...",
+
+        // Tutorial
+        tutorial_title: "Tutorial",
+        tutorial_step1: "Welcome! Tap the arrows to explore planets!",
+        tutorial_step2: "Tap a planet to learn about it!",
+        tutorial_step3: "Complete missions to earn XP!",
+        tutorial_step4: "Press M for manual flight mode!",
+        tutorial_next: "Next",
+        tutorial_skip: "Skip",
+        tutorial_got_it: "Got it!",
+
+        // Accessibility
+        settings_high_contrast: "High Contrast",
+        mirror_heading: "Solar System (keyboard)",
+        mirror_aria_label: "Accessible Solar System navigation",
+        aria_settings: "Settings",
+        aria_photo: "Take space photo",
+        aria_gallery: "Open photo gallery",
+        aria_compare: "Compare planets",
+        aria_collectibles: "View collectibles",
+        aria_nav_prev: "Previous planet",
+        aria_nav_next: "Next planet",
+        aria_manual_nav: "Toggle manual navigation",
+
+        // Mission Overlay
+        mission_overlay_title: "Your First Mission!",
+        mission_overlay_go: "Let's Go!",
+        mission_overlay_new: "New Mission!",
+
+        // Mission Indicator
+        mission_indicator_target: "Target",
+        mission_indicator_find: "Find",
+
+        // Mission Panel (redesign)
+        mission_progress: "Progress",
+        mission_completed_all: "All missions complete!",
+        mission_next: "Next mission",
+
+        // TTS
+        tts_read: "\uD83D\uDD0A Read to me",
+        tts_stop: "\uD83D\uDD07 Stop",
+        tts_not_supported: "Voice not available",
+        tts_settings: "Voice / Narration",
+        tts_voice: "Voice",
+        tts_speed: "Speed",
+        tts_test: "Test Voice",
+        tts_test_phrase: "Hello! I am your guide through the Solar System!",
+
+        // Biblioteca In-App
+        biblioteca_btn: "\uD83D\uDCDA Library",
+        biblioteca_search: "Search...",
+        biblioteca_close: "Back to game",
+        biblioteca_detail_back: "\u2190 Back",
+
+        // Certificate & Endgame
+        cert_title: "Space Explorer Certificate",
+        cert_awarded: "Awarded to",
+        cert_completed: "Explored the entire Solar System!",
+        cert_planets: "Planets Visited",
+        cert_missions: "Missions Complete",
+        cert_download: "Download Certificate",
+        cert_date: "Date",
+        endgame_congrats: "Congratulations! You've explored the entire Solar System!",
+        endgame_continue: "Continue Exploring",
+
+        // Daily Challenge
+        daily_title: "Daily Challenge",
+        daily_question: "Today's Question",
+        daily_completed: "Today's challenge complete!",
+        daily_streak: "Day streak",
+
+        // Share & Photo Frame
+        share_progress: "Share Progress",
+        share_copied: "Link copied!",
+        share_card_title: "My Progress",
+        share_friend_title: "Your friend explored space!",
+        share_friend_visited: "visited {count} planets",
+        photo_add_frame: "\uD83D\uDDBC\uFE0F Frame",
+        photo_frame_applied: "Frame applied!",
 
         // Language
         language: "Language",
-        lang_pt: "Português",
+        lang_pt: "Portugu\u00eas",
         lang_en: "English"
     }
 };
@@ -599,79 +801,112 @@ export const TRANSLATIONS = {
 export const PLANET_TRANSLATIONS = {
     pt: {
         "Sol": {
-            nome: "Sol",
-            tipo: "Estrela"
+            name: "Sol",
+            type: "Estrela"
         },
         "Mercúrio": {
-            nome: "Mercúrio",
-            tipo: "Planeta Rochoso"
+            name: "Mercúrio",
+            type: "Planeta Rochoso"
         },
         "Vénus": {
-            nome: "Vénus",
-            tipo: "Planeta Rochoso"
+            name: "Vénus",
+            type: "Planeta Rochoso"
         },
         "Terra": {
-            nome: "Terra",
-            tipo: "Planeta Rochoso"
+            name: "Terra",
+            type: "Planeta Rochoso"
         },
         "Marte": {
-            nome: "Marte",
-            tipo: "Planeta Rochoso"
+            name: "Marte",
+            type: "Planeta Rochoso"
         },
         "Júpiter": {
-            nome: "Júpiter",
-            tipo: "Gigante Gasoso"
+            name: "Júpiter",
+            type: "Gigante Gasoso"
         },
         "Saturno": {
-            nome: "Saturno",
-            tipo: "Gigante Gasoso"
+            name: "Saturno",
+            type: "Gigante Gasoso"
         },
         "Úrano": {
-            nome: "Úrano",
-            tipo: "Gigante de Gelo"
+            name: "Úrano",
+            type: "Gigante de Gelo"
         },
         "Neptuno": {
-            nome: "Neptuno",
-            tipo: "Gigante de Gelo"
+            name: "Neptuno",
+            type: "Gigante de Gelo"
         }
     },
     en: {
         "Sol": {
-            nome: "Sun",
-            tipo: "Star"
+            name: "Sun",
+            type: "Star"
         },
         "Mercúrio": {
-            nome: "Mercury",
-            tipo: "Rocky Planet"
+            name: "Mercury",
+            type: "Rocky Planet"
         },
         "Vénus": {
-            nome: "Venus",
-            tipo: "Rocky Planet"
+            name: "Venus",
+            type: "Rocky Planet"
         },
         "Terra": {
-            nome: "Earth",
-            tipo: "Rocky Planet"
+            name: "Earth",
+            type: "Rocky Planet"
         },
         "Marte": {
-            nome: "Mars",
-            tipo: "Rocky Planet"
+            name: "Mars",
+            type: "Rocky Planet"
         },
         "Júpiter": {
-            nome: "Jupiter",
-            tipo: "Gas Giant"
+            name: "Jupiter",
+            type: "Gas Giant"
         },
         "Saturno": {
-            nome: "Saturn",
-            tipo: "Gas Giant"
+            name: "Saturn",
+            type: "Gas Giant"
         },
         "Úrano": {
-            nome: "Uranus",
-            tipo: "Ice Giant"
+            name: "Uranus",
+            type: "Ice Giant"
         },
         "Neptuno": {
-            nome: "Neptune",
-            tipo: "Ice Giant"
-        }
+            name: "Neptune",
+            type: "Ice Giant"
+        },
+        // Moons
+        "Lua": { name: "Moon" },
+        "Fobos": { name: "Phobos" },
+        "Deimos": { name: "Deimos" },
+        "Io": { name: "Io" },
+        "Europa": { name: "Europa" },
+        "Ganimedes": { name: "Ganymede" },
+        "Calisto": { name: "Callisto" },
+        "Titã": { name: "Titan" },
+        "Encélado": { name: "Enceladus" },
+        "Mimas": { name: "Mimas" },
+        "Titânia": { name: "Titania" },
+        "Oberon": { name: "Oberon" },
+        "Tritão": { name: "Triton" },
+        "Proteu": { name: "Proteus" },
+        "Caronte": { name: "Charon" },
+        "Disnomia": { name: "Dysnomia" },
+        // Dwarf planets
+        "Plutão": { name: "Pluto", type: "Dwarf Planet" },
+        "Ceres": { name: "Ceres", type: "Dwarf Planet" },
+        "Éris": { name: "Eris", type: "Dwarf Planet" },
+        "Makemake": { name: "Makemake", type: "Dwarf Planet" },
+        "Haumea": { name: "Haumea", type: "Dwarf Planet" },
+        // Probes
+        "Voyager 1": { name: "Voyager 1" },
+        "Voyager 2": { name: "Voyager 2" },
+        "New Horizons": { name: "New Horizons" },
+        "Pioneer 10": { name: "Pioneer 10" },
+        "Juno": { name: "Juno" },
+        "Cassini": { name: "Cassini" },
+        "Estação Espacial Internacional": { name: "International Space Station" },
+        "Telescópio Espacial Hubble": { name: "Hubble Space Telescope" },
+        "OVNI Misterioso": { name: "Mysterious UFO" }
     }
 };
 
@@ -683,6 +918,10 @@ class I18n {
             this.currentLang = 'pt';
         }
         this.listeners = [];
+        // Initial html[lang] sync (in case stored lang differs from index.html default).
+        if (typeof document !== 'undefined' && document.documentElement) {
+            document.documentElement.lang = this.currentLang === 'pt' ? 'pt-PT' : 'en';
+        }
     }
 
     get lang() {
@@ -699,7 +938,11 @@ class I18n {
         } catch (e) {
             console.warn('[i18n] Failed to save language:', e.message);
         }
-        this.updateAllTranslations();
+        // Keep html[lang] in sync so screen readers pronounce content correctly.
+        if (typeof document !== 'undefined' && document.documentElement) {
+            document.documentElement.lang = lang === 'pt' ? 'pt-PT' : 'en';
+        }
+        if (typeof document !== 'undefined') this.updateAllTranslations();
         this.notifyListeners();
     }
 
@@ -713,7 +956,7 @@ class I18n {
 
     getPlanetName(internalName) {
         const trans = PLANET_TRANSLATIONS[this.currentLang][internalName];
-        return trans ? trans.nome : internalName;
+        return trans ? trans.name : internalName;
     }
 
     onLangChange(callback) {
@@ -722,6 +965,10 @@ class I18n {
 
     offLangChange(callback) {
         this.listeners = this.listeners.filter(cb => cb !== callback);
+    }
+
+    clearListeners() {
+        this.listeners = [];
     }
 
     notifyListeners() {

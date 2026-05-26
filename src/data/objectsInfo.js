@@ -86,119 +86,119 @@ export const REAL_PHOTOS = {
 
 export const SOLAR_SYSTEM_DATA = {
     "sun": {
-        nome: "Sol",
-        tipo: "Estrela",
-        distanciaMediaAoSol: 0,
-        duracaoDia: "25-35 dias",
-        duracaoAno: "N/A",
-        numeroLuasConhecidas: 0,
-        principaisLuas: [],
-        temperaturaMediaAproximada: "5500 °C (superfície)",
-        curiosidades: [
+        name: "Sol",
+        type: "Estrela",
+        avgDistanceFromSun: 0,
+        dayLength: "25-35 dias",
+        yearLength: "N/A",
+        knownMoonCount: 0,
+        mainMoons: [],
+        avgTemperature: "5500 °C (superfície)",
+        trivia: [
             "Contém 99,86% da massa de todo o Sistema Solar.",
             "É uma estrela anã amarela.",
             "A luz do Sol demora cerca de 8 minutos a chegar à Terra."
         ],
-        factosUau: [
+        wowFacts: [
             "🤯 O Sol é TÃO grande que caberiam 1 MILHÃO de Terras lá dentro!",
             "🔥 O centro do Sol está a 15 MILHÕES de graus! Mais quente que qualquer coisa na Terra!",
             "⚡ A cada segundo, o Sol transforma 4 milhões de toneladas de si mesmo em luz e calor!",
             "🚗 Se pudesses conduzir até ao Sol a 100 km/h, demoravas 170 ANOS a chegar!"
         ],
-        comparacao: "Se o Sol fosse uma bola de praia, a Terra seria do tamanho de uma ervilha!",
-        raioKm: 696340,
-        cor: 0xffff00,
+        comparison: "Se o Sol fosse uma bola de praia, a Terra seria do tamanho de uma ervilha!",
+        radiusKm: 696340,
+        color: 0xffff00,
         textureUrl: TEXTURES.sun,
-        imagemReal: REAL_PHOTOS.sun
+        realPhoto: REAL_PHOTOS.sun
     },
     "mercury": {
-        nome: "Mercúrio",
-        tipo: "Planeta Rochoso",
-        distanciaMediaAoSol: 58,
-        duracaoDia: "59 dias terrestres",
-        duracaoAno: "88 dias terrestres",
-        numeroLuasConhecidas: 0,
-        principaisLuas: [],
-        temperaturaMediaAproximada: "167 °C",
-        curiosidades: [
+        name: "Mercúrio",
+        type: "Planeta Rochoso",
+        avgDistanceFromSun: 58,
+        dayLength: "59 dias terrestres",
+        yearLength: "88 dias terrestres",
+        knownMoonCount: 0,
+        mainMoons: [],
+        avgTemperature: "167 °C",
+        trivia: [
             "É o planeta mais pequeno do Sistema Solar.",
             "Não tem atmosfera para reter calor, oscilando entre muito quente e muito frio.",
             "A sua superfície assemelha-se à da Lua com muitas crateras."
         ],
-        factosUau: [
+        wowFacts: [
             "🏃 Mercúrio é o planeta mais RÁPIDO! Dá a volta ao Sol em apenas 88 dias!",
             "🌡️ De dia faz 430°C (derretia uma pizza!) mas à noite faz -180°C (mais frio que o congelador)!",
             "📏 Mercúrio é tão pequeno que só é um pouco maior que a nossa Lua!",
             "🕳️ Está cheio de crateras porque não tem ar para protegê-lo de meteoritos!"
         ],
-        comparacao: "Mercúrio é do tamanho de uma bola de ténis se a Terra fosse uma bola de basebol.",
-        raioKm: 2439,
-        cor: 0xA9A9A9,
+        comparison: "Mercúrio é do tamanho de uma bola de ténis se a Terra fosse uma bola de basebol.",
+        radiusKm: 2439,
+        color: 0xA9A9A9,
         textureUrl: TEXTURES.mercury,
-        imagemReal: REAL_PHOTOS.mercury
+        realPhoto: REAL_PHOTOS.mercury
     },
     "venus": {
-        nome: "Vénus",
-        tipo: "Planeta Rochoso",
-        distanciaMediaAoSol: 108,
-        duracaoDia: "243 dias terrestres",
-        duracaoAno: "225 dias terrestres",
-        numeroLuasConhecidas: 0,
-        principaisLuas: [],
-        temperaturaMediaAproximada: "464 °C",
-        curiosidades: [
+        name: "Vénus",
+        type: "Planeta Rochoso",
+        avgDistanceFromSun: 108,
+        dayLength: "243 dias terrestres",
+        yearLength: "225 dias terrestres",
+        knownMoonCount: 0,
+        mainMoons: [],
+        avgTemperature: "464 °C",
+        trivia: [
             "É o planeta mais quente do Sistema Solar devido ao efeito de estufa.",
             "Roda no sentido contrário à maioria dos outros planetas.",
             "É frequentemente chamado de 'Estrela da Manhã' ou 'Estrela da Tarde'."
         ],
-        factosUau: [
+        wowFacts: [
             "🔥 Vénus é o planeta mais QUENTE! Faz 464°C - mais quente que um forno de pizza!",
             "🔄 Um dia em Vénus é MAIOR que um ano! Demora 243 dias a rodar, mas só 225 a dar a volta ao Sol!",
             "🙃 Vénus roda ao CONTRÁRIO! O Sol nasce a Oeste e põe-se a Este!",
             "⭐ Às vezes podes ver Vénus à noite! É a 'estrela' mais brilhante no céu!"
         ],
-        comparacao: "Vénus é quase do mesmo tamanho que a Terra - são como planetas gémeos!",
-        raioKm: 6051,
-        cor: 0xE6E6FA,
+        comparison: "Vénus é quase do mesmo tamanho que a Terra - são como planetas gémeos!",
+        radiusKm: 6051,
+        color: 0xE6E6FA,
         textureUrl: TEXTURES.venus,
-        imagemReal: REAL_PHOTOS.venus
+        realPhoto: REAL_PHOTOS.venus
     },
     "earth": {
-        nome: "Terra",
-        tipo: "Planeta Rochoso",
-        distanciaMediaAoSol: 150,
-        duracaoDia: "24 horas",
-        duracaoAno: "365,25 dias",
-        numeroLuasConhecidas: 1,
-        principaisLuas: ["Lua"],
-        temperaturaMediaAproximada: "15 °C",
-        curiosidades: [
+        name: "Terra",
+        type: "Planeta Rochoso",
+        avgDistanceFromSun: 150,
+        dayLength: "24 horas",
+        yearLength: "365,25 dias",
+        knownMoonCount: 1,
+        mainMoons: ["Lua"],
+        avgTemperature: "15 °C",
+        trivia: [
             "O único planeta conhecido que alberga vida.",
             "70% da sua superfície está coberta por água.",
             "Tem um campo magnético que nos protege da radiação solar."
         ],
-        factosUau: [
+        wowFacts: [
             "🏠 A Terra é o ÚNICO lugar no Universo onde sabemos que existe vida!",
             "💧 70% da Terra é coberta por ÁGUA - por isso parece uma bola azul do espaço!",
             "🧲 A Terra é como um íman gigante! O campo magnético protege-nos do Sol!",
             "🌍 A Terra está a RODAR a 1670 km/h! Mas não sentimos porque tudo à nossa volta também roda!"
         ],
-        comparacao: "A Terra é como uma nave espacial gigante - viaja pelo espaço a 107.000 km/h à volta do Sol!",
-        raioKm: 6371,
-        cor: 0x0000FF,
+        comparison: "A Terra é como uma nave espacial gigante - viaja pelo espaço a 107.000 km/h à volta do Sol!",
+        radiusKm: 6371,
+        color: 0x0000FF,
         textureUrl: TEXTURES.earth,
-        imagemReal: REAL_PHOTOS.earth,
+        realPhoto: REAL_PHOTOS.earth,
         moons: [
             {
                 id: "moon",
-                nome: "Lua",
-                raioKm: 1737,
-                distanciaKm: 384400,
-                cor: 0x888888,
-                descricao: "O único satélite natural da Terra e o quinto maior do Sistema Solar.",
+                name: "Lua",
+                radiusKm: 1737,
+                distanceKm: 384400,
+                color: 0x888888,
+                description: "O único satélite natural da Terra e o quinto maior do Sistema Solar.",
                 textureUrl: TEXTURES.moon,
-                imagemReal: REAL_PHOTOS.moon,
-                factosUau: [
+                realPhoto: REAL_PHOTOS.moon,
+                wowFacts: [
                     "👨‍🚀 12 pessoas já CAMINHARAM na Lua! A primeira foi Neil Armstrong em 1969!",
                     "🦶 Na Lua não há vento, então as pegadas dos astronautas ainda lá estão!",
                     "🏋️ Na Lua pesarias 6x menos! Se pesas 30 kg, lá pesarias só 5 kg!",
@@ -208,55 +208,55 @@ export const SOLAR_SYSTEM_DATA = {
         ]
     },
     "mars": {
-        nome: "Marte",
-        tipo: "Planeta Rochoso",
-        distanciaMediaAoSol: 228,
-        duracaoDia: "24h 37m",
-        duracaoAno: "687 dias terrestres",
-        numeroLuasConhecidas: 2,
-        principaisLuas: ["Fobos", "Deimos"],
-        temperaturaMediaAproximada: "-63 °C",
-        curiosidades: [
+        name: "Marte",
+        type: "Planeta Rochoso",
+        avgDistanceFromSun: 228,
+        dayLength: "24h 37m",
+        yearLength: "687 dias terrestres",
+        knownMoonCount: 2,
+        mainMoons: ["Fobos", "Deimos"],
+        avgTemperature: "-63 °C",
+        trivia: [
             "Conhecido como o Planeta Vermelho devido ao óxido de ferro.",
             "Tem o maior vulcão do Sistema Solar, o Monte Olimpo.",
             "Existem evidências de água líquida no passado."
         ],
-        factosUau: [
+        wowFacts: [
             "🔴 Marte é VERMELHO porque está coberto de FERRUGEM! (óxido de ferro)",
             "🌋 O Monte Olimpo em Marte é o MAIOR vulcão do Sistema Solar - 3x maior que o Evereste!",
             "🤖 Há robots da NASA em Marte AGORA MESMO a explorar! Chamam-se rovers.",
             "👨‍🚀 Os cientistas querem enviar PESSOAS para Marte! Talvez tu possas ir quando fores grande!"
         ],
-        comparacao: "Se pudesses saltar 1 metro na Terra, em Marte saltarias 2,5 metros!",
-        raioKm: 3389,
-        cor: 0xFF4500,
+        comparison: "Se pudesses saltar 1 metro na Terra, em Marte saltarias 2,5 metros!",
+        radiusKm: 3389,
+        color: 0xFF4500,
         textureUrl: TEXTURES.mars,
-        imagemReal: REAL_PHOTOS.mars,
+        realPhoto: REAL_PHOTOS.mars,
         moons: [
             {
                 id: "phobos",
-                nome: "Fobos",
-                raioKm: 11,
-                distanciaKm: 9377,
-                cor: 0x8B4513,
+                name: "Fobos",
+                radiusKm: 11,
+                distanceKm: 9377,
+                color: 0x8B4513,
                 textureUrl: TEXTURES.phobos,
-                imagemReal: REAL_PHOTOS.phobos,
-                descricao: "A maior e mais próxima das duas luas de Marte.",
-                factosUau: [
+                realPhoto: REAL_PHOTOS.phobos,
+                description: "A maior e mais próxima das duas luas de Marte.",
+                wowFacts: [
                     "💥 Fobos está a aproximar-se de Marte e um dia vai chocar com o planeta ou partir-se em bocadinhos!",
                     "🏃 Fobos dá a volta a Marte 3 vezes por dia marciano! É rapidíssima!"
                 ]
             },
             {
                 id: "deimos",
-                nome: "Deimos",
-                raioKm: 6,
-                distanciaKm: 23460,
-                cor: 0xA0522D,
+                name: "Deimos",
+                radiusKm: 6,
+                distanceKm: 23460,
+                color: 0xA0522D,
                 textureUrl: TEXTURES.deimos,
-                imagemReal: REAL_PHOTOS.deimos,
-                descricao: "A lua mais pequena e mais afastada de Marte.",
-                factosUau: [
+                realPhoto: REAL_PHOTOS.deimos,
+                description: "A lua mais pequena e mais afastada de Marte.",
+                wowFacts: [
                     "🥔 Deimos tem forma de batata! Só tem 6 km de tamanho.",
                     "👀 Vista de Marte, Deimos parece uma estrela brilhante, não uma lua!"
                 ]
@@ -264,41 +264,41 @@ export const SOLAR_SYSTEM_DATA = {
         ]
     },
     "jupiter": {
-        nome: "Júpiter",
-        tipo: "Gigante Gasoso",
-        distanciaMediaAoSol: 778,
-        duracaoDia: "9h 56m",
-        duracaoAno: "12 anos terrestres",
-        numeroLuasConhecidas: 95,
-        principaisLuas: ["Io", "Europa", "Ganimedes", "Calisto"],
-        temperaturaMediaAproximada: "-108 °C",
-        curiosidades: [
+        name: "Júpiter",
+        type: "Gigante Gasoso",
+        avgDistanceFromSun: 778,
+        dayLength: "9h 56m",
+        yearLength: "12 anos terrestres",
+        knownMoonCount: 95,
+        mainMoons: ["Io", "Europa", "Ganimedes", "Calisto"],
+        avgTemperature: "-108 °C",
+        trivia: [
             "É o maior planeta do Sistema Solar.",
             "Tem uma Grande Mancha Vermelha, uma tempestade gigante.",
             "Tem anéis ténues, mas difíceis de ver."
         ],
-        factosUau: [
+        wowFacts: [
             "👑 Júpiter é o REI dos planetas! É TÃO grande que cabiam mais de 1300 Terras lá dentro!",
             "🌀 A Grande Mancha Vermelha é uma TEMPESTADE maior que a Terra! Dura há mais de 400 anos!",
             "⏱️ Júpiter roda TÃO rápido que um dia só tem 10 horas! É o dia mais curto de todos os planetas!",
             "🛡️ Júpiter é o nosso PROTETOR! A sua gravidade atrai asteróides perigosos para longe da Terra!"
         ],
-        comparacao: "Júpiter é como o guarda-costas da Terra - protege-nos de rochas espaciais!",
-        raioKm: 69911,
-        cor: 0xDAA520,
+        comparison: "Júpiter é como o guarda-costas da Terra - protege-nos de rochas espaciais!",
+        radiusKm: 69911,
+        color: 0xDAA520,
         textureUrl: TEXTURES.jupiter,
-        imagemReal: REAL_PHOTOS.jupiter,
+        realPhoto: REAL_PHOTOS.jupiter,
         moons: [
             {
                 id: "io",
-                nome: "Io",
-                raioKm: 1821,
-                distanciaKm: 421700,
-                cor: 0xFFFFE0,
+                name: "Io",
+                radiusKm: 1821,
+                distanceKm: 421700,
+                color: 0xFFFFE0,
                 textureUrl: TEXTURES.io,
-                imagemReal: REAL_PHOTOS.io,
-                descricao: "O corpo geologicamente mais ativo do Sistema Solar com centenas de vulcões.",
-                factosUau: [
+                realPhoto: REAL_PHOTOS.io,
+                description: "O corpo geologicamente mais ativo do Sistema Solar com centenas de vulcões.",
+                wowFacts: [
                     "🌋 Io tem CENTENAS de vulcões activos! É o lugar com mais vulcões do Sistema Solar!",
                     "🍕 As cores de Io (amarelo, laranja, vermelho) fazem-na parecer uma pizza gigante!",
                     "🔥 Os vulcões de Io lançam lava a 300 km de altura no espaço!"
@@ -306,14 +306,14 @@ export const SOLAR_SYSTEM_DATA = {
             },
             {
                 id: "europa",
-                nome: "Europa",
-                raioKm: 1560,
-                distanciaKm: 670900,
-                cor: 0xF5F5F5,
+                name: "Europa",
+                radiusKm: 1560,
+                distanceKm: 670900,
+                color: 0xF5F5F5,
                 textureUrl: TEXTURES.europa,
-                imagemReal: REAL_PHOTOS.europa,
-                descricao: "Possui uma superfície de gelo muito suave e possivelmente um oceano subterrâneo.",
-                factosUau: [
+                realPhoto: REAL_PHOTOS.europa,
+                description: "Possui uma superfície de gelo muito suave e possivelmente um oceano subterrâneo.",
+                wowFacts: [
                     "🌊 Debaixo do gelo de Europa há um OCEANO com mais água que todos os oceanos da Terra juntos!",
                     "👽 Os cientistas acham que pode haver VIDA alienígena em Europa! (micróbios, não extraterrestres verdes)",
                     "🧊 A superfície de Europa é gelo liso - seria perfeita para patinar!"
@@ -321,13 +321,13 @@ export const SOLAR_SYSTEM_DATA = {
             },
             {
                 id: "ganymede",
-                nome: "Ganimedes",
-                raioKm: 2634,
-                distanciaKm: 1070400,
-                cor: 0xA9A9A9,
-                imagemReal: REAL_PHOTOS.ganymede,
-                descricao: "A maior lua do Sistema Solar, maior que Mercúrio.",
-                factosUau: [
+                name: "Ganimedes",
+                radiusKm: 2634,
+                distanceKm: 1070400,
+                color: 0xA9A9A9,
+                realPhoto: REAL_PHOTOS.ganymede,
+                description: "A maior lua do Sistema Solar, maior que Mercúrio.",
+                wowFacts: [
                     "🏆 Ganimedes é a MAIOR lua do Sistema Solar! É maior que o planeta Mercúrio!",
                     "🧲 É a única lua com o seu próprio campo magnético - como uma mini-Terra!",
                     "🥪 Ganimedes é como uma sanduíche: camadas de gelo, água e rocha!"
@@ -335,14 +335,14 @@ export const SOLAR_SYSTEM_DATA = {
             },
             {
                 id: "callisto",
-                nome: "Calisto",
-                raioKm: 2410,
-                distanciaKm: 1882700,
-                cor: 0x696969,
+                name: "Calisto",
+                radiusKm: 2410,
+                distanceKm: 1882700,
+                color: 0x696969,
                 textureUrl: TEXTURES.callisto,
-                imagemReal: REAL_PHOTOS.callisto,
-                descricao: "Satélite com a superfície mais antiga e com mais crateras do Sistema Solar.",
-                factosUau: [
+                realPhoto: REAL_PHOTOS.callisto,
+                description: "Satélite com a superfície mais antiga e com mais crateras do Sistema Solar.",
+                wowFacts: [
                     "🕳️ Calisto tem TANTAS crateras que não cabe mais nenhuma! É a superfície mais antiga do Sistema Solar!",
                     "🏠 Calisto seria um bom lugar para uma base espacial porque não tem muita radiação!"
                 ]
@@ -350,42 +350,42 @@ export const SOLAR_SYSTEM_DATA = {
         ]
     },
     "saturn": {
-        nome: "Saturno",
-        tipo: "Gigante Gasoso",
-        distanciaMediaAoSol: 1434,
-        duracaoDia: "10h 34m",
-        duracaoAno: "29 anos terrestres",
-        numeroLuasConhecidas: 146,
-        principaisLuas: ["Titã", "Encélado", "Mimas"],
-        temperaturaMediaAproximada: "-139 °C",
-        curiosidades: [
+        name: "Saturno",
+        type: "Gigante Gasoso",
+        avgDistanceFromSun: 1434,
+        dayLength: "10h 34m",
+        yearLength: "29 anos terrestres",
+        knownMoonCount: 146,
+        mainMoons: ["Titã", "Encélado", "Mimas"],
+        avgTemperature: "-139 °C",
+        trivia: [
             "Famoso pelo seu sistema de anéis complexo e visível.",
             "É o planeta menos denso, flutuaria em água.",
             "A sua forma é visivelmente achatada nos pólos."
         ],
-        factosUau: [
+        wowFacts: [
             "💍 Os ANÉIS de Saturno são feitos de BILHÕES de pedaços de gelo e rocha! Alguns pequenos como grãos de areia, outros grandes como casas!",
             "🛁 Saturno FLUTUARIA numa banheira gigante! É menos denso que a água!",
             "🌙 Saturno tem 146 LUAS! Mais do que qualquer outro planeta!",
             "📏 Os anéis têm 280.000 km de largura, mas só 10 metros de espessura - como uma folha de papel gigante!"
         ],
-        comparacao: "Se Saturno fosse uma bola de basquetebol, os anéis seriam como um disco de pizza gigante à volta!",
-        raioKm: 58232,
-        cor: 0xF4C430,
+        comparison: "Se Saturno fosse uma bola de basquetebol, os anéis seriam como um disco de pizza gigante à volta!",
+        radiusKm: 58232,
+        color: 0xF4C430,
         temAneis: true,
-        tipoAneis: 'bright', // Saturn has bright, prominent rings
+        ringType: 'bright', // Saturn has bright, prominent rings
         textureUrl: TEXTURES.saturn,
-        imagemReal: REAL_PHOTOS.saturn,
+        realPhoto: REAL_PHOTOS.saturn,
         moons: [
             {
                 id: "titan",
-                nome: "Titã",
-                raioKm: 2575,
-                distanciaKm: 1222000,
-                cor: 0xD2B48C,
-                imagemReal: REAL_PHOTOS.titan,
-                descricao: "A segunda maior lua do Sistema Solar e a única com uma atmosfera densa.",
-                factosUau: [
+                name: "Titã",
+                radiusKm: 2575,
+                distanceKm: 1222000,
+                color: 0xD2B48C,
+                realPhoto: REAL_PHOTOS.titan,
+                description: "A segunda maior lua do Sistema Solar e a única com uma atmosfera densa.",
+                wowFacts: [
                     "🌫️ Titã é a ÚNICA lua com atmosfera espessa! Nem consegues ver a superfície por causa das nuvens!",
                     "🌊 Titã tem LAGOS e RIOS, mas não de água - são de METANO líquido! (o gás do fogão)",
                     "☔ Em Titã chove metano! Imagina chuva de gás!",
@@ -394,13 +394,13 @@ export const SOLAR_SYSTEM_DATA = {
             },
             {
                 id: "enceladus",
-                nome: "Encélado",
-                raioKm: 252,
-                distanciaKm: 238000,
-                cor: 0xFFFFFF,
-                imagemReal: REAL_PHOTOS.enceladus,
-                descricao: "Reflete quase 100% da luz solar, é coberto de gelo fresco e limpo.",
-                factosUau: [
+                name: "Encélado",
+                radiusKm: 252,
+                distanceKm: 238000,
+                color: 0xFFFFFF,
+                realPhoto: REAL_PHOTOS.enceladus,
+                description: "Reflete quase 100% da luz solar, é coberto de gelo fresco e limpo.",
+                wowFacts: [
                     "💨 Encélado tem GEYSERS que lançam água para o espaço! Fazem um dos anéis de Saturno!",
                     "✨ É a lua mais BRILHANTE do Sistema Solar! Reflete quase toda a luz que recebe!",
                     "🌊 Debaixo do gelo há um oceano quente - pode ter vida!"
@@ -408,14 +408,14 @@ export const SOLAR_SYSTEM_DATA = {
             },
             {
                 id: "mimas",
-                nome: "Mimas",
-                raioKm: 198,
-                distanciaKm: 185500,
-                cor: 0xDCDCDC,
+                name: "Mimas",
+                radiusKm: 198,
+                distanceKm: 185500,
+                color: 0xDCDCDC,
                 textureUrl: TEXTURES.mimas,
-                imagemReal: REAL_PHOTOS.mimas,
-                descricao: "Conhecida pela sua enorme cratera Herschel, fazendo-a parecer a 'Estrela da Morte'.",
-                factosUau: [
+                realPhoto: REAL_PHOTOS.mimas,
+                description: "Conhecida pela sua enorme cratera Herschel, fazendo-a parecer a 'Estrela da Morte'.",
+                wowFacts: [
                     "⭐ Mimas parece a ESTRELA DA MORTE do Star Wars! Tem uma cratera GIGANTE que quase a partiu ao meio!",
                     "🎯 A cratera Herschel tem 130 km - 1/3 do tamanho de toda a lua!",
                     "🏔️ O pico no centro da cratera é quase tão alto como o Monte Evereste!"
@@ -424,55 +424,55 @@ export const SOLAR_SYSTEM_DATA = {
         ]
     },
     "uranus": {
-        nome: "Úrano",
-        tipo: "Gigante Gelado",
-        distanciaMediaAoSol: 2871,
-        duracaoDia: "17h 14m",
-        duracaoAno: "84 anos terrestres",
-        numeroLuasConhecidas: 27,
-        principaisLuas: ["Titânia", "Oberon"],
-        temperaturaMediaAproximada: "-197 °C",
-        curiosidades: [
+        name: "Úrano",
+        type: "Gigante de Gelo",
+        avgDistanceFromSun: 2871,
+        dayLength: "17h 14m",
+        yearLength: "84 anos terrestres",
+        knownMoonCount: 27,
+        mainMoons: ["Titânia", "Oberon"],
+        avgTemperature: "-197 °C",
+        trivia: [
             "Roda 'deitado' com o eixo quase no plano da órbita.",
             "A sua cor azul-esverdeada deve-se ao metano na atmosfera.",
             "Foi o primeiro planeta descoberto com um telescópio."
         ],
-        factosUau: [
+        wowFacts: [
             "🛋️ Úrano está DEITADO! Roda de lado como uma bola a rolar - ninguém sabe bem porquê!",
             "💎 Pode CHOVER DIAMANTES em Úrano! A pressão é tão grande que transforma carbono em diamantes!",
             "❄️ É o planeta mais FRIO! Chega a -224°C!",
             "🔭 Foi o primeiro planeta descoberto com um TELESCÓPIO em 1781! Os antigos não o conheciam."
         ],
-        comparacao: "Úrano cabiam 63 Terras lá dentro! É um gigante, mas não se vê bem a olho nu.",
-        raioKm: 25362,
-        cor: 0x40E0D0,
+        comparison: "Úrano cabiam 63 Terras lá dentro! É um gigante, mas não se vê bem a olho nu.",
+        radiusKm: 25362,
+        color: 0x40E0D0,
         temAneis: true,
-        tipoAneis: 'dark', // Uranus has dark, thin rings
+        ringType: 'dark', // Uranus has dark, thin rings
         textureUrl: TEXTURES.uranus,
-        imagemReal: REAL_PHOTOS.uranus,
+        realPhoto: REAL_PHOTOS.uranus,
         moons: [
             {
                 id: "titania",
-                nome: "Titânia",
-                raioKm: 788,
-                distanciaKm: 436300,
-                cor: 0xD3D3D3,
-                imagemReal: REAL_PHOTOS.titania,
-                descricao: "A maior lua de Úrano.",
-                factosUau: [
+                name: "Titânia",
+                radiusKm: 788,
+                distanceKm: 436300,
+                color: 0xD3D3D3,
+                realPhoto: REAL_PHOTOS.titania,
+                description: "A maior lua de Úrano.",
+                wowFacts: [
                     "👑 Titânia é a RAINHA das luas de Úrano - é a maior!",
                     "🏔️ Tem canyons gigantes maiores que o Grand Canyon da Terra!"
                 ]
             },
             {
                 id: "oberon",
-                nome: "Oberon",
-                raioKm: 761,
-                distanciaKm: 583500,
-                cor: 0xA9A9A9,
-                imagemReal: REAL_PHOTOS.oberon,
-                descricao: "A segunda maior lua de Úrano e a mais distante das grandes luas.",
-                factosUau: [
+                name: "Oberon",
+                radiusKm: 761,
+                distanceKm: 583500,
+                color: 0xA9A9A9,
+                realPhoto: REAL_PHOTOS.oberon,
+                description: "A segunda maior lua de Úrano e a mais distante das grandes luas.",
+                wowFacts: [
                     "📚 Oberon tem o nome do rei das fadas de uma peça de Shakespeare!",
                     "🏔️ Tem uma montanha com 11 km de altura - mais alta que qualquer montanha na Terra!"
                 ]
@@ -480,42 +480,42 @@ export const SOLAR_SYSTEM_DATA = {
         ]
     },
     "neptune": {
-        nome: "Neptuno",
-        tipo: "Gigante Gelado",
-        distanciaMediaAoSol: 4495,
-        duracaoDia: "16h 6m",
-        duracaoAno: "165 anos terrestres",
-        numeroLuasConhecidas: 14,
-        principaisLuas: ["Tritão"],
-        temperaturaMediaAproximada: "-201 °C",
-        curiosidades: [
+        name: "Neptuno",
+        type: "Gigante de Gelo",
+        avgDistanceFromSun: 4495,
+        dayLength: "16h 6m",
+        yearLength: "165 anos terrestres",
+        knownMoonCount: 14,
+        mainMoons: ["Tritão"],
+        avgTemperature: "-201 °C",
+        trivia: [
             "É o planeta mais distante do Sol (dos conhecidos).",
             "Tem ventos supersónicos que atingem 2100 km/h.",
             "A sua cor azul intensa também vem do metano, mas algo mais contribui para a cor viva."
         ],
-        factosUau: [
+        wowFacts: [
             "💨 Neptuno tem os ventos mais FORTES do Sistema Solar! Chegam a 2100 km/h - mais rápido que um avião a jacto!",
             "🔵 Neptuno é o planeta mais AZUL! Parece uma bola de gude gigante!",
             "🧮 Neptuno foi descoberto com MATEMÁTICA! Calcularam onde estava antes de o verem!",
             "📅 Um ano em Neptuno = 165 anos terrestres! Se lá nascesses, ainda não terias feito 1 ano!"
         ],
-        comparacao: "Neptuno está TÃO longe que a luz do Sol demora 4 HORAS a chegar lá!",
-        raioKm: 24622,
-        cor: 0x00008B,
+        comparison: "Neptuno está TÃO longe que a luz do Sol demora 4 HORAS a chegar lá!",
+        radiusKm: 24622,
+        color: 0x00008B,
         temAneis: true,
-        tipoAneis: 'faint', // Neptune has very faint, thin rings
+        ringType: 'faint', // Neptune has very faint, thin rings
         textureUrl: TEXTURES.neptune,
-        imagemReal: REAL_PHOTOS.neptune,
+        realPhoto: REAL_PHOTOS.neptune,
         moons: [
             {
                 id: "triton",
-                nome: "Tritão",
-                raioKm: 1353,
-                distanciaKm: 354759,
-                cor: 0xFFC0CB,
-                imagemReal: REAL_PHOTOS.triton,
-                descricao: "A única grande lua do Sistema Solar que orbita na direção oposta à rotação do planeta.",
-                factosUau: [
+                name: "Tritão",
+                radiusKm: 1353,
+                distanceKm: 354759,
+                color: 0xFFC0CB,
+                realPhoto: REAL_PHOTOS.triton,
+                description: "A única grande lua do Sistema Solar que orbita na direção oposta à rotação do planeta.",
+                wowFacts: [
                     "🔄 Tritão orbita ao CONTRÁRIO! É a única lua grande que faz isso!",
                     "🧊 Tritão é TÃO frio (-235°C) que tem geysers de AZOTO congelado!",
                     "🎣 Neptuno provavelmente 'pescou' Tritão - era um objecto que passava e ficou preso pela gravidade!"
@@ -523,13 +523,13 @@ export const SOLAR_SYSTEM_DATA = {
             },
             {
                 id: "proteus",
-                nome: "Proteu",
-                raioKm: 210,
-                distanciaKm: 117647,
-                cor: 0x708090,
-                imagemReal: REAL_PHOTOS.proteus,
-                descricao: "A segunda maior lua de Neptuno.",
-                factosUau: [
+                name: "Proteu",
+                radiusKm: 210,
+                distanceKm: 117647,
+                color: 0x708090,
+                realPhoto: REAL_PHOTOS.proteus,
+                description: "A segunda maior lua de Neptuno.",
+                wowFacts: [
                     "🥔 Proteu tem forma irregular - parece uma batata espacial!",
                     "🔭 Só foi descoberta em 1989 pela sonda Voyager 2!"
                 ]
@@ -538,40 +538,40 @@ export const SOLAR_SYSTEM_DATA = {
     },
     // ============ PLANETAS ANÕES ============
     "pluto": {
-        nome: "Plutão",
-        tipo: "Planeta Anão",
-        distanciaMediaAoSol: 5900,
-        duracaoDia: "6,4 dias terrestres",
-        duracaoAno: "248 anos terrestres",
-        numeroLuasConhecidas: 5,
-        principaisLuas: ["Caronte"],
-        temperaturaMediaAproximada: "-230 °C",
-        curiosidades: [
+        name: "Plutão",
+        type: "Planeta Anão",
+        avgDistanceFromSun: 5900,
+        dayLength: "6,4 dias terrestres",
+        yearLength: "248 anos terrestres",
+        knownMoonCount: 5,
+        mainMoons: ["Caronte"],
+        avgTemperature: "-230 °C",
+        trivia: [
             "Foi considerado o 9º planeta até 2006.",
             "Tem um coração gigante de gelo de nitrogénio.",
             "A sua maior lua, Caronte, é quase do seu tamanho."
         ],
-        factosUau: [
+        wowFacts: [
             "💔 Plutão foi 'despromovido' de planeta em 2006! Muitas pessoas ficaram tristes.",
             "❤️ Plutão tem um CORAÇÃO gigante! É uma planície de gelo em forma de coração chamada Tombaugh Regio!",
             "💃 Plutão e a sua lua Caronte dançam juntos - estão sempre virados um para o outro!",
             "🥶 É TÃO frio que o ar congela e cai como neve!"
         ],
-        comparacao: "Plutão é mais pequeno que a nossa Lua! Tem apenas 2/3 do tamanho dela.",
-        raioKm: 1188,
-        cor: 0xE5D3B3,
-        ehPlanetoAnao: true,
-        imagemReal: REAL_PHOTOS.pluto,
+        comparison: "Plutão é mais pequeno que a nossa Lua! Tem apenas 2/3 do tamanho dela.",
+        radiusKm: 1188,
+        color: 0xE5D3B3,
+        isDwarfPlanet: true,
+        realPhoto: REAL_PHOTOS.pluto,
         moons: [
             {
                 id: "charon",
-                nome: "Caronte",
-                raioKm: 606,
-                distanciaKm: 19591,
-                cor: 0x808080,
-                imagemReal: REAL_PHOTOS.charon,
-                descricao: "A maior lua de Plutão, quase metade do seu tamanho.",
-                factosUau: [
+                name: "Caronte",
+                radiusKm: 606,
+                distanceKm: 19591,
+                color: 0x808080,
+                realPhoto: REAL_PHOTOS.charon,
+                description: "A maior lua de Plutão, quase metade do seu tamanho.",
+                wowFacts: [
                     "💑 Caronte e Plutão são como um casal - estão sempre virados um para o outro!",
                     "🏔️ Tem uma montanha dentro de uma cratera - ninguém sabe bem porquê!"
                 ]
@@ -579,66 +579,66 @@ export const SOLAR_SYSTEM_DATA = {
         ]
     },
     "ceres": {
-        nome: "Ceres",
-        tipo: "Planeta Anão",
-        distanciaMediaAoSol: 414,
-        duracaoDia: "9 horas",
-        duracaoAno: "4,6 anos terrestres",
-        numeroLuasConhecidas: 0,
-        principaisLuas: [],
-        temperaturaMediaAproximada: "-105 °C",
-        curiosidades: [
+        name: "Ceres",
+        type: "Planeta Anão",
+        avgDistanceFromSun: 414,
+        dayLength: "9 horas",
+        yearLength: "4,6 anos terrestres",
+        knownMoonCount: 0,
+        mainMoons: [],
+        avgTemperature: "-105 °C",
+        trivia: [
             "É o maior objeto no cinturão de asteroides.",
             "Foi o primeiro asteroide a ser descoberto em 1801.",
             "Contém mais água doce que toda a Terra."
         ],
-        factosUau: [
+        wowFacts: [
             "💧 Ceres pode ter MAIS água doce que toda a Terra! Está escondida debaixo da superfície!",
             "💡 Tem pontos BRILHANTES misteriosos - são sais que refletem a luz do Sol!",
             "🏆 Foi o primeiro asteroide descoberto, em 1801! Um padre italiano encontrou-o.",
             "🌍 Se Ceres tivesse nascido mais perto do Sol, poderia ter virado um planeta!"
         ],
-        comparacao: "Ceres é do tamanho do Texas, mas redondo como uma bola!",
-        raioKm: 473,
-        cor: 0x9E9E9E,
-        ehPlanetoAnao: true,
-        imagemReal: REAL_PHOTOS.ceres
+        comparison: "Ceres é do tamanho do Texas, mas redondo como uma bola!",
+        radiusKm: 473,
+        color: 0x9E9E9E,
+        isDwarfPlanet: true,
+        realPhoto: REAL_PHOTOS.ceres
     },
     "eris": {
-        nome: "Éris",
-        tipo: "Planeta Anão",
-        distanciaMediaAoSol: 10125,
-        duracaoDia: "25,9 horas",
-        duracaoAno: "558 anos terrestres",
-        numeroLuasConhecidas: 1,
-        principaisLuas: ["Disnomia"],
-        temperaturaMediaAproximada: "-243 °C",
-        curiosidades: [
+        name: "Éris",
+        type: "Planeta Anão",
+        avgDistanceFromSun: 10125,
+        dayLength: "25,9 horas",
+        yearLength: "558 anos terrestres",
+        knownMoonCount: 1,
+        mainMoons: ["Disnomia"],
+        avgTemperature: "-243 °C",
+        trivia: [
             "É o planeta anão mais massivo conhecido.",
             "A sua descoberta levou à reclassificação de Plutão.",
             "Está tão longe que demora 13 horas para a luz chegar lá."
         ],
-        factosUau: [
+        wowFacts: [
             "😈 Éris tem o nome da deusa grega da discórdia - porque causou confusão sobre o que é um planeta!",
             "🥇 Éris é mais PESADA que Plutão! Por isso Plutão deixou de ser planeta.",
             "🌨️ A sua superfície é coberta de gelo de metano - parece uma bola de neve gigante!",
             "📏 Está TÃO longe que um ano lá dura 558 anos terrestres!"
         ],
-        comparacao: "Éris está 3x mais longe do Sol que Plutão!",
-        raioKm: 1163,
-        cor: 0xFAFAFA,
-        ehPlanetoAnao: true,
-        imagemReal: REAL_PHOTOS.eris,
+        comparison: "Éris está 3x mais longe do Sol que Plutão!",
+        radiusKm: 1163,
+        color: 0xFAFAFA,
+        isDwarfPlanet: true,
+        realPhoto: REAL_PHOTOS.eris,
         moons: [
             {
                 id: "dysnomia",
-                nome: "Disnomia",
-                raioKm: 350,
-                distanciaKm: 37350,
-                cor: 0x696969,
-                imagemReal: REAL_PHOTOS.dysnomia,
-                descricao: "A única lua de Éris, nomeada em honra da filha da deusa Éris.",
-                factosUau: [
+                name: "Disnomia",
+                radiusKm: 350,
+                distanceKm: 37350,
+                color: 0x696969,
+                realPhoto: REAL_PHOTOS.dysnomia,
+                description: "A única lua de Éris, nomeada em honra da filha da deusa Éris.",
+                wowFacts: [
                     "👻 Disnomia é a deusa da ilegalidade na mitologia grega!",
                     "🔭 Foi descoberta em 2005 pelo telescópio Hubble!"
                 ]
@@ -646,259 +646,259 @@ export const SOLAR_SYSTEM_DATA = {
         ]
     },
     "makemake": {
-        nome: "Makemake",
-        tipo: "Planeta Anão",
-        distanciaMediaAoSol: 6850,
-        duracaoDia: "22,5 horas",
-        duracaoAno: "305 anos terrestres",
-        numeroLuasConhecidas: 1,
-        principaisLuas: [],
-        temperaturaMediaAproximada: "-243 °C",
-        curiosidades: [
+        name: "Makemake",
+        type: "Planeta Anão",
+        avgDistanceFromSun: 6850,
+        dayLength: "22,5 horas",
+        yearLength: "305 anos terrestres",
+        knownMoonCount: 1,
+        mainMoons: [],
+        avgTemperature: "-243 °C",
+        trivia: [
             "É um dos objetos mais brilhantes no Cinturão de Kuiper.",
             "Não tem atmosfera significativa.",
             "Foi descoberto na Páscoa de 2005."
         ],
-        factosUau: [
+        wowFacts: [
             "🐣 Foi descoberto perto da Páscoa, por isso tem o nome do deus da fertilidade da Ilha de Páscoa!",
             "🔴 Makemake é avermelhado por causa de químicos orgânicos congelados!",
             "🥶 É um dos lugares mais FRIOS do Sistema Solar!",
             "🌑 Não tem atmosfera - o ar congelou todo!"
         ],
-        comparacao: "Makemake é como uma bola de neve vermelha do tamanho de um país pequeno!",
-        raioKm: 715,
-        cor: 0xCD853F,
-        ehPlanetoAnao: true,
-        imagemReal: REAL_PHOTOS.makemake
+        comparison: "Makemake é como uma bola de neve vermelha do tamanho de um país pequeno!",
+        radiusKm: 715,
+        color: 0xCD853F,
+        isDwarfPlanet: true,
+        realPhoto: REAL_PHOTOS.makemake
     },
     "haumea": {
-        nome: "Haumea",
-        tipo: "Planeta Anão",
-        distanciaMediaAoSol: 6452,
-        duracaoDia: "3,9 horas",
-        duracaoAno: "284 anos terrestres",
-        numeroLuasConhecidas: 2,
-        principaisLuas: ["Hiʻiaka", "Namaka"],
-        temperaturaMediaAproximada: "-241 °C",
-        curiosidades: [
+        name: "Haumea",
+        type: "Planeta Anão",
+        avgDistanceFromSun: 6452,
+        dayLength: "3,9 horas",
+        yearLength: "284 anos terrestres",
+        knownMoonCount: 2,
+        mainMoons: ["Hiʻiaka", "Namaka"],
+        avgTemperature: "-241 °C",
+        trivia: [
             "Tem a forma de uma bola de rugby por rodar muito rápido.",
             "Tem dois anéis e duas luas conhecidas.",
             "É composto principalmente de rocha coberta de gelo."
         ],
-        factosUau: [
+        wowFacts: [
             "🏈 Haumea tem forma de BOLA DE RUGBY! Roda tão rápido que esticou!",
             "⏱️ Um dia em Haumea dura só 4 horas! É o planeta anão mais rápido a rodar!",
             "💍 Tem ANÉIS como Saturno, mas muito mais pequenos!",
             "🌺 Tem o nome da deusa havaiana da fertilidade!"
         ],
-        comparacao: "Haumea parece um ovo espacial gigante a girar!",
-        raioKm: 816,
-        cor: 0xF5F5DC,
-        ehPlanetoAnao: true,
-        imagemReal: REAL_PHOTOS.haumea
+        comparison: "Haumea parece um ovo espacial gigante a girar!",
+        radiusKm: 816,
+        color: 0xF5F5DC,
+        isDwarfPlanet: true,
+        realPhoto: REAL_PHOTOS.haumea
     },
     
     // Space Probes
     "voyager1": {
-        nome: "Voyager 1",
-        tipo: "Sonda Espacial",
-        distanciaKm: "24 mil milhões km",
-        duracaoDia: "N/A",
-        duracaoAno: "N/A",
-        temperaturaMediaAproximada: "-270 °C",
-        imagemReal: REAL_PHOTOS.voyager,
-        curiosidades: [
+        name: "Voyager 1",
+        type: "Sonda Espacial",
+        distanceKm: "24 mil milhões km",
+        dayLength: "N/A",
+        yearLength: "N/A",
+        avgTemperature: "-270 °C",
+        realPhoto: REAL_PHOTOS.voyager,
+        trivia: [
             "É o objeto feito pelo Homem mais distante da Terra!",
             "Viaja no espaço desde 1977.",
             "Leva um disco dourado com sons e imagens da Terra."
         ],
-        factosUau: [
+        wowFacts: [
             "🚀 A Voyager 1 está TÃO longe que os sinais demoram 22 HORAS a chegar!",
             "💿 Leva um disco de OURO com músicas e mensagens caso aliens a encontrem!",
             "🌌 Já saiu do Sistema Solar e está no espaço interestelar!",
             "⚡ Ainda funciona depois de 45+ anos no espaço!"
         ],
-        comparacao: "A Voyager 1 é como uma mensagem numa garrafa lançada ao oceano do espaço!",
-        descricao: "Lançada em 1977, a Voyager 1 é a sonda espacial mais distante da Terra. Transporta um disco dourado com sons e imagens da nossa civilização."
+        comparison: "A Voyager 1 é como uma mensagem numa garrafa lançada ao oceano do espaço!",
+        description: "Lançada em 1977, a Voyager 1 é a sonda espacial mais distante da Terra. Transporta um disco dourado com sons e imagens da nossa civilização."
     },
     "voyager2": {
-        nome: "Voyager 2",
-        tipo: "Sonda Espacial",
-        distanciaKm: "20 mil milhões km",
-        duracaoDia: "N/A",
-        duracaoAno: "N/A",
-        temperaturaMediaAproximada: "-270 °C",
-        imagemReal: REAL_PHOTOS.voyager,
-        curiosidades: [
+        name: "Voyager 2",
+        type: "Sonda Espacial",
+        distanceKm: "20 mil milhões km",
+        dayLength: "N/A",
+        yearLength: "N/A",
+        avgTemperature: "-270 °C",
+        realPhoto: REAL_PHOTOS.voyager,
+        trivia: [
             "É a única sonda a ter visitado os 4 planetas gigantes!",
             "Visitou Júpiter, Saturno, Úrano e Neptuno.",
             "Também leva um disco dourado para os aliens."
         ],
-        factosUau: [
+        wowFacts: [
             "🏆 É a ÚNICA sonda a ter visitado Úrano e Neptuno!",
             "👀 Fotografou vulcões ativos em Io, uma lua de Júpiter!",
             "🎯 Foi lançada 16 dias ANTES da Voyager 1, mas chegou depois!",
             "🌍 Ainda envia dados para a Terra depois de 45+ anos!"
         ],
-        comparacao: "A Voyager 2 fez um tour completo pelos planetas gigantes!",
-        descricao: "A Voyager 2 é a única sonda a ter visitado os quatro planetas gigantes gasosos do nosso Sistema Solar."
+        comparison: "A Voyager 2 fez um tour completo pelos planetas gigantes!",
+        description: "A Voyager 2 é a única sonda a ter visitado os quatro planetas gigantes gasosos do nosso Sistema Solar."
     },
     "newhorizons": {
-        nome: "New Horizons",
-        tipo: "Sonda Espacial",
-        distanciaKm: "8 mil milhões km",
-        duracaoDia: "N/A",
-        duracaoAno: "N/A",
-        temperaturaMediaAproximada: "-230 °C",
-        imagemReal: REAL_PHOTOS.newhorizons,
-        curiosidades: [
+        name: "New Horizons",
+        type: "Sonda Espacial",
+        distanceKm: "8 mil milhões km",
+        dayLength: "N/A",
+        yearLength: "N/A",
+        avgTemperature: "-230 °C",
+        realPhoto: REAL_PHOTOS.newhorizons,
+        trivia: [
             "Fotografou Plutão de perto em 2015!",
             "Descobriu que Plutão tem um coração de gelo.",
             "É a sonda mais rápida já lançada."
         ],
-        factosUau: [
+        wowFacts: [
             "❤️ Descobriu um CORAÇÃO gigante de gelo em Plutão!",
             "🏎️ Foi a sonda mais RÁPIDA a deixar a Terra - 58.000 km/h!",
             "📸 As fotos de Plutão demoraram 4 HORAS a chegar à Terra!",
             "🪨 Depois de Plutão, visitou outro objeto ainda mais longe!"
         ],
-        comparacao: "A New Horizons revelou que Plutão tem um coração!",
-        descricao: "Lançada em 2006, a New Horizons foi a primeira sonda a visitar Plutão, revelando detalhes incríveis sobre este mundo distante."
+        comparison: "A New Horizons revelou que Plutão tem um coração!",
+        description: "Lançada em 2006, a New Horizons foi a primeira sonda a visitar Plutão, revelando detalhes incríveis sobre este mundo distante."
     },
     "pioneer10": {
-        nome: "Pioneer 10",
-        tipo: "Sonda Espacial",
-        distanciaKm: "18 mil milhões km",
-        duracaoDia: "N/A",
-        duracaoAno: "N/A",
-        temperaturaMediaAproximada: "-270 °C",
-        imagemReal: [REAL_PHOTOS.pioneer, REAL_PHOTOS.pioneer2],
-        curiosidades: [
+        name: "Pioneer 10",
+        type: "Sonda Espacial",
+        distanceKm: "18 mil milhões km",
+        dayLength: "N/A",
+        yearLength: "N/A",
+        avgTemperature: "-270 °C",
+        realPhoto: [REAL_PHOTOS.pioneer, REAL_PHOTOS.pioneer2],
+        trivia: [
             "Primeira sonda a atravessar o cinturão de asteroides.",
             "Primeira a fazer um flyby de Júpiter.",
             "Perdemos contacto em 2003."
         ],
-        factosUau: [
+        wowFacts: [
             "🥇 Foi a PRIMEIRA sonda a cruzar o cinturão de asteroides!",
             "📡 O último sinal foi recebido em 2003!",
             "🗺️ Leva uma placa com um mapa para a Terra!",
             "⏳ Demorará 2 MILHÕES de anos a chegar à estrela mais próxima!"
         ],
-        comparacao: "A Pioneer 10 foi a exploradora que abriu caminho para as outras!",
-        descricao: "Lançada em 1972, a Pioneer 10 foi a primeira sonda a atravessar o cinturão de asteroides e a primeira a estudar Júpiter de perto."
+        comparison: "A Pioneer 10 foi a exploradora que abriu caminho para as outras!",
+        description: "Lançada em 1972, a Pioneer 10 foi a primeira sonda a atravessar o cinturão de asteroides e a primeira a estudar Júpiter de perto."
     },
     "juno": {
-        nome: "Juno",
-        tipo: "Sonda Espacial",
-        distanciaKm: "778 milhões km",
-        duracaoDia: "N/A",
-        duracaoAno: "N/A",
-        temperaturaMediaAproximada: "-145 °C",
-        imagemReal: REAL_PHOTOS.juno,
-        curiosidades: [
+        name: "Juno",
+        type: "Sonda Espacial",
+        distanceKm: "778 milhões km",
+        dayLength: "N/A",
+        yearLength: "N/A",
+        avgTemperature: "-145 °C",
+        realPhoto: REAL_PHOTOS.juno,
+        trivia: [
             "Estuda Júpiter desde 2016.",
             "Tem os maiores painéis solares de qualquer sonda.",
             "Orbita por cima dos polos de Júpiter."
         ],
-        factosUau: [
+        wowFacts: [
             "☀️ Os painéis solares da Juno são do tamanho de um autocarro!",
             "🌀 Descobriu que a Grande Mancha Vermelha vai até 500 km de profundidade!",
             "🔊 Gravou sons estranhos de Júpiter que parecem música eletrónica!",
             "🛡️ Tem uma 'armadura' de titânio para resistir à radiação!"
         ],
-        comparacao: "A Juno é como um espião que orbita Júpiter!",
-        descricao: "A sonda Juno está em órbita de Júpiter desde 2016, estudando a atmosfera e o interior do maior planeta do Sistema Solar."
+        comparison: "A Juno é como um espião que orbita Júpiter!",
+        description: "A sonda Juno está em órbita de Júpiter desde 2016, estudando a atmosfera e o interior do maior planeta do Sistema Solar."
     },
     "cassini": {
-        nome: "Cassini",
-        tipo: "Sonda Espacial",
-        distanciaKm: "1.4 mil milhões km",
-        duracaoDia: "N/A",
-        duracaoAno: "N/A",
-        temperaturaMediaAproximada: "-180 °C",
-        imagemReal: REAL_PHOTOS.cassini,
-        curiosidades: [
+        name: "Cassini",
+        type: "Sonda Espacial",
+        distanceKm: "1.4 mil milhões km",
+        dayLength: "N/A",
+        yearLength: "N/A",
+        avgTemperature: "-180 °C",
+        realPhoto: REAL_PHOTOS.cassini,
+        trivia: [
             "Estudou Saturno durante 13 anos!",
             "Descobriu oceanos em Encélado.",
             "Mergulhou em Saturno em 2017."
         ],
-        factosUau: [
+        wowFacts: [
             "💧 Descobriu ÁGUA líquida a jorrar de Encélado!",
             "📸 Tirou mais de 450.000 fotos de Saturno e suas luas!",
             "🪐 Atravessou os anéis de Saturno - e sobreviveu!",
             "🔥 No final da missão, mergulhou em Saturno e derreteu!"
         ],
-        comparacao: "A Cassini foi a melhor amiga de Saturno durante 13 anos!",
-        descricao: "A missão Cassini-Huygens estudou Saturno e suas luas de 2004 a 2017, fazendo descobertas revolucionárias sobre o sistema saturniano."
+        comparison: "A Cassini foi a melhor amiga de Saturno durante 13 anos!",
+        description: "A missão Cassini-Huygens estudou Saturno e suas luas de 2004 a 2017, fazendo descobertas revolucionárias sobre o sistema saturniano."
     },
     "iss": {
-        nome: "Estação Espacial Internacional",
-        tipo: "Estação Espacial",
-        distanciaKm: "408 km",
-        duracaoDia: "N/A",
-        duracaoAno: "N/A",
-        temperaturaMediaAproximada: "-157°C a 121°C",
-        imagemReal: REAL_PHOTOS.iss,
-        curiosidades: [
+        name: "Estação Espacial Internacional",
+        type: "Estação Espacial",
+        distanceKm: "408 km",
+        dayLength: "N/A",
+        yearLength: "N/A",
+        avgTemperature: "-157°C a 121°C",
+        realPhoto: REAL_PHOTOS.iss,
+        trivia: [
             "Orbita a Terra 16 vezes por dia!",
             "Tem o tamanho de um campo de futebol.",
             "Astronautas de 19 países já lá estiveram."
         ],
-        factosUau: [
+        wowFacts: [
             "🏠 É a maior estrutura já construída no ESPAÇO!",
             "🌅 Os astronautas veem 16 nasceres e pores do sol por DIA!",
             "⚽ Tem o tamanho de um CAMPO DE FUTEBOL!",
             "🚀 Viaja a 28.000 km/h - dá a volta à Terra em 90 minutos!"
         ],
-        comparacao: "A ISS é uma casa voadora onde astronautas vivem e trabalham no espaço!",
-        descricao: "A Estação Espacial Internacional é um laboratório em órbita onde astronautas fazem experiências e estudam como viver no espaço. É um projeto de 15 países!"
+        comparison: "A ISS é uma casa voadora onde astronautas vivem e trabalham no espaço!",
+        description: "A Estação Espacial Internacional é um laboratório em órbita onde astronautas fazem experiências e estudam como viver no espaço. É um projeto de 15 países!"
     },
     "hubble": {
-        nome: "Telescópio Espacial Hubble",
-        tipo: "Telescópio Espacial",
-        distanciaKm: "547 km",
-        duracaoDia: "N/A",
-        duracaoAno: "N/A",
-        temperaturaMediaAproximada: "-150°C a 20°C",
-        imagemReal: REAL_PHOTOS.hubble,
-        curiosidades: [
+        name: "Telescópio Espacial Hubble",
+        type: "Telescópio Espacial",
+        distanceKm: "547 km",
+        dayLength: "N/A",
+        yearLength: "N/A",
+        avgTemperature: "-150°C a 20°C",
+        realPhoto: REAL_PHOTOS.hubble,
+        trivia: [
             "Orbita a Terra desde 1990.",
             "Tirou mais de 1,5 milhões de fotografias.",
             "Consegue ver galáxias a 13 mil milhões de anos-luz."
         ],
-        factosUau: [
+        wowFacts: [
             "📸 Tirou mais de 1,5 MILHÕES de fotos do espaço!",
             "👀 Consegue ver galáxias a 13 MIL MILHÕES de anos-luz!",
             "🔧 Astronautas foram ao espaço 5 vezes para o reparar!",
             "📡 Envia 120 gigabytes de dados por SEMANA!"
         ],
-        comparacao: "O Hubble é como um super olho no espaço que nos mostra maravilhas do Universo!",
-        descricao: "O Telescópio Espacial Hubble orbita acima da atmosfera da Terra, tirando fotos incrivelmente nítidas de galáxias, nebulosas e estrelas distantes. Revolucionou a nossa compreensão do Universo!"
+        comparison: "O Hubble é como um super olho no espaço que nos mostra maravilhas do Universo!",
+        description: "O Telescópio Espacial Hubble orbita acima da atmosfera da Terra, tirando fotos incrivelmente nítidas de galáxias, nebulosas e estrelas distantes. Revolucionou a nossa compreensão do Universo!"
     },
     
     // Easter Egg: UFO / Alien Spaceship 🛸
     "ufo": {
-        nome: "OVNI Misterioso",
-        tipo: "Nave Alienígena",
-        distanciaKm: "??? km",
-        duracaoDia: "???",
-        duracaoAno: "???",
-        temperaturaMediaAproximada: "??? °C",
-        curiosidades: [
+        name: "OVNI Misterioso",
+        type: "Nave Alienígena",
+        distanceKm: "??? km",
+        dayLength: "???",
+        yearLength: "???",
+        avgTemperature: "??? °C",
+        trivia: [
             "Objeto Voador Não Identificado detetado perto da Terra!",
             "Os cientistas procuram vida extraterrestre com radiotelescópios.",
             "O programa SETI procura sinais de civilizações alienígenas.",
             "Ainda não encontrámos provas de vida inteligente fora da Terra."
         ],
-        factosUau: [
+        wowFacts: [
             "👽 A Via Láctea tem 100 a 400 MIL MILHÕES de estrelas - pode haver vida algures!",
             "🔭 O telescópio James Webb pode ver planetas a anos-luz de distância!",
             "💧 Já encontrámos água em luas como Europa e Encélado - onde há água, pode haver vida!",
             "📡 Enviámos mensagens para o espaço! O 'Golden Record' nas Voyager tem sons da Terra!",
             "🦠 A vida mais resistente na Terra são os tardígrados - sobrevivem no espaço!"
         ],
-        comparacao: "Se existirem alienígenas, provavelmente são micróbios ou seres muito diferentes de nós!",
-        descricao: "Será que estamos sozinhos no Universo? Os cientistas procuram vida em todo o lado - desde micróbios em Marte até sinais de rádio de civilizações distantes. O Universo é ENORME, e ainda só explorámos uma pequenina parte!",
+        comparison: "Se existirem alienígenas, provavelmente são micróbios ou seres muito diferentes de nós!",
+        description: "Será que estamos sozinhos no Universo? Os cientistas procuram vida em todo o lado - desde micróbios em Marte até sinais de rádio de civilizações distantes. O Universo é ENORME, e ainda só explorámos uma pequenina parte!",
         isEasterEgg: true,
         emoji: "🛸"
     }
@@ -930,28 +930,37 @@ export function getTranslatedObjectData(objectName) {
     const merged = { ...baseData };
     
     // Override translatable fields
-    if (enData.nome) merged.nome = enData.nome;
-    if (enData.tipo) merged.tipo = enData.tipo;
-    if (enData.duracaoDia) merged.duracaoDia = enData.duracaoDia;
-    if (enData.duracaoAno) merged.duracaoAno = enData.duracaoAno;
-    if (enData.temperaturaMediaAproximada) merged.temperaturaMediaAproximada = enData.temperaturaMediaAproximada;
-    if (enData.curiosidades) merged.curiosidades = enData.curiosidades;
-    if (enData.factosUau) merged.factosUau = enData.factosUau;
-    if (enData.comparacao) merged.comparacao = enData.comparacao;
-    if (enData.descricao) merged.descricao = enData.descricao;
-    if (enData.distanciaKm) merged.distanciaKm = enData.distanciaKm;
+    if (enData.name) merged.name = enData.name;
+    if (enData.type) merged.type = enData.type;
+    if (enData.dayLength) merged.dayLength = enData.dayLength;
+    if (enData.yearLength) merged.yearLength = enData.yearLength;
+    if (enData.avgTemperature) merged.avgTemperature = enData.avgTemperature;
+    if (enData.trivia) merged.trivia = enData.trivia;
+    if (enData.wowFacts) merged.wowFacts = enData.wowFacts;
+    if (enData.comparison) merged.comparison = enData.comparison;
+    if (enData.description) merged.description = enData.description;
+    if (enData.distanceKm) merged.distanceKm = enData.distanceKm;
     
     // Translate moons if available
     if (baseData.moons && enData.moons) {
         merged.moons = baseData.moons.map((moon, index) => {
-            const enMoon = enData.moons[index];
+            // Match by id first, then by index as fallback
+            // (nome matching doesn't work: PT "Titã" vs EN "Titan")
+            let enMoon = null;
+            if (moon.id) {
+                enMoon = enData.moons.find(em => em.id === moon.id);
+            }
+            // Fallback to index matching (original approach, still needed)
+            if (!enMoon && index < enData.moons.length) {
+                enMoon = enData.moons[index];
+            }
             if (!enMoon) return moon;
-            
+
             return {
                 ...moon,
-                nome: enMoon.nome || moon.nome,
-                descricao: enMoon.descricao || moon.descricao,
-                factosUau: enMoon.factosUau || moon.factosUau
+                name: enMoon.name || moon.name,
+                description: enMoon.description || moon.description,
+                wowFacts: enMoon.wowFacts || moon.wowFacts
             };
         });
     }
