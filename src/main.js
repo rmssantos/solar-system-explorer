@@ -430,7 +430,7 @@ export class App {
         if (completedMission) {
             // Award XP for mission
             setTimeout(() => {
-                const result = this.xpSystem.addXP(completedMission.xpReward, `Missão: ${completedMission.title}`);
+                const result = this.xpSystem.addXP(completedMission.xpReward, `${i18n.t('mission')}: ${completedMission.title}`);
                 
                 // Check for level up
                 if (result.leveledUp) {
@@ -1101,10 +1101,10 @@ export class App {
         questionEl.textContent = quiz.question;
         card.appendChild(questionEl);
 
-        // Shuffle options
-        const correct = quiz.options[quiz.correct];
-        const shuffled = [...quiz.options].sort(() => Math.random() - 0.5);
-        const correctIdx = shuffled.indexOf(correct);
+        // Shuffle options via the quiz system's unbiased shuffle (this used
+        // to be a third, hand-rolled copy with the biased sort trick)
+        const { options: shuffled, correctIndex: correctIdx } =
+            this.quizSystem.shuffleWithCorrect(quiz.options, quiz.correct);
 
         const optionsDiv = document.createElement('div');
         optionsDiv.style.cssText = 'display: flex; flex-direction: column; gap: 8px;';

@@ -1,4 +1,4 @@
-import { BIBLIOTECA_DATA } from './data/bibliotecaData.js';
+import { BIBLIOTECA_DATA, STAT_LABEL_KEYS, normalizeGalleryItem } from './data/bibliotecaData.js';
 
 // Estado da aplicação
 let currentLang = 'pt';
@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
         contentGrid.addEventListener('click', handleContentGridClick);
         contentGrid.addEventListener('keydown', handleContentGridKeydown);
     }
+
+    // Tell the pre-boot error overlay (public/init.js) the page is healthy.
+    window.__appBooted = true;
 });
 
 // Event delegation handler for modal body (moon chips, gallery items, header image)
@@ -205,7 +208,7 @@ function renderContent() {
         card.innerHTML = `
             <div class="card-image">
                 ${obj.imagem ?
-                `<img src="${obj.imagem}" alt="${obj.name}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'emoji-placeholder\\'>${obj.emoji}</span>'">` :
+                `<img src="${obj.imagem}" alt="${obj.name}" loading="lazy">` :
                 `<span class="emoji-placeholder">${obj.emoji}</span>`
             }
                 <span class="card-type-badge">${obj.type}</span>
@@ -233,6 +236,20 @@ function renderContent() {
             </div>
         `;
 
+        // Broken-image fallback via addEventListener: the previous inline
+        // onerror="" attribute is blocked by the production CSP (script-src
+        // 'self', no 'unsafe-inline'), so it silently never ran on the live
+        // site — and could not be reproduced in dev, where no CSP is served.
+        const cardImg = card.querySelector('.card-image img');
+        if (cardImg) {
+            cardImg.addEventListener('error', () => {
+                const span = document.createElement('span');
+                span.className = 'emoji-placeholder';
+                span.textContent = obj.emoji;
+                cardImg.replaceWith(span);
+            }, { once: true });
+        }
+
         grid.appendChild(card);
     }
 
@@ -251,20 +268,16 @@ function openModal(objectId) {
 
     // Prepare gallery data for lightbox navigation (module-scoped)
     if (obj.galeria?.length) {
-        modalGalleryData = obj.galeria.map(item => {
-            const imgUrl = typeof item === 'string' ? item : (item.url || item.src);
-            const caption = typeof item === 'string' ? obj.name : (currentLang === 'en' ? (item.captionEN || item.caption) : item.caption);
-            return { src: imgUrl, caption };
-        });
+        modalGalleryData = obj.galeria.map(item => normalizeGalleryItem(item, obj.name, currentLang));
     } else {
         modalGalleryData = [];
     }
 
     modalBody.innerHTML = `
-        <div class="modal-header ${obj.imagem ? 'clickable' : ''}" ${obj.imagem ? `data-action="open-lightbox" data-src="${obj.imagem}" data-caption="${escapeAttr(obj.name + ' - Foto real da NASA')}"` : ''}>
+        <div class="modal-header ${obj.imagem ? 'clickable' : ''}" ${obj.imagem ? `data-action="open-lightbox" data-src="${obj.imagem}" data-caption="${escapeAttr(obj.name + ' - ' + ui.nasa_photo)}"` : ''}>
             ${obj.imagem ?
             `<img src="${obj.imagem}" alt="${obj.name}">
-             <div class="modal-header-zoom">🔍 Clica para ampliar</div>` :
+             <div class="modal-header-zoom">${ui.zoom_hint}</div>` :
             `<div style="background: linear-gradient(135deg, #1a1a3a, #0a0a20); display: flex; align-items: center; justify-content: center; height: 100%;"><span style="font-size: 8rem;">${obj.emoji}</span></div>`
         }
             <div class="modal-header-gradient"></div>
@@ -332,7 +345,7 @@ function openModal(objectId) {
                 <h2 class="section-title">${ui.section_gallery}</h2>
                 <div class="gallery-grid">
                     ${modalGalleryData.map((item, index) => `
-                        <div class="gallery-item" data-action="open-gallery" data-gallery-index="${index}" data-src="${item.src}" data-caption="${escapeAttr(item.caption)}" tabindex="0" role="button" aria-label="Ver ${escapeAttr(item.caption)}">
+                        <div class="gallery-item" data-action="open-gallery" data-gallery-index="${index}" data-src="${item.src}" data-caption="${escapeAttr(item.caption)}" tabindex="0" role="button" aria-label="${escapeAttr(ui.view_image + ' ' + item.caption)}">
                             <img src="${item.src}" alt="${escapeAttr(item.caption)}" loading="lazy">
                         </div>
                     `).join('')}
@@ -349,7 +362,18 @@ function openModal(objectId) {
 
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+
+    // Dialog semantics + focus management: keyboard users opening a card via
+    // Enter/Space used to be left focused on the hidden grid behind the modal.
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    _modalOpener = document.activeElement;
+    const closeBtn = document.getElementById('modal-close-btn');
+    if (closeBtn) closeBtn.focus();
 }
+
+// Element focused before the modal opened (restored on close)
+let _modalOpener = null;
 
 // Escape a string for safe use in HTML attributes
 function escapeAttr(str) {
@@ -360,6 +384,10 @@ function escapeAttr(str) {
 function closeModal() {
     document.getElementById('detailModal').classList.add('hidden');
     document.body.style.overflow = '';
+    if (_modalOpener instanceof HTMLElement && document.contains(_modalOpener)) {
+        _modalOpener.focus();
+    }
+    _modalOpener = null;
 }
 
 // Fechar modal com Escape
@@ -394,23 +422,9 @@ function getStatIcon(key) {
     return icons[key] || '📊';
 }
 
-// Formatar label de estatística
+// Formatar label de estatística (shared map: see STAT_LABEL_KEYS)
 function formatStatLabel(key, ui) {
-    const labels = {
-        raio: ui.stat_radius,
-        distancia: ui.stat_distance,
-        dia: ui.stat_day,
-        ano: ui.stat_year,
-        temperatura: ui.stat_temp,
-        luas: ui.stat_moons,
-        idade: ui.stat_age,
-        type: ui.stat_type,
-        composicao: ui.stat_composition,
-        velocidade: ui.stat_speed,
-        lancamento: ui.stat_launch,
-        tamanho: ui.stat_size
-    };
-    return labels[key] || key;
+    return ui[STAT_LABEL_KEYS[key]] || key;
 }
 
 // ========== LIGHTBOX ==========
@@ -424,13 +438,14 @@ function createLightbox() {
     lightboxElement = document.createElement('div');
     lightboxElement.id = 'imageLightbox';
     lightboxElement.className = 'lightbox hidden';
+    const ui = BIBLIOTECA_DATA[currentLang].ui;
     lightboxElement.innerHTML = `
         <div class="lightbox-overlay" data-action="close-lightbox"></div>
-        <div class="lightbox-content">
-            <button class="lightbox-close" data-action="close-lightbox" aria-label="Fechar">✕</button>
-            <button class="lightbox-nav lightbox-prev" data-action="lightbox-prev" aria-label="Anterior">❮</button>
+        <div class="lightbox-content" role="dialog" aria-modal="true">
+            <button class="lightbox-close" data-action="close-lightbox" aria-label="${ui.lightbox_close}">✕</button>
+            <button class="lightbox-nav lightbox-prev" data-action="lightbox-prev" aria-label="${ui.lightbox_prev}">❮</button>
             <img class="lightbox-image" src="" alt="">
-            <button class="lightbox-nav lightbox-next" data-action="lightbox-next" aria-label="Seguinte">❯</button>
+            <button class="lightbox-nav lightbox-next" data-action="lightbox-next" aria-label="${ui.lightbox_next}">❯</button>
             <div class="lightbox-footer">
                 <p class="lightbox-caption"></p>
                 <p class="lightbox-counter"></p>

@@ -16,32 +16,40 @@ export class Mascot {
         this.messageQueue = [];
         this.isProcessingQueue = false;
 
-        // Map pose names to image files (in public/mascot folder)
+        // Map pose names to image files (in public/mascot folder).
+        // WebP: ~65 KB per pose vs ~475 KB PNG — eager-loading all 8 PNGs
+        // (3.8 MB) used to race the planet textures on first load.
         this.poses = {
-            neutral: '/mascot/1.png',      // Waving hello
-            celebrate: '/mascot/2.png',    // Victory jump
-            curious: '/mascot/3.png',      // Exploring
-            pointRight: '/mascot/4.png',   // Pointing right
-            pointLeft: '/mascot/5.png',    // Pointing left
-            surprised: '/mascot/6.png',    // Wow! Discovery
-            encourage: '/mascot/7.png',    // Thumbs up, try again
-            thinking: '/mascot/8.png'      // Thinking/loading
+            neutral: '/mascot/1.webp',      // Waving hello
+            celebrate: '/mascot/2.webp',    // Victory jump
+            curious: '/mascot/3.webp',      // Exploring
+            pointRight: '/mascot/4.webp',   // Pointing right
+            pointLeft: '/mascot/5.webp',    // Pointing left
+            surprised: '/mascot/6.webp',    // Wow! Discovery
+            encourage: '/mascot/7.webp',    // Thumbs up, try again
+            thinking: '/mascot/8.webp'      // Thinking/loading
         };
 
-        // Preload images
+        // Lazy preload: only the startup pose now; the rest on idle so a
+        // pose switch never shows a blank frame but startup stays light.
         this.preloadedImages = {};
-        this.preloadImages();
+        this.preloadImage('neutral');
+        const preloadRest = () => Object.keys(this.poses).forEach((name) => this.preloadImage(name));
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(preloadRest, { timeout: 10000 });
+        } else {
+            setTimeout(preloadRest, 5000);
+        }
 
         this.createUI();
         this.setupEventListeners();
     }
 
-    preloadImages() {
-        Object.entries(this.poses).forEach(([name, url]) => {
-            const img = new Image();
-            img.src = url;
-            this.preloadedImages[name] = img;
-        });
+    preloadImage(name) {
+        if (this.preloadedImages[name]) return;
+        const img = new Image();
+        img.src = this.poses[name];
+        this.preloadedImages[name] = img;
     }
 
     createUI() {

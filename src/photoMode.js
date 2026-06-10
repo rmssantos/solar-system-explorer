@@ -324,10 +324,10 @@ export class PhotoMode {
         } else {
             photosHTML = this.gallery.map((photo, index) => `
                 <div class="gallery-item" data-index="${index}">
-                    <img src="${photo.image}" alt="${i18n.t('photo')} ${index + 1}">
+                    <img alt="${i18n.t('photo')} ${index + 1}">
                     <div class="gallery-item-info">
                         <span class="gallery-location"></span>
-                        <span class="gallery-time">${photo.timestamp}</span>
+                        <span class="gallery-time"></span>
                     </div>
                     <div class="gallery-item-actions">
                         <button class="gallery-download" data-index="${index}" title="${i18n.t('download')}">💾</button>
@@ -352,12 +352,20 @@ export class PhotoMode {
 
         document.body.appendChild(overlay);
 
-        // Safely set text content (avoid XSS via playerName and photo.location)
+        // Safely set localStorage-sourced fields as properties, never via
+        // innerHTML (same discipline as playerName/location below).
         const subtitleEl = overlay.querySelector('.gallery-subtitle');
         if (subtitleEl) subtitleEl.textContent = `${i18n.t('captain')} ${this.app.playerName} - ${this.gallery.length} ${i18n.t('photos')}`;
-        overlay.querySelectorAll('.gallery-location').forEach((el, i) => {
+        overlay.querySelectorAll('.gallery-item').forEach((item, i) => {
             const idx = this.gallery.length - 1 - i; // reversed order
-            if (this.gallery[idx]) el.textContent = `📍 ${this.gallery[idx].location}`;
+            const photo = this.gallery[idx];
+            if (!photo) return;
+            const img = /** @type {HTMLImageElement} */ (item.querySelector('img'));
+            if (img) img.src = photo.image;
+            const locEl = item.querySelector('.gallery-location');
+            if (locEl) locEl.textContent = `📍 ${photo.location}`;
+            const timeEl = item.querySelector('.gallery-time');
+            if (timeEl) timeEl.textContent = photo.timestamp;
         });
 
         // Event listeners

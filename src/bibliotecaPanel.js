@@ -3,7 +3,7 @@
  * Full-screen overlay for browsing the Solar System library
  * without leaving the 3D scene.
  */
-import { BIBLIOTECA_DATA } from './data/bibliotecaData.js';
+import { BIBLIOTECA_DATA, STAT_LABEL_KEYS, normalizeGalleryItem } from './data/bibliotecaData.js';
 import { i18n } from './i18n.js';
 
 export class BibliotecaPanel {
@@ -233,9 +233,10 @@ export class BibliotecaPanel {
         header.appendChild(headerText);
         detail.appendChild(header);
 
-        // Description
+        // Description ("About" — using section_curiosities here used to render
+        // a duplicated/wrong "Curiosidades" heading over the description)
         if (obj.descricaoLonga) {
-            const section = this.createSection(ui.section_curiosities);
+            const section = this.createSection(ui.section_about);
             const p = document.createElement('p');
             p.textContent = obj.descricaoLonga;
             section.appendChild(p);
@@ -245,26 +246,12 @@ export class BibliotecaPanel {
         // Statistics
         if (obj.estatisticas) {
             const section = this.createSection(ui.section_stats);
-            const statMap = {
-                raio: ui.stat_radius,
-                distancia: ui.stat_distance,
-                dia: ui.stat_day,
-                ano: ui.stat_year,
-                temperatura: ui.stat_temp,
-                luas: ui.stat_moons,
-                idade: ui.stat_age,
-                type: ui.stat_type,
-                composicao: ui.stat_composition,
-                velocidade: ui.stat_speed,
-                lancamento: ui.stat_launch,
-                tamanho: ui.stat_size
-            };
             Object.entries(obj.estatisticas).forEach(([key, value]) => {
                 const row = document.createElement('div');
                 row.className = 'biblioteca-stat-row';
                 const label = document.createElement('span');
                 label.className = 'biblioteca-stat-label';
-                label.textContent = statMap[key] || key;
+                label.textContent = ui[STAT_LABEL_KEYS[key]] || key;
                 const val = document.createElement('span');
                 val.className = 'biblioteca-stat-value';
                 val.textContent = value;
@@ -325,8 +312,7 @@ export class BibliotecaPanel {
             const gallery = document.createElement('div');
             gallery.className = 'biblioteca-detail-gallery';
             obj.galeria.forEach(item => {
-                const imgUrl = typeof item === 'string' ? item : (item.url || item.src);
-                const caption = typeof item === 'string' ? obj.name : (i18n.lang === 'en' ? (item.captionEN || item.caption) : item.caption);
+                const { src: imgUrl, caption } = normalizeGalleryItem(item, obj.name, i18n.lang);
                 const figure = document.createElement('figure');
                 figure.className = 'biblioteca-gallery-item';
                 const img = document.createElement('img');
