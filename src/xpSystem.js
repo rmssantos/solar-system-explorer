@@ -50,8 +50,8 @@ export class XPSystem {
     loadProgress() {
         const data = storage.getItem('xp', null);
         if (data) {
-            this.xp = data.xp || 0;
-            this.totalXPEarned = data.totalXP || 0;
+            this.xp = Number(data.xp) || 0;
+            this.totalXPEarned = Number(data.totalXP) || 0;
             this.level = this.calculateLevel();
         }
     }

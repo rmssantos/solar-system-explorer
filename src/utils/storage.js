@@ -1,9 +1,16 @@
 /**
  * Safe localStorage utility
  * Handles errors from private browsing mode, quota exceeded, etc.
+ *
+ * The spaceExplorer_* keys ARE the save file (there is no backend).
+ * Do not rename keys without adding a migration in migrateSchema().
  */
 
 const STORAGE_PREFIX = 'spaceExplorer_';
+
+// Bump when the shape of any stored value changes, and handle the
+// transition in migrateSchema().
+export const CURRENT_SCHEMA_VERSION = 1;
 
 /**
  * Safely get an item from localStorage
@@ -73,6 +80,21 @@ export function clearAll() {
         console.warn('[Storage] Failed to clear:', e.message);
         return false;
     }
+}
+
+/**
+ * Stamp/upgrade the save-data schema version. Called once at startup,
+ * before any system loads its state. Pre-versioned saves (from before
+ * this mechanism existed) are adopted as-is and stamped v1.
+ */
+export function migrateSchema() {
+    const stored = getItem('schemaVersion', null);
+    if (stored === CURRENT_SCHEMA_VERSION) return;
+
+    // Future migrations go here, e.g.:
+    // if (stored === 1) { ...reshape v1 keys into v2...; }
+
+    setItem('schemaVersion', CURRENT_SCHEMA_VERSION);
 }
 
 /**

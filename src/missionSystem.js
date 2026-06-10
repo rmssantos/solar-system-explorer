@@ -281,7 +281,9 @@ export class MissionSystem {
     loadProgress() {
         const data = storage.getItem('missions', null);
         if (data) {
-            this.completedMissions = new Set(data.completed || []);
+            // Shape-validate: a corrupt non-array here would throw inside
+            // App.init and brick the app on every launch.
+            this.completedMissions = new Set(Array.isArray(data.completed) ? data.completed : []);
 
             // Find the saved active mission
             const savedActive = this.missions.find(m => m.id === data.active);

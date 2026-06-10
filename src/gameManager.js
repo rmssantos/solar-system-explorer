@@ -13,7 +13,7 @@ export class GameManager {
 
     loadProgress() {
         const data = storage.getItem('visited', null);
-        if (data && data.visited) {
+        if (data && Array.isArray(data.visited)) {
             this.visited = new Set(data.visited);
         }
     }
