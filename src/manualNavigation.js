@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { i18n } from './i18n.js';
 import { getTranslatedObjectData } from './data/objectsInfo.js';
 import { WARP_SPEEDS, getWarpName } from './manualNavigation/WarpModel.js';
+import { formatSpeed, getSpeedComparison } from './manualNavigation/speedCopy.js';
 import './manualNavigation.css';
 
 export class ManualNavigation {
@@ -1216,37 +1217,11 @@ export class ManualNavigation {
     }
     
     formatSpeed(kmPerSec) {
-        if (kmPerSec >= 299792) {
-            return i18n.t('speed_light');
-        } else if (kmPerSec >= 1000000) {
-            return i18n.t('speed_million').replace('{n}', (kmPerSec / 1000000).toFixed(1));
-        } else if (kmPerSec >= 1000) {
-            return i18n.t('speed_thousand').replace('{n}', (kmPerSec / 1000).toFixed(0));
-        }
-        return `${kmPerSec.toLocaleString()} km/s`;
+        return formatSpeed(kmPerSec);
     }
 
     getSpeedComparison(kmPerSec) {
-        // Fun comparisons for kids!
-        if (kmPerSec >= 299792) {
-            return i18n.t('comp_universe');
-        } else if (kmPerSec >= 50000000) {
-            return i18n.t('comp_earth_mars');
-        } else if (kmPerSec >= 20000000) {
-            return i18n.t('comp_around_world');
-        } else if (kmPerSec >= 5000000) {
-            return i18n.t('comp_sun_earth');
-        } else if (kmPerSec >= 1000000) {
-            return i18n.t('comp_voyager');
-        } else if (kmPerSec >= 500000) {
-            return i18n.t('comp_lightning');
-        } else if (kmPerSec >= 100000) {
-            return i18n.t('comp_f1');
-        } else if (kmPerSec >= 50000) {
-            return i18n.t('comp_plane');
-        } else {
-            return i18n.t('comp_car');
-        }
+        return getSpeedComparison(kmPerSec);
     }
     
     updateHUD() {
