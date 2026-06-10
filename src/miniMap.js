@@ -400,9 +400,10 @@ export class MiniMap {
             const y = pos.y;
             const planetSize = planet.size * scale * this.zoomLevel;
 
-            // Check states
-            const isVisited = this.app.gameManager?.isVisited(planet.name);
-            const isCurrent = currentTarget === planet.key || currentTarget === planet.name;
+            // Check states. gameManager stores object KEYS ('mercury'), not display
+            // names; followingObject is a THREE.Mesh, so compare mesh identity.
+            const isVisited = this.app.gameManager?.isVisited(planet.key);
+            const isCurrent = !!currentTarget && currentTarget === this.app.solarSystem?.objects?.[planet.key];
             const isHovered = this.hoveredPlanet === planet;
 
             // Draw hover highlight ring first (behind planet)

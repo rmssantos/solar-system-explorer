@@ -2,7 +2,6 @@
  * Mission System - Interactive quests for space exploration
  * Provides guided objectives and rewards for discoveries
  */
-import { SOLAR_SYSTEM_DATA } from './data/objectsInfo.js';
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
 

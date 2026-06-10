@@ -391,7 +391,7 @@ export class AchievementSystem {
         });
         
         let categoriesHTML = '';
-        for (const [key, cat] of Object.entries(categories)) {
+        for (const cat of Object.values(categories)) {
             if (cat.achievements.length === 0) continue;
             
             categoriesHTML += `

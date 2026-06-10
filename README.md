@@ -47,7 +47,11 @@ npm run dev      # http://localhost:5173
 npm run build    # production build to dist/
 npm run preview  # preview the production build
 npm test         # run tests
+npm run lint     # ESLint
+npm run typecheck # TypeScript checkJs over the JS sources
 ```
+
+CI runs tests, lint, and typecheck on every push before deploying.
 
 ## Deployment
 
@@ -68,7 +72,7 @@ configuration in [staticwebapp.config.json](staticwebapp.config.json).
 
 ## Tech Stack
 
-Three.js · Vite · Vanilla JavaScript (ES modules) · TypeScript (type checking only) · Vitest
+Three.js · Vite · Vanilla JavaScript (ES modules) · TypeScript (`checkJs` type-checking, no compile step) · Vitest · ESLint
 
 ## License
 

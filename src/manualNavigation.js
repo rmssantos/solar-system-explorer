@@ -160,9 +160,6 @@ export class ManualNavigation {
         this.toggleBtn.onclick = () => this.toggle();
         document.body.appendChild(this.toggleBtn);
         
-        // Determine if touch device
-        const isMobile = this.isTouchDevice;
-        
         // HUD for manual mode
         this.hud = document.createElement('div');
         this.hud.className = 'manual-nav-hud hidden';
@@ -852,7 +849,7 @@ export class ManualNavigation {
 
         const restoredRoots = new Set();
         
-        for (const [name, mesh] of Object.entries(this.app.solarSystem.objects)) {
+        for (const mesh of Object.values(this.app.solarSystem.objects)) {
             if (!mesh?.scale) continue;
 
             const root = mesh.userData?.root || mesh;

@@ -1,61 +1,76 @@
 /**
  * Service Worker for Solar System Explorer PWA
- * Enables offline functionality
+ * Enables offline functionality.
+ *
+ * NOTE: CSS/JS are content-hashed into /assets/ by Vite, so they are runtime-
+ * cached on demand (network-first) rather than precached by path. Only the
+ * HTML shell is precached. Bump CACHE_VERSION when unhashed public/ assets
+ * (textures, mascot art) change, so returning clients pick them up.
  */
 
-const CACHE_NAME = 'solar-explorer-v3';
+const CACHE_VERSION = 'v4';
+const SHELL_CACHE = `solar-explorer-shell-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `solar-explorer-runtime-${CACHE_VERSION}`;
+// Cap on runtime cache entries: bounds growth from textures + old hashed
+// bundles accumulating across deploys (oldest entries are evicted first).
+const RUNTIME_MAX_ENTRIES = 80;
 
-// Only cache essential files that definitely exist
-const ASSETS_TO_CACHE = [
+const SHELL_ASSETS = [
     '/',
     '/index.html',
-    '/styles/style.css'
+    '/biblioteca.html'
 ];
 
-// Install event - cache assets
+// Install event - precache the HTML shell.
+// Each entry is added individually: one failure must not void the others
+// (cache.addAll is atomic and used to silently kill the whole precache).
 self.addEventListener('install', (event) => {
-    console.log('[SW] Installing Service Worker...');
-
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('[SW] Caching essential files...');
-                // Use addAll with only essential files, rest will be cached on demand
-                return cache.addAll(ASSETS_TO_CACHE);
-            })
-            .then(() => {
-                console.log('[SW] Essential files cached');
-                return self.skipWaiting();
-            })
-            .catch((error) => {
-                console.warn('[SW] Cache failed, continuing without cache:', error);
-                return self.skipWaiting();
-            })
+        caches.open(SHELL_CACHE)
+            .then((cache) => Promise.allSettled(
+                SHELL_ASSETS.map((url) => cache.add(url).catch((err) => {
+                    console.warn('[SW] Failed to precache', url, err);
+                }))
+            ))
+            .then(() => self.skipWaiting())
     );
 });
 
-// Activate event - clean old caches
+// Activate event - clean caches from older versions
 self.addEventListener('activate', (event) => {
-    console.log('[SW] Activating Service Worker...');
-
     event.waitUntil(
         caches.keys()
-            .then((cacheNames) => {
-                return Promise.all(
-                    cacheNames.map((cacheName) => {
-                        if (cacheName !== CACHE_NAME) {
-                            console.log('[SW] Deleting old cache:', cacheName);
-                            return caches.delete(cacheName);
-                        }
-                    })
-                );
-            })
-            .then(() => {
-                console.log('[SW] Service Worker activated');
-                return self.clients.claim();
-            })
+            .then((cacheNames) => Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (cacheName !== SHELL_CACHE && cacheName !== RUNTIME_CACHE) {
+                        console.log('[SW] Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            ))
+            .then(() => self.clients.claim())
     );
 });
+
+/** Evict oldest entries above the cap (Cache keys preserve insertion order). */
+async function trimRuntimeCache() {
+    try {
+        const cache = await caches.open(RUNTIME_CACHE);
+        const keys = await cache.keys();
+        if (keys.length <= RUNTIME_MAX_ENTRIES) return;
+        const excess = keys.length - RUNTIME_MAX_ENTRIES;
+        await Promise.all(keys.slice(0, excess).map((req) => cache.delete(req)));
+    } catch {
+        // Cache trim is best-effort
+    }
+}
+
+function putInRuntimeCache(request, response) {
+    caches.open(RUNTIME_CACHE)
+        .then((cache) => cache.put(request, response))
+        .then(() => trimRuntimeCache())
+        .catch(() => {});
+}
 
 // Fetch event - NETWORK-FIRST for HTML/JS, cache-first for assets
 self.addEventListener('fetch', (event) => {
@@ -78,17 +93,13 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             fetch(event.request)
                 .then((networkResponse) => {
-                    // Cache the fresh response
                     if (networkResponse && networkResponse.status === 200) {
-                        const responseToCache = networkResponse.clone();
-                        caches.open(CACHE_NAME)
-                            .then((cache) => cache.put(event.request, responseToCache))
-                            .catch(() => {});
+                        putInRuntimeCache(event.request, networkResponse.clone());
                     }
                     return networkResponse;
                 })
                 .catch(() => {
-                    // Offline: try cache, but only return the EXACT page requested
+                    // Offline: try caches, but only return the EXACT page requested
                     return caches.match(event.request)
                         .then((cachedResponse) => {
                             if (cachedResponse) return cachedResponse;
@@ -119,12 +130,7 @@ self.addEventListener('fetch', (event) => {
                         if (!networkResponse || networkResponse.status !== 200) {
                             return networkResponse;
                         }
-
-                        const responseToCache = networkResponse.clone();
-                        caches.open(CACHE_NAME)
-                            .then((cache) => cache.put(event.request, responseToCache))
-                            .catch(() => {});
-
+                        putInRuntimeCache(event.request, networkResponse.clone());
                         return networkResponse;
                     })
                     .catch(() => {
@@ -135,7 +141,7 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// Listen for messages from the app (validate source)
+// Listen for messages from the app
 self.addEventListener('message', (event) => {
     if (event.source && event.data === 'skipWaiting') {
         self.skipWaiting();

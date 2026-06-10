@@ -3,7 +3,6 @@
  * Reinforces learning with fun questions
  * Supports PT and EN languages
  */
-import { SOLAR_SYSTEM_DATA } from './data/objectsInfo.js';
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
 

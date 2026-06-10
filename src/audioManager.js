@@ -711,8 +711,7 @@ export class AudioManager {
         if (this.ctx.state === 'suspended') this.ctx.resume();
         
         this.currentPlanetAmbient = planetName;
-        const now = this.ctx.currentTime;
-        
+
         // Create ambient based on planet type
         switch (profile.type) {
             case 'solar':

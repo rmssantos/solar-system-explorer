@@ -142,12 +142,11 @@ export class XPSystem {
         const rank = this.getCurrentRank();
         const nextRank = this.getNextRank();
         const progress = this.getProgressPercent();
-        const lang = i18n.lang || 'pt';
 
         const nextLabel = i18n.t('next_level');
         const maxLabel = i18n.t('max_level');
 
-        let nextInfo = '';
+        let nextInfo;
         if (nextRank) {
             nextInfo = `
                 <div class="xp-next">
