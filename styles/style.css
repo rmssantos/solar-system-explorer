@@ -6536,3 +6536,30 @@ button:focus-visible, [role="button"]:focus-visible {
     color: var(--text-muted, #94a3b8);
     text-align: center;
 }
+
+/* ===== Shared overlay helper (src/overlay.js) ===== */
+/* Class-based backdrop (not inline cssText) so high-contrast mode applies. */
+.app-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 15000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.app-overlay.visible {
+    opacity: 1;
+}
+
+.app-overlay.fade-out {
+    opacity: 0;
+}
+
+body.high-contrast .app-overlay {
+    background: rgba(0, 0, 0, 0.95);
+}

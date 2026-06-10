@@ -35,9 +35,17 @@ An interactive 3D educational journey through the Solar System, built for kids.
 - `M` — toggle manual flight mode
 - `Space` — pause / resume orbits
 - `+` / `-` — speed up / slow down time
-- `W A S D` — fly spaceship (manual mode)
+- `Esc` — close open dialogs/panels
+
+### Manual flight mode (`M`)
+
+- `W A S D` — fly spaceship
+- `Space` / `Ctrl` — ascend / descend (Space does not pause while flying)
+- `R` / `F` — roll left / right
 - `Shift` — boost
-- `Esc` — recenter / close panels
+- `X` — brake
+- `I` — show info for the nearest planet
+- `Esc` — close info panel, then exit flight mode
 
 ## Development
 
