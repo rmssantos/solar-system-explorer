@@ -49,7 +49,6 @@ export class InfoPanelUI {
 
     buildSlides(data) {
         const slides = [];
-        const lang = i18n.lang || 'pt';
 
         // Slide 1: Basic Stats
         slides.push({
@@ -84,7 +83,7 @@ export class InfoPanelUI {
                         img.classList.add('loaded');
                     };
                     img.onerror = () => {
-                        photoContainer.innerHTML = `<p style="color: #888; text-align: center;">${lang === 'en' ? 'Photo not available' : 'Foto n\u00e3o dispon\u00edvel'}</p>`;
+                        photoContainer.innerHTML = `<p style="color: #888; text-align: center;">${i18n.t('photo_not_available')}</p>`;
                     };
 
                     photoContainer.appendChild(img);
@@ -127,9 +126,7 @@ export class InfoPanelUI {
                     // Add credit
                     const credit = document.createElement('p');
                     credit.className = 'photo-credit';
-                    credit.innerHTML = lang === 'en'
-                        ? '\uD83D\uDCF7 Image: NASA/ESA/Wikimedia Commons'
-                        : '\uD83D\uDCF7 Imagem: NASA/ESA/Wikimedia Commons';
+                    credit.textContent = i18n.t('photo_credit_label');
                     photoContainer.appendChild(credit);
 
                     container.appendChild(photoContainer);
@@ -588,7 +585,7 @@ export class InfoPanelUI {
         const lang = i18n.lang || 'pt';
         const galleryTitle = document.createElement('div');
         galleryTitle.className = 'moon-gallery-title';
-        galleryTitle.innerHTML = `\uD83D\uDCF8 ${lang === 'en' ? 'Real photos from the Moon!' : 'Fotos reais da Lua!'}`;
+        galleryTitle.textContent = `\uD83D\uDCF8 ${i18n.t('moon_gallery_title')}`;
         container.appendChild(galleryTitle);
 
         const gallery = document.createElement('div');
@@ -615,7 +612,7 @@ export class InfoPanelUI {
             <div class="photo-modal-content">
                 <img src="${photo.url}" alt="Apollo Mission Photo">
                 <p>${lang === 'en' ? photo.captionEN : photo.caption}</p>
-                <button class="modern-btn">${lang === 'en' ? 'Close' : 'Fechar'}</button>
+                <button class="modern-btn">${i18n.t('close')}</button>
             </div>
         `;
         modal.onclick = (e) => {

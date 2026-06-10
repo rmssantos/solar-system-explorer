@@ -137,8 +137,8 @@ export class CanvasMirror {
 
     _populate() {
         if (!this.list || !this.heading) return;
-        this.heading.textContent = i18n.t('mirror_heading') || (i18n.lang === 'en' ? 'Solar System (keyboard)' : 'Sistema Solar (teclado)');
-        this.container.setAttribute('aria-label', i18n.t('mirror_aria_label') || (i18n.lang === 'en' ? 'Solar System navigation' : 'Navegação do Sistema Solar'));
+        this.heading.textContent = i18n.t('mirror_heading');
+        this.container.setAttribute('aria-label', i18n.t('mirror_aria_label'));
         this.list.innerHTML = '';
         const visited = this.app.gameManager?.visited || new Set();
 
@@ -163,7 +163,7 @@ export class CanvasMirror {
         // Same path as a mouse click on the canvas.
         this.app.cameraControls.flyToObject(mesh, name);
         // Announce to assistive tech.
-        const verb = i18n.lang === 'en' ? 'Flying to' : 'A voar para';
+        const verb = i18n.t('mirror_flying_to');
         this.live.textContent = `${verb} ${label}`;
     }
 

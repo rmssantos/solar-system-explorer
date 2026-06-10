@@ -517,7 +517,7 @@ export class QuizSystem {
 
         // Award XP
         if (this.xpSystem) {
-            this.xpSystem.addXP(25, i18n.lang === 'en' ? 'Correct quiz' : 'Quiz correcto');
+            this.xpSystem.addXP(25, i18n.t('quiz_xp_reason'));
         }
     }
 

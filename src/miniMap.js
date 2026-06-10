@@ -528,7 +528,7 @@ export class MiniMap {
             ctx.textAlign = 'left';
             ctx.fillText('● ' + i18n.t('already_visited').replace('✅ ', ''), 10, h - 25);
             ctx.fillStyle = 'rgba(100, 100, 100, 0.6)';
-            ctx.fillText('○ ' + (i18n.lang === 'en' ? 'To discover' : 'Por descobrir'), 10, h - 10);
+            ctx.fillText('○ ' + i18n.t('to_discover'), 10, h - 10);
         }
 
         // Zoom indicator

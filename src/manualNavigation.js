@@ -193,10 +193,10 @@ export class ManualNavigation {
             <!-- Space compass -->
             <div class="nav-compass">
                 <div class="compass-ring">
-                    <div class="compass-indicator sun-indicator" title="${i18n.lang === 'en' ? 'Sun' : 'Sol'}">☀️</div>
+                    <div class="compass-indicator sun-indicator" title="${i18n.t('sun_label')}">☀️</div>
                 </div>
                 <div class="compass-center">●</div>
-                <div class="compass-label">${i18n.lang === 'en' ? 'SUN' : 'SOL'}</div>
+                <div class="compass-label">${i18n.t('sun_compass')}</div>
             </div>
 
             <!-- Distance to planets -->
@@ -615,11 +615,10 @@ export class ManualNavigation {
         toast.className = 'landscape-toast';
         toast.setAttribute('role', 'status');
         toast.setAttribute('aria-live', 'polite');
-        const en = i18n.lang === 'en';
         toast.innerHTML = `
             <span class="icon" aria-hidden="true">📱</span>
-            <strong>${en ? 'Rotate your device' : 'Roda o telemóvel'}</strong><br>
-            <span style="opacity:0.85;font-size:0.85rem;">${en ? 'Landscape works best for manual flight.' : 'Modo horizontal funciona melhor para pilotar.'}</span>
+            <strong>${i18n.t('rotate_device')}</strong><br>
+            <span style="opacity:0.85;font-size:0.85rem;">${i18n.t('landscape_hint')}</span>
         `;
         document.body.appendChild(toast);
         const remove = () => { toast.remove(); window.removeEventListener('resize', onResize); };
@@ -635,7 +634,7 @@ export class ManualNavigation {
         hint.innerHTML = `
             <div class="hint-content">
                 <span>🖱️</span>
-                <span>${i18n.lang === 'en' ? 'Click + drag to look around | WASD to move | I = Info' : 'Clica + arrasta para olhar | WASD para mover | I = Info'}</span>
+                <span>${i18n.t('mouse_hint')}</span>
             </div>
         `;
         hint.style.cssText = `
@@ -904,7 +903,7 @@ export class ManualNavigation {
         hint.innerHTML = `
             <div class="hint-content">
                 <span>🖱️</span>
-                <span>${i18n.lang === 'en' ? 'Hold RIGHT CLICK + move mouse to look around' : 'Segura BOTÃO DIREITO + move rato para olhar'}</span>
+                <span>${i18n.t('pointer_hint')}</span>
             </div>
         `;
         hint.style.cssText = `
@@ -1217,42 +1216,36 @@ export class ManualNavigation {
     }
     
     formatSpeed(kmPerSec) {
-        const lang = i18n.lang || 'pt';
         if (kmPerSec >= 299792) {
-            return lang === 'en' ? 'Speed of Light! ⚡' : 'Velocidade da Luz! ⚡';
+            return i18n.t('speed_light');
         } else if (kmPerSec >= 1000000) {
-            return lang === 'en' 
-                ? `${(kmPerSec / 1000000).toFixed(1)} million km/s`
-                : `${(kmPerSec / 1000000).toFixed(1)} milhões km/s`;
+            return i18n.t('speed_million').replace('{n}', (kmPerSec / 1000000).toFixed(1));
         } else if (kmPerSec >= 1000) {
-            return lang === 'en'
-                ? `${(kmPerSec / 1000).toFixed(0)}k km/s`
-                : `${(kmPerSec / 1000).toFixed(0)} mil km/s`;
+            return i18n.t('speed_thousand').replace('{n}', (kmPerSec / 1000).toFixed(0));
         }
         return `${kmPerSec.toLocaleString()} km/s`;
     }
-    
+
     getSpeedComparison(kmPerSec) {
-        const lang = i18n.lang || 'pt';
         // Fun comparisons for kids!
         if (kmPerSec >= 299792) {
-            return lang === 'en' ? '🌟 Nothing in the universe is faster!' : '🌟 Nada no universo é mais rápido!';
+            return i18n.t('comp_universe');
         } else if (kmPerSec >= 50000000) {
-            return lang === 'en' ? '🚀 Earth → Mars in 1 minute!' : '🚀 Terra → Marte em 1 minuto!';
+            return i18n.t('comp_earth_mars');
         } else if (kmPerSec >= 20000000) {
-            return lang === 'en' ? '🌍 Around the world in 0.002 seconds!' : '🌍 Volta ao mundo em 0.002 segundos!';
+            return i18n.t('comp_around_world');
         } else if (kmPerSec >= 5000000) {
-            return lang === 'en' ? '☀️ Sun → Earth in 30 seconds!' : '☀️ Sol → Terra em 30 segundos!';
+            return i18n.t('comp_sun_earth');
         } else if (kmPerSec >= 1000000) {
-            return lang === 'en' ? '🛸 100x faster than Voyager!' : '🛸 100x mais rápido que a Voyager!';
+            return i18n.t('comp_voyager');
         } else if (kmPerSec >= 500000) {
-            return lang === 'en' ? '⚡ 50x faster than lightning!' : '⚡ 50x mais rápido que um raio!';
+            return i18n.t('comp_lightning');
         } else if (kmPerSec >= 100000) {
-            return lang === 'en' ? '🏎️ 10,000x faster than an F1 car!' : '🏎️ 10.000x mais rápido que um Fórmula 1!';
+            return i18n.t('comp_f1');
         } else if (kmPerSec >= 50000) {
-            return lang === 'en' ? '✈️ 5,000x faster than a plane!' : '✈️ 5.000x mais rápido que um avião!';
+            return i18n.t('comp_plane');
         } else {
-            return lang === 'en' ? '🚗 Like a super fast space car!' : '🚗 Como um carro espacial super veloz!';
+            return i18n.t('comp_car');
         }
     }
     
@@ -1262,8 +1255,7 @@ export class ManualNavigation {
         // Calculate "real" speed based on warp level
         const speedPercent = this.currentSpeed / warp.speed;
         const realKmS = Math.round(warp.realKmS * speedPercent);
-        const lang = i18n.lang || 'pt';
-        
+
         if (this.speedDisplay) {
             this.speedDisplay.textContent = this.formatSpeed(realKmS);
             this.speedDisplay.style.color = warp.color;
@@ -1278,7 +1270,7 @@ export class ManualNavigation {
             if (this.currentSpeed > 0.1) {
                 this.speedComparison.textContent = this.getSpeedComparison(realKmS);
             } else {
-                this.speedComparison.textContent = lang === 'en' ? 'Press W to accelerate!' : 'Pressiona W para acelerar!';
+                this.speedComparison.textContent = i18n.t('press_w');
             }
         }
     }
@@ -1692,7 +1684,7 @@ export class ManualNavigation {
         // Update compass label based on language
         const compassLabel = this.hud.querySelector('.compass-label');
         if (compassLabel) {
-            compassLabel.textContent = i18n.lang === 'en' ? 'SUN' : 'SOL';
+            compassLabel.textContent = i18n.t('sun_compass');
         }
 
         // Update info label
@@ -1778,14 +1770,12 @@ export class ManualNavigation {
 
         if (this.targetedObject && !this.infoPanelVisible) {
             const planetName = this.targetedObject.name === 'sun'
-                ? (i18n.lang === 'en' ? 'Sun' : 'Sol')
+                ? i18n.t('sun_label')
                 : this.targetedObject.name;
 
             crosshair.classList.add('targeting');
             if (crosshairHint) {
-                crosshairHint.textContent = i18n.lang === 'en'
-                    ? `[I] ${planetName}`
-                    : `[I] ${planetName}`;
+                crosshairHint.textContent = `[I] ${planetName}`;
             }
         } else {
             crosshair.classList.remove('targeting');
