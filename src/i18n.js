@@ -170,6 +170,10 @@ export const TRANSLATIONS = {
         compare_day: "⏱️ Duração do Dia",
         compare_year: "📅 Duração do Ano",
         closer_note: "Mais perto = barra maior",
+        funfact_bigger: "{big} é {ratio}x maior que {small}!",
+        funfact_moons: "Juntos têm {count} luas!",
+        funfact_distance: "Estão a {dist} milhões de km de distância um do outro!",
+        funfact_fallback: "{a} e {b} são ambos fascinantes!",
 
         // XP System
         xp: "XP",
@@ -565,6 +569,10 @@ export const TRANSLATIONS = {
         compare_day: "⏱️ Day Length",
         compare_year: "📅 Year Length",
         closer_note: "Closer = larger bar",
+        funfact_bigger: "{big} is {ratio}x bigger than {small}!",
+        funfact_moons: "Together they have {count} moons!",
+        funfact_distance: "They are {dist} million km apart!",
+        funfact_fallback: "{a} and {b} are both fascinating!",
 
         // XP System
         xp: "XP",

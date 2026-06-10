@@ -38,6 +38,13 @@ export const BIBLIOTECA_DATA = {
             section_history: "📜 História",
             section_comparison: "🌍 Comparação",
             section_gallery: "📸 Galeria",
+            section_about: "📖 Sobre",
+            zoom_hint: "🔍 Clica para ampliar",
+            nasa_photo: "Foto real da NASA",
+            view_image: "Ver",
+            lightbox_close: "Fechar",
+            lightbox_prev: "Anterior",
+            lightbox_next: "Seguinte",
             stat_radius: "Raio",
             stat_distance: "Distância ao Sol",
             stat_day: "Duração do Dia",
@@ -411,6 +418,13 @@ Tem uma atmosfera super grossa de nuvens tóxicas que funcionam como um cobertor
             section_history: "📜 History",
             section_comparison: "🌍 Comparison",
             section_gallery: "📸 Gallery",
+            section_about: "📖 About",
+            zoom_hint: "🔍 Click to enlarge",
+            nasa_photo: "Real NASA photo",
+            view_image: "View",
+            lightbox_close: "Close",
+            lightbox_prev: "Previous",
+            lightbox_next: "Next",
             stat_radius: "Radius",
             stat_distance: "Distance to Sun",
             stat_day: "Day Length",
@@ -1020,5 +1034,37 @@ It has a super thick atmosphere of toxic clouds that works like a blanket, trapp
         }
     }
 };
+
+/**
+ * Shared stat-key -> ui-label-key map. Both encyclopedia renderers
+ * (biblioteca.js page and bibliotecaPanel.js in-app overlay) consume this —
+ * the two used to hand-duplicate it and had already drifted.
+ */
+export const STAT_LABEL_KEYS = {
+    raio: 'stat_radius',
+    distancia: 'stat_distance',
+    dia: 'stat_day',
+    ano: 'stat_year',
+    temperatura: 'stat_temp',
+    luas: 'stat_moons',
+    idade: 'stat_age',
+    type: 'stat_type',
+    composicao: 'stat_composition',
+    velocidade: 'stat_speed',
+    lancamento: 'stat_launch',
+    tamanho: 'stat_size'
+};
+
+/**
+ * Normalize a gallery entry (string URL or {url|src, caption, captionEN})
+ * into { src, caption }. Shared by both encyclopedia renderers.
+ */
+export function normalizeGalleryItem(item, fallbackCaption, lang) {
+    const src = typeof item === 'string' ? item : (item.url || item.src);
+    const caption = typeof item === 'string'
+        ? fallbackCaption
+        : (lang === 'en' ? (item.captionEN || item.caption) : item.caption);
+    return { src, caption };
+}
 
 export default BIBLIOTECA_DATA;

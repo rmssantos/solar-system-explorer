@@ -307,30 +307,36 @@ export class PlanetComparator {
     }
 
     getFunFact(p1, p2) {
+        // The payoff line of the whole feature — i18n'd like everything else
+        // (it used to be Portuguese-only, even in English mode).
         const facts = [];
-        
+
         if (p1.radiusKm && p2.radiusKm) {
             const bigger = p1.radiusKm > p2.radiusKm ? p1 : p2;
             const smaller = p1.radiusKm > p2.radiusKm ? p2 : p1;
             const ratio = Math.round(bigger.radiusKm / smaller.radiusKm);
             if (ratio > 1) {
-                facts.push(`${bigger.name} é ${ratio}x maior que ${smaller.name}!`);
+                facts.push(i18n.t('funfact_bigger')
+                    .replace('{big}', bigger.name)
+                    .replace('{ratio}', String(ratio))
+                    .replace('{small}', smaller.name));
             }
         }
 
-        if ((p1.knownMoonCount || 0) + (p2.knownMoonCount || 0) > 50) {
-            facts.push(`Juntos têm ${(p1.knownMoonCount || 0) + (p2.knownMoonCount || 0)} luas!`);
+        const totalMoons = (p1.knownMoonCount || 0) + (p2.knownMoonCount || 0);
+        if (totalMoons > 50) {
+            facts.push(i18n.t('funfact_moons').replace('{count}', String(totalMoons)));
         }
 
         if (p1.avgDistanceFromSun && p2.avgDistanceFromSun) {
             const diff = Math.abs(p1.avgDistanceFromSun - p2.avgDistanceFromSun);
             if (diff > 1000) {
-                facts.push(`Estão a ${diff.toLocaleString()} milhões de km de distância um do outro!`);
+                facts.push(i18n.t('funfact_distance').replace('{dist}', diff.toLocaleString()));
             }
         }
 
-        return facts.length > 0 ? facts[Math.floor(Math.random() * facts.length)] : 
-            `${p1.name} e ${p2.name} são ambos fascinantes!`;
+        return facts.length > 0 ? facts[Math.floor(Math.random() * facts.length)] :
+            i18n.t('funfact_fallback').replace('{a}', p1.name).replace('{b}', p2.name);
     }
 
     close() {

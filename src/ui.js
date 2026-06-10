@@ -255,13 +255,4 @@ export class UIManager {
         }
     }
 
-    // --- Mission check ---
-
-    checkMissionForPlanet(planetName) {
-        // Mission completion is now handled centrally via app:visit event in main.js
-        // This avoids duplicate XP awards. Just notify the mission system for tracking.
-        if (this.app.missionSystem) {
-            this.app.missionSystem.onPlanetInfoViewed(planetName);
-        }
-    }
 }

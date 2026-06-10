@@ -529,146 +529,21 @@ export class QuizSystem {
         this.saveProgress();
     }
 
-    showQuiz(planetName, onComplete) {
-        const quiz = this.getQuiz(planetName);
-        if (!quiz) {
-            onComplete(false);
-            return;
-        }
-
-        const lang = i18n.lang || 'pt';
-        const texts = {
-            pt: {
-                correct: 'Excelente! Resposta Certa!',
-                wrong: 'Quase! A resposta certa era diferente.',
-                continue: 'Continuar 🚀',
-                quizXp: 'Quiz correcto'
-            },
-            en: {
-                correct: 'Excellent! Correct Answer!',
-                wrong: 'Almost! The correct answer was different.',
-                continue: 'Continue 🚀',
-                quizXp: 'Correct quiz'
-            }
-        };
-        const t = texts[lang] || texts['pt'];
-
-        const overlay = document.createElement('div');
-        overlay.className = 'quiz-overlay';
-        
-        const shuffledOptions = this.shuffleWithCorrect(quiz.options, quiz.correct);
-        
-        overlay.innerHTML = `
-            <div class="quiz-container">
-                <div class="quiz-header">
-                    <span class="quiz-planet">${planetName}</span>
-                    <span class="quiz-badge">❓ QUIZ</span>
-                </div>
-                <div class="quiz-question">
-                    <p>${quiz.question}</p>
-                </div>
-                <div class="quiz-options">
-                    ${shuffledOptions.options.map((opt, i) => `
-                        <button class="quiz-option" data-index="${i}" data-correct="${i === shuffledOptions.correctIndex}">
-                            <span class="option-letter">${String.fromCharCode(65 + i)}</span>
-                            <span class="option-text">${opt}</span>
-                        </button>
-                    `).join('')}
-                </div>
-                <div class="quiz-result hidden">
-                    <div class="result-icon"></div>
-                    <p class="result-text"></p>
-                    <p class="result-explanation">${quiz.explanation}</p>
-                    <button class="quiz-continue">${t.continue}</button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(overlay);
-        
-        // Animate in
-        requestAnimationFrame(() => {
-            overlay.classList.add('visible');
-        });
-
-        // Handle option clicks
-        const options = /** @type {NodeListOf<HTMLButtonElement>} */ (overlay.querySelectorAll('.quiz-option'));
-        const resultDiv = overlay.querySelector('.quiz-result');
-        const optionsDiv = overlay.querySelector('.quiz-options');
-        
-        options.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const isCorrect = btn.dataset.correct === 'true';
-                
-                // Disable all options
-                options.forEach(o => o.disabled = true);
-                
-                // Show result
-                btn.classList.add(isCorrect ? 'correct' : 'wrong');
-                
-                // Show correct answer if wrong
-                if (!isCorrect) {
-                    options.forEach(o => {
-                        if (o.dataset.correct === 'true') {
-                            o.classList.add('correct');
-                        }
-                    });
-                }
-                
-                // Update result display
-                resultDiv.querySelector('.result-icon').textContent = isCorrect ? '🎉' : '😅';
-                resultDiv.querySelector('.result-text').textContent = isCorrect ? t.correct : t.wrong;
-                
-                // Play sound
-                if (this.audioManager) {
-                    if (isCorrect) {
-                        this.audioManager.playSuccess();
-                    } else {
-                        this.audioManager.playTone(200, 'sine', 0.3);
-                    }
-                }
-
-                // Trigger mascot reaction
-                window.dispatchEvent(new CustomEvent(isCorrect ? 'app:quiz-correct' : 'app:quiz-wrong'));
-
-                // Award XP for correct answer (if not replay)
-                if (isCorrect && !quiz.replay) {
-                    this.answeredQuizzes.add(quiz.id);
-                    this.saveProgress();
-                    
-                    if (this.xpSystem) {
-                        setTimeout(() => {
-                            this.xpSystem.addXP(25, t.quizXp);
-                        }, 500);
-                    }
-                }
-                
-                // Show result section
-                setTimeout(() => {
-                    optionsDiv.classList.add('hidden');
-                    resultDiv.classList.remove('hidden');
-                }, 800);
-            });
-        });
-
-        // Continue button
-        overlay.querySelector('.quiz-continue').addEventListener('click', () => {
-            overlay.classList.add('fade-out');
-            setTimeout(() => {
-                overlay.remove();
-                onComplete(true);
-            }, 400);
-        });
-    }
-
+    /**
+     * Unbiased Fisher-Yates shuffle that tracks the correct answer by
+     * POSITION. (The previous sort(() => Math.random() - 0.5) is biased, and
+     * indexOf on option text would mark the wrong answer as correct if two
+     * options ever had identical text.)
+     */
     shuffleWithCorrect(options, correctIndex) {
-        const correct = options[correctIndex];
-        const shuffled = [...options].sort(() => Math.random() - 0.5);
-        const newCorrectIndex = shuffled.indexOf(correct);
-        
+        const indices = options.map((_, i) => i);
+        for (let i = indices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
         return {
-            options: shuffled,
-            correctIndex: newCorrectIndex
+            options: indices.map(i => options[i]),
+            correctIndex: indices.indexOf(correctIndex)
         };
     }
 }
