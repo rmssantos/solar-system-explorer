@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * Schema-shape tests for the post-rename objectsInfo / objectsInfoEN data.
  *

@@ -158,7 +158,7 @@ export class UIManager {
         document.addEventListener('mousedown', (e) => {
             if (!this.infoPanel.classList.contains('hidden')) {
                 // Only close if clicking on the canvas background
-                if (e.target.tagName === 'CANVAS') {
+                if (/** @type {HTMLElement} */ (e.target).tagName === 'CANVAS') {
                     this.closeInfoPanel();
                 }
             }

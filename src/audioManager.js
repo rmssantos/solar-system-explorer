@@ -328,7 +328,7 @@ export class AudioManager {
     _initContext() {
         if (this._ctxReady) return;
         try {
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.ctx = new (window.AudioContext || window['webkitAudioContext'])();
             this.masterGain = this.ctx.createGain();
             this.masterGain.connect(this.ctx.destination);
             this.musicGain = this.ctx.createGain();

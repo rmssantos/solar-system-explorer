@@ -165,7 +165,7 @@ export class Tutorial {
         this.card.querySelector('.tutorial-next-btn').addEventListener('click', () => this.showStep(index + 1));
 
         // Focus the next button for keyboard users
-        const nextBtn = this.card.querySelector('.tutorial-next-btn');
+        const nextBtn = /** @type {HTMLButtonElement|null} */ (this.card.querySelector('.tutorial-next-btn'));
         if (nextBtn) nextBtn.focus();
 
         // Position spotlight and hand
@@ -247,10 +247,10 @@ export class Tutorial {
         if (dist < 80) { this.connectorSvg.style.display = 'none'; return; }
 
         this.connectorSvg.style.display = '';
-        this.connectorLine.setAttribute('x1', cx);
-        this.connectorLine.setAttribute('y1', cy);
-        this.connectorLine.setAttribute('x2', tx);
-        this.connectorLine.setAttribute('y2', ty);
+        this.connectorLine.setAttribute('x1', String(cx));
+        this.connectorLine.setAttribute('y1', String(cy));
+        this.connectorLine.setAttribute('x2', String(tx));
+        this.connectorLine.setAttribute('y2', String(ty));
     }
 
     _hideConnector() {

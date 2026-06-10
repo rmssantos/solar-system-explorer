@@ -225,7 +225,7 @@ export class CollectiblesSystem {
         this.modal.innerHTML = `
             <div class="collectibles-content">
                 <div class="collectibles-header">
-                    <h2>🎁 ${i18n.t('collection', 'A Minha Coleção')}</h2>
+                    <h2>🎁 ${i18n.t('collection')}</h2>
                     <button class="collectibles-close">&times;</button>
                 </div>
                 <div class="collectibles-grid" id="collectibles-grid"></div>
@@ -273,9 +273,9 @@ export class CollectiblesSystem {
         const total = locations.length;
         const percent = Math.round((this.collected.length / total) * 100);
         progress.innerHTML = `
-            ${i18n.t('collected', 'Encontrados')}: ${this.collected.length}/${total} (${percent}%)
+            ${i18n.t('collected')}: ${this.collected.length}/${total} (${percent}%)
             <br>
-            <span style="color: #ffd700">+${this.getTotalXP()} XP ${i18n.t('earned', 'ganhos')}</span>
+            <span style="color: #ffd700">+${this.getTotalXP()} XP ${i18n.t('earned')}</span>
         `;
         
         this.modal.classList.add('active');

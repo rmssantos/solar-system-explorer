@@ -85,7 +85,7 @@ export class PassportUI {
             chevron.className = this.passportExpanded ? 'chevron-icon left' : 'chevron-icon right';
         }
 
-        const toggleBtn = panel?.querySelector('.passport-toggle');
+        const toggleBtn = /** @type {HTMLElement|null} */ (panel?.querySelector('.passport-toggle'));
         if (toggleBtn) {
             toggleBtn.title = this.passportExpanded ?
                 i18n.t('minimize') :
@@ -98,13 +98,13 @@ export class PassportUI {
         if (!panel) return;
 
         // Update title
-        const title = panel.querySelector('.passport-title');
+        const title = /** @type {HTMLElement|null} */ (panel.querySelector('.passport-title'));
         if (title) {
             title.innerText = i18n.t('passport_title');
         }
 
         // Update toggle button tooltip
-        const toggleBtn = panel.querySelector('.passport-toggle');
+        const toggleBtn = /** @type {HTMLElement|null} */ (panel.querySelector('.passport-toggle'));
         if (toggleBtn) {
             toggleBtn.title = this.passportExpanded ?
                 i18n.t('minimize') :

@@ -279,10 +279,10 @@ export class ManualNavigation {
         `;
         document.body.appendChild(this.hud);
         
-        this.warpNameDisplay = this.hud.querySelector('.warp-name');
-        this.warpNumberDisplay = this.hud.querySelector('.warp-number');
-        this.warpFill = this.hud.querySelector('.warp-fill');
-        this.speedDisplay = this.hud.querySelector('.speed-value');
+        this.warpNameDisplay = /** @type {HTMLElement} */ (this.hud.querySelector('.warp-name'));
+        this.warpNumberDisplay = /** @type {HTMLElement} */ (this.hud.querySelector('.warp-number'));
+        this.warpFill = /** @type {HTMLElement} */ (this.hud.querySelector('.warp-fill'));
+        this.speedDisplay = /** @type {HTMLElement} */ (this.hud.querySelector('.speed-value'));
         this.speedComparison = this.hud.querySelector('.speed-comparison');
         this.touchWarpLevel = this.hud.querySelector('.touch-warp-level');
     }
@@ -361,14 +361,14 @@ export class ManualNavigation {
             this._lookTouchId = null;
 
             // Warp buttons
-            const warpBtns = document.querySelectorAll('.touch-warp-btn');
+            const warpBtns = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.touch-warp-btn'));
             warpBtns.forEach(btn => {
                 btn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     const dir = btn.dataset.warp;
                     if (dir === 'up') this.setWarpLevel(this.warpLevel + 1);
                     else if (dir === 'down') this.setWarpLevel(this.warpLevel - 1);
-                    if (this.touchWarpLevel) this.touchWarpLevel.textContent = this.warpLevel;
+                    if (this.touchWarpLevel) this.touchWarpLevel.textContent = String(this.warpLevel);
                 }, { passive: false });
             });
             
@@ -445,7 +445,7 @@ export class ManualNavigation {
         joystick.classList.add('active');
         this.touchJoystickActive = true;
         this.joystickOrigin = { x, y };
-        if (!this._joystickStick) this._joystickStick = joystick.querySelector('.joystick-stick');
+        if (!this._joystickStick) this._joystickStick = /** @type {HTMLElement} */ (joystick.querySelector('.joystick-stick'));
         if (this._joystickStick) this._joystickStick.style.transform = 'translate(0, 0)';
         this.moveForward = true; // initial nudge forward — mirrors prior behavior
     }
@@ -573,7 +573,7 @@ export class ManualNavigation {
         
         // Update touch warp display
         if (this.touchWarpLevel) {
-            this.touchWarpLevel.textContent = this.warpLevel;
+            this.touchWarpLevel.textContent = String(this.warpLevel);
         }
         
         // Scale UP the entire solar system to make planets feel huge!
@@ -873,7 +873,7 @@ export class ManualNavigation {
             this.warpNameDisplay.style.color = warp.color;
         }
         if (this.warpNumberDisplay) {
-            this.warpNumberDisplay.textContent = this.warpLevel;
+            this.warpNumberDisplay.textContent = String(this.warpLevel);
             this.warpNumberDisplay.style.background = `linear-gradient(135deg, ${warp.color}, ${warp.color}88)`;
         }
     }
@@ -1314,7 +1314,7 @@ export class ManualNavigation {
     updateCompass() {
         // Cache DOM reference
         if (!this._sunIndicator) {
-            this._sunIndicator = this.hud?.querySelector('.sun-indicator');
+            this._sunIndicator = /** @type {HTMLElement} */ (this.hud?.querySelector('.sun-indicator'));
         }
         if (!this._sunIndicator) return;
         const sunIndicator = this._sunIndicator;
@@ -1444,7 +1444,7 @@ export class ManualNavigation {
     updateSpeedometer() {
         // Cache DOM references
         if (!this._speedoFill) {
-            this._speedoFill = this.hud?.querySelector('.speedometer-fill');
+            this._speedoFill = /** @type {SVGPathElement} */ (this.hud?.querySelector('.speedometer-fill'));
             this._speedoNeedle = this.hud?.querySelector('.speedometer-needle');
         }
         const fill = this._speedoFill;
@@ -1457,7 +1457,7 @@ export class ManualNavigation {
 
         // Arc length is 126 units (half circle)
         const offset = 126 - (speedPercent * 126);
-        fill.style.strokeDashoffset = offset;
+        fill.style.strokeDashoffset = String(offset);
         fill.style.stroke = warp.color;
 
         // Move needle
@@ -1466,8 +1466,8 @@ export class ManualNavigation {
             const radian = (angle * Math.PI) / 180;
             const cx = 50 + Math.cos(radian) * 35;
             const cy = 50 + Math.sin(radian) * 35;
-            needle.setAttribute('cx', cx);
-            needle.setAttribute('cy', cy);
+            needle.setAttribute('cx', String(cx));
+            needle.setAttribute('cy', String(cy));
         }
     }
 
@@ -1544,7 +1544,7 @@ export class ManualNavigation {
             panel.querySelector('.autopilot-target').textContent = planetName;
 
             // Add cancel handler
-            const cancelBtn = panel.querySelector('.autopilot-cancel');
+            const cancelBtn = /** @type {HTMLElement} */ (panel.querySelector('.autopilot-cancel'));
             cancelBtn.onclick = () => this.disableAutoPilot();
         }
 
@@ -1626,7 +1626,7 @@ export class ManualNavigation {
         this.updateWarpDisplay();
         // Also update mobile touch warp display during autopilot
         if (this.touchWarpLevel) {
-            this.touchWarpLevel.textContent = this.warpLevel;
+            this.touchWarpLevel.textContent = String(this.warpLevel);
         }
 
         // Move towards target
@@ -1895,7 +1895,7 @@ export class ManualNavigation {
         const nameEl = panel.querySelector('.planet-info-name');
         const typeEl = panel.querySelector('.planet-info-type');
         const statsEl = panel.querySelector('.planet-info-stats');
-        const curiosityEl = panel.querySelector('.planet-info-curiosity');
+        const curiosityEl = /** @type {HTMLElement} */ (panel.querySelector('.planet-info-curiosity'));
 
         if (nameEl) nameEl.textContent = planetData.name || planetName;
         if (typeEl) typeEl.textContent = planetData.type || '';
@@ -1926,7 +1926,7 @@ export class ManualNavigation {
         }
 
         panel.classList.remove('hidden');
-        const closeBtn = panel.querySelector('.planet-info-close');
+        const closeBtn = /** @type {HTMLElement} */ (panel.querySelector('.planet-info-close'));
         if (closeBtn) closeBtn.onclick = () => this.hidePlanetInfo();
         this.app.audioManager?.playSelect();
     }

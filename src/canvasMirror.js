@@ -20,7 +20,8 @@ export class CanvasMirror {
         this._mount();
         this._populate();
 
-        this._unsubLang = i18n.onLangChange(() => this._populate());
+        this._unsubLang = () => this._populate();
+        i18n.onLangChange(this._unsubLang);
     }
 
     _mount() {

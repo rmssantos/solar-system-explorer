@@ -7,6 +7,7 @@ import { SOLAR_SYSTEM_DATA } from './data/objectsInfo.js';
 import { i18n } from './i18n.js';
 
 export class MiniMap {
+    /** @param {import('./main.js').App} app */
     constructor(app) {
         this.app = app;
         this.canvas = null;
@@ -53,8 +54,8 @@ export class MiniMap {
 
     updateTranslations() {
         const title = document.querySelector('.minimap-title');
-        const minBtn = document.querySelector('.minimap-minimize');
-        const toggleBtn = document.querySelector('.minimap-toggle');
+        const minBtn = /** @type {HTMLElement} */ (document.querySelector('.minimap-minimize'));
+        const toggleBtn = /** @type {HTMLElement} */ (document.querySelector('.minimap-toggle'));
         if (title) title.textContent = `🗺️ ${i18n.t('map')}`;
         if (minBtn) minBtn.title = this.isMinimized ? i18n.t('restore') : i18n.t('minimize');
         if (toggleBtn) toggleBtn.title = this.isExpanded ? i18n.t('reduce') : i18n.t('expand');
@@ -91,12 +92,12 @@ export class MiniMap {
         this.container = container;
         
         // Event listeners
-        header.querySelector('.minimap-toggle').onclick = (e) => {
+        /** @type {HTMLElement} */ (header.querySelector('.minimap-toggle')).onclick = (e) => {
             e.stopPropagation();
             this.toggleExpand();
         };
         
-        header.querySelector('.minimap-minimize').onclick = (e) => {
+        /** @type {HTMLElement} */ (header.querySelector('.minimap-minimize')).onclick = (e) => {
             e.stopPropagation();
             this.toggleMinimize();
         };
@@ -138,7 +139,7 @@ export class MiniMap {
         this.isMinimized = !this.isMinimized;
         this.container.classList.toggle('minimized', this.isMinimized);
         
-        const minBtn = this.container.querySelector('.minimap-minimize');
+        const minBtn = /** @type {HTMLElement} */ (this.container.querySelector('.minimap-minimize'));
         if (minBtn) {
             minBtn.textContent = this.isMinimized ? '+' : '−';
             minBtn.title = this.isMinimized ? i18n.t('restore') : i18n.t('minimize');
@@ -148,7 +149,7 @@ export class MiniMap {
     toggleExpand() {
         this.isExpanded = !this.isExpanded;
         
-        const toggleBtn = this.container.querySelector('.minimap-toggle');
+        const toggleBtn = /** @type {HTMLElement} */ (this.container.querySelector('.minimap-toggle'));
         
         if (this.isExpanded) {
             this.canvas.width = 300;
@@ -297,7 +298,7 @@ export class MiniMap {
 
     showClickFeedback(planetName) {
         // Brief visual feedback
-        const header = this.container.querySelector('.minimap-title');
+        const header = /** @type {HTMLElement} */ (this.container.querySelector('.minimap-title'));
         if (header) {
             const originalText = header.textContent;
             header.textContent = `🚀 → ${planetName}`;

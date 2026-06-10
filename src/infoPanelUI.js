@@ -311,7 +311,7 @@ export class InfoPanelUI {
 
                 // Disable all buttons
                 const allBtns = optionsDiv.querySelectorAll('.quiz-slide-option');
-                allBtns.forEach(b => { b.disabled = true; });
+                allBtns.forEach(b => { /** @type {HTMLButtonElement} */ (b).disabled = true; });
 
                 if (isCorrect) {
                     btn.classList.add('quiz-option-correct');
@@ -619,7 +619,7 @@ export class InfoPanelUI {
             </div>
         `;
         modal.onclick = (e) => {
-            if (e.target === modal || e.target.tagName === 'BUTTON') {
+            if (e.target === modal || /** @type {HTMLElement} */ (e.target).tagName === 'BUTTON') {
                 modal.remove();
             }
         };

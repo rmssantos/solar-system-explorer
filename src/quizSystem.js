@@ -470,7 +470,7 @@ export class QuizSystem {
     /**
      * Returns quiz data for the info panel slide without creating any DOM.
      * @param {string} planetName - Internal planet key
-     * @returns {{ question: string, options: string[], correctIndex: number, id: string, replay: boolean, answered: boolean } | null}
+     * @returns {{ question: string, options: string[], correctIndex: number, explanation: string, id: string, replay: boolean, answered: boolean } | null}
      */
     getQuizForSlide(planetName) {
         const quizzes = this.getQuizzesForLang()[planetName];
@@ -592,7 +592,7 @@ export class QuizSystem {
         });
 
         // Handle option clicks
-        const options = overlay.querySelectorAll('.quiz-option');
+        const options = /** @type {NodeListOf<HTMLButtonElement>} */ (overlay.querySelectorAll('.quiz-option'));
         const resultDiv = overlay.querySelector('.quiz-result');
         const optionsDiv = overlay.querySelector('.quiz-options');
         

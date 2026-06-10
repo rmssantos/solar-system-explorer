@@ -146,8 +146,8 @@ export class PlanetComparator {
             if (e.target === overlay) this.close();
         });
 
-        const select1 = document.getElementById('planet-select-1');
-        const select2 = document.getElementById('planet-select-2');
+        const select1 = /** @type {HTMLSelectElement} */ (document.getElementById('planet-select-1'));
+        const select2 = /** @type {HTMLSelectElement} */ (document.getElementById('planet-select-2'));
 
         select1.addEventListener('change', () => {
             this.planet1Key = select1.value;

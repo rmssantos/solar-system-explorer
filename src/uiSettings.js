@@ -22,7 +22,7 @@ export class UISettings {
         this.applyAllStates();
         
         // Listen for manual navigation mode changes
-        window.addEventListener('manualNavModeChanged', (e) => {
+        window.addEventListener('manualNavModeChanged', /** @param {CustomEvent} e */ (e) => {
             this.onManualNavModeChanged(e.detail.active);
         });
 
@@ -116,12 +116,13 @@ export class UISettings {
         `;
         
         // Event listeners
-        this.panel.querySelector('.ui-settings-close').onclick = () => this.togglePanel();
-        
+        /** @type {HTMLButtonElement} */ (this.panel.querySelector('.ui-settings-close')).onclick = () => this.togglePanel();
+
         this.panel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
             cb.addEventListener('change', (e) => {
-                const panel = e.target.dataset.panel;
-                this.panelStates[panel] = e.target.checked;
+                const target = /** @type {HTMLInputElement} */ (e.target);
+                const panel = target.dataset.panel;
+                this.panelStates[panel] = target.checked;
                 this.applyPanelState(panel);
                 this.saveStates();
             });
