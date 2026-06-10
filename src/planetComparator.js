@@ -146,6 +146,13 @@ export class PlanetComparator {
             if (e.target === overlay) this.close();
         });
 
+        // Escape closes (README documents Esc as "close open dialogs").
+        // Listener removes itself with the overlay's lifetime.
+        this._onKeydown = (e) => {
+            if (e.key === 'Escape') this.close();
+        };
+        document.addEventListener('keydown', this._onKeydown);
+
         const select1 = /** @type {HTMLSelectElement} */ (document.getElementById('planet-select-1'));
         const select2 = /** @type {HTMLSelectElement} */ (document.getElementById('planet-select-2'));
 
@@ -340,6 +347,10 @@ export class PlanetComparator {
     }
 
     close() {
+        if (this._onKeydown) {
+            document.removeEventListener('keydown', this._onKeydown);
+            this._onKeydown = null;
+        }
         const overlay = document.getElementById('comparator-overlay');
         if (overlay) {
             overlay.classList.remove('visible');

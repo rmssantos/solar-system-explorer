@@ -369,7 +369,12 @@ function openModal(objectId) {
     modal.setAttribute('aria-modal', 'true');
     _modalOpener = document.activeElement;
     const closeBtn = document.getElementById('modal-close-btn');
-    if (closeBtn) closeBtn.focus();
+    if (closeBtn) {
+        // Deferred: the modal is mid visibility-transition this frame and
+        // focusing an element whose computed visibility is still hidden
+        // silently fails (focus would stay on the card grid behind).
+        setTimeout(() => closeBtn.focus(), 60);
+    }
 }
 
 // Element focused before the modal opened (restored on close)
