@@ -66,7 +66,7 @@ export class BibliotecaPanel {
         searchInput.className = 'biblioteca-search';
         searchInput.placeholder = i18n.t('biblioteca_search');
         searchInput.addEventListener('input', (e) => {
-            this.searchQuery = e.target.value.toLowerCase();
+            this.searchQuery = /** @type {HTMLInputElement} */ (e.target).value.toLowerCase();
             this.renderBody();
         });
         controls.appendChild(searchInput);

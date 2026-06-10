@@ -11,8 +11,14 @@
  */
 import { i18n } from './i18n.js';
 
+/**
+ * Not in the TS DOM lib (Chromium-only event).
+ * @typedef {Event & { prompt: () => Promise<void>, userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> }} BeforeInstallPromptEvent
+ */
+
 export class PWAUI {
     constructor() {
+        /** @type {BeforeInstallPromptEvent | null} */
         this._installPromptEvent = null;
         this._installBtn = null;
         this._updateBanner = null;
@@ -113,12 +119,12 @@ export class PWAUI {
         // Don't show if already running as installed PWA.
         const isStandalone =
             window.matchMedia?.('(display-mode: standalone)').matches ||
-            window.navigator.standalone === true;
+            window.navigator['standalone'] === true;
         if (isStandalone) return;
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            this._installPromptEvent = e;
+            this._installPromptEvent = /** @type {BeforeInstallPromptEvent} */ (e);
             this._showInstallButton();
         });
 

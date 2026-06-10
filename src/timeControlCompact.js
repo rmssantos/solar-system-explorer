@@ -65,8 +65,8 @@ export class TimeControlCompact {
             const btn = document.createElement('button');
             btn.className = 'time-btn';
             btn.innerHTML = preset.icon;
-            btn.dataset.value = preset.value;
-            btn.dataset.index = index;
+            btn.dataset.value = String(preset.value);
+            btn.dataset.index = String(index);
             
             if (preset.value === 1) btn.classList.add('active');
             
@@ -150,7 +150,7 @@ export class TimeControlCompact {
     updateTranslatedElements() {
         // Update all elements with data-i18n attribute
         document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.dataset.i18n;
+            const key = /** @type {HTMLElement} */ (el).dataset.i18n;
             const translated = i18n.t(key);
             if (translated !== key) {
                 el.textContent = translated;
@@ -163,7 +163,8 @@ export class TimeControlCompact {
     
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            const target = /** @type {HTMLElement} */ (e.target);
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
             
             switch(e.key.toLowerCase()) {
                 case ' ':
@@ -203,7 +204,7 @@ export class TimeControlCompact {
         // Update active button
         const buttons = this.container.querySelectorAll('.time-btn');
         buttons.forEach(btn => {
-            btn.classList.toggle('active', parseFloat(btn.dataset.value) === this.timeScale);
+            btn.classList.toggle('active', parseFloat(/** @type {HTMLElement} */ (btn).dataset.value) === this.timeScale);
         });
         
         // Dispatch event

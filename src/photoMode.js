@@ -115,7 +115,7 @@ export class PhotoMode {
             min-width: 16px;
             text-align: center;
         `;
-        this.counterBadge.innerText = this.photoCount;
+        this.counterBadge.innerText = String(this.photoCount);
         if (this.photoCount === 0) this.counterBadge.style.display = 'none';
         galleryBtn.appendChild(this.counterBadge);
 
@@ -170,7 +170,7 @@ export class PhotoMode {
 
         this.gallery.push(photo);
         this.photoCount = this.gallery.length;
-        this.counterBadge.innerText = this.photoCount;
+        this.counterBadge.innerText = String(this.photoCount);
         this.counterBadge.style.display = 'block';
         
         this.saveGallery();
@@ -191,7 +191,7 @@ export class PhotoMode {
      * Apply a themed frame to a photo using Canvas.
      * @param {string} imageDataUrl - The original photo data URL
      * @param {object} photo - Photo metadata (location, timestamp, captain)
-     * @returns {string} New data URL with frame applied
+     * @returns {Promise<string>} New data URL with frame applied
      */
     applyFrame(imageDataUrl, photo) {
         return new Promise((resolve) => {
@@ -280,7 +280,7 @@ export class PhotoMode {
         if (locSpan) locSpan.textContent = `\uD83D\uDCCD ${photo.location}`;
 
         // Frame button handler
-        const frameBtn = toast.querySelector('.photo-frame-btn');
+        const frameBtn = /** @type {HTMLButtonElement} */ (toast.querySelector('.photo-frame-btn'));
         if (frameBtn) {
             frameBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -361,7 +361,7 @@ export class PhotoMode {
         });
 
         // Event listeners
-        overlay.querySelector('.gallery-close').onclick = () => {
+        /** @type {HTMLElement} */ (overlay.querySelector('.gallery-close')).onclick = () => {
             overlay.classList.add('closing');
             setTimeout(() => overlay.remove(), 300);
         };
@@ -374,7 +374,7 @@ export class PhotoMode {
         };
 
         // Download buttons
-        overlay.querySelectorAll('.gallery-download').forEach(btn => {
+        overlay.querySelectorAll('.gallery-download').forEach((/** @type {HTMLButtonElement} */ btn) => {
             btn.onclick = (e) => {
                 e.stopPropagation();
                 const index = parseInt(btn.dataset.index);
@@ -383,7 +383,7 @@ export class PhotoMode {
         });
 
         // Delete buttons
-        overlay.querySelectorAll('.gallery-delete').forEach(btn => {
+        overlay.querySelectorAll('.gallery-delete').forEach((/** @type {HTMLButtonElement} */ btn) => {
             btn.onclick = (e) => {
                 e.stopPropagation();
                 const index = parseInt(btn.dataset.index);
@@ -392,7 +392,7 @@ export class PhotoMode {
         });
 
         // Click to expand
-        overlay.querySelectorAll('.gallery-item img').forEach(img => {
+        overlay.querySelectorAll('.gallery-item img').forEach((/** @type {HTMLImageElement} */ img) => {
             img.onclick = (e) => {
                 e.stopPropagation();
                 this.showFullPhoto(img.src);
@@ -415,7 +415,7 @@ export class PhotoMode {
     deletePhoto(index, overlay) {
         this.gallery.splice(index, 1);
         this.photoCount = this.gallery.length;
-        this.counterBadge.innerText = this.photoCount;
+        this.counterBadge.innerText = String(this.photoCount);
         if (this.photoCount === 0) this.counterBadge.style.display = 'none';
         
         this.saveGallery();

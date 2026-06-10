@@ -24,7 +24,7 @@ export class MissionIndicator {
         this._createDOM();
 
         // Listen for manual nav changes
-        window.addEventListener('manualNavModeChanged', (e) => {
+        window.addEventListener('manualNavModeChanged', /** @param {CustomEvent} e */ (e) => {
             this._manualNav = !!e.detail?.active;
         });
     }

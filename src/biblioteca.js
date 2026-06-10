@@ -19,10 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Use addEventListener instead of inline onclick (CSP-safe)
     document.querySelectorAll('.lang-btn[data-lang]').forEach(btn => {
-        btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+        btn.addEventListener('click', () => setLanguage(/** @type {HTMLElement} */ (btn).dataset.lang));
     });
     document.querySelectorAll('.cat-tab[data-category]').forEach(btn => {
-        btn.addEventListener('click', () => showCategory(btn.dataset.category));
+        btn.addEventListener('click', () => showCategory(/** @type {HTMLElement} */ (btn).dataset.category));
     });
     const searchInput = document.getElementById('searchInput');
     if (searchInput) searchInput.addEventListener('input', filterContent);
@@ -105,7 +105,7 @@ function setLanguage(lang) {
 
     // Atualizar botões - use data-lang attribute
     document.querySelectorAll('.lang-btn[data-lang]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === lang);
+        btn.classList.toggle('active', /** @type {HTMLElement} */ (btn).dataset.lang === lang);
     });
 
     // Atualizar UI
@@ -129,7 +129,7 @@ function updateUIStrings() {
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
         if (ui[key]) {
-            el.placeholder = ui[key];
+            /** @type {HTMLInputElement} */ (el).placeholder = ui[key];
         }
     });
 }
@@ -140,7 +140,7 @@ function showCategory(category) {
 
     // Atualizar tabs - use data-category attribute
     document.querySelectorAll('.cat-tab[data-category]').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.category === category);
+        tab.classList.toggle('active', /** @type {HTMLElement} */ (tab).dataset.category === category);
     });
 
     // Filtrar cards
@@ -154,7 +154,7 @@ function filterContent() {
 
 // Aplicar filtros aos cards
 function filterCards() {
-    const searchInput = document.getElementById('searchInput');
+    const searchInput = /** @type {HTMLInputElement} */ (document.getElementById('searchInput'));
     const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
     const objects = BIBLIOTECA_DATA[currentLang].objects;
 
@@ -372,7 +372,7 @@ document.addEventListener('keydown', (e) => {
 
 // Fechar modal clicando fora
 document.getElementById('detailModal')?.addEventListener('click', (e) => {
-    if (e.target.classList.contains('modal')) closeModal();
+    if (/** @type {Element} */ (e.target).classList.contains('modal')) closeModal();
 });
 
 // Ícones para estatísticas
@@ -440,7 +440,7 @@ function createLightbox() {
 
     // Event delegation for lightbox actions
     lightboxElement.addEventListener('click', (e) => {
-        const actionEl = e.target.closest('[data-action]');
+        const actionEl = /** @type {HTMLElement} */ (/** @type {Element} */ (e.target).closest('[data-action]'));
         if (!actionEl) return;
 
         const action = actionEl.dataset.action;

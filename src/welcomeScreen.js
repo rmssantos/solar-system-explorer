@@ -144,13 +144,13 @@ export class WelcomeScreen {
     }
 
     initListeners() {
-        const nameInput = this.overlay.querySelector('#captain-name');
-        const startBtn = this.overlay.querySelector('#start-adventure');
+        const nameInput = /** @type {HTMLInputElement} */ (this.overlay.querySelector('#captain-name'));
+        const startBtn = /** @type {HTMLButtonElement} */ (this.overlay.querySelector('#start-adventure'));
         const colorBtns = this.overlay.querySelectorAll('.color-btn');
         const langBtns = this.overlay.querySelectorAll('.lang-mini-btn');
 
         // Language selection
-        langBtns.forEach(btn => {
+        langBtns.forEach((/** @type {HTMLElement} */ btn) => {
             btn.addEventListener('click', () => {
                 const lang = btn.dataset.lang;
                 i18n.setLang(lang);
@@ -161,11 +161,11 @@ export class WelcomeScreen {
                 this.overlay.remove();
                 this.createOverlay(wasOverIntro);
                 // Restore values
-                this.overlay.querySelector('#captain-name').value = currentName;
+                /** @type {HTMLInputElement} */ (this.overlay.querySelector('#captain-name')).value = currentName;
                 this.playerName = currentName;
-                this.overlay.querySelector('#start-adventure').disabled = currentName.length < 2;
+                /** @type {HTMLButtonElement} */ (this.overlay.querySelector('#start-adventure')).disabled = currentName.length < 2;
                 // Restore color
-                this.overlay.querySelectorAll('.color-btn').forEach(b => {
+                this.overlay.querySelectorAll('.color-btn').forEach((/** @type {HTMLElement} */ b) => {
                     b.classList.toggle('selected', b.dataset.color === currentColor);
                 });
             });
@@ -173,12 +173,12 @@ export class WelcomeScreen {
 
         // Name input
         nameInput.addEventListener('input', (e) => {
-            this.playerName = e.target.value.trim();
+            this.playerName = /** @type {HTMLInputElement} */ (e.target).value.trim();
             startBtn.disabled = this.playerName.length < 2;
         });
 
         // Color selection
-        colorBtns.forEach(btn => {
+        colorBtns.forEach((/** @type {HTMLElement} */ btn) => {
             btn.addEventListener('click', () => {
                 colorBtns.forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');

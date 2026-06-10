@@ -975,12 +975,12 @@ class I18n {
 
     // Update all DOM elements with data-i18n attribute
     updateAllTranslations() {
-        document.querySelectorAll('[data-i18n]').forEach(el => {
+        document.querySelectorAll('[data-i18n]').forEach((/** @type {HTMLElement} */ el) => {
             const key = el.dataset.i18n;
             const translated = this.t(key);
             if (translated !== key) {
                 if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                    el.placeholder = translated;
+                    /** @type {HTMLInputElement} */ (el).placeholder = translated;
                 } else {
                     el.textContent = translated;
                 }
@@ -988,7 +988,7 @@ class I18n {
         });
 
         // Update title attributes
-        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        document.querySelectorAll('[data-i18n-title]').forEach((/** @type {HTMLElement} */ el) => {
             const key = el.dataset.i18nTitle;
             const translated = this.t(key);
             if (translated !== key) {

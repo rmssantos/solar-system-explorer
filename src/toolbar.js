@@ -20,7 +20,7 @@ export class Toolbar {
 
         // Hide toolbar when in manual navigation mode
         window.addEventListener('manualNavModeChanged', (e) => {
-            if (e.detail?.active) {
+            if (/** @type {CustomEvent} */ (e).detail?.active) {
                 this.container.classList.add('hidden-for-nav');
             } else {
                 this.container.classList.remove('hidden-for-nav');
@@ -59,20 +59,20 @@ export class Toolbar {
         this.content.className = 'toolbar-content';
         
         // Add buttons with emoji icons
-        this.addButton('📸', 'photo', i18n.t('take_photo', 'Foto'), () => {
+        this.addButton('📸', 'photo', i18n.t('take_photo'), () => {
             if (this.app.photoMode) this.app.photoMode.takePhoto();
         });
         
-        this.addButton('🖼️', 'gallery', i18n.t('gallery', 'Galeria'), () => {
+        this.addButton('🖼️', 'gallery', i18n.t('gallery'), () => {
             if (this.app.photoMode) this.app.photoMode.showGallery();
         });
         
-        this.addButton('⚖️', 'compare', i18n.t('compare', 'Comparar'), () => {
+        this.addButton('⚖️', 'compare', i18n.t('compare'), () => {
             if (this.app.planetComparator) this.app.planetComparator.openComparator();
         });
         
         // Achievements button
-        this.addButton('🏆', 'achievements', i18n.t('achievements', 'Conquistas'), () => {
+        this.addButton('🏆', 'achievements', i18n.t('achievements'), () => {
             if (this.app.achievementSystem) this.app.achievementSystem.showAchievementsPanel();
         });
         
@@ -87,7 +87,7 @@ export class Toolbar {
         });
 
         // Settings button
-        this.addButton('\u2699\uFE0F', 'settings', i18n.t('settings', 'Configura\u00e7\u00f5es'), () => {
+        this.addButton('\u2699\uFE0F', 'settings', i18n.t('settings'), () => {
             if (this.app.uiSettings) this.app.uiSettings.togglePanel();
         });
         
@@ -95,7 +95,7 @@ export class Toolbar {
         this.toggleBtn = document.createElement('button');
         this.toggleBtn.className = 'toolbar-toggle';
         this.toggleBtn.innerHTML = '‹';
-        this.toggleBtn.title = i18n.t('hide_menu', 'Esconder');
+        this.toggleBtn.title = i18n.t('hide_menu');
         this.toggleBtn.addEventListener('click', () => this.toggle());
         
         this.container.appendChild(this.content);

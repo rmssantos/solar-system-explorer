@@ -63,17 +63,17 @@ export class Mascot {
         this.bubbleEl = this.container.querySelector('.mascot-bubble');
         this.textEl = this.container.querySelector('.mascot-text');
         this.characterEl = this.container.querySelector('.mascot-character');
-        this.imgEl = this.container.querySelector('.mascot-character img');
+        this.imgEl = /** @type {HTMLImageElement} */ (this.container.querySelector('.mascot-character img'));
     }
 
     setupEventListeners() {
         // Listen for game events to trigger mascot
-        window.addEventListener('app:visit', (e) => this.onPlanetVisit(e.detail));
-        window.addEventListener('app:mission-complete', (e) => this.onMissionComplete(e.detail));
-        window.addEventListener('app:achievement', (e) => this.onAchievement(e.detail));
+        window.addEventListener('app:visit', (e) => this.onPlanetVisit(/** @type {CustomEvent} */ (e).detail));
+        window.addEventListener('app:mission-complete', (e) => this.onMissionComplete(/** @type {CustomEvent} */ (e).detail));
+        window.addEventListener('app:achievement', (e) => this.onAchievement(/** @type {CustomEvent} */ (e).detail));
         window.addEventListener('app:quiz-correct', () => this.onQuizCorrect());
         window.addEventListener('app:quiz-wrong', () => this.onQuizWrong());
-        window.addEventListener('app:easter-egg', (e) => this.onEasterEgg(e.detail));
+        window.addEventListener('app:easter-egg', (e) => this.onEasterEgg(/** @type {CustomEvent} */ (e).detail));
         // 'app:first-visit' was removed when the FTUE orchestrator took over the
         // first-time greeting. See FtueOrchestrator._astroIntro for the replacement.
 
@@ -104,7 +104,7 @@ export class Mascot {
         ];
 
         for (const selector of otherBlockers) {
-            const el = document.querySelector(selector);
+            const el = /** @type {HTMLElement|null} */ (document.querySelector(selector));
             if (el && el.offsetParent !== null) {
                 return true;
             }
