@@ -145,33 +145,34 @@ export class UISettings {
         const visible = this.panelStates[panelName];
         
         switch(panelName) {
-            case 'passport':
+            case 'passport': {
                 const passport = document.getElementById('passport-panel');
                 if (passport) {
                     passport.classList.toggle('panel-hidden', !visible);
                 }
                 break;
-                
-            case 'minimap':
+            }
+            case 'minimap': {
                 const minimap = document.querySelector('.minimap-container');
                 if (minimap) {
                     minimap.classList.toggle('panel-hidden', !visible);
                 }
                 break;
-                
-            case 'timeControl':
+            }
+            case 'timeControl': {
                 const timeControl = document.querySelector('.time-control, #time-control-compact');
                 if (timeControl) {
                     timeControl.classList.toggle('panel-hidden', !visible);
                 }
                 break;
-                
-            case 'hudPanel':
+            }
+            case 'hudPanel': {
                 const hudPanel = document.getElementById('hud-panel');
                 if (hudPanel) {
                     hudPanel.classList.toggle('panel-hidden', !visible);
                 }
                 break;
+            }
         }
     }
     

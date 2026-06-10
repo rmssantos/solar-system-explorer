@@ -211,7 +211,6 @@ export const TRANSLATIONS = {
         progress: "Progresso",
         planets_discovered: "Planetas descobertos",
         missions_complete: "Missões completas",
-        close: "Fechar",
 
         // Toast
         welcome_back: "Bem-vindo de volta",
@@ -607,7 +606,6 @@ export const TRANSLATIONS = {
         progress: "Progress",
         planets_discovered: "Planets discovered",
         missions_complete: "Missions complete",
-        close: "Close",
 
         // Toast
         welcome_back: "Welcome back",

@@ -182,7 +182,6 @@ export class Mascot {
         const {
             duration = 5000,
             position = 'center',
-            animate = true,
             hideBubble = false
         } = options;
 

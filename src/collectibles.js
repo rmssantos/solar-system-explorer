@@ -330,16 +330,24 @@ export class CollectiblesSystem {
         this.saveCollected();
         
         // Remove from scene with animation
-        const startScale = collectible.group.scale.x;
         const animate = () => {
             collectible.group.scale.multiplyScalar(1.1);
             collectible.sphere.material.opacity -= 0.05;
             collectible.glow.material.opacity -= 0.03;
-            
+
             if (collectible.sphere.material.opacity > 0) {
                 requestAnimationFrame(animate);
             } else {
                 this.app.scene.remove(collectible.group);
+                // Free GPU buffers — these were created outside resourceManager.
+                collectible.group.traverse((child) => {
+                    child.geometry?.dispose();
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(m => m.dispose());
+                    } else {
+                        child.material?.dispose();
+                    }
+                });
             }
         };
         animate();
@@ -368,13 +376,14 @@ export class CollectiblesSystem {
         // Play sound
         window.dispatchEvent(new CustomEvent('app:sound', { detail: 'success' }));
         
-        // Trigger particles
+        // Trigger particles (celebrateDiscovery — ParticleEffects has no burst())
         if (this.app.particleEffects) {
-            this.app.particleEffects.burst(collectible.typeInfo.color);
+            this.app.particleEffects.celebrateDiscovery(collectible.group.position.clone());
         }
-        
+
         // Update counter
-        document.getElementById('collected-count').textContent = this.collected.length;
+        const countEl = document.getElementById('collected-count');
+        if (countEl) countEl.textContent = String(this.collected.length);
         
         // Check for collection achievements
         this.checkAchievements();

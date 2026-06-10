@@ -35,3 +35,7 @@ src/assets/textures/
 
 # Duplicate mascot images (keep only PNG)
 public/mascot/*.jpeg
+# AI-generated review/audit reports
+audit_report.html
+opus_validation_audit.html
+*_audit*.html

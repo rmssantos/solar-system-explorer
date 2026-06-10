@@ -332,8 +332,8 @@ export class InfoPanelUI {
                     this.showQuizFeedback(quizContainer, true, quizData, quizSystem);
 
                     // Confetti burst
-                    if (this.app.uiManager?.celebrationUI) {
-                        this.app.uiManager.celebrationUI.explodeConfetti();
+                    if (this.app.uiManager?.celebration) {
+                        this.app.uiManager.celebration.explodeConfetti();
                     }
 
                     // Check quiz achievements
@@ -522,7 +522,6 @@ export class InfoPanelUI {
 
         // Use the object key for tracking, not the translated name
         const key = this.currentObjectKey;
-        const displayName = this.currentSlideData.name;
         const isNew = this.app.gameManager.visit(key);
 
         if (isNew) {

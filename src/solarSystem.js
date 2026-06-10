@@ -745,7 +745,7 @@ export class SolarSystem {
 
         // Self rotation of planets and moons only (exclude UFO, comets, probes)
         const excludeKeys = new Set(['ufo', 'Halley', 'Encke', 'Hale-Bopp']);
-        for (const [name, speed] of this._orbitEntries) {
+        for (const [name] of this._orbitEntries) {
             const mesh = this.objects[name];
             if (mesh && !excludeKeys.has(name)) {
                 mesh.rotation.y += 0.5 * deltaTime;

@@ -312,7 +312,7 @@ export class PhotoMode {
         const overlay = document.createElement('div');
         overlay.className = 'gallery-overlay';
         
-        let photosHTML = '';
+        let photosHTML;
         if (this.gallery.length === 0) {
             photosHTML = `
                 <div class="gallery-empty">

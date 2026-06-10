@@ -31,7 +31,6 @@ import { ManualNavigation } from './manualNavigation.js';
 import { UISettings } from './uiSettings.js';
 import { resourceManager } from './resourceManager.js';
 import { Mascot } from './mascot.js';
-import { Tutorial } from './tutorial.js';
 import { MissionOverlay } from './missionOverlay.js';
 import { MissionIndicator } from './missionIndicator.js';
 
@@ -45,7 +44,7 @@ import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
 
 
-class App {
+export class App {
     constructor() {
         this.container = document.getElementById('canvas-container');
         this.scene = null;
@@ -420,7 +419,7 @@ class App {
                     </div>
                     <div class="settings-slider-row">
                         <div class="settings-slider-label">${i18n.t('tts_speed')}</div>
-                        <input type="range" id="tts-rate" min="50" max="150" value="${Math.round((this.infoPanelUI?.tts?.rate ?? 0.9) * 100)}" />
+                        <input type="range" id="tts-rate" min="50" max="150" value="${Math.round((this.uiManager?.infoPanelUI?.tts?.rate ?? 0.9) * 100)}" />
                     </div>
                     <button class="modern-btn" id="tts-test-btn" style="margin-top:8px;font-size:0.85rem;">🔊 ${i18n.t('tts_test')}</button>
                 </div>
@@ -462,7 +461,7 @@ class App {
 
         // TTS voice selector
         const ttsSelect = overlay.querySelector('#tts-voice-select');
-        const ttsManager = this.infoPanelUI?.tts || this.uiManager?.infoPanelUI?.tts;
+        const ttsManager = this.uiManager?.infoPanelUI?.tts;
         if (ttsSelect && ttsManager) {
             const voices = ttsManager.getVoicesForCurrentLang();
             const currentVoiceName = ttsManager.selectedVoiceName;
