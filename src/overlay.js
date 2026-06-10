@@ -8,14 +8,14 @@
  * high-contrast mode applies — inline cssText backdrops were immune to it.
  */
 
-const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE = 'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
 
 /**
  * @param {HTMLElement} contentEl - the dialog content (card/panel)
- * @param {{ className?: string, onClose?: () => void, closeOnBackdrop?: boolean }} [options]
+ * @param {{ className?: string, onClose?: () => void, closeOnBackdrop?: boolean, closeOnEscape?: boolean }} [options]
  * @returns {{ overlay: HTMLElement, close: () => void }}
  */
-export function showOverlay(contentEl, { className = '', onClose = null, closeOnBackdrop = true } = {}) {
+export function showOverlay(contentEl, { className = '', onClose = null, closeOnBackdrop = true, closeOnEscape = true } = {}) {
     const overlay = document.createElement('div');
     overlay.className = className ? `app-overlay ${className}` : 'app-overlay';
     overlay.setAttribute('role', 'dialog');
@@ -39,7 +39,15 @@ export function showOverlay(contentEl, { className = '', onClose = null, closeOn
 
     /** @param {KeyboardEvent} e */
     const onKeydown = (e) => {
+        // Self-heal: if the overlay was removed by something other than
+        // close() (e.g. cleanupDynamicUI on a bfcache restore), drop this
+        // orphaned document-level listener instead of eating keys forever.
+        if (!document.body.contains(overlay)) {
+            document.removeEventListener('keydown', onKeydown, true);
+            return;
+        }
         if (e.key === 'Escape') {
+            if (!closeOnEscape) return;
             e.stopPropagation();
             close();
             return;

@@ -47,6 +47,9 @@
         } catch (e) { /* never throw from the error handler */ }
     }
 
+    // Shared with src/main.js's fatal paths so the crash screen exists once.
+    window.__showFatalError = showErrorOverlay;
+
     // Only take over the screen while the app has not booted yet (the page
     // sets window.__appBooted after a successful init). A transient error
     // mid-game must not replace a working app with an error screen.
@@ -56,10 +59,12 @@
         if (!event.error || window.__appBooted) return;
         showErrorOverlay(event.error && event.error.message);
     });
+    // Unhandled rejections are logged but never take over the screen: benign
+    // rejections (autoplay denials, transient fetches, extensions) are common
+    // during the welcome-screen dwell time and break nothing.
     window.addEventListener('unhandledrejection', function (event) {
-        if (window.__appBooted) return;
         var r = event.reason;
-        showErrorOverlay(r && r.message ? r.message : String(r));
+        console.error('[init] Unhandled rejection:', r && r.message ? r.message : r);
     });
 })();
 

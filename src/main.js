@@ -83,7 +83,6 @@ export class App {
         this.shipColor = '#ff4444';
 
         this.clock = new THREE.Clock();
-        this._quizTimeout = null;
 
         // Adaptive performance / quality (no UI; automatic)
         // Touch devices start at medium; adaptive system promotes to high if FPS allows.
@@ -130,7 +129,6 @@ export class App {
         // cleanly instead of bricking the app on every subsequent launch —
         // losing progress beats a permanently dead app.
         try {
-            storage.migrateSchema();
             this.xpSystem = new XPSystem();
             this.missionSystem = new MissionSystem(this.gameManager);
             this.quizSystem = new QuizSystem(this.xpSystem, this.audioManager);
@@ -311,72 +309,66 @@ export class App {
     }
 
     /**
-     * A save-data load threw: wipe app storage and reload once. The
-     * sessionStorage flag prevents an infinite reload loop if wiping
-     * does not help.
+     * A save-data load threw. Staged recovery so a deterministic CODE bug
+     * cannot destroy the save as collateral damage:
+     *   attempt 1: plain reload (clears transient failures, keeps the save)
+     *   attempt 2: back the save up to localStorage, clear it, reload
+     *   attempt 3: give up — fatal screen
      */
     recoverFromCorruptSave(error) {
-        let alreadyTried;
+        let attempt = 0;
         try {
-            alreadyTried = sessionStorage.getItem('spaceExplorer_recovering') === '1';
-            sessionStorage.setItem('spaceExplorer_recovering', '1');
+            attempt = Number(sessionStorage.getItem('spaceExplorer_recovering')) || 0;
+            sessionStorage.setItem('spaceExplorer_recovering', String(attempt + 1));
         } catch {
-            // sessionStorage unavailable: fall through to error screen
-            alreadyTried = true;
+            // sessionStorage unavailable: don't risk a reload loop
+            attempt = 2;
         }
 
-        try {
-            storage.clearAll();
-        } catch {
-            // Ignore
-        }
-
-        if (!alreadyTried) {
+        if (attempt === 0) {
             location.reload();
-        } else {
-            this.showFatalErrorScreen(error);
+            return;
         }
+
+        if (attempt === 1) {
+            try {
+                // Preserve the (possibly corrupt) save under a backup key so a
+                // bug-of-the-day deploy can't permanently erase a kid's progress.
+                const backup = {};
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('spaceExplorer_')) backup[key] = localStorage.getItem(key);
+                }
+                localStorage.setItem('spaceExplorerBackup', JSON.stringify(backup));
+            } catch {
+                // Ignore — clearing still beats a bricked app
+            }
+            try {
+                storage.clearAll();
+            } catch {
+                // Ignore
+            }
+            location.reload();
+            return;
+        }
+
+        this.showFatalErrorScreen(error);
     }
 
     /**
-     * Kid-friendly fatal error screen. Bilingual on purpose: it must work
-     * even when i18n (or anything else) is part of the failure.
+     * Kid-friendly fatal error screen — delegates to the bilingual overlay
+     * defined once in public/init.js (it must work even when i18n or module
+     * loading is part of the failure).
      */
     showFatalErrorScreen(error) {
         this.hideLoadingOverlay();
-        if (document.getElementById('fatal-error-screen')) return;
-
-        const overlay = document.createElement('div');
-        overlay.id = 'fatal-error-screen';
-        overlay.style.cssText = 'position:fixed;inset:0;background:#0a0e1a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;text-align:center;padding:24px;font-family:system-ui,sans-serif;color:#e2e8f0;';
-
-        const emoji = document.createElement('div');
-        emoji.style.cssText = 'font-size:4rem;margin-bottom:16px;';
-        emoji.textContent = '🚀💥';
-        overlay.appendChild(emoji);
-
-        const title = document.createElement('h1');
-        title.style.cssText = 'font-size:1.5rem;margin:0 0 8px;color:#ffd700;';
-        title.textContent = 'Houston, temos um problema!';
-        overlay.appendChild(title);
-
-        const subtitle = document.createElement('p');
-        subtitle.style.cssText = 'margin:0 0 20px;color:#94a3b8;';
-        subtitle.textContent = 'Houston, we have a problem!';
-        overlay.appendChild(subtitle);
-
-        const detail = document.createElement('p');
-        detail.style.cssText = 'font-size:0.75rem;color:#64748b;max-width:480px;word-break:break-word;margin:0 0 24px;';
-        detail.textContent = String(error?.message || error || 'Unknown error');
-        overlay.appendChild(detail);
-
-        const reloadBtn = document.createElement('button');
-        reloadBtn.style.cssText = 'background:linear-gradient(135deg,#6366f1,#a855f7);border:none;border-radius:8px;padding:12px 32px;color:white;font-size:1.1rem;cursor:pointer;font-weight:bold;';
-        reloadBtn.textContent = '🔄 Recarregar / Reload';
-        reloadBtn.addEventListener('click', () => location.reload());
-        overlay.appendChild(reloadBtn);
-
-        document.body.appendChild(overlay);
+        const message = String(error?.message || error || 'Unknown error');
+        if (typeof window.__showFatalError === 'function') {
+            window.__showFatalError(message);
+        } else {
+            // init.js did not load (shouldn't happen) — last-ditch fallback.
+            alert(`Houston! ${message} — reload / recarrega a página.`);
+        }
     }
 
     setupGameEventListeners() {
@@ -1034,7 +1026,13 @@ export class App {
         btnRow.appendChild(continueBtn);
 
         content.appendChild(btnRow);
-        const { close } = showOverlay(content, { className: 'endgame-overlay' });
+        // One-shot screen (all-missions-complete fires once): a stray tap or
+        // Esc must not dismiss the certificate before the kid can save it.
+        const { close } = showOverlay(content, {
+            className: 'endgame-overlay',
+            closeOnBackdrop: false,
+            closeOnEscape: false
+        });
     }
 
     /**
@@ -1175,9 +1173,14 @@ export class App {
         closeBtn.addEventListener('click', () => close());
         card.appendChild(closeBtn);
 
-        // No backdrop-close: a kid mid-question should not lose the daily
-        // challenge to a stray tap outside the card.
-        const { close } = showOverlay(card, { className: 'daily-challenge-overlay', closeOnBackdrop: false });
+        // No backdrop-close and no Esc-close: a kid mid-question should not
+        // lose the daily challenge to a stray tap or a reflexive Escape
+        // (it only re-offers after a full reload).
+        const { close } = showOverlay(card, {
+            className: 'daily-challenge-overlay',
+            closeOnBackdrop: false,
+            closeOnEscape: false
+        });
     }
 
     /**
@@ -1243,9 +1246,6 @@ export class App {
         // Remove every window/document listener this App registered
         // (app:visit, app:sound, resize, endgame, audio unlock, ...).
         this._abort.abort();
-
-        // Clear pending quiz timeout
-        if (this._quizTimeout) clearTimeout(this._quizTimeout);
 
         // Stop animation loop
         this.clock.stop();
@@ -1318,6 +1318,7 @@ function cleanupDynamicUI() {
 
     // Remove overlay/notification elements by class
     const dynamicClasses = [
+        'app-overlay',
         'settings-overlay',
         'welcome-overlay',
         'welcome-toast',
@@ -1367,6 +1368,15 @@ function cleanupDynamicUI() {
 let _currentApp = null;
 
 function initApp() {
+    // Migrate the save schema BEFORE any system parses localStorage —
+    // GameManager/AudioManager load state in the App constructor, so doing
+    // this inside init() would let them read pre-migration shapes.
+    try {
+        storage.migrateSchema();
+    } catch (e) {
+        console.warn('[App] Schema migration failed:', e);
+    }
+
     // Clean up any existing app instance (prevents issues on navigation)
     if (_currentApp && typeof _currentApp.dispose === 'function') {
         try {

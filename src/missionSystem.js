@@ -8,7 +8,9 @@ import * as storage from './utils/storage.js';
 export class MissionSystem {
     constructor(gameManager) {
         this.gameManager = gameManager;
-        this.missions = MissionSystem.buildDefinitions();
+        // Shallow copies of the single exported source: tests assert the same
+        // data the game runs on, while per-instance mutation stays contained.
+        this.missions = MISSION_DEFINITIONS.map(m => ({ ...m }));
         this.activeMission = null;
         this.completedMissions = new Set();
         // DOM panel is created later via createUI() (kept out of the

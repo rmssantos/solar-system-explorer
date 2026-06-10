@@ -373,12 +373,16 @@ function openModal(objectId) {
         // Deferred: the modal is mid visibility-transition this frame and
         // focusing an element whose computed visibility is still hidden
         // silently fails (focus would stay on the card grid behind).
-        setTimeout(() => closeBtn.focus(), 60);
+        clearTimeout(_modalFocusTimer);
+        _modalFocusTimer = setTimeout(() => closeBtn.focus(), 60);
     }
 }
 
 // Element focused before the modal opened (restored on close)
 let _modalOpener = null;
+// Pending deferred-focus timer — cancelled on close so a quick open+Esc
+// cannot strand focus inside the hidden dialog.
+let _modalFocusTimer = null;
 
 // Escape a string for safe use in HTML attributes
 function escapeAttr(str) {
@@ -387,6 +391,7 @@ function escapeAttr(str) {
 
 // Fechar modal
 function closeModal() {
+    clearTimeout(_modalFocusTimer);
     document.getElementById('detailModal').classList.add('hidden');
     document.body.style.overflow = '';
     if (_modalOpener instanceof HTMLElement && document.contains(_modalOpener)) {

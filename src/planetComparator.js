@@ -147,8 +147,14 @@ export class PlanetComparator {
         });
 
         // Escape closes (README documents Esc as "close open dialogs").
-        // Listener removes itself with the overlay's lifetime.
         this._onKeydown = (e) => {
+            // Self-heal: if the overlay was torn down by something other than
+            // close() (cleanupDynamicUI on bfcache restore), drop the listener.
+            if (!document.getElementById('comparator-overlay')) {
+                document.removeEventListener('keydown', this._onKeydown);
+                this._onKeydown = null;
+                return;
+            }
             if (e.key === 'Escape') this.close();
         };
         document.addEventListener('keydown', this._onKeydown);
@@ -323,27 +329,24 @@ export class PlanetComparator {
             const smaller = p1.radiusKm > p2.radiusKm ? p2 : p1;
             const ratio = Math.round(bigger.radiusKm / smaller.radiusKm);
             if (ratio > 1) {
-                facts.push(i18n.t('funfact_bigger')
-                    .replace('{big}', bigger.name)
-                    .replace('{ratio}', String(ratio))
-                    .replace('{small}', smaller.name));
+                facts.push(i18n.t('funfact_bigger', { big: bigger.name, ratio, small: smaller.name }));
             }
         }
 
         const totalMoons = (p1.knownMoonCount || 0) + (p2.knownMoonCount || 0);
         if (totalMoons > 50) {
-            facts.push(i18n.t('funfact_moons').replace('{count}', String(totalMoons)));
+            facts.push(i18n.t('funfact_moons', { count: totalMoons }));
         }
 
         if (p1.avgDistanceFromSun && p2.avgDistanceFromSun) {
             const diff = Math.abs(p1.avgDistanceFromSun - p2.avgDistanceFromSun);
             if (diff > 1000) {
-                facts.push(i18n.t('funfact_distance').replace('{dist}', diff.toLocaleString()));
+                facts.push(i18n.t('funfact_distance', { dist: diff.toLocaleString() }));
             }
         }
 
         return facts.length > 0 ? facts[Math.floor(Math.random() * facts.length)] :
-            i18n.t('funfact_fallback').replace('{a}', p1.name).replace('{b}', p2.name);
+            i18n.t('funfact_fallback', { a: p1.name, b: p2.name });
     }
 
     close() {

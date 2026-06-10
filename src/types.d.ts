@@ -8,6 +8,8 @@ interface Window {
     app?: unknown;
     /** Dev-only mission reset helper exposed by MissionSystem. */
     resetMissions?: () => void;
+    /** Bilingual fatal-error overlay defined once in public/init.js. */
+    __showFatalError?: (message?: string) => void;
 }
 
 interface ImportMeta {

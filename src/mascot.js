@@ -36,9 +36,11 @@ export class Mascot {
         this.preloadImage('neutral');
         const preloadRest = () => Object.keys(this.poses).forEach((name) => this.preloadImage(name));
         if ('requestIdleCallback' in window) {
-            requestIdleCallback(preloadRest, { timeout: 10000 });
+            // 3s timeout: a kid's first discovery (celebrate pose) can land
+            // within seconds, and each pose is only ~65 KB WebP now.
+            requestIdleCallback(preloadRest, { timeout: 3000 });
         } else {
-            setTimeout(preloadRest, 5000);
+            setTimeout(preloadRest, 3000);
         }
 
         this.createUI();
