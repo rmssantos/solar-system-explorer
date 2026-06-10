@@ -139,13 +139,13 @@ export class PWAUI {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'pwa-install-btn';
-        btn.setAttribute('aria-label', i18n.lang === 'en' ? 'Install app' : 'Instalar aplicação');
+        btn.setAttribute('aria-label', i18n.t('install_app'));
         const icon = document.createElement('span');
         icon.className = 'icon';
         icon.setAttribute('aria-hidden', 'true');
         icon.textContent = '⬇️';
         const label = document.createElement('span');
-        label.textContent = i18n.lang === 'en' ? 'Install app' : 'Instalar app';
+        label.textContent = i18n.t('install_app_short');
         btn.append(icon, label);
 
         btn.addEventListener('click', async () => {
@@ -204,29 +204,28 @@ export class PWAUI {
 
     _showUpdateBanner(worker) {
         if (this._updateBanner) return;
-        const en = i18n.lang === 'en';
         const banner = document.createElement('div');
         banner.className = 'pwa-update-banner';
         banner.setAttribute('role', 'status');
         banner.setAttribute('aria-live', 'polite');
 
         const msg = document.createElement('span');
-        msg.textContent = en ? '🚀 New version available' : '🚀 Nova versão disponível';
+        msg.textContent = i18n.t('new_version');
 
         const reloadBtn = document.createElement('button');
         reloadBtn.type = 'button';
-        reloadBtn.textContent = en ? 'Update' : 'Atualizar';
+        reloadBtn.textContent = i18n.t('update_now');
         reloadBtn.addEventListener('click', () => {
             // Ask the waiting worker to take over; controllerchange listener triggers reload.
             worker.postMessage('skipWaiting');
             reloadBtn.disabled = true;
-            reloadBtn.textContent = en ? 'Updating…' : 'A atualizar…';
+            reloadBtn.textContent = i18n.t('updating');
         });
 
         const closeBtn = document.createElement('button');
         closeBtn.type = 'button';
         closeBtn.className = 'close';
-        closeBtn.setAttribute('aria-label', en ? 'Dismiss' : 'Dispensar');
+        closeBtn.setAttribute('aria-label', i18n.t('dismiss'));
         closeBtn.textContent = '×';
         closeBtn.addEventListener('click', () => this._hideUpdateBanner());
 
