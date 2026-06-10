@@ -42,6 +42,7 @@ import { FtueOrchestrator } from './ftueOrchestrator.js';
 
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
+import { showOverlay } from './overlay.js';
 
 
 export class App {
@@ -483,11 +484,9 @@ export class App {
     }
 
     showSettings() {
-        const overlay = document.createElement('div');
-        overlay.className = 'settings-overlay';
-        
-        overlay.innerHTML = `
-            <div class="settings-panel">
+        const panel = document.createElement('div');
+        panel.className = 'settings-panel';
+        panel.innerHTML = `
                 <h2>⚙️ ${i18n.t('settings')}</h2>
                 
                 <div class="settings-group">
@@ -566,19 +565,14 @@ export class App {
                     <button class="settings-close-btn">${i18n.t('close')}</button>
                     <button class="settings-reset-btn">🗑️ ${i18n.t('reset_progress')}</button>
                 </div>
-            </div>
         `;
 
-        document.body.appendChild(overlay);
+        // Shared helper: dialog semantics, focus trap, Esc + backdrop close.
+        const { overlay, close } = showOverlay(panel, { className: 'settings-overlay' });
 
         // Safely set player name (avoid XSS via innerHTML)
         const captainNameEl = overlay.querySelector('.captain-name');
         if (captainNameEl) captainNameEl.textContent = this.playerName;
-
-        // Animate in
-        requestAnimationFrame(() => {
-            overlay.classList.add('visible');
-        });
 
         // TTS voice selector
         const ttsSelect = /** @type {HTMLSelectElement} */ (overlay.querySelector('#tts-voice-select'));
@@ -618,7 +612,7 @@ export class App {
             btn.addEventListener('click', () => {
                 const lang = btn.dataset.lang;
                 i18n.setLang(lang);
-                overlay.remove();
+                close();
                 this.showSettings(); // Re-render with new language
             });
         });
@@ -664,10 +658,7 @@ export class App {
             });
         }
 
-        overlay.querySelector('.settings-close-btn').addEventListener('click', () => {
-            overlay.classList.add('fade-out');
-            setTimeout(() => overlay.remove(), 300);
-        });
+        overlay.querySelector('.settings-close-btn').addEventListener('click', () => close());
 
         overlay.querySelector('.settings-reset-btn').addEventListener('click', () => {
             if (confirm(i18n.t('confirm_reset'))) {
@@ -677,13 +668,6 @@ export class App {
                     console.warn('[App] Failed to clear storage:', e.message);
                 }
                 location.reload();
-            }
-        });
-
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                overlay.classList.add('fade-out');
-                setTimeout(() => overlay.remove(), 300);
             }
         });
     }
@@ -1008,25 +992,19 @@ export class App {
 
         const certDataUrl = this.certificateGenerator.generate(this.playerName, stats);
 
-        const overlay = document.createElement('div');
-        overlay.className = 'endgame-overlay';
-        overlay.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 15000;
-            opacity: 0; transition: opacity 0.5s ease;
-        `;
+        const content = document.createElement('div');
+        content.style.cssText = 'display:flex;flex-direction:column;align-items:center;max-width:100%;';
 
         const certImg = document.createElement('img');
         certImg.src = certDataUrl;
         certImg.alt = i18n.t('cert_title');
         certImg.style.cssText = 'max-width: 90%; max-height: 55vh; border-radius: 12px; box-shadow: 0 0 40px rgba(212, 165, 55, 0.4);';
-        overlay.appendChild(certImg);
+        content.appendChild(certImg);
 
         const msgEl = document.createElement('p');
         msgEl.style.cssText = 'color: #ffd700; font-size: 1.3rem; text-align: center; margin: 20px 20px 0; font-family: "Segoe UI", Arial, sans-serif; font-weight: bold;';
         msgEl.textContent = i18n.t('endgame_congrats');
-        overlay.appendChild(msgEl);
+        content.appendChild(msgEl);
 
         const btnRow = document.createElement('div');
         btnRow.style.cssText = 'display: flex; gap: 16px; margin-top: 20px;';
@@ -1052,18 +1030,11 @@ export class App {
             font-family: "Segoe UI", Arial, sans-serif;
         `;
         continueBtn.textContent = i18n.t('endgame_continue');
-        continueBtn.addEventListener('click', () => {
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 500);
-        });
+        continueBtn.addEventListener('click', () => close());
         btnRow.appendChild(continueBtn);
 
-        overlay.appendChild(btnRow);
-        document.body.appendChild(overlay);
-
-        requestAnimationFrame(() => {
-            overlay.style.opacity = '1';
-        });
+        content.appendChild(btnRow);
+        const { close } = showOverlay(content, { className: 'endgame-overlay' });
     }
 
     /**
@@ -1098,15 +1069,6 @@ export class App {
 
         // Calculate streak
         const streak = dailyData?.streak || 0;
-
-        const overlay = document.createElement('div');
-        overlay.className = 'daily-challenge-overlay';
-        overlay.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: flex; align-items: center;
-            justify-content: center; z-index: 15000;
-            opacity: 0; transition: opacity 0.3s ease;
-        `;
 
         const card = document.createElement('div');
         card.style.cssText = `
@@ -1194,10 +1156,7 @@ export class App {
                         this.xpSystem.addXP(30, i18n.t('daily_title'));
                     }
 
-                    setTimeout(() => {
-                        overlay.style.opacity = '0';
-                        setTimeout(() => overlay.remove(), 300);
-                    }, 1500);
+                    setTimeout(() => close(), 1500);
                 }, 800);
             });
             optionsDiv.appendChild(btn);
@@ -1213,18 +1172,12 @@ export class App {
             font-family: "Segoe UI", Arial, sans-serif;
         `;
         closeBtn.textContent = i18n.t('close');
-        closeBtn.addEventListener('click', () => {
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 300);
-        });
+        closeBtn.addEventListener('click', () => close());
         card.appendChild(closeBtn);
 
-        overlay.appendChild(card);
-        document.body.appendChild(overlay);
-
-        requestAnimationFrame(() => {
-            overlay.style.opacity = '1';
-        });
+        // No backdrop-close: a kid mid-question should not lose the daily
+        // challenge to a stray tap outside the card.
+        const { close } = showOverlay(card, { className: 'daily-challenge-overlay', closeOnBackdrop: false });
     }
 
     /**
@@ -1234,20 +1187,14 @@ export class App {
         const cardDataUrl = this.shareManager.generateProgressCard(this);
         const shareUrl = this.shareManager.shareURL(this);
 
-        const overlay = document.createElement('div');
-        overlay.className = 'share-overlay';
-        overlay.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 15000;
-            opacity: 0; transition: opacity 0.3s ease;
-        `;
+        const content = document.createElement('div');
+        content.style.cssText = 'display:flex;flex-direction:column;align-items:center;max-width:100%;';
 
         const cardImg = document.createElement('img');
         cardImg.src = cardDataUrl;
         cardImg.alt = i18n.t('share_card_title');
         cardImg.style.cssText = 'max-width: 90%; max-height: 50vh; border-radius: 12px; box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);';
-        overlay.appendChild(cardImg);
+        content.appendChild(cardImg);
 
         const btnRow = document.createElement('div');
         btnRow.style.cssText = 'display: flex; gap: 12px; margin-top: 20px;';
@@ -1277,25 +1224,11 @@ export class App {
             font-family: "Segoe UI", Arial, sans-serif;
         `;
         closeBtn.textContent = i18n.t('close');
-        closeBtn.addEventListener('click', () => {
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 300);
-        });
+        closeBtn.addEventListener('click', () => close());
         btnRow.appendChild(closeBtn);
 
-        overlay.appendChild(btnRow);
-        document.body.appendChild(overlay);
-
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                overlay.style.opacity = '0';
-                setTimeout(() => overlay.remove(), 300);
-            }
-        });
-
-        requestAnimationFrame(() => {
-            overlay.style.opacity = '1';
-        });
+        content.appendChild(btnRow);
+        const { close } = showOverlay(content, { className: 'share-overlay' });
     }
 
     /**

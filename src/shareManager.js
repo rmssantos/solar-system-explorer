@@ -223,11 +223,22 @@ export class ShareManager {
             const json = decodeURIComponent(escape(atob(encoded)));
             const data = JSON.parse(json);
 
-            if (data && data.name) {
-                ShareManager.showFriendOverlay(data);
-                // Clean up the hash
-                history.replaceState(null, '', window.location.pathname + window.location.search);
-            }
+            // Anyone can craft this URL: clamp every field before it is shown
+            // inside a trusted-looking overlay (rendering is textContent-only,
+            // so this is about content sanity, not script injection).
+            if (!data || typeof data.name !== 'string' || !data.name.trim()) return;
+            const safe = {
+                name: data.name.trim().slice(0, 20),
+                visited: Array.isArray(data.visited)
+                    ? data.visited.filter(v => typeof v === 'string').slice(0, 50)
+                    : [],
+                xp: Math.max(0, Math.min(999999, Math.floor(Number(data.xp)) || 0)),
+                missions: Math.max(0, Math.min(99, Math.floor(Number(data.missions)) || 0))
+            };
+
+            ShareManager.showFriendOverlay(safe);
+            // Clean up the hash
+            history.replaceState(null, '', window.location.pathname + window.location.search);
         } catch {
             // Invalid data, ignore
         }
