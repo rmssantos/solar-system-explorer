@@ -316,7 +316,7 @@ export class App {
      *   attempt 3: give up — fatal screen
      */
     recoverFromCorruptSave(error) {
-        let attempt = 0;
+        let attempt;
         try {
             attempt = Number(sessionStorage.getItem('spaceExplorer_recovering')) || 0;
             sessionStorage.setItem('spaceExplorer_recovering', String(attempt + 1));
