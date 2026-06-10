@@ -203,7 +203,10 @@ export class CometSystem {
             const y = z * Math.sin(comet.params.inclination);
             const adjustedZ = z * Math.cos(comet.params.inclination);
 
-            const currentPos = new THREE.Vector3(x, y, adjustedZ);
+            // Scratch vectors reused across frames (3 comets x 60 fps)
+            this._currentPos = this._currentPos || new THREE.Vector3();
+            this._dirFromSun = this._dirFromSun || new THREE.Vector3();
+            const currentPos = this._currentPos.set(x, y, adjustedZ);
 
             // Check for NaN before applying position
             if (!isNaN(x) && !isNaN(y) && !isNaN(adjustedZ)) {
@@ -218,7 +221,9 @@ export class CometSystem {
 
             // Direction away from sun (for solar wind effect)
             const len = currentPos.length();
-            const dirFromSun = len > 0.001 ? currentPos.clone().divideScalar(len) : new THREE.Vector3(1, 0, 0);
+            const dirFromSun = len > 0.001
+                ? this._dirFromSun.copy(currentPos).divideScalar(len)
+                : this._dirFromSun.set(1, 0, 0);
 
             // Update tail particles - follow position history with solar wind push
             const positions = comet.tailGeom.attributes.position.array;

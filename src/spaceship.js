@@ -34,7 +34,6 @@ export class Spaceship {
             emissiveIntensity: 0.5
         });
         const body = new THREE.Mesh(bodyGeom, bodyMat);
-        body.castShadow = true;
         group.add(body);
 
         // 2. Cockpit
@@ -56,7 +55,6 @@ export class Spaceship {
         });
         const wings = new THREE.Mesh(wingGeom, wingMat);
         wings.position.set(0, 0, 0.5);
-        wings.castShadow = true;
         group.add(wings);
 
         // Add wing stripes for extra style
@@ -78,7 +76,6 @@ export class Spaceship {
         const createEngine = (x) => {
             const eng = new THREE.Mesh(engineGeom, engineMat);
             eng.position.set(x, 0, 1.2);
-            eng.castShadow = true;
 
             const light = new THREE.Mesh(glowGeom, glowMat.clone());
             light.position.set(0, -0.6, 0); // Behind engine
@@ -98,10 +95,12 @@ export class Spaceship {
         if (!this.mesh) return;
 
         // "Chase" Logic: Place ship in front of camera
-        // Adjusted offset for better visibility
-        const offset = new THREE.Vector3(0, -2, -25);
+        // Scratch vector reused across frames (this runs every rAF tick)
+        this._offset = this._offset || new THREE.Vector3();
+        this._targetPos = this._targetPos || new THREE.Vector3();
+        const offset = this._offset.set(0, -2, -25);
         offset.applyQuaternion(camera.quaternion);
-        const targetPos = camera.position.clone().add(offset);
+        const targetPos = this._targetPos.copy(camera.position).add(offset);
 
         // Use faster lerp when moving at high speed to prevent ship from leaving screen
         const lerpSpeed = isMovingFast ? 0.8 : 0.15;

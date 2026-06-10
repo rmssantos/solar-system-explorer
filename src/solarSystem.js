@@ -210,7 +210,6 @@ export class SolarSystem {
         });
 
         const planetMesh = new THREE.Mesh(geometry, material);
-        planetMesh.castShadow = true;
         planetMesh.frustumCulled = true;
         planetMesh.position.set(distance, 0, 0);
         orbitGroup.add(planetMesh);
@@ -313,8 +312,6 @@ export class SolarSystem {
         const lod = new THREE.LOD();
         const meshHi = new THREE.Mesh(geometryHi, material);
         const meshLo = new THREE.Mesh(geometryLo, material);
-        meshHi.castShadow = true;
-        meshLo.castShadow = true;
         meshHi.frustumCulled = true;
         meshLo.frustumCulled = true;
         lod.addLevel(meshHi, 0);       // Full detail when close
@@ -324,8 +321,6 @@ export class SolarSystem {
         resourceManager.trackMaterial(material);
 
         const planetMesh = lod;
-        planetMesh.castShadow = true;
-        planetMesh.receiveShadow = true;
 
         // Register for lazy texture loading if this is an outer planet with a texture
         if (isOuterPlanet && data.textureUrl) {
@@ -510,8 +505,6 @@ export class SolarSystem {
         const moonMesh = new THREE.Mesh(geometry, material);
         resourceManager.trackGeometry(geometry);
         resourceManager.trackMaterial(material);
-        moonMesh.castShadow = true;
-        moonMesh.receiveShadow = true;
         moonMesh.frustumCulled = true;
 
         moonMesh.position.set(distance, 0, 0);
