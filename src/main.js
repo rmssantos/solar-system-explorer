@@ -764,31 +764,21 @@ export class App {
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.toneMapping = THREE.ReinhardToneMapping; // Better for bloom
 
-        // SHADOWS ENABLED
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // No shadow maps: at this scene scale a whole planet's shadow fell
+        // under one shadow-map texel (invisible), while the depth pass + PCF
+        // sampling were among the largest recurring GPU costs on tablets.
+        // The day/night look comes from the PointLight at the origin.
 
         this.container.appendChild(this.renderer.domElement);
 
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.1); // Reduced ambient to make shadows visible (night side dark)
         this.scene.add(ambientLight);
 
-        // Use DirectionalLight for shadows (1 face instead of PointLight's 6 cube faces)
+        // Directional fill from above the orbital plane
         const sunLight = new THREE.DirectionalLight(0xffffff, 3.0);
         sunLight.position.set(0, 500, 0); // Above the solar system
 
-        sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 2048;
-        sunLight.shadow.mapSize.height = 2048;
-        sunLight.shadow.camera.near = 1;
-        sunLight.shadow.camera.far = 20000;
-        sunLight.shadow.camera.left = -5000;
-        sunLight.shadow.camera.right = 5000;
-        sunLight.shadow.camera.top = 5000;
-        sunLight.shadow.camera.bottom = -5000;
-        sunLight.shadow.bias = -0.0001;
-
-        // Add a non-shadow PointLight at origin for correct radial lighting from sun
+        // PointLight at origin for correct radial lighting from sun
         const sunPointLight = new THREE.PointLight(0xffffff, 2.0, 0, 0.5);
         sunPointLight.position.set(0, 0, 0);
         this.scene.add(sunPointLight);
@@ -841,25 +831,6 @@ export class App {
                 this.bloomPass.strength = 1.2;
                 this.bloomPass.radius = 0.4;
                 this.bloomPass.threshold = 0.85;
-            }
-        }
-
-        // Shadows are expensive; disable on low
-        if (this.renderer) {
-            this.renderer.shadowMap.enabled = this.qualityLevel >= 1;
-        }
-
-        // Keep shadow map sizes reasonable
-        if (this.sunLight && this.sunLight.shadow) {
-            const mapSize = this.qualityLevel === 2 ? 2048 : (this.qualityLevel === 1 ? 1024 : 512);
-            // Only update when it actually changes
-            if (this.sunLight.shadow.mapSize.width !== mapSize || this.sunLight.shadow.mapSize.height !== mapSize) {
-                this.sunLight.shadow.mapSize.set(mapSize, mapSize);
-                // Force shadow map re-allocation
-                if (this.sunLight.shadow.map) {
-                    this.sunLight.shadow.map.dispose();
-                    this.sunLight.shadow.map = null;
-                }
             }
         }
 
@@ -933,20 +904,50 @@ export class App {
 
         let deltaTime = this.clock.getDelta();
 
-        // Auto quality scaling (based on real frame time, not timeScale)
-        this.updateAdaptiveQuality(deltaTime);
-        
         // Apply time scale from TimeControl
         const timeScale = this.timeControl ? this.timeControl.getTimeScale() : 1;
+
+        // Render-on-demand: when fully idle (paused + no drag/fly/manual + no
+        // live particles) throttle EVERYTHING — updates, minimap canvas
+        // repaint, DOM writes and the render — to ~10 Hz. The gate sits above
+        // the update calls on purpose: skipping only the GPU render kept the
+        // CPU busy at 60 Hz (minimap shadowBlur raster was the worst), which
+        // halved the battery win on tablets.
+        const cc = this.cameraControls;
+        const mn = this.manualNavigation;
+        const idle = (
+            timeScale === 0 &&
+            !mn?.enabled &&
+            !cc?.isDragging &&
+            !cc?.isFlying &&
+            (!this.particleEffects || this.particleEffects.particles.length === 0)
+        );
+
+        // Quality controller freezes while idle: rAF keeps ticking at display
+        // rate when work is skipped, which used to read as ~60 FPS and promote
+        // quality the device cannot sustain — then stutter on unpause.
+        if (!idle) this.updateAdaptiveQuality(deltaTime);
+
+        if (idle) {
+            this._idleAccum = (this._idleAccum || 0) + deltaTime;
+            if (this._idleAccum < 0.1) return; // skip this frame entirely
+            // Run this 10 Hz tick with the accumulated time so animations
+            // advance at real speed, just at a lower tick rate.
+            deltaTime = this._idleAccum;
+            this._idleAccum = 0;
+        } else {
+            this._idleAccum = 0;
+        }
+
         const scaledDeltaTime = deltaTime * timeScale;
 
         // Systems that should respect time scale (orbital movements, etc.)
         if (this.solarSystem) this.solarSystem.update(scaledDeltaTime, this.camera);
-        
+
         // Spaceship follows camera - check if moving fast in manual navigation
         const isMovingFast = this.manualNavigation?.enabled && this.manualNavigation?.currentSpeed > 100;
         if (this.spaceship) this.spaceship.update(deltaTime, this.camera, isMovingFast);
-        
+
         // Systems that should always run at normal speed
         if (this.cameraControls && !this.manualNavigation?.enabled) {
             this.cameraControls.update(deltaTime);
@@ -960,27 +961,6 @@ export class App {
 
         // Update mission indicator arrow
         if (this.missionIndicator) this.missionIndicator.update();
-
-        // Render-on-demand: when fully idle (paused + no drag/fly/manual + no live
-        // particles) throttle composer.render() to ~10 Hz. Saves GPU + battery on
-        // mobile when the user is reading the info panel and not interacting.
-        const cc = this.cameraControls;
-        const mn = this.manualNavigation;
-        const idle = (
-            timeScale === 0 &&
-            !mn?.enabled &&
-            !cc?.isDragging &&
-            !cc?.isFlying &&
-            (!this.particleEffects || this.particleEffects.particles.length === 0)
-        );
-
-        if (idle) {
-            this._idleAccum = (this._idleAccum || 0) + deltaTime;
-            if (this._idleAccum < 0.1) return; // skip render this frame
-            this._idleAccum = 0;
-        } else {
-            this._idleAccum = 0;
-        }
 
         // Render via Composer for Bloom
         if (this.composer && !this.isDisposed) {
@@ -1091,7 +1071,11 @@ export class App {
      * and the player hasn't completed today's challenge yet.
      */
     showDailyChallenge() {
-        const today = new Date().toISOString().slice(0, 10);
+        // Local date, not UTC: with toISOString a kid in Lisbon (UTC+1 in
+        // summer) would get the new daily challenge at 01:00, and a "same
+        // day" streak check could span two local days.
+        const localDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const today = localDate(new Date());
         const dailyData = storage.getItem('dailyChallenge', null);
 
         // Skip if already completed today
@@ -1189,7 +1173,7 @@ export class App {
                 // Save completion
                 const prevData = storage.getItem('dailyChallenge', null);
                 const prevDate = prevData?.date;
-                const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+                const yesterday = localDate(new Date(Date.now() - 86400000));
                 let newStreak = isCorrect ? ((prevDate === yesterday ? (prevData?.streak || 0) : 0) + 1) : 0;
 
                 storage.setItem('dailyChallenge', {
