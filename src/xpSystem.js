@@ -5,7 +5,8 @@
 import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
 
-/** Exported rank definitions for testing */
+// Rank definitions (with translations). XPSystem consumes this exact array,
+// so the tests that assert it are asserting production data.
 export const RANKS = [
     { level: 1, name: { pt: 'Cadete Espacial', en: 'Space Cadet' }, icon: '👶', minXP: 0 },
     { level: 2, name: { pt: 'Aprendiz de Piloto', en: 'Pilot Apprentice' }, icon: '🧑‍🎓', minXP: 100 },
@@ -25,23 +26,13 @@ export class XPSystem {
         this.level = 1;
         this.totalXPEarned = 0;
 
-        // Rank definitions (with translations)
-        this.ranks = [
-            { level: 1, name: { pt: 'Cadete Espacial', en: 'Space Cadet' }, icon: '👶', minXP: 0 },
-            { level: 2, name: { pt: 'Aprendiz de Piloto', en: 'Pilot Apprentice' }, icon: '🧑‍🎓', minXP: 100 },
-            { level: 3, name: { pt: 'Piloto Júnior', en: 'Junior Pilot' }, icon: '👨‍✈️', minXP: 250 },
-            { level: 4, name: { pt: 'Piloto', en: 'Pilot' }, icon: '🚀', minXP: 450 },
-            { level: 5, name: { pt: 'Piloto Sénior', en: 'Senior Pilot' }, icon: '⭐', minXP: 700 },
-            { level: 6, name: { pt: 'Comandante', en: 'Commander' }, icon: '🎖️', minXP: 1000 },
-            { level: 7, name: { pt: 'Capitão', en: 'Captain' }, icon: '👨‍🚀', minXP: 1400 },
-            { level: 8, name: { pt: 'Almirante', en: 'Admiral' }, icon: '🏅', minXP: 1900 },
-            { level: 9, name: { pt: 'Almirante Espacial', en: 'Space Admiral' }, icon: '🌟', minXP: 2500 },
-            { level: 10, name: { pt: 'Lenda do Espaço', en: 'Space Legend' }, icon: '👑', minXP: 3200 }
-        ];
+        // Single source of truth: the exported RANKS the tests assert.
+        this.ranks = RANKS;
 
+        // DOM panel is created later via createUI() (kept out of the
+        // constructor so leveling logic is unit-testable without a DOM).
         this.xpPanel = null;
         this.loadProgress();
-        this.createUI();
 
         // Listen for language changes
         i18n.onLangChange(() => this.updateUI());
@@ -139,6 +130,7 @@ export class XPSystem {
     }
 
     updateUI() {
+        if (!this.xpPanel) return;
         const rank = this.getCurrentRank();
         const nextRank = this.getNextRank();
         const progress = this.getProgressPercent();
@@ -174,6 +166,7 @@ export class XPSystem {
     }
 
     showXPGain(amount) {
+        if (typeof document === 'undefined') return;
         const popup = document.createElement('div');
         popup.className = 'xp-popup';
         popup.innerHTML = `+${amount} ⭐`;

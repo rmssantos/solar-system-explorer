@@ -90,7 +90,8 @@ export class AchievementSystem {
         this.speedrunCount = 0;
         
         this.loadProgress();
-        this.createUI();
+        // DOM button is created later via createUI() (kept out of the
+        // constructor so unlock logic is unit-testable without a DOM).
 
         // Listen for language changes
         i18n.onLangChange(() => this.updateTranslations());
@@ -271,7 +272,7 @@ export class AchievementSystem {
 
     loadProgress() {
         const saved = storage.getItem('achievements', null);
-        if (saved) {
+        if (Array.isArray(saved)) {
             this.unlockedAchievements = new Set(saved);
         }
     }
@@ -306,8 +307,8 @@ export class AchievementSystem {
             this.xpSystem.addXP(achievement.xpReward, `${this.getTranslation('achievement_prefix')}: ${text.title}`);
         }
         
-        // Show notification
-        if (!skipAnimation) {
+        // Show notification (window is absent under vitest)
+        if (!skipAnimation && typeof window !== 'undefined') {
             this.queueAchievementNotification(achievement);
 
             // Trigger mascot celebration for achievements
@@ -324,6 +325,7 @@ export class AchievementSystem {
     }
 
     processQueue() {
+        if (typeof document === 'undefined') return;
         if (this.isShowingAchievement || this.achievementQueue.length === 0) return;
         
         this.isShowingAchievement = true;
@@ -487,8 +489,10 @@ export class AchievementSystem {
         // UFO Easter Egg
         if (planetName === 'ufo') {
             this.unlock('alien_hunter');
-            // Trigger mascot surprise reaction
-            window.dispatchEvent(new CustomEvent('app:easter-egg', { detail: 'UFO' }));
+            // Trigger mascot surprise reaction (window is absent under vitest)
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('app:easter-egg', { detail: 'UFO' }));
+            }
         }
         
         // All moons list

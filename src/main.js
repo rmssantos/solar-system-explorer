@@ -205,6 +205,15 @@ export class App {
             }
         };
 
+        // 5.5. Game-system UI panels (XP, mission, achievements). Their
+        //      constructors no longer create DOM, so the progression logic
+        //      stays unit-testable; the panels are built here instead.
+        optional('gameSystemsUI', () => {
+            this.xpSystem.createUI();
+            this.missionSystem.createUI();
+            this.achievementSystem.createUI();
+        });
+
         // 6. Start ambient music after first interaction
         optional('audio', () => this.setupAudioStart());
 

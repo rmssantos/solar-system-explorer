@@ -8,13 +8,14 @@ import * as storage from './utils/storage.js';
 export class MissionSystem {
     constructor(gameManager) {
         this.gameManager = gameManager;
-        this.missions = this.createMissions();
+        this.missions = MissionSystem.buildDefinitions();
         this.activeMission = null;
         this.completedMissions = new Set();
+        // DOM panel is created later via createUI() (kept out of the
+        // constructor so progression logic is unit-testable without a DOM).
         this.missionPanel = null;
 
         this.loadProgress();
-        this.createUI();
 
         // Listen for language changes
         i18n.onLangChange(() => this.updateMissionUI());
@@ -22,8 +23,8 @@ export class MissionSystem {
         // Check if active mission target was already visited
         this.checkAlreadyVisitedMissions();
 
-        // Debug helper (only in development)
-        if (import.meta.env?.DEV) {
+        // Debug helper (only in development; window is absent under vitest)
+        if (import.meta.env?.DEV && typeof window !== 'undefined') {
             window.resetMissions = () => {
                 storage.removeItem('missions');
                 location.reload();
@@ -64,7 +65,13 @@ export class MissionSystem {
         }
     }
 
-    createMissions() {
+    /**
+     * The 20 mission definitions — single source of truth, exported below as
+     * MISSION_DEFINITIONS so the test suite asserts the exact data the game
+     * runs on. Display text is overridden at runtime by i18n keys when they
+     * exist (see getMissionTitle/Desc/Hint); the strings here are fallbacks.
+     */
+    static buildDefinitions() {
         return [
             // Beginner Missions
             {
@@ -341,6 +348,7 @@ export class MissionSystem {
     }
 
     updateMissionUI(animate = false) {
+        if (!this.missionPanel) return;
         const progress = this.getProgress();
         const pct = progress.total > 0
             ? Math.round((progress.completed / progress.total) * 100)
@@ -456,9 +464,9 @@ export class MissionSystem {
 
         if (completedMission) {
             // Gold glow on complete
-            this.missionPanel.classList.add('mission-gold-glow');
+            this.missionPanel?.classList.add('mission-gold-glow');
             setTimeout(() => {
-                this.missionPanel.classList.remove('mission-gold-glow');
+                this.missionPanel?.classList.remove('mission-gold-glow');
             }, 1500);
 
             // Update active mission to next uncompleted
@@ -466,12 +474,14 @@ export class MissionSystem {
             this.saveProgress();
             this.updateMissionUI(true); // animate transition
 
-            // Trigger mascot celebration
-            window.dispatchEvent(new CustomEvent('app:mission-complete', { detail: completedMission }));
+            // Trigger mascot celebration (window is absent under vitest)
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('app:mission-complete', { detail: completedMission }));
 
-            // Check if all missions are now complete
-            if (this.completedMissions.size === this.missions.length) {
-                window.dispatchEvent(new CustomEvent('app:all-missions-complete'));
+                // Check if all missions are now complete
+                if (this.completedMissions.size === this.missions.length) {
+                    window.dispatchEvent(new CustomEvent('app:all-missions-complete'));
+                }
             }
 
             return completedMission;
@@ -502,28 +512,7 @@ export class MissionSystem {
 }
 
 /**
- * Exported mission definitions for testing.
- * These mirror the missions created in MissionSystem.createMissions().
+ * The exact mission data the game runs on (not a hand-maintained mirror):
+ * built by the same MissionSystem.buildDefinitions() the constructor uses.
  */
-export const MISSION_DEFINITIONS = [
-    { id: 'first_flight', target: 'mercury' },
-    { id: 'hot_planet', target: 'venus' },
-    { id: 'home_sweet_home', target: 'earth' },
-    { id: 'red_planet', target: 'mars' },
-    { id: 'gas_giant', target: 'jupiter' },
-    { id: 'ring_master', target: 'saturn' },
-    { id: 'sideways_planet', target: 'uranus' },
-    { id: 'windy_world', target: 'neptune' },
-    { id: 'our_moon', target: 'moon' },
-    { id: 'volcanic_moon', target: 'io' },
-    { id: 'ocean_moon', target: 'europa' },
-    { id: 'biggest_moon', target: 'ganymede' },
-    { id: 'titan_explorer', target: 'titan' },
-    { id: 'death_star', target: 'mimas' },
-    { id: 'sun_seeker', target: 'sun' },
-    { id: 'pluto_explorer', target: 'pluto' },
-    { id: 'ceres_belt', target: 'ceres' },
-    { id: 'eris_discord', target: 'eris' },
-    { id: 'makemake_easter', target: 'makemake' },
-    { id: 'haumea_rugby', target: 'haumea' },
-];
+export const MISSION_DEFINITIONS = MissionSystem.buildDefinitions();
