@@ -13,9 +13,9 @@ export function formatSpeed(kmPerSec) {
     if (kmPerSec >= LIGHT_SPEED_KMS) {
         return i18n.t('speed_light');
     } else if (kmPerSec >= 1000000) {
-        return i18n.t('speed_million').replace('{n}', (kmPerSec / 1000000).toFixed(1));
+        return i18n.t('speed_million', { n: (kmPerSec / 1000000).toFixed(1) });
     } else if (kmPerSec >= 1000) {
-        return i18n.t('speed_thousand').replace('{n}', (kmPerSec / 1000).toFixed(0));
+        return i18n.t('speed_thousand', { n: (kmPerSec / 1000).toFixed(0) });
     }
     return `${kmPerSec.toLocaleString()} km/s`;
 }

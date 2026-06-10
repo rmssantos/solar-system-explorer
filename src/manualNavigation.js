@@ -1215,15 +1215,7 @@ export class ManualNavigation {
         this.updateSpeedometer();
         this.updateProximityHint();
     }
-    
-    formatSpeed(kmPerSec) {
-        return formatSpeed(kmPerSec);
-    }
 
-    getSpeedComparison(kmPerSec) {
-        return getSpeedComparison(kmPerSec);
-    }
-    
     updateHUD() {
         const warp = this.warpSpeeds[this.warpLevel - 1];
         
@@ -1232,7 +1224,7 @@ export class ManualNavigation {
         const realKmS = Math.round(warp.realKmS * speedPercent);
 
         if (this.speedDisplay) {
-            this.speedDisplay.textContent = this.formatSpeed(realKmS);
+            this.speedDisplay.textContent = formatSpeed(realKmS);
             this.speedDisplay.style.color = warp.color;
         }
         
@@ -1243,7 +1235,7 @@ export class ManualNavigation {
         
         if (this.speedComparison) {
             if (this.currentSpeed > 0.1) {
-                this.speedComparison.textContent = this.getSpeedComparison(realKmS);
+                this.speedComparison.textContent = getSpeedComparison(realKmS);
             } else {
                 this.speedComparison.textContent = i18n.t('press_w');
             }

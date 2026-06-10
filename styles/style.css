@@ -6563,3 +6563,10 @@ button:focus-visible, [role="button"]:focus-visible {
 body.high-contrast .app-overlay {
     background: rgba(0, 0, 0, 0.95);
 }
+
+/* Settings keeps its original stacking level (1400): XP popups, achievement
+   toasts (z 9999+) and the level-up celebration must stay visible above it.
+   The .app-overlay default of 15000 is for one-shot screens. */
+.app-overlay.settings-overlay {
+    z-index: 1400;
+}

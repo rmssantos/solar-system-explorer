@@ -1022,8 +1022,20 @@ class I18n {
         this.setLang(this.currentLang === 'pt' ? 'en' : 'pt');
     }
 
-    t(key) {
-        return TRANSLATIONS[this.currentLang][key] || TRANSLATIONS['pt'][key] || key;
+    /**
+     * Translate a key, optionally substituting {placeholders}.
+     * Substitution is global (every occurrence), unlike String.replace.
+     * @param {string} key
+     * @param {Record<string, string|number>} [params]
+     */
+    t(key, params) {
+        let text = TRANSLATIONS[this.currentLang][key] || TRANSLATIONS['pt'][key] || key;
+        if (params) {
+            for (const [name, value] of Object.entries(params)) {
+                text = text.split(`{${name}}`).join(String(value));
+            }
+        }
+        return text;
     }
 
     getPlanetName(internalName) {
