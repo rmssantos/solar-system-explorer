@@ -82,6 +82,7 @@ export class App {
         this.shipColor = '#ff4444';
 
         this.clock = new THREE.Clock();
+        this._quizTimeout = null;
 
         // Adaptive performance / quality (no UI; automatic)
         // Touch devices start at medium; adaptive system promotes to high if FPS allows.
@@ -98,11 +99,17 @@ export class App {
         // Resource manager for memory cleanup
         this.resourceManager = resourceManager;
 
+        // One controller tears down every window/document listener this App
+        // registers. Critical for bfcache restores: a second App is created on
+        // pageshow and the old one's app:visit handler would otherwise keep
+        // awarding XP and racing localStorage writes forever.
+        this._abort = new AbortController();
+
         // Show welcome screen first
         this.showWelcome();
-        
+
         // Cleanup on page unload
-        window.addEventListener('beforeunload', () => this.dispose());
+        window.addEventListener('beforeunload', () => this.dispose(), { signal: this._abort.signal });
     }
 
     showWelcome() {
@@ -118,13 +125,23 @@ export class App {
         // Show loading overlay
         this.showLoadingOverlay();
 
+        // Game systems load persisted state first. A corrupt save must reset
+        // cleanly instead of bricking the app on every subsequent launch —
+        // losing progress beats a permanently dead app.
         try {
-            // Initialize game systems
+            storage.migrateSchema();
             this.xpSystem = new XPSystem();
             this.missionSystem = new MissionSystem(this.gameManager);
             this.quizSystem = new QuizSystem(this.xpSystem, this.audioManager);
             this.achievementSystem = new AchievementSystem(this.xpSystem, this.audioManager);
+        } catch (e) {
+            console.error('[App] Failed to load save data, resetting:', e);
+            this.recoverFromCorruptSave(e);
+            return;
+        }
 
+        // Core: scene, renderer, world. A failure here is genuinely fatal.
+        try {
             // Setup event listeners for game events
             this.setupGameEventListeners();
 
@@ -169,80 +186,99 @@ export class App {
             this.animate();
 
             // 5. Setup Event Listeners
-            window.addEventListener('resize', () => this.onWindowResize());
+            window.addEventListener('resize', () => this.onWindowResize(), { signal: this._abort.signal });
+        } catch (e) {
+            console.error('CRITICAL APP ERROR:', e);
+            this.showFatalErrorScreen(e);
+            return;
+        }
 
-            // 6. Start ambient music after first interaction
-            this.setupAudioStart();
+        // Optional UI/cosmetic systems: a failure in any of these must log and
+        // move on — it must NOT take down the working 3D app, the FTUE, or
+        // keyboard accessibility (a single try/catch around all of init used
+        // to do exactly that, ending in an untranslated alert()).
+        const optional = (label, fn) => {
+            try {
+                fn();
+            } catch (e) {
+                console.warn(`[App] Optional init step "${label}" failed:`, e);
+            }
+        };
 
-            // 7. Create settings button
-            this.createSettingsUI();
+        // 6. Start ambient music after first interaction
+        optional('audio', () => this.setupAudioStart());
 
-            // 8. Restore passport progress from localStorage. Done before the FTUE
-            //    orchestrator runs so it can tell first-time vs returning users.
-            this.restorePassportProgress();
+        // 7. Create settings button
+        optional('settings', () => this.createSettingsUI());
 
-            // 10. Initialize Photo Mode
-            this.photoMode = new PhotoMode(this);
+        // 8. Restore passport progress from localStorage. Done before the FTUE
+        //    orchestrator runs so it can tell first-time vs returning users.
+        optional('passport', () => this.restorePassportProgress());
 
-            // 11. Initialize Mini Map
-            this.miniMap = new MiniMap(this);
+        // 10. Photo Mode
+        optional('photoMode', () => { this.photoMode = new PhotoMode(this); });
 
-            // 12. Initialize Planet Comparator
-            this.planetComparator = new PlanetComparator(this);
+        // 11. Mini Map
+        optional('miniMap', () => { this.miniMap = new MiniMap(this); });
 
-            // 13. Initialize Collectibles System
-            this.collectibles = new CollectiblesSystem(this);
+        // 12. Planet Comparator
+        optional('planetComparator', () => { this.planetComparator = new PlanetComparator(this); });
 
-            // 14. Initialize Time Control (compact version)
-            this.timeControl = new TimeControlCompact(this);
+        // 13. Collectibles System
+        optional('collectibles', () => { this.collectibles = new CollectiblesSystem(this); });
 
-            // 15. Initialize Modern UI (reorganizes all UI elements)
-            this.modernUI = new ModernUI(this);
+        // 14. Time Control (compact version)
+        optional('timeControl', () => { this.timeControl = new TimeControlCompact(this); });
 
-            // 16. Initialize Toolbar (unified buttons with auto-hide)
-            this.toolbar = new Toolbar(this);
-            
-            // 17. Initialize Manual Navigation (fly your spaceship!)
-            this.manualNavigation = new ManualNavigation(this);
-            
-            // 18. Initialize UI Settings (panel visibility controls)
-            this.uiSettings = new UISettings(this);
+        // 15. Modern UI (reorganizes all UI elements)
+        optional('modernUI', () => { this.modernUI = new ModernUI(this); });
 
-            // 19. Initialize Mascot (Astro the space guide). The FTUE orchestrator
-            //     decides when (and whether) to show the first-visit greeting; we
-            //     no longer dispatch 'app:first-visit' as a fire-and-forget event.
-            this.mascot = new Mascot(this);
+        // 16. Toolbar (unified buttons with auto-hide)
+        optional('toolbar', () => { this.toolbar = new Toolbar(this); });
 
-            // 20. Setup global keyboard accessibility (Enter/Space on role="button")
-            this.setupAccessibilityKeyboard();
+        // 17. Manual Navigation (fly your spaceship!)
+        optional('manualNavigation', () => { this.manualNavigation = new ManualNavigation(this); });
 
-            // 21. Mission Overlay instance (shown by FTUE orchestrator).
-            this.missionOverlay = new MissionOverlay();
+        // 18. UI Settings (panel visibility controls)
+        optional('uiSettings', () => { this.uiSettings = new UISettings(this); });
 
-            // 23. Mission Indicator - 3D arrow pointing to target planet
+        // 19. Mascot (Astro the space guide). The FTUE orchestrator decides
+        //     when (and whether) to show the first-visit greeting.
+        optional('mascot', () => { this.mascot = new Mascot(this); });
+
+        // 20. Global keyboard accessibility (Enter/Space on role="button")
+        optional('accessibilityKeyboard', () => this.setupAccessibilityKeyboard());
+
+        // 21. Mission Overlay instance (shown by FTUE orchestrator).
+        optional('missionOverlay', () => { this.missionOverlay = new MissionOverlay(); });
+
+        // 23. Mission Indicator - 3D arrow pointing to target planet
+        optional('missionIndicator', () => {
             this.missionIndicator = new MissionIndicator(
                 this.camera,
                 this.solarSystem.objects,
                 this.missionSystem
             );
+        });
 
-            // 24. Certificate Generator & Share Manager
-            this.certificateGenerator = new CertificateGenerator();
-            this.shareManager = new ShareManager();
+        // 24. Certificate Generator & Share Manager
+        optional('certificate', () => { this.certificateGenerator = new CertificateGenerator(); });
+        optional('share', () => { this.shareManager = new ShareManager(); });
 
-            // 25. Accessibility mirror tree for the 3D canvas (screen reader / keyboard).
-            this.canvasMirror = new CanvasMirror(this);
+        // 25. Accessibility mirror tree for the 3D canvas (screen reader / keyboard).
+        optional('canvasMirror', () => { this.canvasMirror = new CanvasMirror(this); });
 
-            // 26. PWA UI: install prompt button + SW update banner.
-            this.pwaUI = new PWAUI();
+        // 26. PWA UI: install prompt button + SW update banner.
+        optional('pwaUI', () => { this.pwaUI = new PWAUI(); });
 
-            // 27. Endgame listener: certificate screen after all missions complete.
-            window.addEventListener('app:all-missions-complete', () => {
-                setTimeout(() => this.showCompletionScreen(), 2000);
-            });
+        // 27. Endgame listener: certificate screen after all missions complete.
+        window.addEventListener('app:all-missions-complete', () => {
+            setTimeout(() => this.showCompletionScreen(), 2000);
+        }, { signal: this._abort.signal });
 
-            // 28. FTUE orchestrator — sequences welcome / mascot intro / tutorial /
-            //     mission overlay so they never stack. Replaces 4 parallel setTimeouts.
+        // 28. FTUE orchestrator — sequences welcome / mascot intro / tutorial /
+        //     mission overlay so they never stack. Replaces 4 parallel setTimeouts.
+        optional('ftue', () => {
             this.ftue = new FtueOrchestrator(this);
             // Fire-and-forget; the orchestrator awaits each step internally.
             this.ftue.run().then(() => {
@@ -252,41 +288,117 @@ export class App {
                     this.showDailyChallenge();
                 }
             }).catch((e) => console.warn('[FTUE] run failed:', e));
+        });
 
-        } catch (e) {
-            console.error("CRITICAL APP ERROR:", e);
-            alert("Erro fatal na aplicação. Verifica a consola.");
+        // Successful boot: clear the corrupt-save recovery guard and tell the
+        // pre-boot error handler (public/init.js) to stand down.
+        window.__appBooted = true;
+        try {
+            sessionStorage.removeItem('spaceExplorer_recovering');
+        } catch {
+            // Ignore
         }
     }
 
+    /**
+     * A save-data load threw: wipe app storage and reload once. The
+     * sessionStorage flag prevents an infinite reload loop if wiping
+     * does not help.
+     */
+    recoverFromCorruptSave(error) {
+        let alreadyTried;
+        try {
+            alreadyTried = sessionStorage.getItem('spaceExplorer_recovering') === '1';
+            sessionStorage.setItem('spaceExplorer_recovering', '1');
+        } catch {
+            // sessionStorage unavailable: fall through to error screen
+            alreadyTried = true;
+        }
+
+        try {
+            storage.clearAll();
+        } catch {
+            // Ignore
+        }
+
+        if (!alreadyTried) {
+            location.reload();
+        } else {
+            this.showFatalErrorScreen(error);
+        }
+    }
+
+    /**
+     * Kid-friendly fatal error screen. Bilingual on purpose: it must work
+     * even when i18n (or anything else) is part of the failure.
+     */
+    showFatalErrorScreen(error) {
+        this.hideLoadingOverlay();
+        if (document.getElementById('fatal-error-screen')) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'fatal-error-screen';
+        overlay.style.cssText = 'position:fixed;inset:0;background:#0a0e1a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;text-align:center;padding:24px;font-family:system-ui,sans-serif;color:#e2e8f0;';
+
+        const emoji = document.createElement('div');
+        emoji.style.cssText = 'font-size:4rem;margin-bottom:16px;';
+        emoji.textContent = '🚀💥';
+        overlay.appendChild(emoji);
+
+        const title = document.createElement('h1');
+        title.style.cssText = 'font-size:1.5rem;margin:0 0 8px;color:#ffd700;';
+        title.textContent = 'Houston, temos um problema!';
+        overlay.appendChild(title);
+
+        const subtitle = document.createElement('p');
+        subtitle.style.cssText = 'margin:0 0 20px;color:#94a3b8;';
+        subtitle.textContent = 'Houston, we have a problem!';
+        overlay.appendChild(subtitle);
+
+        const detail = document.createElement('p');
+        detail.style.cssText = 'font-size:0.75rem;color:#64748b;max-width:480px;word-break:break-word;margin:0 0 24px;';
+        detail.textContent = String(error?.message || error || 'Unknown error');
+        overlay.appendChild(detail);
+
+        const reloadBtn = document.createElement('button');
+        reloadBtn.style.cssText = 'background:linear-gradient(135deg,#6366f1,#a855f7);border:none;border-radius:8px;padding:12px 32px;color:white;font-size:1.1rem;cursor:pointer;font-weight:bold;';
+        reloadBtn.textContent = '🔄 Recarregar / Reload';
+        reloadBtn.addEventListener('click', () => location.reload());
+        overlay.appendChild(reloadBtn);
+
+        document.body.appendChild(overlay);
+    }
+
     setupGameEventListeners() {
+        const signal = this._abort.signal;
+
         // Listen for Sound Events from UI
-        window.addEventListener('app:sound', (e) => {
+        window.addEventListener('app:sound', (/** @type {CustomEvent} */ e) => {
             const type = e.detail;
             if (type === 'select') this.audioManager.playSelect();
             if (type === 'success') this.audioManager.playSuccess();
             if (type === 'mission') this.audioManager.playMissionComplete();
             if (type === 'levelup') this.audioManager.playLevelUp();
             if (type === 'achievement') this.audioManager.playAchievement();
-        });
+        }, { signal });
 
         // Listen for Planet Discovery
-        window.addEventListener('app:visit', (e) => {
+        window.addEventListener('app:visit', (/** @type {CustomEvent} */ e) => {
             const planetName = e.detail;
             this.handlePlanetDiscovery(planetName);
-        });
+        }, { signal });
 
         // Unlock Audio Context on first interaction
         window.addEventListener('click', () => {
             if (this.audioManager.ctx?.state === 'suspended') {
                 this.audioManager.ctx.resume();
             }
-        }, { once: true });
+        }, { once: true, signal });
 
         // Duck music slightly during manual navigation for clarity
-        window.addEventListener('manualNavModeChanged', (e) => {
+        window.addEventListener('manualNavModeChanged', (/** @type {CustomEvent} */ e) => {
             this.audioManager?.setManualMode?.(e.detail?.active);
-        });
+        }, { signal });
     }
 
     handlePlanetDiscovery(planetName) {
@@ -345,8 +457,8 @@ export class App {
             document.removeEventListener('keydown', startAudio);
         };
 
-        document.addEventListener('click', startAudio);
-        document.addEventListener('keydown', startAudio);
+        document.addEventListener('click', startAudio, { signal: this._abort.signal });
+        document.addEventListener('keydown', startAudio, { signal: this._abort.signal });
     }
 
     createSettingsUI() {
@@ -460,7 +572,7 @@ export class App {
         });
 
         // TTS voice selector
-        const ttsSelect = overlay.querySelector('#tts-voice-select');
+        const ttsSelect = /** @type {HTMLSelectElement} */ (overlay.querySelector('#tts-voice-select'));
         const ttsManager = this.uiManager?.infoPanelUI?.tts;
         if (ttsSelect && ttsManager) {
             const voices = ttsManager.getVoicesForCurrentLang();
@@ -481,9 +593,9 @@ export class App {
                 ttsSelect.addEventListener('change', () => ttsManager.setVoice(ttsSelect.value));
             }
         }
-        const ttsRateSlider = overlay.querySelector('#tts-rate');
+        const ttsRateSlider = /** @type {HTMLInputElement} */ (overlay.querySelector('#tts-rate'));
         if (ttsRateSlider && ttsManager) {
-            ttsRateSlider.addEventListener('input', (e) => ttsManager.setRate(Number(e.target.value) / 100));
+            ttsRateSlider.addEventListener('input', () => ttsManager.setRate(Number(ttsRateSlider.value) / 100));
         }
         const ttsTestBtn = overlay.querySelector('#tts-test-btn');
         if (ttsTestBtn && ttsManager) {
@@ -493,7 +605,7 @@ export class App {
         }
 
         // Language selector
-        overlay.querySelectorAll('.lang-btn').forEach(btn => {
+        overlay.querySelectorAll('.lang-btn').forEach((/** @type {HTMLElement} */ btn) => {
             btn.addEventListener('click', () => {
                 const lang = btn.dataset.lang;
                 i18n.setLang(lang);
@@ -503,42 +615,43 @@ export class App {
         });
 
         // Event listeners
-        overlay.querySelector('#toggle-music').addEventListener('change', (e) => {
+        overlay.querySelector('#toggle-music').addEventListener('change', () => {
             this.audioManager.toggleMusic();
         });
 
-        overlay.querySelector('#toggle-sfx').addEventListener('change', (e) => {
+        overlay.querySelector('#toggle-sfx').addEventListener('change', () => {
             this.audioManager.toggleSFX();
         });
 
         // High contrast toggle
-        overlay.querySelector('#toggle-high-contrast').addEventListener('change', (e) => {
-            document.body.classList.toggle('high-contrast', e.target.checked);
+        const highContrastToggle = /** @type {HTMLInputElement} */ (overlay.querySelector('#toggle-high-contrast'));
+        highContrastToggle.addEventListener('change', () => {
+            document.body.classList.toggle('high-contrast', highContrastToggle.checked);
             try {
-                localStorage.setItem('spaceExplorer_highContrast', e.target.checked ? 'true' : 'false');
+                localStorage.setItem('spaceExplorer_highContrast', highContrastToggle.checked ? 'true' : 'false');
             } catch (err) {
                 // Ignore storage errors
             }
         });
 
         // Volume sliders
-        const masterSlider = overlay.querySelector('#vol-master');
-        const musicSlider = overlay.querySelector('#vol-music');
-        const sfxSlider = overlay.querySelector('#vol-sfx');
+        const masterSlider = /** @type {HTMLInputElement} */ (overlay.querySelector('#vol-master'));
+        const musicSlider = /** @type {HTMLInputElement} */ (overlay.querySelector('#vol-music'));
+        const sfxSlider = /** @type {HTMLInputElement} */ (overlay.querySelector('#vol-sfx'));
 
         if (masterSlider) {
-            masterSlider.addEventListener('input', (e) => {
-                this.audioManager.setMasterVolume(Number(e.target.value) / 100);
+            masterSlider.addEventListener('input', () => {
+                this.audioManager.setMasterVolume(Number(masterSlider.value) / 100);
             });
         }
         if (musicSlider) {
-            musicSlider.addEventListener('input', (e) => {
-                this.audioManager.setMusicVolume(Number(e.target.value) / 100);
+            musicSlider.addEventListener('input', () => {
+                this.audioManager.setMusicVolume(Number(musicSlider.value) / 100);
             });
         }
         if (sfxSlider) {
-            sfxSlider.addEventListener('input', (e) => {
-                this.audioManager.setSFXVolume(Number(e.target.value) / 100);
+            sfxSlider.addEventListener('input', () => {
+                this.audioManager.setSFXVolume(Number(sfxSlider.value) / 100);
             });
         }
 
@@ -603,7 +716,7 @@ export class App {
             if (bar) bar.style.width = `${Math.round(e.detail.progress * 100)}%`;
             if (text) text.textContent = `${Math.round(e.detail.progress * 100)}%`;
         };
-        window.addEventListener('loading:progress', this._onLoadProgress);
+        window.addEventListener('loading:progress', this._onLoadProgress, { signal: this._abort.signal });
     }
 
     hideLoadingOverlay() {
@@ -885,12 +998,12 @@ export class App {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 const el = document.activeElement;
-                if (el && el.getAttribute('role') === 'button') {
+                if (el && el.getAttribute('role') === 'button' && el instanceof HTMLElement) {
                     e.preventDefault();
                     el.click();
                 }
             }
-        });
+        }, { signal: this._abort.signal });
     }
 
     /**
@@ -1201,6 +1314,10 @@ export class App {
         // Mark as disposed to stop animation loop
         this.isDisposed = true;
 
+        // Remove every window/document listener this App registered
+        // (app:visit, app:sound, resize, endgame, audio unlock, ...).
+        this._abort.abort();
+
         // Clear pending quiz timeout
         if (this._quizTimeout) clearTimeout(this._quizTimeout);
 
@@ -1261,7 +1378,9 @@ function cleanupDynamicUI() {
         'gallery-btn',
         'compare-btn',
         'comparator-overlay',
-        'lang-selector'
+        'lang-selector',
+        'mascot-container',
+        'fatal-error-screen'
     ];
 
     dynamicElementIds.forEach(id => {
@@ -1289,7 +1408,10 @@ function cleanupDynamicUI() {
         'collectible-notification',
         'manual-nav-toggle',
         'manual-nav-hud',
-        'tutorial-overlay'
+        'tutorial-overlay',
+        'mission-indicator',
+        'mission-overlay',
+        'canvas-mirror'
     ];
 
     dynamicClasses.forEach(className => {

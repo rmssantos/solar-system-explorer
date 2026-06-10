@@ -7,9 +7,10 @@
         "module": "esnext",
         "moduleResolution": "bundler",
         "strict": false,
+        "forceConsistentCasingInFileNames": true,
         "skipLibCheck": true,
         "lib": ["esnext", "dom", "dom.iterable"]
     },
-    "include": ["src/**/*.js", "tests/**/*.js"],
+    "include": ["src/**/*.js", "src/**/*.d.ts", "tests/**/*.js"],
     "exclude": ["node_modules", "dist"]
 }
