@@ -1,0 +1,6 @@
+/* Wrapper por página do tema "Explorador Divertido" (importado só por
+   src/main.js). Necessário porque um único ficheiro importado pelas duas
+   entries torna-se chunk PARTILHADO e o build linka-o ANTES do CSS base,
+   invertendo a cascata. O @import é inlined antes do chunking, por isso o
+   tema fica dentro do CSS desta página, DEPOIS de style.css. */
+@import './theme-explorador.css';

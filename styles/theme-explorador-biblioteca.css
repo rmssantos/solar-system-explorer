@@ -1,0 +1,4 @@
+/* Wrapper por página do tema "Explorador Divertido" (importado só por
+   src/biblioteca.js). Ver nota em theme-explorador-main.css: evita que o
+   tema vire chunk partilhado e seja linkado antes de biblioteca.css. */
+@import './theme-explorador.css';

@@ -1,5 +1,10 @@
 import { BIBLIOTECA_DATA, STAT_LABEL_KEYS, normalizeGalleryItem } from './data/bibliotecaData.js';
 
+// Tema "Explorador Divertido" — importado aqui (e não via <link> no HTML) porque
+// o build reordena <link>s de CSS e invertia a cascata. Wrapper por página:
+// ver nota em styles/theme-explorador-main.css.
+import '../styles/theme-explorador-biblioteca.css';
+
 // Estado da aplicação
 let currentLang = 'pt';
 try {
