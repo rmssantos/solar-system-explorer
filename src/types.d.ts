@@ -10,6 +10,10 @@ interface Window {
     resetMissions?: () => void;
     /** Bilingual fatal-error overlay defined once in public/init.js. */
     __showFatalError?: (message?: string) => void;
+    /** Load-once guard for src/cosmic-icons.js (theme icon layer). */
+    __cosmicIconsLoaded?: boolean;
+    /** Inline SVG icon factory exposed by src/cosmic-icons.js. */
+    cosmicIcon?: (name: string, size?: number, strokeWidth?: number) => string;
 }
 
 interface ImportMeta {

@@ -44,6 +44,11 @@ import { i18n } from './i18n.js';
 import * as storage from './utils/storage.js';
 import { showOverlay } from './overlay.js';
 
+// Tema "Explorador Divertido" — importado aqui (e não via <link> no HTML) porque
+// o build reordena <link>s de CSS e invertia a cascata. Wrapper por página:
+// ver nota em styles/theme-explorador-main.css.
+import '../styles/theme-explorador-main.css';
+
 
 export class App {
     constructor() {

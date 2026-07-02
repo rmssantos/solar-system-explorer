@@ -39,3 +39,7 @@ public/mascot/*.jpeg
 audit_report.html
 opus_validation_audit.html
 *_audit*.html
+
+# Entrega original do tema (artefacto de design; as cópias de produção
+# vivem em styles/ e src/ e já divergiram desta pasta)
+entrega-tema/
