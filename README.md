@@ -85,3 +85,4 @@ Three.js · Vite · Vanilla JavaScript (ES modules) · TypeScript (`checkJs` typ
 ## License
 
 MIT — Created for Gonçalo.
+
