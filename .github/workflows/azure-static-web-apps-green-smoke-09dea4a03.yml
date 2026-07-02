@@ -76,6 +76,16 @@ jobs:
       - name: Close Pull Request
         id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
+        # The close action currently fails service-side with "No matching static
+        # site found" even with a fresh token (Azure bug, open + unresolved:
+        # https://github.com/Azure/static-web-apps/issues/1638). The red X is
+        # unactionable, so don't fail the run. Consequence: PR staging envs are
+        # NOT torn down automatically — when the Free-tier limit (3) is hit,
+        # clean up with:
+        #   az staticwebapp environment list --name solar-system-explorer
+        #   az staticwebapp environment delete --name solar-system-explorer --environment-name <n> --yes
+        # (Dependabot PRs skip deploy entirely, so envs only accumulate on human PRs.)
+        continue-on-error: true
         with:
           # Required also for action:close — without it the teardown fails with
           # "deployment_token was not provided" and PR staging envs leak.
