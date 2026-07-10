@@ -1,15 +1,16 @@
 import { PLANETS } from './state.js';
 
-export function createPreviewUI({ onExplore, onCloseNotebook, onCycleDepth = () => {} }) {
+export function createPreviewUI({ onExplore, onCloseNotebook }) {
     const elements = {
         objective: document.querySelector('#objective-chip'),
         objectiveText: document.querySelector('#objective-text'),
         explore: document.querySelector('#explore-nearby'),
         nearbyPlanetName: document.querySelector('#nearby-planet-name'),
-        depthLayer: document.querySelector('#depth-layer'),
-        depthLayerName: document.querySelector('#depth-layer-name'),
         joystick: document.querySelector('#flight-joystick'),
         joystickKnob: document.querySelector('#joystick-knob'),
+        upButton: document.querySelector('#flight-up'),
+        downButton: document.querySelector('#flight-down'),
+        boostButton: document.querySelector('#flight-boost'),
         notebookTrigger: document.querySelector('#notebook-trigger'),
         notebook: document.querySelector('#field-notebook'),
         closeNotebook: document.querySelector('#close-notebook'),
@@ -23,7 +24,6 @@ export function createPreviewUI({ onExplore, onCloseNotebook, onCycleDepth = () 
 
     const listeners = [
         [elements.explore, 'click', onExplore],
-        [elements.depthLayer, 'click', () => onCycleDepth(1)],
         [elements.notebookTrigger, 'click', onExplore],
         [elements.closeNotebook, 'click', onCloseNotebook],
         [elements.notebook, 'cancel', (event) => {
@@ -44,9 +44,6 @@ export function createPreviewUI({ onExplore, onCloseNotebook, onCycleDepth = () 
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
         if (nearbyPlanet) elements.nearbyPlanetName.textContent = `Explorar ${nearbyPlanet.name}`;
-        const layerLabels = ['Trás', 'Meio', 'Frente'];
-        elements.depthLayerName.textContent = layerLabels[flightState?.depthLayer ?? 1];
-        elements.depthLayer.disabled = state.notebook.open;
         elements.objective.classList.toggle('is-complete', state.missionComplete);
         elements.objectiveText.textContent = state.missionComplete
             ? 'Saturno encontrado — missão cumprida'

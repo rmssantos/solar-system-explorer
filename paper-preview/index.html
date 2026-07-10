@@ -38,13 +38,14 @@
                 <strong id="nearby-planet-name">Explorar Sol</strong>
             </button>
 
-            <button id="depth-layer" class="depth-layer" type="button">
-                <span>Camada</span>
-                <strong id="depth-layer-name">Meio</strong>
-            </button>
+            <div class="flight-actions" aria-label="Movimento vertical e impulso">
+                <button id="flight-up" type="button" aria-label="Subir"><span aria-hidden="true">↑</span></button>
+                <button id="flight-boost" class="flight-boost" type="button" aria-label="Ativar impulso"><span>Boost</span></button>
+                <button id="flight-down" type="button" aria-label="Descer"><span aria-hidden="true">↓</span></button>
+            </div>
         </section>
 
-        <p class="key-hint" aria-hidden="true">WASD para pilotar · Q/E muda a camada · arrasta para olhar · Enter explora</p>
+        <p class="key-hint" aria-hidden="true">W/S frente · A/D lateral · Space/Ctrl vertical · rato olha · Shift boost · R/F roda</p>
     </main>
 
     <dialog id="field-notebook" class="field-notebook" aria-labelledby="notebook-title">

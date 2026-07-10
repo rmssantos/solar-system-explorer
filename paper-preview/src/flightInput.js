@@ -1,5 +1,3 @@
-const CAMERA_LIMITS = Object.freeze({ yaw: 0.34, pitch: 0.18 });
-
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
 }
@@ -15,14 +13,23 @@ export function normalizeJoystick(deltaX, deltaY, radius, deadZone = 0.12) {
     };
 }
 
-export function createFlightInput({ stage, joystick, joystickKnob, onDepthLayer = (_direction) => {} }) {
+export function createFlightInput({
+    stage,
+    joystick,
+    joystickKnob,
+    upButton,
+    downButton,
+    boostButton
+}) {
     const pressedKeys = new Set();
     const joystickIntent = { x: 0, y: 0 };
-    const cameraOrbit = { yaw: 0, pitch: 0 };
+    const lookDelta = { yaw: 0, pitch: 0 };
+    const mobileIntent = { up: false, down: false, boost: false };
+    const holdCleanup = [];
     let enabled = true;
     let joystickPointerId = null;
-    let cameraPointerId = null;
-    let cameraPrevious = { x: 0, y: 0 };
+    let lookPointerId = null;
+    let lookPrevious = { x: 0, y: 0 };
 
     function resetJoystick() {
         joystickPointerId = null;
@@ -64,64 +71,114 @@ export function createFlightInput({ stage, joystick, joystickKnob, onDepthLayer 
         resetJoystick();
     }
 
-    function handleCameraDown(event) {
-        if (!enabled || event.button !== 0 || event.target.closest('button, dialog, .flight-joystick')) return;
-        cameraPointerId = event.pointerId;
-        cameraPrevious = { x: event.clientX, y: event.clientY };
+    function handleLookDown(event) {
+        if (!enabled || event.button !== 0 || event.target.closest('button, dialog, .flight-joystick, .flight-actions')) return;
+        lookPointerId = event.pointerId;
+        lookPrevious = { x: event.clientX, y: event.clientY };
         stage.setPointerCapture(event.pointerId);
         stage.classList.add('is-looking');
     }
 
-    function handleCameraMove(event) {
-        if (event.pointerId !== cameraPointerId) return;
-        const deltaX = event.clientX - cameraPrevious.x;
-        const deltaY = event.clientY - cameraPrevious.y;
-        cameraPrevious = { x: event.clientX, y: event.clientY };
-        cameraOrbit.yaw = clamp(cameraOrbit.yaw - deltaX * 0.0032, -CAMERA_LIMITS.yaw, CAMERA_LIMITS.yaw);
-        cameraOrbit.pitch = clamp(cameraOrbit.pitch - deltaY * 0.0026, -CAMERA_LIMITS.pitch, CAMERA_LIMITS.pitch);
+    function handleLookMove(event) {
+        if (event.pointerId !== lookPointerId) return;
+        const deltaX = event.clientX - lookPrevious.x;
+        const deltaY = event.clientY - lookPrevious.y;
+        lookPrevious = { x: event.clientX, y: event.clientY };
+        lookDelta.yaw -= deltaX * 0.0032;
+        lookDelta.pitch = clamp(lookDelta.pitch - deltaY * 0.0026, -0.7, 0.7);
     }
 
-    function handleCameraUp(event) {
-        if (event.pointerId !== cameraPointerId) return;
-        cameraPointerId = null;
+    function handleLookUp(event) {
+        if (event.pointerId !== lookPointerId) return;
+        lookPointerId = null;
         stage.classList.remove('is-looking');
     }
 
     function handleKeyDown(event) {
-        const key = event.key.toLowerCase();
-        if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
-            pressedKeys.add(key);
-            event.preventDefault();
-        }
-        if (!event.repeat && (key === 'q' || key === 'e')) {
-            onDepthLayer(key === 'e' ? 1 : -1);
+        if (!enabled) return;
+        const code = event.code;
+        if ([
+            'KeyW', 'KeyA', 'KeyS', 'KeyD',
+            'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+            'Space', 'ControlLeft', 'ControlRight',
+            'ShiftLeft', 'ShiftRight', 'KeyR', 'KeyF', 'KeyX'
+        ].includes(code)) {
+            pressedKeys.add(code);
             event.preventDefault();
         }
     }
 
     function handleKeyUp(event) {
-        pressedKeys.delete(event.key.toLowerCase());
+        pressedKeys.delete(event.code);
+    }
+
+    function bindHold(button, key) {
+        const begin = (event) => {
+            if (!enabled) return;
+            event.preventDefault();
+            mobileIntent[key] = true;
+            button.setPointerCapture(event.pointerId);
+            button.classList.add('is-active');
+        };
+        const end = (event) => {
+            event.preventDefault();
+            mobileIntent[key] = false;
+            button.classList.remove('is-active');
+        };
+        button.addEventListener('pointerdown', begin);
+        button.addEventListener('pointerup', end);
+        button.addEventListener('pointercancel', end);
+        holdCleanup.push(() => {
+            button.removeEventListener('pointerdown', begin);
+            button.removeEventListener('pointerup', end);
+            button.removeEventListener('pointercancel', end);
+        });
     }
 
     function sample() {
-        if (!enabled) return { moveX: 0, moveY: 0, cameraOrbit: { ...cameraOrbit } };
-        const keyboardX = Number(pressedKeys.has('d') || pressedKeys.has('arrowright'))
-            - Number(pressedKeys.has('a') || pressedKeys.has('arrowleft'));
-        const keyboardY = Number(pressedKeys.has('w') || pressedKeys.has('arrowup'))
-            - Number(pressedKeys.has('s') || pressedKeys.has('arrowdown'));
-        const combinedX = keyboardX + joystickIntent.x;
-        const combinedY = keyboardY + joystickIntent.y;
-        const length = Math.hypot(combinedX, combinedY);
-        const scale = length > 1 ? 1 / length : 1;
-        return {
-            moveX: combinedX * scale,
-            moveY: combinedY * scale,
-            cameraOrbit: { ...cameraOrbit }
+        if (!enabled) {
+            lookDelta.yaw = 0;
+            lookDelta.pitch = 0;
+            return {
+                forward: 0, strafe: 0, vertical: 0,
+                yawDelta: 0, pitchDelta: 0, roll: 0,
+                boost: false, brake: false
+            };
+        }
+        const strafe = Number(pressedKeys.has('KeyD') || pressedKeys.has('ArrowRight'))
+            - Number(pressedKeys.has('KeyA') || pressedKeys.has('ArrowLeft'));
+        const forward = Number(pressedKeys.has('KeyW') || pressedKeys.has('ArrowUp'))
+            - Number(pressedKeys.has('KeyS') || pressedKeys.has('ArrowDown'));
+        const vertical = Number(pressedKeys.has('Space') || mobileIntent.up)
+            - Number(pressedKeys.has('ControlLeft') || pressedKeys.has('ControlRight') || mobileIntent.down);
+        const roll = Number(pressedKeys.has('KeyR')) - Number(pressedKeys.has('KeyF'));
+        const combinedStrafe = strafe + joystickIntent.x;
+        const combinedForward = forward + joystickIntent.y;
+        const planarLength = Math.hypot(combinedStrafe, combinedForward);
+        const planarScale = planarLength > 1 ? 1 / planarLength : 1;
+        const sample = {
+            forward: combinedForward * planarScale,
+            strafe: combinedStrafe * planarScale,
+            vertical,
+            yawDelta: lookDelta.yaw,
+            pitchDelta: lookDelta.pitch,
+            roll,
+            boost: pressedKeys.has('ShiftLeft') || pressedKeys.has('ShiftRight') || mobileIntent.boost,
+            brake: pressedKeys.has('KeyX')
         };
+        lookDelta.yaw = 0;
+        lookDelta.pitch = 0;
+        return sample;
     }
 
     function reset() {
         pressedKeys.clear();
+        mobileIntent.up = false;
+        mobileIntent.down = false;
+        mobileIntent.boost = false;
+        upButton.classList.remove('is-active');
+        downButton.classList.remove('is-active');
+        boostButton.classList.remove('is-active');
         resetJoystick();
     }
 
@@ -130,27 +187,31 @@ export function createFlightInput({ stage, joystick, joystickKnob, onDepthLayer 
         if (!enabled) reset();
     }
 
+    bindHold(upButton, 'up');
+    bindHold(downButton, 'down');
+    bindHold(boostButton, 'boost');
     joystick.addEventListener('pointerdown', handleJoystickDown);
     joystick.addEventListener('pointermove', handleJoystickMove);
     joystick.addEventListener('pointerup', handleJoystickUp);
     joystick.addEventListener('pointercancel', handleJoystickUp);
-    stage.addEventListener('pointerdown', handleCameraDown);
-    stage.addEventListener('pointermove', handleCameraMove);
-    stage.addEventListener('pointerup', handleCameraUp);
-    stage.addEventListener('pointercancel', handleCameraUp);
+    stage.addEventListener('pointerdown', handleLookDown);
+    stage.addEventListener('pointermove', handleLookMove);
+    stage.addEventListener('pointerup', handleLookUp);
+    stage.addEventListener('pointercancel', handleLookUp);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('blur', reset);
 
     function destroy() {
+        holdCleanup.forEach((cleanup) => cleanup());
         joystick.removeEventListener('pointerdown', handleJoystickDown);
         joystick.removeEventListener('pointermove', handleJoystickMove);
         joystick.removeEventListener('pointerup', handleJoystickUp);
         joystick.removeEventListener('pointercancel', handleJoystickUp);
-        stage.removeEventListener('pointerdown', handleCameraDown);
-        stage.removeEventListener('pointermove', handleCameraMove);
-        stage.removeEventListener('pointerup', handleCameraUp);
-        stage.removeEventListener('pointercancel', handleCameraUp);
+        stage.removeEventListener('pointerdown', handleLookDown);
+        stage.removeEventListener('pointermove', handleLookMove);
+        stage.removeEventListener('pointerup', handleLookUp);
+        stage.removeEventListener('pointercancel', handleLookUp);
         window.removeEventListener('keydown', handleKeyDown);
         window.removeEventListener('keyup', handleKeyUp);
         window.removeEventListener('blur', reset);
