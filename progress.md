@@ -30,6 +30,13 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Causa confirmada: velocidade acumulada em world-space com drag ativo muito baixo; a nova direção só acrescentava aceleração sem orientar o vetor existente.
 - Correção TDD: steering arcade-space preserva a magnitude, mas curva a velocidade rapidamente para o forward da câmara enquanto existe input; sem input continua a haver deriva.
 - Playtest real: após uma rotação de ~90° durante `W`, alinhamento velocidade/forward = 0,99946, sem erros de consola. Evidência em `output/playwright/paper-preview-steering/camera-relative-turn-clear.png`.
+- Direção visual revista para híbrido low-poly + paper: volumes fechados, facetas grandes, paleta curta, contorno grafite e rebordo artesanal.
+- Design e plano: `docs/plans/2026-07-10-low-poly-paper-universe-design.md` e `2026-07-10-low-poly-paper-universe-implementation.md`.
+- Sol, Terra e Saturno reconstruídos com `IcosahedronGeometry` fechado; desapareceram meridianos/fatias internas expostas.
+- Detalhes de silhueta: corona triangular contida, continentes/nuvens/capas polares em peças simples e anel sólido extrudido.
+- 7 testes estruturais low-poly passam; focused flight + visual = 19 testes, lint e build paper passam.
+- Screenshots: `output/playwright/paper-lowpoly/shot-0.png`, `earth-close.png`, `saturn-close.png`.
+- Observação visual para o batch de câmara: em aproximação a Saturno, o anel pode dominar o lado esquerdo; aplicar camera pull-back/focus contextual sem bloquear yaw/pitch/roll.
 
 ## TODO
 

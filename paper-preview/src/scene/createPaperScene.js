@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PLANET_ANCHORS } from '../flightSimulation.js';
-import { createPaperPlanet } from './createPaperPlanet.js';
+import { createLowPolyPlanet } from './createLowPolyPlanet.js';
 import { createPaperTextures } from './paperTextures.js';
 
 const PLANET_KEYS = ['sun', 'earth', 'saturn'];
@@ -158,7 +158,7 @@ export function createPaperScene(stage) {
 
     const planets = PLANET_KEYS.map((key) => {
         const anchor = PLANET_ANCHORS[key];
-        const planet = createPaperPlanet(key, textures);
+        const planet = createLowPolyPlanet(key);
         planet.userData.baseY = anchor.y;
         planet.userData.baseZ = anchor.z;
         planet.userData.baseScale = 1.7;

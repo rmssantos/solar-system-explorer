@@ -3,6 +3,7 @@ import {
     PLANET_STYLES,
     createSeededDirections
 } from '../paper-preview/src/scene/planetStyle.js';
+import { createLowPolyPlanet } from '../paper-preview/src/scene/createLowPolyPlanet.js';
 
 describe('Low-poly paper planet style', () => {
     it('defines a restrained, recognizable style for every preview planet', () => {
@@ -42,5 +43,34 @@ describe('Low-poly paper planet style', () => {
             expect(Math.hypot(direction.x, direction.y, direction.z)).toBeCloseTo(1, 8);
             expect(Object.values(direction).every(Number.isFinite)).toBe(true);
         }
+    });
+});
+
+describe('Low-poly paper planet mesh', () => {
+    it.each(['sun', 'earth', 'saturn'])('builds %s as a closed, outlined volume', (key) => {
+        const planet = createLowPolyPlanet(key);
+        const body = planet.getObjectByName(`${key}-body`);
+        const rim = planet.getObjectByName(`${key}-paper-rim`);
+        const outline = planet.getObjectByName(`${key}-outline`);
+        const meshes = [];
+        planet.traverse((object) => {
+            if (object.isMesh) meshes.push(object);
+        });
+
+        expect(body.userData.closedVolume).toBe(true);
+        expect(body.geometry.type).toBe('IcosahedronGeometry');
+        expect(body.geometry.parameters.detail).toBe(PLANET_STYLES[key].geometryDetail);
+        expect(rim.material.side).toBe(1);
+        expect(outline.material.side).toBe(1);
+        expect(outline.scale.x).toBeGreaterThan(rim.scale.x);
+        expect(meshes.length).toBeLessThanOrEqual(32);
+        expect(planet.children.some((child) => /meridian|latitude/.test(child.name))).toBe(false);
+    });
+
+    it('uses only silhouette-defining feature groups', () => {
+        expect(createLowPolyPlanet('sun').getObjectByName('sun-corona')).toBeTruthy();
+        expect(createLowPolyPlanet('earth').getObjectByName('earth-land-plates')).toBeTruthy();
+        expect(createLowPolyPlanet('earth').getObjectByName('earth-clouds')).toBeTruthy();
+        expect(createLowPolyPlanet('saturn').getObjectByName('saturn-rings')).toBeTruthy();
     });
 });
