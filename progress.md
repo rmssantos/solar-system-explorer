@@ -55,7 +55,13 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Playtest completo do Sol: fotografia real, medições, resposta errada/retry/correta, pausa/retoma e text-state coerente; 0 erros de consola.
 - Mobile 390×844: 0 overflow horizontal, diálogo dentro do viewport e scroll vertical de 42 px no painel mais longo.
 - Evidência: `output/playwright/paper-learning/discover-fixed.png`, `measure.png`, `quiz-correct.png`, `mobile-discover.png`.
+- Objetivo formal ampliado para jogo completo: Sistema Solar, luas, pequenos corpos, objetos humanos, missões e progresso.
+- Serviço científico resiliente implementado para NASA Images, APOD, JPL Horizons e CelesTrak.
+- Cache com TTL específico por fonte (2 h a 7 dias), retorno de dados expirados em falha e fallback local preservam o modo offline.
+- 6 testes de parsing/cache/fallback passam; lint e build paper passam.
 
 ## TODO
 
+- Completar catálogo visual do Sistema Solar e luas relevantes.
+- Integrar objetos humanos, pequenos corpos, missões e persistência.
 - Executar verificação integral e decidir integração/entrega.
