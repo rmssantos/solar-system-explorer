@@ -46,10 +46,16 @@ export function navigate(state, direction) {
 
 export function exploreActive(state) {
     const activePlanet = PLANETS[state.activeIndex];
+    return explorePlanet(state, activePlanet.key);
+}
+
+export function explorePlanet(state, planetKey) {
+    const planet = PLANETS.find((candidate) => candidate.key === planetKey);
+    if (!planet) return state;
     return {
         ...state,
-        missionComplete: state.missionComplete || activePlanet.key === state.objectiveTarget,
-        notebook: { open: true, planetKey: activePlanet.key }
+        missionComplete: state.missionComplete || planet.key === state.objectiveTarget,
+        notebook: { open: true, planetKey: planet.key }
     };
 }
 
