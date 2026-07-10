@@ -6,6 +6,7 @@ import {
     exploreActive,
     navigate
 } from '../paper-preview/src/state.js';
+import { createPaperProfile } from '../paper-preview/src/scene/paperGeometry.js';
 
 describe('Paper diorama preview state', () => {
     it('starts at the Sun with Saturn as the mission target', () => {
@@ -54,5 +55,25 @@ describe('Paper diorama preview state', () => {
 
         expect(closed.notebook).toEqual({ open: false, planetKey: null });
         expect(closed.missionComplete).toBe(true);
+    });
+});
+
+describe('Paper silhouette geometry', () => {
+    it('creates deterministic finite edges inside the requested jitter', () => {
+        const options = { seed: 42, segments: 24, jitter: 0.08 };
+        const first = createPaperProfile(options);
+        const repeated = createPaperProfile(options);
+        const different = createPaperProfile({ ...options, seed: 43 });
+
+        expect(first).toEqual(repeated);
+        expect(first).toHaveLength(24);
+        expect(different).not.toEqual(first);
+
+        for (const point of first) {
+            const radius = Math.hypot(point.x, point.y);
+            expect(Number.isFinite(point.x) && Number.isFinite(point.y)).toBe(true);
+            expect(radius).toBeGreaterThanOrEqual(0.92);
+            expect(radius).toBeLessThanOrEqual(1.08);
+        }
     });
 });
