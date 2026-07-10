@@ -65,3 +65,28 @@ It exposes `window.render_game_to_text()` and deterministic `window.advanceTime(
 ## Deliberate exclusions
 
 No live NASA/JPL integration, full planet set, save system, quizzes, physics, free flight or asset pipeline. The preview answers one question only: is this graphical and interaction direction worth carrying into the main product?
+
+## Approved evolution: free 2.5D paper flight
+
+The first rail-navigation build proved the material language but felt like sliding a book beneath the camera. The approved second interaction model keeps the same assets and replaces previous/next travel with direct ship control.
+
+The ship moves freely across the paper stage in X/Y and through a deliberately shallow Z range. Camera drag adds a restrained yaw/pitch orbit around the ship; the angle is capped so the diorama never collapses into edge-on coins. This reveals cardboard backs, separated paper layers and parallax without pretending to be a realistic 3D simulator.
+
+Desktop controls:
+
+- WASD or arrows: camera-relative movement across the stage.
+- Q/E: move between back, middle and front paper depth.
+- Pointer drag: orbit the follow camera within the safe angle.
+- Enter: explore the nearby planet.
+- F: fullscreen.
+
+Mobile controls:
+
+- One left virtual joystick for X/Y movement.
+- Drag on empty stage to move the camera.
+- One “Camada” button cycles three depth layers.
+- One contextual Explore button appears only inside a planet's discovery radius.
+
+The camera follows with damping and looks slightly ahead of velocity. Stars, stitched orbit and planet layers occupy different Z planes, creating parallax. Planet cutouts remain fixed in the diorama rather than always billboarding; limited camera movement is what exposes their physical construction.
+
+Simulation remains independent of Three.js. A pure flight state owns position, velocity, input, bounds, depth and nearby-object detection. The scene consumes snapshots to move the ship/camera. UI consumes the same state to show only an objective and contextual action. There is no collision engine in this preview; world bounds and a soft minimum approach distance are sufficient.
