@@ -27,7 +27,8 @@ export function createPreviewState() {
         activeIndex: 0,
         objectiveTarget: 'saturn',
         missionComplete: false,
-        notebook: { open: false, planetKey: null }
+        notebook: { open: false, planetKey: null },
+        learning: createLearningState()
     };
 }
 
@@ -55,7 +56,8 @@ export function explorePlanet(state, planetKey) {
     return {
         ...state,
         missionComplete: state.missionComplete || planet.key === state.objectiveTarget,
-        notebook: { open: true, planetKey: planet.key }
+        notebook: { open: true, planetKey: planet.key },
+        learning: openLearningRecord(state.learning, planet.key)
     };
 }
 
@@ -65,3 +67,4 @@ export function closeNotebook(state) {
         notebook: { open: false, planetKey: null }
     };
 }
+import { createLearningState, openLearningRecord } from './learning/learningState.js';
