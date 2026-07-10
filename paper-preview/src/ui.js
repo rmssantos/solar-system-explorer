@@ -1,13 +1,15 @@
 import { PLANETS } from './state.js';
 
-export function createPreviewUI({ onNavigate, onExplore, onCloseNotebook }) {
+export function createPreviewUI({ onExplore, onCloseNotebook, onCycleDepth = () => {} }) {
     const elements = {
         objective: document.querySelector('#objective-chip'),
         objectiveText: document.querySelector('#objective-text'),
-        previous: document.querySelector('#previous-planet'),
-        next: document.querySelector('#next-planet'),
-        explore: document.querySelector('#explore-planet'),
-        planetName: document.querySelector('#active-planet-name'),
+        explore: document.querySelector('#explore-nearby'),
+        nearbyPlanetName: document.querySelector('#nearby-planet-name'),
+        depthLayer: document.querySelector('#depth-layer'),
+        depthLayerName: document.querySelector('#depth-layer-name'),
+        joystick: document.querySelector('#flight-joystick'),
+        joystickKnob: document.querySelector('#joystick-knob'),
         notebookTrigger: document.querySelector('#notebook-trigger'),
         notebook: document.querySelector('#field-notebook'),
         closeNotebook: document.querySelector('#close-notebook'),
@@ -20,9 +22,8 @@ export function createPreviewUI({ onNavigate, onExplore, onCloseNotebook }) {
     };
 
     const listeners = [
-        [elements.previous, 'click', () => onNavigate(-1)],
-        [elements.next, 'click', () => onNavigate(1)],
         [elements.explore, 'click', onExplore],
+        [elements.depthLayer, 'click', () => onCycleDepth(1)],
         [elements.notebookTrigger, 'click', onExplore],
         [elements.closeNotebook, 'click', onCloseNotebook],
         [elements.notebook, 'cancel', (event) => {
@@ -35,14 +36,17 @@ export function createPreviewUI({ onNavigate, onExplore, onCloseNotebook }) {
         element.addEventListener(eventName, handler);
     }
 
-    function update(state, { traveling = false } = {}) {
-        const activePlanet = PLANETS[state.activeIndex];
-        elements.planetName.textContent = activePlanet.name;
-        elements.previous.disabled = state.activeIndex === 0 || state.notebook.open || traveling;
-        elements.next.disabled = state.activeIndex === PLANETS.length - 1 || state.notebook.open || traveling;
-        elements.explore.disabled = state.notebook.open || traveling;
-        elements.notebookTrigger.disabled = traveling;
-        elements.explore.querySelector('small').textContent = traveling ? 'A viajar…' : 'Explorar página';
+    function update(state, { flightState = null } = {}) {
+        const fallbackPlanet = PLANETS[state.activeIndex];
+        const nearbyKey = flightState?.nearbyPlanetKey ?? fallbackPlanet?.key ?? null;
+        const nearbyPlanet = PLANETS.find((planet) => planet.key === nearbyKey);
+        elements.explore.hidden = !nearbyPlanet || state.notebook.open;
+        elements.explore.disabled = state.notebook.open;
+        elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
+        if (nearbyPlanet) elements.nearbyPlanetName.textContent = `Explorar ${nearbyPlanet.name}`;
+        const layerLabels = ['Trás', 'Meio', 'Frente'];
+        elements.depthLayerName.textContent = layerLabels[flightState?.depthLayer ?? 1];
+        elements.depthLayer.disabled = state.notebook.open;
         elements.objective.classList.toggle('is-complete', state.missionComplete);
         elements.objectiveText.textContent = state.missionComplete
             ? 'Saturno encontrado — missão cumprida'
@@ -58,7 +62,7 @@ export function createPreviewUI({ onNavigate, onExplore, onCloseNotebook }) {
             if (!elements.notebook.open) elements.notebook.showModal();
         } else if (elements.notebook.open) {
             elements.notebook.close();
-            elements.explore.focus({ preventScroll: true });
+            (elements.explore.hidden ? elements.notebookTrigger : elements.explore).focus({ preventScroll: true });
         }
     }
 

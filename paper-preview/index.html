@@ -27,20 +27,24 @@
             </button>
         </header>
 
-        <nav id="planet-navigation" class="planet-navigation" aria-label="Navegação entre astros">
-            <button id="previous-planet" class="edge-action" type="button" aria-label="Astro anterior">
-                <span aria-hidden="true">←</span>
-            </button>
-            <button id="explore-planet" class="explore-action" type="button">
-                <span id="active-planet-name">Sol</span>
-                <small>Explorar página</small>
-            </button>
-            <button id="next-planet" class="edge-action" type="button" aria-label="Astro seguinte">
-                <span aria-hidden="true">→</span>
-            </button>
-        </nav>
+        <section id="flight-controls" class="flight-controls" aria-label="Controlos de voo">
+            <div id="flight-joystick" class="flight-joystick" aria-label="Joystick de voo">
+                <div class="joystick-orbit" aria-hidden="true"></div>
+                <div id="joystick-knob" class="joystick-knob" aria-hidden="true"></div>
+            </div>
 
-        <p class="key-hint" aria-hidden="true">← → para viajar · Enter para explorar · F ecrã inteiro</p>
+            <button id="explore-nearby" class="explore-nearby" type="button" hidden>
+                <span class="explore-kicker">Ao alcance</span>
+                <strong id="nearby-planet-name">Explorar Sol</strong>
+            </button>
+
+            <button id="depth-layer" class="depth-layer" type="button">
+                <span>Camada</span>
+                <strong id="depth-layer-name">Meio</strong>
+            </button>
+        </section>
+
+        <p class="key-hint" aria-hidden="true">WASD para pilotar · Q/E muda a camada · arrasta para olhar · Enter explora</p>
     </main>
 
     <dialog id="field-notebook" class="field-notebook" aria-labelledby="notebook-title">

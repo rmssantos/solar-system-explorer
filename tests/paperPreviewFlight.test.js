@@ -10,6 +10,7 @@ import {
     stepFlight
 } from '../paper-preview/src/flightSimulation.js';
 import { createPreviewState, explorePlanet } from '../paper-preview/src/state.js';
+import { normalizeJoystick } from '../paper-preview/src/flightInput.js';
 
 const idleInput = Object.freeze({ moveX: 0, moveY: 0 });
 
@@ -83,5 +84,18 @@ describe('Proximity exploration state', () => {
         expect(earth.missionComplete).toBe(false);
         expect(saturn.notebook).toEqual({ open: true, planetKey: 'saturn' });
         expect(saturn.missionComplete).toBe(true);
+    });
+});
+
+describe('Paper flight input', () => {
+    it('normalizes joystick intent with a dead zone and unit clamp', () => {
+        expect(normalizeJoystick(2, 2, 60)).toEqual({ x: 0, y: 0 });
+        expect(normalizeJoystick(60, 0, 60)).toEqual({ x: 1, y: 0 });
+
+        const diagonal = normalizeJoystick(60, 60, 60);
+        expect(Math.hypot(diagonal.x, diagonal.y)).toBeCloseTo(1, 6);
+        expect(diagonal.x).toBeCloseTo(diagonal.y, 6);
+
+        expect(normalizeJoystick(30, -40, 50)).toEqual({ x: 0.6, y: -0.8 });
     });
 });
