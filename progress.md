@@ -26,6 +26,10 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Mobile 390×844 validado com joystick, drag e subida reais: movimento nos três eixos, mudança de yaw/pitch, sem sobreposição dos quatro grupos de HUD.
 - Fullscreen entra/sai com G; `prefers-reduced-motion` reduz transições para 0,01 ms.
 - Evidência final: `output/playwright/paper-preview/15-flight-360-cross-rocket.png`, `16-flight-360-mobile-initial.png` e `17-flight-360-mobile-controls.png`.
+- Feedback posterior: com `W` premido, a inércia mantinha a velocidade no vetor antigo depois de rodar a câmara.
+- Causa confirmada: velocidade acumulada em world-space com drag ativo muito baixo; a nova direção só acrescentava aceleração sem orientar o vetor existente.
+- Correção TDD: steering arcade-space preserva a magnitude, mas curva a velocidade rapidamente para o forward da câmara enquanto existe input; sem input continua a haver deriva.
+- Playtest real: após uma rotação de ~90° durante `W`, alinhamento velocidade/forward = 0,99946, sem erros de consola. Evidência em `output/playwright/paper-preview-steering/camera-relative-turn-clear.png`.
 
 ## TODO
 

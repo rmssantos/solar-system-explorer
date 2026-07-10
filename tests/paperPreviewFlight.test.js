@@ -52,6 +52,23 @@ describe('Full 3D paper flight simulation', () => {
         expect(strafed.position.x).toBeGreaterThan(initial.position.x);
     });
 
+    it('curves forward velocity toward the camera while W remains pressed', () => {
+        const initial = {
+            ...createFlightState(),
+            position: { x: 30, y: 0, z: 10 }
+        };
+        const movingForward = stepMany(initial, { ...idleInput, forward: 1 }, 120);
+        const turned = stepMany(movingForward, {
+            ...idleInput,
+            forward: 1,
+            yawDelta: Math.PI / 2
+        }, 1);
+        const settledIntoTurn = stepMany(turned, { ...idleInput, forward: 1 }, 14);
+
+        expect(settledIntoTurn.orientation.yaw).toBeCloseTo(Math.PI / 2, 6);
+        expect(settledIntoTurn.velocity.x).toBeGreaterThan(Math.abs(settledIntoTurn.velocity.z));
+    });
+
     it('uses pitch for forward elevation and world Y for vertical thrust', () => {
         const initial = createFlightState();
         const pitched = {

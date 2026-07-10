@@ -20,6 +20,7 @@ const ACTIVE_DRAG = 0.25;
 const IDLE_DRAG = 2.4;
 const BRAKE_DRAG = 7.5;
 const ROLL_SPEED = 1.7;
+const STEERING_RESPONSE = 12;
 const MAX_PITCH = (Math.PI / 2) - 0.08;
 
 function clamp(value, min, max) {
@@ -105,6 +106,24 @@ export function stepFlight(state, input, deltaSeconds) {
     }
 
     const hasIntent = intentLength > 0.01;
+    if (hasIntent) {
+        const speed = Math.hypot(velocityX, velocityY, velocityZ);
+        const steeringBlend = 1 - Math.exp(-STEERING_RESPONSE * delta);
+        const targetX = (intentX / intentLength) * speed;
+        const targetY = (intentY / intentLength) * speed;
+        const targetZ = (intentZ / intentLength) * speed;
+        velocityX += (targetX - velocityX) * steeringBlend;
+        velocityY += (targetY - velocityY) * steeringBlend;
+        velocityZ += (targetZ - velocityZ) * steeringBlend;
+
+        const steeredSpeed = Math.hypot(velocityX, velocityY, velocityZ);
+        if (steeredSpeed > 0.0001) {
+            const preserveSpeed = speed / steeredSpeed;
+            velocityX *= preserveSpeed;
+            velocityY *= preserveSpeed;
+            velocityZ *= preserveSpeed;
+        }
+    }
     const drag = input.brake ? BRAKE_DRAG : (hasIntent ? ACTIVE_DRAG : IDLE_DRAG);
     const damping = Math.exp(-drag * delta);
     velocityX *= damping;
