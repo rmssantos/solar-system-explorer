@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#101936">
+    <meta name="description" content="Preview visual de um Sistema Solar em diorama de papel.">
+    <title>Sistema Solar de Bolso — Paper Diorama</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <main class="paper-shell">
+        <div id="paper-stage" class="paper-stage" role="img" aria-label="Diorama do Sistema Solar em papel">
+            <p class="stage-loading" aria-live="polite">A montar o diorama…</p>
+        </div>
+
+        <header class="experience-header">
+            <section id="objective-chip" class="objective-chip" aria-live="polite">
+                <span class="objective-kicker">Missão de bolso</span>
+                <strong id="objective-text">Chega a Saturno</strong>
+            </section>
+
+            <button id="notebook-trigger" class="notebook-trigger" type="button" aria-haspopup="dialog">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 3.5h11.5A2.5 2.5 0 0 1 19 6v14.5H7.5A2.5 2.5 0 0 1 5 18V3.5Zm2 2v12.4c.16-.04.33-.05.5-.05H17V6a.5.5 0 0 0-.5-.5H7Z"/></svg>
+                <span>Caderno</span>
+            </button>
+        </header>
+
+        <nav id="planet-navigation" class="planet-navigation" aria-label="Navegação entre astros">
+            <button id="previous-planet" class="edge-action" type="button" aria-label="Astro anterior">
+                <span aria-hidden="true">←</span>
+            </button>
+            <button id="explore-planet" class="explore-action" type="button">
+                <span id="active-planet-name">Sol</span>
+                <small>Explorar página</small>
+            </button>
+            <button id="next-planet" class="edge-action" type="button" aria-label="Astro seguinte">
+                <span aria-hidden="true">→</span>
+            </button>
+        </nav>
+
+        <p class="key-hint" aria-hidden="true">← → para viajar · Enter para explorar · F ecrã inteiro</p>
+    </main>
+
+    <dialog id="field-notebook" class="field-notebook" aria-labelledby="notebook-title">
+        <article class="notebook-page">
+            <div class="binding-holes" aria-hidden="true"></div>
+            <button id="close-notebook" class="close-notebook" type="button" aria-label="Fechar caderno">Fechar</button>
+            <p id="notebook-kicker" class="notebook-kicker">Nota de campo</p>
+            <h1 id="notebook-title">Sol</h1>
+            <p id="notebook-fact" class="notebook-fact"></p>
+            <div class="pencil-rule" aria-hidden="true"></div>
+            <p id="notebook-note" class="notebook-note"></p>
+            <p id="mission-stamp" class="mission-stamp" hidden>Missão cumprida</p>
+        </article>
+    </dialog>
+
+    <noscript>Esta preview precisa de JavaScript para montar o diorama.</noscript>
+</body>
+</html>

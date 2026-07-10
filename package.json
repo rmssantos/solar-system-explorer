@@ -5,7 +5,9 @@
     "description": "Interactive 3D Solar System Explorer for kids - Educational game with Three.js",
     "scripts": {
         "dev": "vite --host",
+        "dev:paper": "vite paper-preview --host 0.0.0.0",
         "build": "vite build",
+        "build:paper": "vite build paper-preview --outDir ../dist-paper-preview --emptyOutDir",
         "preview": "vite preview",
         "test": "vitest run",
         "lint": "eslint .",
