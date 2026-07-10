@@ -71,20 +71,22 @@ export function stepFlight(state, input, deltaSeconds) {
     const strafeIntent = input.strafe ?? input.moveX ?? 0;
     const verticalIntent = input.vertical ?? 0;
     const cosPitch = Math.cos(orientation.pitch);
-    const forward = {
+    const movementBasis = input.movementBasis;
+    const forward = movementBasis?.forward ?? {
         x: Math.sin(orientation.yaw) * cosPitch,
         y: Math.sin(orientation.pitch),
         z: -Math.cos(orientation.yaw) * cosPitch
     };
-    const right = {
+    const right = movementBasis?.right ?? {
         x: Math.cos(orientation.yaw),
         y: 0,
         z: Math.sin(orientation.yaw)
     };
+    const up = movementBasis?.up ?? { x: 0, y: 1, z: 0 };
 
-    let intentX = (forward.x * forwardIntent) + (right.x * strafeIntent);
-    let intentY = (forward.y * forwardIntent) + verticalIntent;
-    let intentZ = (forward.z * forwardIntent) + (right.z * strafeIntent);
+    let intentX = (forward.x * forwardIntent) + (right.x * strafeIntent) + (up.x * verticalIntent);
+    let intentY = (forward.y * forwardIntent) + (right.y * strafeIntent) + (up.y * verticalIntent);
+    let intentZ = (forward.z * forwardIntent) + (right.z * strafeIntent) + (up.z * verticalIntent);
     const intentLength = Math.hypot(intentX, intentY, intentZ);
     if (intentLength > 1) {
         intentX /= intentLength;

@@ -4,6 +4,7 @@ import { createLowPolyPlanet } from './createLowPolyPlanet.js';
 import { createPaperTextures } from './paperTextures.js';
 
 const PLANET_KEYS = ['sun', 'earth', 'saturn'];
+export const CHASE_CAMERA_LAYOUT = Object.freeze({ distance: 6.4, verticalOffset: 0.9 });
 
 function makeRocket(textures) {
     const group = new THREE.Group();
@@ -177,13 +178,12 @@ export function createPaperScene(stage) {
         activeIndex: -1,
         contextLost: false,
         cameraPosition: new THREE.Vector3(0, 2.2, 13),
-        cameraFocus: new THREE.Vector3(0, 0, 4),
         flightQuaternion: new THREE.Quaternion(),
         modelAlignment: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2),
         forward: new THREE.Vector3(),
+        right: new THREE.Vector3(),
         up: new THREE.Vector3(),
         desiredCamera: new THREE.Vector3(),
-        desiredFocus: new THREE.Vector3(),
         lightOffset: new THREE.Vector3(-4, 7, 8),
         shipPosition: new THREE.Vector3(0, 0, 7),
         orientation: { yaw: 0, pitch: 0, roll: 0 }
@@ -219,15 +219,12 @@ export function createPaperScene(stage) {
 
         runtime.forward.set(0, 0, -1).applyQuaternion(runtime.flightQuaternion);
         runtime.up.set(0, 1, 0).applyQuaternion(runtime.flightQuaternion);
-        runtime.desiredFocus.copy(runtime.shipPosition).addScaledVector(runtime.forward, 2.7);
         runtime.desiredCamera.copy(runtime.shipPosition)
-            .addScaledVector(runtime.forward, -6.4)
-            .addScaledVector(runtime.up, 2.15);
-        runtime.cameraFocus.lerp(runtime.desiredFocus, 1 - Math.exp(-7 * delta));
+            .addScaledVector(runtime.forward, -CHASE_CAMERA_LAYOUT.distance)
+            .addScaledVector(runtime.up, CHASE_CAMERA_LAYOUT.verticalOffset);
         runtime.cameraPosition.lerp(runtime.desiredCamera, 1 - Math.exp(-5.2 * delta));
         camera.position.copy(runtime.cameraPosition);
-        camera.up.copy(runtime.up);
-        camera.lookAt(runtime.cameraFocus);
+        camera.quaternion.copy(runtime.flightQuaternion);
 
         keyLight.position.copy(camera.position).add(runtime.lightOffset);
         keyLight.target.position.copy(runtime.shipPosition);
@@ -249,6 +246,17 @@ export function createPaperScene(stage) {
         if (!runtime.contextLost) renderer.render(scene, camera);
     }
 
+    function getNavigationBasis() {
+        runtime.forward.set(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+        runtime.right.set(1, 0, 0).applyQuaternion(camera.quaternion).normalize();
+        runtime.up.set(0, 1, 0).applyQuaternion(camera.quaternion).normalize();
+        return {
+            forward: { x: runtime.forward.x, y: runtime.forward.y, z: runtime.forward.z },
+            right: { x: runtime.right.x, y: runtime.right.y, z: runtime.right.z },
+            up: { x: runtime.up.x, y: runtime.up.y, z: runtime.up.z }
+        };
+    }
+
     function getState() {
         return {
             activeIndex: runtime.activeIndex,
@@ -265,6 +273,10 @@ export function createPaperScene(stage) {
             },
             orientation: Object.fromEntries(
                 Object.entries(runtime.orientation).map(([key, value]) => [key, Number(value.toFixed(3))])
+            ),
+            cameraForward: Object.fromEntries(
+                Object.entries(getNavigationBasis().forward)
+                    .map(([key, value]) => [key, Number(value.toFixed(3))])
             ),
             contextLost: runtime.contextLost
         };
@@ -299,5 +311,5 @@ export function createPaperScene(stage) {
         renderer.domElement.remove();
     }
 
-    return { setFlightSnapshot, update, render, resize, getState, destroy };
+    return { setFlightSnapshot, update, render, resize, getNavigationBasis, getState, destroy };
 }

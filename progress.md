@@ -37,6 +37,10 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - 7 testes estruturais low-poly passam; focused flight + visual = 19 testes, lint e build paper passam.
 - Screenshots: `output/playwright/paper-lowpoly/shot-0.png`, `earth-close.png`, `saturn-close.png`.
 - Observação visual para o batch de câmara: em aproximação a Saturno, o anel pode dominar o lado esquerdo; aplicar camera pull-back/focus contextual sem bloquear yaw/pitch/roll.
+- Navegação finalmente alinhada com o modelo do jogo original: `camera.quaternion` é a autoridade única; `W/S`, `A/D` e vertical usam os vetores forward/right/up reais da câmara renderizada.
+- Removido o `lookAt()` com smoothing independente que fazia a direção vista divergir da direção física. O utilizador confirmou a correção.
+- Composição da nave revista: offset vertical da chase camera reduzido de 2,15 para 0,9, colocando a nave a cerca de 35% acima da margem inferior (~65–68% da altura).
+- Desktop e mobile 390×844 inspecionados sem conflito com prompts/controlos. Evidência: `output/playwright/ship-layout/shot-0.png` e `mobile-390.png`.
 
 ## TODO
 

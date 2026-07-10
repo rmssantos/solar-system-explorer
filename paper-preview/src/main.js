@@ -64,7 +64,10 @@ function syncUI(force = false) {
 }
 
 function step(seconds) {
-    lastInput = flightInput.sample();
+    lastInput = {
+        ...flightInput.sample(),
+        movementBasis: paperScene.getNavigationBasis()
+    };
     if (!previewState.notebook.open) flightState = stepFlight(flightState, lastInput, seconds);
     paperScene.update(seconds);
     paperScene.setFlightSnapshot(flightState, seconds);

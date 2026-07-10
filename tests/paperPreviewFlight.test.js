@@ -69,6 +69,25 @@ describe('Full 3D paper flight simulation', () => {
         expect(settledIntoTurn.velocity.x).toBeGreaterThan(Math.abs(settledIntoTurn.velocity.z));
     });
 
+    it('uses the rendered camera basis as the movement authority', () => {
+        const initial = {
+            ...createFlightState(),
+            position: { x: 30, y: 0, z: 10 }
+        };
+        const moved = stepMany(initial, {
+            ...idleInput,
+            forward: 1,
+            movementBasis: {
+                forward: { x: 1, y: 0, z: 0 },
+                right: { x: 0, y: 0, z: 1 },
+                up: { x: 0, y: 1, z: 0 }
+            }
+        }, 30);
+
+        expect(moved.position.x).toBeGreaterThan(initial.position.x);
+        expect(Math.abs(moved.position.z - initial.position.z)).toBeLessThan(0.001);
+    });
+
     it('uses pitch for forward elevation and world Y for vertical thrust', () => {
         const initial = createFlightState();
         const pitched = {
