@@ -1,71 +1,11 @@
 import * as THREE from 'three';
 import { PLANET_ANCHORS } from '../flightSimulation.js';
 import { createLowPolyPlanet } from './createLowPolyPlanet.js';
+import { createPaperShip, updatePaperShipThrust } from './createPaperShip.js';
 import { createPaperTextures } from './paperTextures.js';
 
 const PLANET_KEYS = ['sun', 'earth', 'saturn'];
 export const CHASE_CAMERA_LAYOUT = Object.freeze({ distance: 6.4, verticalOffset: 0.9 });
-
-function makeRocket(textures) {
-    const group = new THREE.Group();
-    group.name = 'cardboard-rocket';
-    const bodyShape = new THREE.Shape();
-    bodyShape.moveTo(-0.55, -0.2);
-    bodyShape.lineTo(0.35, -0.2);
-    bodyShape.lineTo(0.72, 0);
-    bodyShape.lineTo(0.35, 0.2);
-    bodyShape.lineTo(-0.55, 0.2);
-    bodyShape.closePath();
-    const body = new THREE.Mesh(
-        new THREE.ExtrudeGeometry(bodyShape, { depth: 0.11, bevelEnabled: false }),
-        [
-            new THREE.MeshStandardMaterial({ map: textures.cream, roughness: 0.95 }),
-            new THREE.MeshStandardMaterial({ map: textures.cardboard, color: '#956c3d', roughness: 0.98 })
-        ]
-    );
-    body.geometry.translate(0, 0, -0.055);
-    body.castShadow = true;
-    const bodyCross = body.clone();
-    bodyCross.rotation.x = Math.PI / 2;
-
-    const windowMesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.115, 0.115, 0.13, 20),
-        new THREE.MeshStandardMaterial({ color: '#4388b8', roughness: 0.92 })
-    );
-    windowMesh.rotation.x = Math.PI / 2;
-    windowMesh.position.set(0.18, 0, 0.065);
-
-    const finShape = new THREE.Shape();
-    finShape.moveTo(-0.3, -0.18);
-    finShape.lineTo(-0.55, -0.48);
-    finShape.lineTo(-0.02, -0.2);
-    finShape.closePath();
-    const finMaterial = new THREE.MeshStandardMaterial({ map: textures.coral, roughness: 0.96, side: THREE.DoubleSide });
-    const lowerFin = new THREE.Mesh(new THREE.ShapeGeometry(finShape), finMaterial);
-    lowerFin.position.z = -0.065;
-    const upperFin = lowerFin.clone();
-    upperFin.scale.y = -1;
-    const sideFinLower = lowerFin.clone();
-    sideFinLower.rotation.x = Math.PI / 2;
-    const sideFinUpper = upperFin.clone();
-    sideFinUpper.rotation.x = Math.PI / 2;
-
-    const flameShape = new THREE.Shape();
-    flameShape.moveTo(-0.54, -0.13);
-    flameShape.lineTo(-1.05, 0);
-    flameShape.lineTo(-0.54, 0.13);
-    flameShape.closePath();
-    const flame = new THREE.Mesh(
-        new THREE.ShapeGeometry(flameShape),
-        new THREE.MeshBasicMaterial({ color: '#f5b83d', side: THREE.DoubleSide })
-    );
-    flame.position.z = -0.075;
-    flame.name = 'rocket-flame';
-
-    group.add(flame, lowerFin, upperFin, sideFinLower, sideFinUpper, body, bodyCross, windowMesh);
-    group.scale.setScalar(1.05);
-    return group;
-}
 
 function addPaperStars(scene) {
     let seed = 9127;
@@ -169,7 +109,7 @@ export function createPaperScene(stage) {
         return planet;
     });
 
-    const rocket = makeRocket(textures);
+    const rocket = createPaperShip();
     rocket.position.set(0, 0, 7);
     scene.add(rocket);
 
@@ -179,7 +119,6 @@ export function createPaperScene(stage) {
         contextLost: false,
         cameraPosition: new THREE.Vector3(0, 2.2, 13),
         flightQuaternion: new THREE.Quaternion(),
-        modelAlignment: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2),
         forward: new THREE.Vector3(),
         right: new THREE.Vector3(),
         up: new THREE.Vector3(),
@@ -208,14 +147,10 @@ export function createPaperScene(stage) {
         ));
         runtime.shipPosition.set(flightState.position.x, flightState.position.y, flightState.position.z);
         rocket.position.copy(runtime.shipPosition);
-        rocket.quaternion.copy(runtime.flightQuaternion).multiply(runtime.modelAlignment);
+        rocket.quaternion.copy(runtime.flightQuaternion);
 
         const speed = Math.hypot(flightState.velocity.x, flightState.velocity.y, flightState.velocity.z);
-        const flame = rocket.getObjectByName('rocket-flame');
-        if (flame) {
-            flame.visible = speed > 0.08;
-            flame.scale.x = 0.72 + Math.min(1, speed / 8.5) * 0.62 + Math.sin(runtime.elapsed * 28) * 0.08;
-        }
+        updatePaperShipThrust(rocket, speed, runtime.elapsed);
 
         runtime.forward.set(0, 0, -1).applyQuaternion(runtime.flightQuaternion);
         runtime.up.set(0, 1, 0).applyQuaternion(runtime.flightQuaternion);

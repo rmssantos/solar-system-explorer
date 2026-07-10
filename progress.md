@@ -42,6 +42,13 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Composição da nave revista: offset vertical da chase camera reduzido de 2,15 para 0,9, colocando a nave a cerca de 35% acima da margem inferior (~65–68% da altura).
 - Desktop e mobile 390×844 inspecionados sem conflito com prompts/controlos. Evidência: `output/playwright/ship-layout/shot-0.png` e `mobile-390.png`.
 
+## 2026-07-11
+
+- Utilizador aprovou o novo estilo low-poly dos planetas e pediu nave equivalente + continuação do plano.
+- Nave reconstruída como correio espacial low-poly: fuselagem hexagonal fechada, asas coral extrudidas, cockpit azul, barbatana-envelope, rebordo e contorno.
+- Dois motores e exhaust proporcional à velocidade, sem bloom; 3 testes estruturais TDD passam.
+- Vista traseira, curva/roll e mobile 390×844 inspecionados sem erros de consola. Evidência: `output/playwright/paper-courier/shot-0.png`, `roll-profile.png` e `mobile-390.png`.
+
 ## TODO
 
 - Executar verificação integral e decidir integração/entrega.
