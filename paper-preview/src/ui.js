@@ -38,7 +38,9 @@ export function createPreviewUI({ onExplore, onCloseNotebook }) {
 
     function update(state, { flightState = null } = {}) {
         const fallbackPlanet = PLANETS[state.activeIndex];
-        const nearbyKey = flightState?.nearbyPlanetKey ?? fallbackPlanet?.key ?? null;
+        const nearbyKey = flightState
+            ? flightState.nearbyPlanetKey
+            : (fallbackPlanet?.key ?? null);
         const nearbyPlanet = PLANETS.find((planet) => planet.key === nearbyKey);
         elements.explore.hidden = !nearbyPlanet || state.notebook.open;
         elements.explore.disabled = state.notebook.open;

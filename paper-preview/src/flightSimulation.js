@@ -10,9 +10,9 @@ export const FLIGHT_BOUNDS = Object.freeze({
 });
 
 export const PLANET_ANCHORS = Object.freeze({
-    sun: Object.freeze({ key: 'sun', x: 0, y: 0, z: 0, interactionRadius: 4.8 }),
-    earth: Object.freeze({ key: 'earth', x: 15, y: 4, z: -18, interactionRadius: 3.5 }),
-    saturn: Object.freeze({ key: 'saturn', x: -18, y: -5, z: -38, interactionRadius: 5.4 })
+    sun: Object.freeze({ key: 'sun', x: 0, y: 0, z: 0, collisionRadius: 4.2, interactionRadius: 4.8 }),
+    earth: Object.freeze({ key: 'earth', x: 15, y: 4, z: -18, collisionRadius: 2.8, interactionRadius: 3.5 }),
+    saturn: Object.freeze({ key: 'saturn', x: -18, y: -5, z: -38, collisionRadius: 5.9, interactionRadius: 6.6 })
 });
 
 const ACCELERATION = 7.5;
@@ -54,15 +54,8 @@ export function createFlightState() {
         position,
         velocity: { x: 0, y: 0, z: 0 },
         orientation: { yaw: 0, pitch: 0, roll: 0 },
-        nearbyPlanetKey: findNearbyPlanet(position),
-        depthLayer: 1
+        nearbyPlanetKey: findNearbyPlanet(position)
     };
-}
-
-// Temporary compatibility for the shallow-flight checkpoint; callers migrate
-// to vertical thrust in the 360-degree flight composition.
-export function cycleDepthLayer(state) {
-    return state;
 }
 
 export function stepFlight(state, input, deltaSeconds) {
@@ -132,11 +125,38 @@ export function stepFlight(state, input, deltaSeconds) {
     if (position.y !== requestedPosition.y) velocityY = 0;
     if (position.z !== requestedPosition.z) velocityZ = 0;
 
+    for (const planet of Object.values(PLANET_ANCHORS)) {
+        let offsetX = position.x - planet.x;
+        let offsetY = position.y - planet.y;
+        let offsetZ = position.z - planet.z;
+        let distance = Math.hypot(offsetX, offsetY, offsetZ);
+        if (distance >= planet.collisionRadius) continue;
+
+        if (distance < 0.0001) {
+            offsetX = state.position.x - planet.x;
+            offsetY = state.position.y - planet.y;
+            offsetZ = state.position.z - planet.z;
+            distance = Math.hypot(offsetX, offsetY, offsetZ) || 1;
+        }
+        const normalX = offsetX / distance;
+        const normalY = offsetY / distance;
+        const normalZ = offsetZ / distance;
+        position.x = planet.x + normalX * planet.collisionRadius;
+        position.y = planet.y + normalY * planet.collisionRadius;
+        position.z = planet.z + normalZ * planet.collisionRadius;
+
+        const inwardSpeed = (velocityX * normalX) + (velocityY * normalY) + (velocityZ * normalZ);
+        if (inwardSpeed < 0) {
+            velocityX -= inwardSpeed * normalX;
+            velocityY -= inwardSpeed * normalY;
+            velocityZ -= inwardSpeed * normalZ;
+        }
+    }
+
     return {
         position,
         velocity: { x: velocityX, y: velocityY, z: velocityZ },
         orientation,
-        nearbyPlanetKey: findNearbyPlanet(position),
-        depthLayer: state.depthLayer ?? 1
+        nearbyPlanetKey: findNearbyPlanet(position)
     };
 }

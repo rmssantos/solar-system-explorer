@@ -68,8 +68,12 @@ describe('Full 3D paper flight simulation', () => {
     });
 
     it('caps normal speed, raises the cap while boosting and damps while idle', () => {
-        const normal = stepMany(createFlightState(), { ...idleInput, forward: 1 }, 240);
-        const boosted = stepMany(createFlightState(), { ...idleInput, forward: 1, boost: true }, 240);
+        const clearRoute = {
+            ...createFlightState(),
+            orientation: { yaw: Math.PI / 2, pitch: 0, roll: 0 }
+        };
+        const normal = stepMany(clearRoute, { ...idleInput, forward: 1 }, 240);
+        const boosted = stepMany(clearRoute, { ...idleInput, forward: 1, boost: true }, 240);
         const normalSpeed = Math.hypot(normal.velocity.x, normal.velocity.y, normal.velocity.z);
         const boostSpeed = Math.hypot(boosted.velocity.x, boosted.velocity.y, boosted.velocity.z);
         const coasted = stepFlight(normal, idleInput, 0.5);
@@ -81,7 +85,11 @@ describe('Full 3D paper flight simulation', () => {
     });
 
     it('wraps yaw, clamps pitch, changes roll and brakes', () => {
-        const moving = stepMany(createFlightState(), { ...idleInput, forward: 1 }, 60);
+        const clearRoute = {
+            ...createFlightState(),
+            orientation: { yaw: Math.PI / 2, pitch: 0, roll: 0 }
+        };
+        const moving = stepMany(clearRoute, { ...idleInput, forward: 1 }, 60);
         const changed = stepFlight(moving, {
             ...idleInput,
             yawDelta: (Math.PI * 2) + 0.25,
@@ -117,6 +125,36 @@ describe('Full 3D paper flight simulation', () => {
             z: FLIGHT_BOUNDS.maxZ
         });
         expect(result.velocity).toEqual({ x: 0, y: 0, z: 0 });
+    });
+
+    it('stops inward velocity at a planet surface while preserving tangential movement', () => {
+        const sun = PLANET_ANCHORS.sun;
+        const initial = {
+            ...createFlightState(),
+            position: { x: sun.x + 0.2, y: sun.y, z: sun.z + sun.collisionRadius + 0.05 },
+            velocity: { x: 1.2, y: 0, z: -MAX_SPEED }
+        };
+        const result = stepFlight(initial, idleInput, 0.25);
+        const fromSun = {
+            x: result.position.x - sun.x,
+            y: result.position.y - sun.y,
+            z: result.position.z - sun.z
+        };
+        const distance = Math.hypot(fromSun.x, fromSun.y, fromSun.z);
+        const inwardVelocity = (result.velocity.x * fromSun.x)
+            + (result.velocity.y * fromSun.y)
+            + (result.velocity.z * fromSun.z);
+
+        expect(distance).toBeGreaterThanOrEqual(sun.collisionRadius - 0.0001);
+        expect(inwardVelocity).toBeGreaterThanOrEqual(-0.0001);
+        expect(Math.abs(result.velocity.x)).toBeGreaterThan(0);
+    });
+
+    it('keeps the whole rocket clear of Saturn paper rings at discovery range', () => {
+        const saturn = PLANET_ANCHORS.saturn;
+
+        expect(saturn.collisionRadius).toBeGreaterThanOrEqual(5.8);
+        expect(saturn.interactionRadius).toBeGreaterThan(saturn.collisionRadius);
     });
 
     it('finds only planets inside their real 3D discovery radius', () => {

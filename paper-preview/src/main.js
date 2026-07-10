@@ -1,59 +1,74 @@
-import { PLANETS, closeNotebook, createPreviewState, exploreActive, navigate } from './state.js';
+import { PLANETS, closeNotebook, createPreviewState, explorePlanet } from './state.js';
+import { createFlightState, stepFlight } from './flightSimulation.js';
+import { createFlightInput } from './flightInput.js';
 import { createPaperScene } from './scene/createPaperScene.js';
 import { createPreviewUI } from './ui.js';
 
 const stage = document.querySelector('#paper-stage');
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-let state = createPreviewState();
+let previewState = createPreviewState();
+let flightState = createFlightState();
 let deterministicMode = false;
 let lastFrameTime = performance.now();
-let lastTransitionState = false;
+let lastUiSignature = '';
+let lastInput = {
+    forward: 0,
+    strafe: 0,
+    vertical: 0,
+    yawDelta: 0,
+    pitchDelta: 0,
+    roll: 0,
+    boost: false,
+    brake: false
+};
 
 const paperScene = createPaperScene(stage);
 
-function transitionIsActive() {
-    return paperScene.getState().transitionActive;
-}
-
-function handleNavigate(direction) {
-    if (state.notebook.open || transitionIsActive()) return;
-    const nextState = navigate(state, direction);
-    if (nextState.activeIndex === state.activeIndex) return;
-    state = nextState;
-    paperScene.setActivePlanet(state.activeIndex, { reducedMotion });
-    previewUI.update(state, { traveling: transitionIsActive() });
-    lastTransitionState = transitionIsActive();
-}
-
 function handleExplore() {
-    if (transitionIsActive() || state.notebook.open) return;
-    state = exploreActive(state);
-    previewUI.update(state);
+    if (previewState.notebook.open || !flightState.nearbyPlanetKey) return;
+    previewState = explorePlanet(previewState, flightState.nearbyPlanetKey);
+    flightInput.setEnabled(false);
+    syncUI(true);
 }
 
 function handleCloseNotebook() {
-    if (!state.notebook.open) return;
-    state = closeNotebook(state);
-    previewUI.update(state);
+    if (!previewState.notebook.open) return;
+    previewState = closeNotebook(previewState);
+    flightInput.setEnabled(true);
+    syncUI(true);
 }
 
 const previewUI = createPreviewUI({
-    onNavigate: handleNavigate,
     onExplore: handleExplore,
     onCloseNotebook: handleCloseNotebook
 });
 
-function syncTransitionUI() {
-    const traveling = transitionIsActive();
-    if (traveling !== lastTransitionState) {
-        previewUI.update(state, { traveling });
-        lastTransitionState = traveling;
-    }
+const flightInput = createFlightInput({
+    stage,
+    joystick: previewUI.elements.joystick,
+    joystickKnob: previewUI.elements.joystickKnob,
+    upButton: previewUI.elements.upButton,
+    downButton: previewUI.elements.downButton,
+    boostButton: previewUI.elements.boostButton
+});
+
+function syncUI(force = false) {
+    const signature = [
+        flightState.nearbyPlanetKey ?? 'none',
+        previewState.notebook.open,
+        previewState.notebook.planetKey ?? 'none',
+        previewState.missionComplete
+    ].join(':');
+    if (!force && signature === lastUiSignature) return;
+    previewUI.update(previewState, { flightState });
+    lastUiSignature = signature;
 }
 
 function step(seconds) {
+    lastInput = flightInput.sample();
+    if (!previewState.notebook.open) flightState = stepFlight(flightState, lastInput, seconds);
     paperScene.update(seconds);
-    syncTransitionUI();
+    paperScene.setFlightSnapshot(flightState, seconds);
+    syncUI();
 }
 
 function frame(timestamp) {
@@ -67,58 +82,65 @@ function frame(timestamp) {
 }
 
 async function toggleFullscreen() {
-    if (document.fullscreenElement) {
-        await document.exitFullscreen();
-    } else {
-        await document.documentElement.requestFullscreen();
-    }
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
 }
 
 function handleKeydown(event) {
-    if (event.key.toLowerCase() === 'f') {
+    if (event.code === 'KeyG') {
         event.preventDefault();
         toggleFullscreen().catch(() => {});
         return;
     }
-
-    if (state.notebook.open) {
-        if (event.key === 'Escape') {
-            event.preventDefault();
-            handleCloseNotebook();
-        }
+    if (event.key === 'Escape' && previewState.notebook.open) {
+        event.preventDefault();
+        handleCloseNotebook();
         return;
     }
-
-    if (event.key === 'ArrowLeft') {
-        event.preventDefault();
-        handleNavigate(-1);
-    } else if (event.key === 'ArrowRight') {
-        event.preventDefault();
-        handleNavigate(1);
-    } else if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !previewState.notebook.open) {
         event.preventDefault();
         handleExplore();
     }
 }
 
+function roundVector(vector) {
+    return Object.fromEntries(
+        Object.entries(vector).map(([key, value]) => [key, Number(value.toFixed(3))])
+    );
+}
+
 window.render_game_to_text = () => {
-    const activePlanet = PLANETS[state.activeIndex];
-    const sceneState = paperScene.getState();
+    const nearbyPlanet = PLANETS.find((planet) => planet.key === flightState.nearbyPlanetKey) ?? null;
     return JSON.stringify({
-        coordinateSystem: 'Diorama coordinates: +x travels Sun → Earth → Saturn; +y is up; camera faces -z.',
-        mode: state.notebook.open ? 'notebook' : (sceneState.transitionActive ? 'traveling' : 'exploring'),
-        activePlanet: { index: state.activeIndex, key: activePlanet.key, name: activePlanet.name },
-        navigation: {
-            previousAvailable: state.activeIndex > 0 && !sceneState.transitionActive,
-            nextAvailable: state.activeIndex < PLANETS.length - 1 && !sceneState.transitionActive
+        coordinateSystem: '3D paper flight: yaw 0 faces -Z; +X right, +Y up, +Z behind. Movement is camera-relative.',
+        mode: previewState.notebook.open ? 'notebook' : 'free-flight-360',
+        ship: {
+            position: roundVector(flightState.position),
+            velocity: roundVector(flightState.velocity),
+            orientation: roundVector(flightState.orientation),
+            speed: Number(Math.hypot(
+                flightState.velocity.x,
+                flightState.velocity.y,
+                flightState.velocity.z
+            ).toFixed(3)),
+            nearbyPlanet: nearbyPlanet?.key ?? null
         },
+        input: {
+            forward: Number(lastInput.forward.toFixed(3)),
+            strafe: Number(lastInput.strafe.toFixed(3)),
+            vertical: Number(lastInput.vertical.toFixed(3)),
+            roll: Number(lastInput.roll.toFixed(3)),
+            boost: lastInput.boost,
+            brake: lastInput.brake
+        },
+        interaction: nearbyPlanet ? `Explorar ${nearbyPlanet.name}` : null,
         objective: {
-            target: state.objectiveTarget,
-            complete: state.missionComplete,
-            label: state.missionComplete ? 'Missão cumprida' : 'Chega a Saturno'
+            target: previewState.objectiveTarget,
+            complete: previewState.missionComplete,
+            label: previewState.missionComplete ? 'Missão cumprida' : 'Chega a Saturno'
         },
-        notebook: { ...state.notebook },
-        scene: sceneState
+        notebook: { ...previewState.notebook },
+        scene: paperScene.getState()
     });
 };
 
@@ -130,8 +152,7 @@ window.advanceTime = (milliseconds) => {
 };
 
 window.__paperPreview = {
-    getState: () => ({ ...state, scene: paperScene.getState() }),
-    navigate: handleNavigate,
+    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, scene: paperScene.getState() }),
     explore: handleExplore,
     closeNotebook: handleCloseNotebook
 };
@@ -139,12 +160,14 @@ window.__paperPreview = {
 window.addEventListener('keydown', handleKeydown);
 document.addEventListener('fullscreenchange', paperScene.resize);
 window.addEventListener('beforeunload', () => {
+    flightInput.destroy();
     previewUI.destroy();
     paperScene.destroy();
 }, { once: true });
 
-paperScene.setActivePlanet(state.activeIndex, { immediate: true });
-previewUI.update(state);
+paperScene.update(0);
+paperScene.setFlightSnapshot(flightState, 0.1);
+syncUI(true);
 previewUI.markReady();
 paperScene.render();
 window.requestAnimationFrame(frame);
