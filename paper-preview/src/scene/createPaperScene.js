@@ -1,8 +1,10 @@
 import * as THREE from 'three';
+import { PLANET_ANCHORS } from '../flightSimulation.js';
 import { createPaperPlanet } from './createPaperPlanet.js';
 import { createPaperTextures } from './paperTextures.js';
 
-const PLANET_X = [-6.4, 0, 6.4];
+const PLANET_KEYS = ['sun', 'earth', 'saturn'];
+const PLANET_X = PLANET_KEYS.map((key) => PLANET_ANCHORS[key].x);
 
 function smoothStep(value) {
     return value * value * (3 - (2 * value));
@@ -136,9 +138,12 @@ export function createPaperScene(stage) {
     keyLight.shadow.camera.bottom = -8;
     scene.add(keyLight);
 
-    const planets = ['sun', 'earth', 'saturn'].map((key, index) => {
+    const planets = PLANET_KEYS.map((key) => {
+        const anchor = PLANET_ANCHORS[key];
         const planet = createPaperPlanet(key, textures);
-        planet.position.set(PLANET_X[index], planet.userData.baseY, 0);
+        planet.userData.baseY = anchor.y;
+        planet.userData.baseZ = anchor.z;
+        planet.position.set(anchor.x, anchor.y, anchor.z);
         scene.add(planet);
         return planet;
     });
@@ -152,6 +157,10 @@ export function createPaperScene(stage) {
         elapsed: 0,
         activeIndex: 0,
         cameraX: PLANET_X[0],
+        flightMode: false,
+        cameraOrbit: { yaw: 0, pitch: 0 },
+        cameraFocus: new THREE.Vector3(PLANET_X[0], -2.1, 0.3),
+        cameraPosition: new THREE.Vector3(PLANET_X[0], 0.25, 14),
         contextLost: false,
         transition: {
             active: false,
@@ -173,6 +182,7 @@ export function createPaperScene(stage) {
     }
 
     function setActivePlanet(index, { immediate = false, reducedMotion = false } = {}) {
+        runtime.flightMode = false;
         const targetIndex = Math.max(0, Math.min(PLANET_X.length - 1, index));
         runtime.activeIndex = targetIndex;
         if (immediate || reducedMotion) {
@@ -194,6 +204,61 @@ export function createPaperScene(stage) {
         rocket.scale.x = runtime.transition.toX >= runtime.transition.fromX ? 0.72 : -0.72;
     }
 
+    function setFlightSnapshot(flightState, cameraOrbit, deltaSeconds) {
+        const delta = Math.min(Math.max(deltaSeconds, 0), 0.1);
+        runtime.flightMode = true;
+        runtime.cameraOrbit.yaw = THREE.MathUtils.clamp(cameraOrbit.yaw, -0.34, 0.34);
+        runtime.cameraOrbit.pitch = THREE.MathUtils.clamp(cameraOrbit.pitch, -0.18, 0.18);
+
+        const speed = Math.hypot(flightState.velocity.x, flightState.velocity.y);
+        rocket.position.set(flightState.position.x, flightState.position.y, flightState.position.z + 0.38);
+        if (speed > 0.035) {
+            const heading = Math.atan2(flightState.velocity.y, flightState.velocity.x);
+            const angleDelta = Math.atan2(
+                Math.sin(heading - rocket.rotation.z),
+                Math.cos(heading - rocket.rotation.z)
+            );
+            rocket.rotation.z += angleDelta * Math.min(1, delta * 8);
+        }
+        rocket.rotation.x = THREE.MathUtils.lerp(
+            rocket.rotation.x,
+            -flightState.velocity.y * 0.035,
+            Math.min(1, delta * 6)
+        );
+
+        const flame = rocket.getObjectByName('rocket-flame');
+        if (flame) {
+            flame.visible = speed > 0.06;
+            flame.scale.x = 0.7 + Math.min(1, speed / 3.9) * 0.48 + Math.sin(runtime.elapsed * 28) * 0.08;
+        }
+
+        const lookAhead = new THREE.Vector3(
+            flightState.velocity.x * 0.24,
+            flightState.velocity.y * 0.24,
+            0
+        );
+        const desiredFocus = new THREE.Vector3(
+            flightState.position.x,
+            flightState.position.y,
+            flightState.position.z
+        ).add(lookAhead);
+        runtime.cameraFocus.lerp(desiredFocus, 1 - Math.exp(-6 * delta));
+
+        const yaw = runtime.cameraOrbit.yaw;
+        const pitch = runtime.cameraOrbit.pitch;
+        const distance = 11.6;
+        const desiredCamera = new THREE.Vector3(
+            runtime.cameraFocus.x + Math.sin(yaw) * distance,
+            runtime.cameraFocus.y + 0.65 + Math.sin(pitch) * distance,
+            runtime.cameraFocus.z + Math.cos(yaw) * Math.cos(pitch) * distance
+        );
+        runtime.cameraPosition.lerp(desiredCamera, 1 - Math.exp(-4.5 * delta));
+        camera.position.copy(runtime.cameraPosition);
+        camera.lookAt(runtime.cameraFocus);
+
+        runtime.activeIndex = PLANET_KEYS.indexOf(flightState.nearbyPlanetKey);
+    }
+
     function update(deltaSeconds) {
         const delta = Math.min(Math.max(deltaSeconds, 0), 0.1);
         runtime.elapsed += delta;
@@ -205,11 +270,15 @@ export function createPaperScene(stage) {
             if (!runtime.transition.active) {
                 const selectedScale = index === runtime.activeIndex ? 1.035 : 1;
                 planet.scale.lerp(new THREE.Vector3(selectedScale, selectedScale, 1), Math.min(1, delta * 5));
-                planet.position.z *= Math.max(0, 1 - delta * 8);
+                planet.position.z = THREE.MathUtils.lerp(
+                    planet.position.z,
+                    planet.userData.baseZ,
+                    Math.min(1, delta * 8)
+                );
             }
         });
 
-        if (runtime.transition.active) {
+        if (!runtime.flightMode && runtime.transition.active) {
             runtime.transition.elapsed += delta;
             const linear = Math.min(1, runtime.transition.elapsed / runtime.transition.duration);
             const eased = smoothStep(linear);
@@ -221,7 +290,7 @@ export function createPaperScene(stage) {
 
             const destination = planets[runtime.transition.toIndex];
             const lift = Math.sin(linear * Math.PI);
-            destination.position.z = lift * 0.28;
+            destination.position.z = destination.userData.baseZ + lift * 0.28;
             destination.scale.setScalar(1 + lift * 0.055);
 
             if (linear >= 1) {
@@ -232,8 +301,10 @@ export function createPaperScene(stage) {
             }
         }
 
-        camera.position.x = runtime.cameraX;
-        camera.lookAt(runtime.cameraX, 0.25, 0);
+        if (!runtime.flightMode) {
+            camera.position.x = runtime.cameraX;
+            camera.lookAt(runtime.cameraX, 0.25, 0);
+        }
     }
 
     function render() {
@@ -243,7 +314,21 @@ export function createPaperScene(stage) {
     function getState() {
         return {
             activeIndex: runtime.activeIndex,
+            mode: runtime.flightMode ? 'flight' : 'rail',
             cameraX: Number(runtime.cameraX.toFixed(3)),
+            camera: {
+                x: Number(camera.position.x.toFixed(3)),
+                y: Number(camera.position.y.toFixed(3)),
+                z: Number(camera.position.z.toFixed(3)),
+                yaw: Number(runtime.cameraOrbit.yaw.toFixed(3)),
+                pitch: Number(runtime.cameraOrbit.pitch.toFixed(3))
+            },
+            rocket: {
+                x: Number(rocket.position.x.toFixed(3)),
+                y: Number(rocket.position.y.toFixed(3)),
+                z: Number(rocket.position.z.toFixed(3)),
+                heading: Number(rocket.rotation.z.toFixed(3))
+            },
             transitionActive: runtime.transition.active,
             transitionProgress: runtime.transition.active
                 ? Number(Math.min(1, runtime.transition.elapsed / runtime.transition.duration).toFixed(3))
@@ -281,5 +366,5 @@ export function createPaperScene(stage) {
         renderer.domElement.remove();
     }
 
-    return { setActivePlanet, update, render, resize, getState, destroy };
+    return { setActivePlanet, setFlightSnapshot, update, render, resize, getState, destroy };
 }

@@ -136,6 +136,13 @@ export function createPaperPlanet(key, textures) {
         -0.04
     );
 
+    const deepCardboard = makeLayer(
+        profileGeometry(config.seed, config.radius * 1.07, 72, 0.03),
+        paperMaterial(textures.cardboard, '#8f673c'),
+        -0.105
+    );
+    deepCardboard.position.x = 0.035;
+
     const face = makeLayer(
         profileGeometry(config.seed + 1, config.radius, 72, 0.024),
         paperMaterial(textures[config.texture]),
@@ -150,7 +157,7 @@ export function createPaperPlanet(key, textures) {
         new THREE.LineBasicMaterial({ color: '#2b2f3a', transparent: true, opacity: 0.26 })
     );
 
-    group.add(shadow, cardboard, face, rim);
+    group.add(shadow, deepCardboard, cardboard, face, rim);
     if (key === 'earth') addEarthClouds(group, textures, config.radius);
     group.rotation.z = config.rotation;
     return group;
