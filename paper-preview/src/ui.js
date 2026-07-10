@@ -35,12 +35,14 @@ export function createPreviewUI({ onNavigate, onExplore, onCloseNotebook }) {
         element.addEventListener(eventName, handler);
     }
 
-    function update(state) {
+    function update(state, { traveling = false } = {}) {
         const activePlanet = PLANETS[state.activeIndex];
         elements.planetName.textContent = activePlanet.name;
-        elements.previous.disabled = state.activeIndex === 0 || state.notebook.open;
-        elements.next.disabled = state.activeIndex === PLANETS.length - 1 || state.notebook.open;
-        elements.explore.disabled = state.notebook.open;
+        elements.previous.disabled = state.activeIndex === 0 || state.notebook.open || traveling;
+        elements.next.disabled = state.activeIndex === PLANETS.length - 1 || state.notebook.open || traveling;
+        elements.explore.disabled = state.notebook.open || traveling;
+        elements.notebookTrigger.disabled = traveling;
+        elements.explore.querySelector('small').textContent = traveling ? 'A viajar…' : 'Explorar página';
         elements.objective.classList.toggle('is-complete', state.missionComplete);
         elements.objectiveText.textContent = state.missionComplete
             ? 'Saturno encontrado — missão cumprida'

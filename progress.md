@@ -6,9 +6,16 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Preview isolada na branch `codex/paper-diorama-preview` e worktree global própria.
 - Baseline do repositório: 7 ficheiros / 57 testes passam; npm install sem vulnerabilidades.
 - Design: `docs/plans/2026-07-10-paper-diorama-design.md`.
+- Estado/mission loop: 6 testes TDD passam.
+- Shell Vite independente e UI low-chrome verificados sem overflow em 1440×900 e 390×844.
+- Palco Three.js implementado com texturas CanvasTexture, planetas em camadas, estrelas, órbita cosida e nave de cartão.
+- Fluxo automatizado Sol → Terra → Saturno → caderno terminou com missão completa e sem erros de consola da app.
+- Build da preview: 555,32 KB JS raw / 142,96 KB gzip (Three.js incluído), CSS 6,49 KB raw / 2,27 KB gzip.
+- Artefactos desktop: `output/playwright/paper-preview/01-sun-desktop.png` a `05-notebook-desktop.png`.
 
 ## TODO
 
 - Escrever plano de implementação TDD.
-- Construir state core, palco Three.js, UI e notebook.
-- Playtest desktop/mobile com screenshots e `render_game_to_text`.
+- Playtest mobile completo, reduced motion e fullscreen.
+- Rever legibilidade da Terra e possíveis artefactos de captura durante a transição.
+- Executar verificação integral e decidir integração/entrega.

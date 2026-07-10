@@ -112,7 +112,7 @@ export function createPaperScene(stage) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.setAttribute('aria-hidden', 'true');
     stage.appendChild(renderer.domElement);
 
