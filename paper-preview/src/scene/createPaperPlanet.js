@@ -73,21 +73,25 @@ function addEarthClouds(group, textures, radius) {
 }
 
 function addSaturnRings(group, textures, radius) {
-    const backing = makeLayer(
-        new THREE.RingGeometry(radius * 1.12, radius * 1.92, 96),
-        paperMaterial(textures.cardboard, '#9d7443'),
-        -0.095
-    );
-    backing.scale.y = 0.34;
-    backing.rotation.z = -0.16;
-
-    const ring = makeLayer(
-        new THREE.RingGeometry(radius * 1.17, radius * 1.84, 96),
+    const ringShape = new THREE.Shape();
+    ringShape.absarc(0, 0, radius * 1.92, 0, Math.PI * 2, false);
+    const ringHole = new THREE.Path();
+    ringHole.absarc(0, 0, radius * 1.13, 0, Math.PI * 2, true);
+    ringShape.holes.push(ringHole);
+    const ringGeometry = new THREE.ExtrudeGeometry(ringShape, {
+        depth: 0.12,
+        bevelEnabled: false,
+        curveSegments: 96
+    });
+    ringGeometry.translate(0, 0, -0.06);
+    const ring = new THREE.Mesh(ringGeometry, [
         paperMaterial(textures.cream, '#e8c47d'),
-        -0.075
-    );
-    ring.scale.y = 0.34;
-    ring.rotation.z = -0.16;
+        paperMaterial(textures.cardboard, '#8f673c')
+    ]);
+    ring.rotation.set(1.03, 0, -0.16);
+    ring.position.z = -0.06;
+    ring.castShadow = true;
+    ring.receiveShadow = true;
 
     const stitch = new THREE.LineLoop(
         new THREE.BufferGeometry().setFromPoints(
@@ -95,16 +99,52 @@ function addSaturnRings(group, textures, radius) {
                 const angle = (index / 96) * Math.PI * 2;
                 return new THREE.Vector3(
                     Math.cos(angle) * radius * 1.51,
-                    Math.sin(angle) * radius * 1.51 * 0.34,
-                    -0.05
+                    Math.sin(angle) * radius * 1.51,
+                    0.02
                 );
             })
         ),
         new THREE.LineDashedMaterial({ color: '#8d633b', dashSize: 0.12, gapSize: 0.09 })
     );
-    stitch.rotation.z = -0.16;
+    stitch.rotation.set(1.03, 0, -0.16);
     stitch.computeLineDistances();
-    group.add(backing, ring, stitch);
+    group.add(ring, stitch);
+}
+
+function addSculptureSlices(group, key, textures, config) {
+    const faceTexture = textures[config.texture];
+    const meridianAngles = [30, 60, 90, 120, 150].map((degrees) => THREE.MathUtils.degToRad(degrees));
+    meridianAngles.forEach((angle, index) => {
+        const useCardboard = index % 2 === 1;
+        const material = useCardboard
+            ? paperMaterial(textures.cardboard, '#9a7041')
+            : paperMaterial(faceTexture, key === 'earth' ? '#3f7fa8' : '#d59a4e');
+        const slice = makeLayer(
+            profileGeometry(config.seed + 80 + index, config.radius * 0.985, 64, 0.02),
+            material,
+            0
+        );
+        slice.rotation.y = angle;
+        slice.name = `${key}-meridian-${index + 1}`;
+        group.add(slice);
+    });
+
+    const horizontalOffsets = [-0.58, 0, 0.58];
+    horizontalOffsets.forEach((offset, index) => {
+        const radiusScale = Math.sqrt(1 - (offset * offset));
+        const slice = makeLayer(
+            profileGeometry(config.seed + 120 + index, config.radius * radiusScale, 64, 0.018),
+            paperMaterial(
+                index === 1 ? faceTexture : textures.cardboard,
+                index === 1 ? '#ffffff' : '#9a7041'
+            ),
+            0
+        );
+        slice.position.y = config.radius * offset;
+        slice.rotation.x = Math.PI / 2;
+        slice.name = `${key}-latitude-${index + 1}`;
+        group.add(slice);
+    });
 }
 
 const CONFIG = {
@@ -121,6 +161,7 @@ export function createPaperPlanet(key, textures) {
 
     if (key === 'sun') addSunRays(group, textures, config.radius);
     if (key === 'saturn') addSaturnRings(group, textures, config.radius);
+    addSculptureSlices(group, key, textures, config);
 
     const shadow = makeLayer(
         profileGeometry(config.seed, config.radius * 1.06, 72, 0.03),
