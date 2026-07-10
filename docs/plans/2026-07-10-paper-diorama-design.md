@@ -66,9 +66,9 @@ It exposes `window.render_game_to_text()` and deterministic `window.advanceTime(
 
 No live NASA/JPL integration, full planet set, save system, quizzes, physics, free flight or asset pipeline. The preview answers one question only: is this graphical and interaction direction worth carrying into the main product?
 
-## Approved evolution: free 2.5D paper flight
+## Superseded experiment: shallow 2.5D flight
 
-The first rail-navigation build proved the material language but felt like sliding a book beneath the camera. The approved second interaction model keeps the same assets and replaces previous/next travel with direct ship control.
+The first rail-navigation build proved the material language but felt like sliding a book beneath the camera. A shallow X/Y flight model with three Z layers was implemented as an intermediate experiment, but it still did not preserve the original game's unrestricted sense of space.
 
 The ship moves freely across the paper stage in X/Y and through a deliberately shallow Z range. Camera drag adds a restrained yaw/pitch orbit around the ship; the angle is capped so the diorama never collapses into edge-on coins. This reveals cardboard backs, separated paper layers and parallax without pretending to be a realistic 3D simulator.
 
@@ -89,4 +89,20 @@ Mobile controls:
 
 The camera follows with damping and looks slightly ahead of velocity. Stars, stitched orbit and planet layers occupy different Z planes, creating parallax. Planet cutouts remain fixed in the diorama rather than always billboarding; limited camera movement is what exposes their physical construction.
 
-Simulation remains independent of Three.js. A pure flight state owns position, velocity, input, bounds, depth and nearby-object detection. The scene consumes snapshots to move the ship/camera. UI consumes the same state to show only an objective and contextual action. There is no collision engine in this preview; world bounds and a soft minimum approach distance are sufficient.
+## Final approved flight: full 360-degree paper space
+
+The player keeps the original manual-navigation mental model: W/S moves forward/back along the camera heading, A/D strafes, Space/Ctrl rises and descends, mouse or right-side touch changes yaw/pitch, Shift boosts and R/F rolls. The camera uses a close third-person chase position so the cardboard ship remains visible. `G` takes fullscreen because F is reserved for the original roll control.
+
+The world is genuinely 3D. Sun, Earth and Saturn occupy different X/Y/Z coordinates, stars sit in depth bands and the stitched route passes through space. Position, velocity and orientation are all three-dimensional; there is no layer toggle or Z clamp beyond broad world safety bounds.
+
+A single flat planet would disappear edge-on. Each planet therefore becomes a paper sculpture:
+
+- five to seven circular meridian cutouts cross around the vertical axis;
+- two or three horizontal contour slices maintain volume from above/below;
+- cardboard edge/back materials remain visible between illustrated faces;
+- the original front illustration is retained as the most detailed “hero” slice;
+- Saturn's ring is a thin extruded paper annulus rather than a zero-thickness plane.
+
+The result should resemble a handmade museum mobile or paper astronomy model, not a textured sphere. Lighting and real cast shadows reveal the construction while the compressed scientific layout remains explicitly pedagogical.
+
+Simulation remains independent of Three.js. Pure flight state owns 3D position, velocity, yaw, pitch, roll, boost, bounds and nearby-object detection. Input produces intent; the scene only renders snapshots. The notebook freezes flight and proximity gates exploration. Mobile keeps a left joystick, right-side look area, up/down and boost controls, plus one contextual Explore action.
