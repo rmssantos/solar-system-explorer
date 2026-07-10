@@ -15,7 +15,7 @@ describe('Paper learning catalog', () => {
         expect(Object.keys(catalog)).toEqual(PAPER_LEARNING_KEYS);
         for (const key of PAPER_LEARNING_KEYS) {
             const record = catalog[key];
-            expect(record.localPhoto).toMatch(/^\/textures\/real\/.+\.(jpg|jpeg)$/);
+            expect(record.localPhoto).toBe(`/learning/${key}.jpg`);
             expect(record.fact.length).toBeGreaterThan(20);
             expect(record.wowFacts.length).toBeGreaterThan(0);
             expect(record.measurements.radiusKm).toBeGreaterThan(1000);

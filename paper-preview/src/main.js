@@ -1,10 +1,17 @@
 import { PLANETS, closeNotebook, createPreviewState, explorePlanet } from './state.js';
 import { createFlightState, stepFlight } from './flightSimulation.js';
 import { createFlightInput } from './flightInput.js';
+import { createPaperLearningCatalog } from './learning/learningCatalog.js';
+import {
+    answerLearningQuiz,
+    retryLearningQuiz,
+    selectLearningSection
+} from './learning/learningState.js';
 import { createPaperScene } from './scene/createPaperScene.js';
 import { createPreviewUI } from './ui.js';
 
 const stage = document.querySelector('#paper-stage');
+const learningCatalog = createPaperLearningCatalog('pt');
 let previewState = createPreviewState();
 let flightState = createFlightState();
 let deterministicMode = false;
@@ -37,9 +44,43 @@ function handleCloseNotebook() {
     syncUI(true);
 }
 
+function handleSelectSection(section) {
+    previewState = {
+        ...previewState,
+        learning: selectLearningSection(previewState.learning, section)
+    };
+    syncUI(true);
+}
+
+function currentLearningQuiz() {
+    const record = learningCatalog[previewState.learning.objectKey];
+    return record?.quizzes[0] ?? null;
+}
+
+function handleAnswerQuiz(selectedIndex) {
+    const quiz = currentLearningQuiz();
+    previewState = {
+        ...previewState,
+        learning: answerLearningQuiz(previewState.learning, quiz, selectedIndex)
+    };
+    syncUI(true);
+}
+
+function handleRetryQuiz() {
+    previewState = {
+        ...previewState,
+        learning: retryLearningQuiz(previewState.learning)
+    };
+    syncUI(true);
+}
+
 const previewUI = createPreviewUI({
+    learningCatalog,
     onExplore: handleExplore,
-    onCloseNotebook: handleCloseNotebook
+    onCloseNotebook: handleCloseNotebook,
+    onSelectSection: handleSelectSection,
+    onAnswerQuiz: handleAnswerQuiz,
+    onRetryQuiz: handleRetryQuiz
 });
 
 const flightInput = createFlightInput({
@@ -56,7 +97,11 @@ function syncUI(force = false) {
         flightState.nearbyPlanetKey ?? 'none',
         previewState.notebook.open,
         previewState.notebook.planetKey ?? 'none',
-        previewState.missionComplete
+        previewState.missionComplete,
+        previewState.learning.section,
+        previewState.learning.quiz.status,
+        previewState.learning.quiz.selectedIndex ?? 'none',
+        previewState.learning.quiz.attempts
     ].join(':');
     if (!force && signature === lastUiSignature) return;
     previewUI.update(previewState, { flightState });
@@ -142,7 +187,12 @@ window.render_game_to_text = () => {
             complete: previewState.missionComplete,
             label: previewState.missionComplete ? 'Missão cumprida' : 'Chega a Saturno'
         },
-        notebook: { ...previewState.notebook },
+        notebook: {
+            ...previewState.notebook,
+            section: previewState.learning.section,
+            quizStatus: previewState.learning.quiz.status,
+            discoveredKeys: [...previewState.learning.discoveredKeys]
+        },
         scene: paperScene.getState()
     });
 };
@@ -157,7 +207,10 @@ window.advanceTime = (milliseconds) => {
 window.__paperPreview = {
     getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, scene: paperScene.getState() }),
     explore: handleExplore,
-    closeNotebook: handleCloseNotebook
+    closeNotebook: handleCloseNotebook,
+    selectSection: handleSelectSection,
+    answerQuiz: handleAnswerQuiz,
+    retryQuiz: handleRetryQuiz
 };
 
 window.addEventListener('keydown', handleKeydown);

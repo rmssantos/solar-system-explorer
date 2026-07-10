@@ -52,11 +52,64 @@
         <article class="notebook-page">
             <div class="binding-holes" aria-hidden="true"></div>
             <button id="close-notebook" class="close-notebook" type="button" aria-label="Fechar caderno">Fechar</button>
-            <p id="notebook-kicker" class="notebook-kicker">Nota de campo</p>
-            <h1 id="notebook-title">Sol</h1>
-            <p id="notebook-fact" class="notebook-fact"></p>
-            <div class="pencil-rule" aria-hidden="true"></div>
-            <p id="notebook-note" class="notebook-note"></p>
+            <header class="notebook-heading">
+                <p id="notebook-kicker" class="notebook-kicker">Nota de campo</p>
+                <h1 id="notebook-title">Sol</h1>
+            </header>
+
+            <nav class="notebook-tabs" role="tablist" aria-label="Secções do caderno">
+                <button id="tab-discover" type="button" role="tab" aria-controls="panel-discover" data-section="discover">Descobrir</button>
+                <button id="tab-measure" type="button" role="tab" aria-controls="panel-measure" data-section="measure">Medir</button>
+                <button id="tab-today" type="button" role="tab" aria-controls="panel-today" data-section="today">Hoje</button>
+                <button id="tab-challenge" type="button" role="tab" aria-controls="panel-challenge" data-section="challenge">Desafio</button>
+            </nav>
+
+            <div class="notebook-panels">
+                <section id="panel-discover" class="notebook-panel discover-panel" role="tabpanel" aria-labelledby="tab-discover">
+                    <figure class="real-photo-card">
+                        <img id="notebook-photo" alt="" width="720" height="480">
+                        <figcaption>
+                            <span id="notebook-photo-caption">Fotografia real</span>
+                            <a id="notebook-photo-source" href="#" target="_blank" rel="noreferrer">Fonte incluída</a>
+                        </figcaption>
+                    </figure>
+                    <div class="discover-copy">
+                        <p id="notebook-fact" class="notebook-fact"></p>
+                        <div class="pencil-rule" aria-hidden="true"></div>
+                        <p id="notebook-note" class="notebook-note"></p>
+                        <p id="notebook-wow" class="notebook-wow"></p>
+                    </div>
+                </section>
+
+                <section id="panel-measure" class="notebook-panel" role="tabpanel" aria-labelledby="tab-measure" hidden>
+                    <dl class="measurement-grid">
+                        <div><dt>Raio</dt><dd id="measure-radius">—</dd></div>
+                        <div><dt>Distância média ao Sol</dt><dd id="measure-distance">—</dd></div>
+                        <div><dt>Duração do dia</dt><dd id="measure-day">—</dd></div>
+                        <div><dt>Duração do ano</dt><dd id="measure-year">—</dd></div>
+                        <div><dt>Temperatura média</dt><dd id="measure-temperature">—</dd></div>
+                        <div><dt>Luas conhecidas</dt><dd id="measure-moons">—</dd></div>
+                    </dl>
+                    <p class="scale-note">Os tamanhos e distâncias do diorama são ampliados para poderes explorar.</p>
+                </section>
+
+                <section id="panel-today" class="notebook-panel" role="tabpanel" aria-labelledby="tab-today" hidden>
+                    <div class="data-provenance">
+                        <span id="data-status" class="data-status is-fallback">Dados incluídos</span>
+                        <time id="data-updated"></time>
+                    </div>
+                    <p id="data-summary">A atualização científica online será mostrada aqui quando estiver disponível.</p>
+                    <a id="data-source" href="#" target="_blank" rel="noreferrer">Ver fonte científica</a>
+                </section>
+
+                <section id="panel-challenge" class="notebook-panel" role="tabpanel" aria-labelledby="tab-challenge" hidden>
+                    <p class="quiz-kicker">Testa o que descobriste</p>
+                    <h2 id="quiz-question">Pergunta</h2>
+                    <div id="quiz-options" class="quiz-options"></div>
+                    <div id="quiz-feedback" class="quiz-feedback" aria-live="polite" hidden></div>
+                    <button id="quiz-retry" class="quiz-retry" type="button" hidden>Tentar novamente</button>
+                </section>
+            </div>
             <p id="mission-stamp" class="mission-stamp" hidden>Missão cumprida</p>
         </article>
     </dialog>

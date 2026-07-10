@@ -37,17 +37,19 @@ export function createPaperLearningCatalog(language = 'pt') {
 
     for (const key of PAPER_LEARNING_KEYS) {
         const source = SOLAR_SYSTEM_DATA[key];
+        const localPhoto = `/learning/${key}.jpg`;
         records[key] = freezeRecord({
             key,
             name: source.name,
             type: source.type,
             fact: source.trivia[0],
             comparison: source.comparison,
-            localPhoto: source.realPhoto ?? REAL_PHOTOS[key],
+            localPhoto,
             photoSource: Object.freeze({
                 name: 'NASA/ESA — fotografia incluída',
                 status: 'fallback',
-                url: source.realPhoto ?? REAL_PHOTOS[key]
+                originalAsset: source.realPhoto ?? REAL_PHOTOS[key],
+                url: localPhoto
             }),
             measurements: {
                 radiusKm: source.radiusKm,

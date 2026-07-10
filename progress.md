@@ -48,6 +48,13 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Nave reconstruída como correio espacial low-poly: fuselagem hexagonal fechada, asas coral extrudidas, cockpit azul, barbatana-envelope, rebordo e contorno.
 - Dois motores e exhaust proporcional à velocidade, sem bloom; 3 testes estruturais TDD passam.
 - Vista traseira, curva/roll e mobile 390×844 inspecionados sem erros de consola. Evidência: `output/playwright/paper-courier/shot-0.png`, `roll-profile.png` e `mobile-390.png`.
+- Escopo ampliado pelo utilizador para uma vertical slice completa com aprendizagem, fotos reais, quizzes, NASA/JPL/CelesTrak, satélites e Sistema Solar completo.
+- Design/plano: `docs/plans/2026-07-11-paper-solar-explorer-complete-design.md` e `2026-07-11-paper-solar-explorer-complete-implementation.md`.
+- Catálogo educativo puro reutiliza `SOLAR_SYSTEM_DATA` e quizzes originais para Sol + 8 planetas; nove fotografias reais locais empacotadas no preview (~0,5 MB).
+- Caderno educativo implementado com quatro secções: Descobrir, Medir, Hoje e Desafio; estado puro suporta resposta errada, explicação, retry e conclusão.
+- Playtest completo do Sol: fotografia real, medições, resposta errada/retry/correta, pausa/retoma e text-state coerente; 0 erros de consola.
+- Mobile 390×844: 0 overflow horizontal, diálogo dentro do viewport e scroll vertical de 42 px no painel mais longo.
+- Evidência: `output/playwright/paper-learning/discover-fixed.png`, `measure.png`, `quiz-correct.png`, `mobile-discover.png`.
 
 ## TODO
 
