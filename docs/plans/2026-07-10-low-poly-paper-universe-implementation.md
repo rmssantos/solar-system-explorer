@@ -49,7 +49,21 @@
 5. Run focused tests and the web-game client; inspect all three planets from oblique angles.
 6. Commit as `feat: rebuild planets as low poly paper pieces`.
 
-### Task 4: Soft authored lighting and space atmosphere
+### Task 4: Low-poly paper courier ship
+
+**Files:**
+- Create: `paper-preview/src/scene/createPaperShip.js`
+- Modify: `paper-preview/src/scene/createPaperScene.js`
+- Create: `tests/paperShipStyle.test.js`
+
+1. Add failing structural tests for a closed fuselage, cockpit, two wings, tail fin, two engines, artisan outline and a maximum mesh budget.
+2. Build a closed low-poly courier silhouette with four restrained colors and no texture dependency.
+3. Replace the legacy crossed rocket factory in the scene adapter.
+4. Drive exhaust length and visibility from speed without changing simulation state.
+5. Run focused tests and the official web-game client; inspect rear, side, roll and mobile views.
+6. Commit as `feat: rebuild ship as low poly paper courier`.
+
+### Task 5: Soft authored lighting and space atmosphere
 
 **Files:**
 - Create: `paper-preview/src/scene/createSpaceAtmosphere.js`
@@ -64,7 +78,7 @@
 5. Run tests and inspect screenshots at the Sun, Earth, Saturn and in empty space.
 6. Commit as `feat: author calm paper space atmosphere`.
 
-### Task 5: Chase-camera polish and visual QA
+### Task 6: Chase-camera polish and visual QA
 
 **Files:**
 - Modify: `paper-preview/src/scene/createPaperScene.js`
@@ -78,4 +92,3 @@
 5. Inspect screenshots and console output; fix the first issue and repeat until clean.
 6. Run `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run build:paper` and `git diff --check`.
 7. Commit as `feat: polish low poly paper exploration`.
-
