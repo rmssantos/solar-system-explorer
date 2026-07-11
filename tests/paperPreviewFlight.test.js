@@ -170,7 +170,7 @@ describe('Full 3D paper flight simulation', () => {
             position: { x: sun.x + 0.2, y: sun.y, z: sun.z + sun.collisionRadius + 0.05 },
             velocity: { x: 1.2, y: 0, z: -MAX_SPEED }
         };
-        const result = stepFlight(initial, idleInput, 0.25);
+        const result = stepFlight(initial, idleInput, 0.25, [sun]);
         const fromSun = {
             x: result.position.x - sun.x,
             y: result.position.y - sun.y,
@@ -194,12 +194,12 @@ describe('Full 3D paper flight simulation', () => {
     });
 
     it('finds only planets inside their real 3D discovery radius', () => {
-        expect(findNearbyPlanet(PLANET_ANCHORS.earth)).toBe('earth');
+        expect(findNearbyPlanet(PLANET_ANCHORS.earth, Object.values(PLANET_ANCHORS))).toBe('earth');
         expect(findNearbyPlanet({
             x: FLIGHT_BOUNDS.maxX,
             y: FLIGHT_BOUNDS.maxY,
             z: FLIGHT_BOUNDS.maxZ
-        })).toBe(null);
+        }, Object.values(PLANET_ANCHORS))).toBe(null);
     });
 });
 

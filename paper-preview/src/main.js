@@ -289,7 +289,9 @@ function step(seconds) {
         ...flightInput.sample(),
         movementBasis: paperScene.getNavigationBasis()
     };
-    if (!previewState.notebook.open) flightState = stepFlight(flightState, lastInput, seconds);
+    if (!previewState.notebook.open) {
+        flightState = stepFlight(flightState, lastInput, seconds, paperScene.getPrimaryBodies());
+    }
     paperScene.update(seconds);
     nearbyWorldObjectKey = paperScene.findNearbyWorldObject(flightState.position);
     paperScene.setFlightSnapshot(flightState, seconds);

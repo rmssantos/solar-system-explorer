@@ -40,14 +40,19 @@ function wrapAngle(value) {
     return ((((value + Math.PI) % fullTurn) + fullTurn) % fullTurn) - Math.PI;
 }
 
-export function findNearbyPlanet(position) {
+function bodyPosition(body) {
+    return body.position ?? body;
+}
+
+export function findNearbyPlanet(position, bodies = []) {
     let closest = null;
     let closestDistance = Infinity;
-    for (const planet of Object.values(PLANET_ANCHORS)) {
+    for (const planet of bodies) {
+        const currentPosition = bodyPosition(planet);
         const distance = Math.hypot(
-            position.x - planet.x,
-            position.y - planet.y,
-            position.z - planet.z
+            position.x - currentPosition.x,
+            position.y - currentPosition.y,
+            position.z - currentPosition.z
         );
         if (distance <= planet.interactionRadius && distance < closestDistance) {
             closest = planet.key;
@@ -57,17 +62,17 @@ export function findNearbyPlanet(position) {
     return closest;
 }
 
-export function createFlightState() {
+export function createFlightState(bodies = []) {
     const position = { x: 0, y: 0, z: 7 };
     return {
         position,
         velocity: { x: 0, y: 0, z: 0 },
         orientation: { yaw: 0, pitch: 0, roll: 0 },
-        nearbyPlanetKey: findNearbyPlanet(position)
+        nearbyPlanetKey: findNearbyPlanet(position, bodies)
     };
 }
 
-export function stepFlight(state, input, deltaSeconds) {
+export function stepFlight(state, input, deltaSeconds, bodies = []) {
     const delta = clamp(deltaSeconds, 0, 0.5);
     const orientation = {
         yaw: wrapAngle(state.orientation.yaw + (input.yawDelta ?? 0)),
@@ -154,25 +159,26 @@ export function stepFlight(state, input, deltaSeconds) {
     if (position.y !== requestedPosition.y) velocityY = 0;
     if (position.z !== requestedPosition.z) velocityZ = 0;
 
-    for (const planet of Object.values(PLANET_ANCHORS)) {
-        let offsetX = position.x - planet.x;
-        let offsetY = position.y - planet.y;
-        let offsetZ = position.z - planet.z;
+    for (const planet of bodies) {
+        const currentPosition = bodyPosition(planet);
+        let offsetX = position.x - currentPosition.x;
+        let offsetY = position.y - currentPosition.y;
+        let offsetZ = position.z - currentPosition.z;
         let distance = Math.hypot(offsetX, offsetY, offsetZ);
         if (distance >= planet.collisionRadius) continue;
 
         if (distance < 0.0001) {
-            offsetX = state.position.x - planet.x;
-            offsetY = state.position.y - planet.y;
-            offsetZ = state.position.z - planet.z;
+            offsetX = state.position.x - currentPosition.x;
+            offsetY = state.position.y - currentPosition.y;
+            offsetZ = state.position.z - currentPosition.z;
             distance = Math.hypot(offsetX, offsetY, offsetZ) || 1;
         }
         const normalX = offsetX / distance;
         const normalY = offsetY / distance;
         const normalZ = offsetZ / distance;
-        position.x = planet.x + normalX * planet.collisionRadius;
-        position.y = planet.y + normalY * planet.collisionRadius;
-        position.z = planet.z + normalZ * planet.collisionRadius;
+        position.x = currentPosition.x + normalX * planet.collisionRadius;
+        position.y = currentPosition.y + normalY * planet.collisionRadius;
+        position.z = currentPosition.z + normalZ * planet.collisionRadius;
 
         const inwardSpeed = (velocityX * normalX) + (velocityY * normalY) + (velocityZ * normalZ);
         if (inwardSpeed < 0) {
@@ -186,6 +192,6 @@ export function stepFlight(state, input, deltaSeconds) {
         position,
         velocity: { x: velocityX, y: velocityY, z: velocityZ },
         orientation,
-        nearbyPlanetKey: findNearbyPlanet(position)
+        nearbyPlanetKey: findNearbyPlanet(position, bodies)
     };
 }

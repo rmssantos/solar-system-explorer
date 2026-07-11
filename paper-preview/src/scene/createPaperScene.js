@@ -378,6 +378,18 @@ export function createPaperScene(stage) {
         };
     }
 
+    function getPrimaryBodies() {
+        return planets.map((planet) => {
+            const anchor = PLANET_ANCHORS[planet.userData.key];
+            return {
+                key: planet.userData.key,
+                position: { x: planet.position.x, y: planet.position.y, z: planet.position.z },
+                collisionRadius: anchor.collisionRadius,
+                interactionRadius: anchor.interactionRadius
+            };
+        });
+    }
+
     function handleContextLost(event) {
         event.preventDefault();
         runtime.contextLost = true;
@@ -429,6 +441,7 @@ export function createPaperScene(stage) {
         render,
         resize,
         getNavigationBasis,
+        getPrimaryBodies,
         getState,
         adjustZoom,
         destroy
