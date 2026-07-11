@@ -284,6 +284,7 @@ export function createPaperScene(stage) {
         const height = Math.max(1, stage.clientHeight);
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
+        cockpit.scale.x = Math.min(1, Math.max(0.36, camera.aspect / 1.15));
         renderer.setSize(width, height, false);
     }
 

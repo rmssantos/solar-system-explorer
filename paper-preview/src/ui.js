@@ -1,4 +1,5 @@
 import { PLANETS } from './state.js';
+import { chooseNearbyObject } from './world/proximity.js';
 
 const numberFormatter = new Intl.NumberFormat('pt-PT');
 
@@ -207,7 +208,7 @@ export function createPreviewUI({
     function update(state, { flightState = null, nearbyObjectKey = null, missions = null } = {}) {
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
-            ? (flightState.nearbyPlanetKey ?? nearbyObjectKey)
+            ? chooseNearbyObject(flightState.nearbyPlanetKey, nearbyObjectKey)
             : (fallbackPlanet?.key ?? null);
         const nearbyPlanet = nearbyKey
             ? (learningCatalog[nearbyKey] ?? PLANETS.find((planet) => planet.key === nearbyKey))

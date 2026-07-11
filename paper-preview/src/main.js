@@ -14,6 +14,7 @@ import { createSpaceDataService } from './data/spaceDataService.js';
 import { projectEarthOrbit, propagateOmm } from './data/orbitPropagation.js';
 import { SATELLITE_FALLBACKS } from './data/spaceFallbacks.js';
 import { getWorldObject } from './world/worldCatalog.js';
+import { chooseNearbyObject } from './world/proximity.js';
 import { evaluateMissions } from './missions/missionSystem.js';
 import { loadProgress, saveProgress } from './missions/progressStore.js';
 
@@ -161,7 +162,7 @@ async function hydrateDailySky() {
 }
 
 function handleExplore() {
-    const nearbyKey = flightState.nearbyPlanetKey ?? nearbyWorldObjectKey;
+    const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
     if (previewState.notebook.open || !nearbyKey) return;
     previewState = explorePlanet(previewState, nearbyKey);
     saveProgress(previewState.learning);
@@ -335,7 +336,7 @@ function roundVector(vector) {
 }
 
 window.render_game_to_text = () => {
-    const nearbyKey = flightState.nearbyPlanetKey ?? nearbyWorldObjectKey;
+    const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
     const nearbyPlanet = nearbyKey ? (learningCatalog[nearbyKey] ?? null) : null;
     return JSON.stringify({
         coordinateSystem: '3D paper flight: yaw 0 faces -Z; +X right, +Y up, +Z behind. Movement is camera-relative.',
@@ -389,6 +390,8 @@ window.__paperPreview = {
     selectSection: handleSelectSection,
     answerQuiz: handleAnswerQuiz,
     retryQuiz: handleRetryQuiz,
+    worldPosition: (key) => paperScene.getWorldObjectPosition(key),
+    nearbyAt: (position) => paperScene.findNearbyWorldObject(position),
     teleport: (key) => {
         const object = getWorldObject(key);
         const target = object && ['star', 'planet'].includes(object.type)

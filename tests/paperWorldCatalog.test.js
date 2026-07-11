@@ -21,6 +21,7 @@ describe('paper solar explorer world catalog', () => {
             'moon', 'phobos', 'deimos', 'io', 'europa', 'ganymede',
             'callisto', 'titan', 'enceladus', 'triton'
         ]));
+        expect(Math.max(...moons.map((moon) => moon.orbitSpeed))).toBeLessThan(0.03);
     });
 
     it('includes spacecraft, famous small bodies and the Roadster', () => {

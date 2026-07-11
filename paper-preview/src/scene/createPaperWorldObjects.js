@@ -150,7 +150,10 @@ export function createPaperWorldObjects() {
                 position.y - mesh.position.y,
                 position.z - mesh.position.z
             );
-            const interactionRadius = Math.max(1.2, object.scale * 3.5);
+            const interactionRadius = Math.max(
+                object.type === 'moon' ? 2.2 : 1.65,
+                object.scale * 3.5
+            );
             if (distance <= interactionRadius && distance < closestDistance) {
                 closest = object.key;
                 closestDistance = distance;

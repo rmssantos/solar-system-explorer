@@ -34,14 +34,14 @@ const MOONS = [
     ['oberon', 'Oberon', 'uranus', 4.6, 0.31, 'Oberon é uma lua gelada e craterada que orbita longe das nuvens de Urano.'],
     ['triton', 'Tritão', 'neptune', 4.1, 0.4, 'Tritão orbita Neptuno ao contrário e possui géiseres de azoto na superfície gelada.']
 ].map(([key, name, parentKey, orbitRadius, scale, fact], index) => entry({
-    key, name, type: 'moon', parentKey, orbitRadius, scale, orbitSpeed: 0.08 + (index % 5) * 0.025,
+    key, name, type: 'moon', parentKey, orbitRadius, scale, orbitSpeed: 0.008 + (index % 5) * 0.003,
     orbitPhase: index * 1.71, fact, source: NASA
 }));
 
 const HUMAN_OBJECTS = [
-    entry({ key: 'iss', name: 'Estação Espacial Internacional', type: 'spacecraft', parentKey: 'earth', orbitRadius: 2.15, scale: 0.2, orbitSpeed: 0.38, fact: 'A ISS é um laboratório habitado que completa aproximadamente uma órbita da Terra a cada 90 minutos.', source: { ...CELESTRAK, command: '25544' } }),
-    entry({ key: 'hubble', name: 'Telescópio Hubble', type: 'spacecraft', parentKey: 'earth', orbitRadius: 2.45, scale: 0.18, orbitSpeed: 0.3, fact: 'O Hubble observa o Universo acima da maior parte da atmosfera terrestre desde 1990.', source: { ...CELESTRAK, command: '20580' } }),
-    entry({ key: 'jwst', name: 'Telescópio James Webb', type: 'spacecraft', parentKey: 'earth', orbitRadius: 5.4, scale: 0.24, orbitSpeed: 0.06, fact: 'O James Webb observa sobretudo em infravermelho perto do ponto de equilíbrio gravitacional L2.', source: JPL }),
+    entry({ key: 'iss', name: 'Estação Espacial Internacional', type: 'spacecraft', parentKey: 'earth', orbitRadius: 2.15, scale: 0.2, orbitSpeed: 0.018, fact: 'A ISS é um laboratório habitado que completa aproximadamente uma órbita da Terra a cada 90 minutos.', source: { ...CELESTRAK, command: '25544' } }),
+    entry({ key: 'hubble', name: 'Telescópio Hubble', type: 'spacecraft', parentKey: 'earth', orbitRadius: 2.45, scale: 0.18, orbitSpeed: 0.015, fact: 'O Hubble observa o Universo acima da maior parte da atmosfera terrestre desde 1990.', source: { ...CELESTRAK, command: '20580' } }),
+    entry({ key: 'jwst', name: 'Telescópio James Webb', type: 'spacecraft', parentKey: 'earth', orbitRadius: 5.4, scale: 0.24, orbitSpeed: 0.006, fact: 'O James Webb observa sobretudo em infravermelho perto do ponto de equilíbrio gravitacional L2.', source: JPL }),
     entry({ key: 'voyager-1', name: 'Voyager 1', type: 'spacecraft', anchor: [153, 9, -136], scale: 0.28, fact: 'A Voyager 1 é o objeto construído por humanos mais distante da Terra e explora o espaço interestelar.', source: JPL }),
     entry({ key: 'tesla-roadster', name: 'Tesla Roadster e Starman', type: 'spacecraft', anchor: [41, 8, -27], scale: 0.42, fact: 'O Roadster lançado no teste do Falcon Heavy percorre uma órbita heliocêntrica que cruza a órbita de Marte.', source: { ...JPL, command: '-143205' } })
 ];

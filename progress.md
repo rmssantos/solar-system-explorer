@@ -66,6 +66,11 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Zoom contínuo por roda/pinch/botões e transição para cockpit paper-style implementados; `V` alterna a vista.
 - Seis missões encadeadas, progresso persistente, diário de missões, waypoint direcional e APOD diária implementados.
 - Evidência visual: `output/playwright/complete-game/mission-log.png`, `earth-system.png`, `jupiter-moons.png`, `neptune-triton.png`, `tesla-notebook.png`.
+- QA encontrou e corrigiu prioridade de interação: luas/satélites próximos vencem o raio do planeta-pai; órbitas foram abrandadas para exploração relaxada.
+- Fluxos Saturno → missão seguinte, reload persistente, Terra → foto NASA/JPL Hoje → quiz e Europa → foto/caderno foram validados sem erros.
+- Mobile 390×844 validado sem overflow horizontal; diário de missões tem scroll interno e cockpit adapta a largura dos pilares.
+- Voo real após drag + `W`/boost manteve velocidade alinhada com o forward da câmara; FPS headless medido em ~57 durante 2 s.
+- Evidência final adicional: `earth-live-photo.png`, `earth-today-live.png`, `europa-notebook.png`, `mobile-390.png`, `mobile-cockpit-scaled.png`, `flight-camera-relative.png`.
 
 ## TODO
 
