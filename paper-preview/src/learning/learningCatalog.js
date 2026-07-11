@@ -1,5 +1,6 @@
 import { REAL_PHOTOS, SOLAR_SYSTEM_DATA } from '../../../src/data/objectsInfo.js';
 import { createQuizCatalog } from '../../../src/quizSystem.js';
+import { WORLD_OBJECTS } from '../world/worldCatalog.js';
 
 export const PAPER_LEARNING_KEYS = Object.freeze([
     'sun',
@@ -61,6 +62,55 @@ export function createPaperLearningCatalog(language = 'pt') {
             },
             wowFacts: Object.freeze([...source.wowFacts]),
             quizzes: Object.freeze((quizzes[key] ?? []).map((quiz, index) => freezeQuiz(quiz, index, key)))
+        });
+    }
+
+    for (const object of WORLD_OBJECTS) {
+        if (records[object.key]) continue;
+        const fallbackKey = object.key === 'tesla-roadster'
+            ? 'tesla-roadster'
+            : (PAPER_LEARNING_KEYS.includes(object.parentKey) ? object.parentKey : 'earth');
+        const localPhoto = `/learning/${fallbackKey}.jpg`;
+        const typeLabels = {
+            moon: 'Lua', spacecraft: 'Objeto humano', 'small-body': 'Pequeno corpo'
+        };
+        records[object.key] = freezeRecord({
+            key: object.key,
+            name: object.name,
+            type: typeLabels[object.type] ?? 'Objeto espacial',
+            fact: object.fact,
+            comparison: object.parentKey
+                ? `Encontra-se representado junto de ${WORLD_OBJECTS.find((entry) => entry.key === object.parentKey)?.name ?? 'o seu mundo'}. As escalas do diorama foram ampliadas para ser explorável.`
+                : 'A posição visual é comprimida para caber no diorama; o separador Hoje identifica a origem dos dados.',
+            localPhoto,
+            photoSource: Object.freeze({
+                name: object.key === 'tesla-roadster' ? 'SpaceX — CC0 via Wikimedia Commons' : object.source.name,
+                status: 'fallback',
+                originalAsset: localPhoto,
+                url: object.key === 'tesla-roadster'
+                    ? 'https://commons.wikimedia.org/wiki/File:Elon_Musk%27s_Tesla_Roadster_(40110297852).jpg'
+                    : object.source.url
+            }),
+            measurements: {
+                radiusKm: 0,
+                distanceMillionKm: 0,
+                dayLength: 'Varia com a órbita',
+                yearLength: object.parentKey ? 'Orbita o mundo principal' : 'Órbita própria',
+                temperature: 'Depende da iluminação',
+                moonCount: 0
+            },
+            wowFacts: Object.freeze([object.fact]),
+            quizzes: Object.freeze([Object.freeze({
+                id: `${object.key}-identity`,
+                question: `O que torna ${object.name} especial?`,
+                options: Object.freeze([
+                    object.fact,
+                    'É uma estrela maior do que o Sol.',
+                    'Está parado e não se move no espaço.'
+                ]),
+                correctIndex: 0,
+                explanation: object.fact
+            })])
         });
     }
 

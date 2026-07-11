@@ -10,6 +10,13 @@ export default defineConfig({
         hmr: {
             overlay: true,
         },
+        proxy: {
+            '/api/jpl-horizons': {
+                target: 'https://ssd.jpl.nasa.gov',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api\/jpl-horizons/, '/api/horizons.api'),
+            },
+        },
     },
     // Clear cache on every build
     cacheDir: 'node_modules/.vite_nocache',

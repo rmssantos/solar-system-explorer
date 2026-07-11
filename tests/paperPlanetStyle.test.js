@@ -7,10 +7,13 @@ import { createLowPolyPlanet } from '../paper-preview/src/scene/createLowPolyPla
 
 describe('Low-poly paper planet style', () => {
     it('defines a restrained, recognizable style for every preview planet', () => {
-        expect(Object.keys(PLANET_STYLES)).toEqual(['sun', 'earth', 'saturn']);
+        expect(Object.keys(PLANET_STYLES)).toEqual([
+            'sun', 'mercury', 'venus', 'earth', 'mars',
+            'jupiter', 'saturn', 'uranus', 'neptune'
+        ]);
 
         for (const style of Object.values(PLANET_STYLES)) {
-            expect(style.radius).toBeGreaterThan(1);
+            expect(style.radius).toBeGreaterThan(0.6);
             expect(style.geometryDetail).toBeGreaterThanOrEqual(1);
             expect(style.geometryDetail).toBeLessThanOrEqual(3);
             expect(style.surfaceColors.length).toBeGreaterThanOrEqual(2);

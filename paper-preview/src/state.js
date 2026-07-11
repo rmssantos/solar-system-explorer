@@ -1,34 +1,21 @@
-export const PLANETS = Object.freeze([
-    Object.freeze({
-        key: 'sun',
-        name: 'Sol',
-        kicker: 'A nossa estrela',
-        fact: 'A luz do Sol demora cerca de 8 minutos e 20 segundos a chegar à Terra.',
-        note: 'É uma estrela, não um planeta. No diorama, o seu brilho parece papel vegetal iluminado.'
-    }),
-    Object.freeze({
-        key: 'earth',
-        name: 'Terra',
-        kicker: 'O planeta azul',
-        fact: 'A Terra completa uma volta ao Sol em aproximadamente 365 dias e 6 horas.',
-        note: 'Água líquida, atmosfera protetora e a distância certa ao Sol tornam a Terra especial.'
-    }),
-    Object.freeze({
-        key: 'saturn',
-        name: 'Saturno',
-        kicker: 'O mundo dos anéis',
-        fact: 'Os anéis são feitos de incontáveis fragmentos de gelo e rocha.',
-        note: 'Apesar do tamanho, Saturno é o planeta menos denso do Sistema Solar.'
-    })
-]);
+import { createLearningState, openLearningRecord } from './learning/learningState.js';
+import { getWorldObject, PRIMARY_WORLDS } from './world/worldCatalog.js';
 
-export function createPreviewState() {
+export const PLANETS = Object.freeze(PRIMARY_WORLDS.map((world) => Object.freeze({
+    key: world.key,
+    name: world.name,
+    kicker: world.type === 'star' ? 'A nossa estrela' : 'Mundo do Sistema Solar',
+    fact: world.fact,
+    note: 'Explora o caderno para comparar medidas, ver uma fotografia real e responder ao desafio.'
+})));
+
+export function createPreviewState(progress = {}) {
     return {
         activeIndex: 0,
         objectiveTarget: 'saturn',
         missionComplete: false,
         notebook: { open: false, planetKey: null },
-        learning: createLearningState()
+        learning: createLearningState(progress)
     };
 }
 
@@ -51,7 +38,7 @@ export function exploreActive(state) {
 }
 
 export function explorePlanet(state, planetKey) {
-    const planet = PLANETS.find((candidate) => candidate.key === planetKey);
+    const planet = getWorldObject(planetKey);
     if (!planet) return state;
     return {
         ...state,
@@ -67,4 +54,3 @@ export function closeNotebook(state) {
         notebook: { open: false, planetKey: null }
     };
 }
-import { createLearningState, openLearningRecord } from './learning/learningState.js';

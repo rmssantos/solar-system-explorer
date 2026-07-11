@@ -12,7 +12,10 @@ describe('Paper diorama preview state', () => {
     it('starts at the Sun with Saturn as the mission target', () => {
         const state = createPreviewState();
 
-        expect(PLANETS.map((planet) => planet.key)).toEqual(['sun', 'earth', 'saturn']);
+        expect(PLANETS.map((planet) => planet.key)).toEqual([
+            'sun', 'mercury', 'venus', 'earth', 'mars',
+            'jupiter', 'saturn', 'uranus', 'neptune'
+        ]);
         expect(state).toMatchObject({
             activeIndex: 0,
             objectiveTarget: 'saturn',
@@ -24,17 +27,16 @@ describe('Paper diorama preview state', () => {
     it('clamps navigation at the first and last planet', () => {
         const initial = createPreviewState();
         const beforeFirst = navigate(initial, -1);
-        const atSaturn = navigate(navigate(initial, 1), 1);
-        const afterLast = navigate(atSaturn, 1);
+        let afterLast = initial;
+        for (let index = 0; index < PLANETS.length + 2; index += 1) afterLast = navigate(afterLast, 1);
 
         expect(beforeFirst.activeIndex).toBe(0);
-        expect(atSaturn.activeIndex).toBe(2);
-        expect(afterLast.activeIndex).toBe(2);
+        expect(afterLast.activeIndex).toBe(PLANETS.length - 1);
         expect(beforeFirst).not.toBe(initial);
     });
 
     it('opens the Earth field note without completing the mission', () => {
-        const earthState = navigate(createPreviewState(), 1);
+        const earthState = { ...createPreviewState(), activeIndex: 3 };
         const explored = exploreActive(earthState);
 
         expect(explored.notebook).toEqual({ open: true, planetKey: 'earth' });
@@ -42,7 +44,7 @@ describe('Paper diorama preview state', () => {
     });
 
     it('completes the mission when Saturn is explored', () => {
-        const saturnState = navigate(navigate(createPreviewState(), 1), 1);
+        const saturnState = { ...createPreviewState(), activeIndex: 6 };
         const explored = exploreActive(saturnState);
 
         expect(explored.notebook).toEqual({ open: true, planetKey: 'saturn' });
@@ -50,7 +52,7 @@ describe('Paper diorama preview state', () => {
     });
 
     it('keeps mission completion after the notebook closes', () => {
-        const saturnState = navigate(navigate(createPreviewState(), 1), 1);
+        const saturnState = { ...createPreviewState(), activeIndex: 6 };
         const closed = closeNotebook(exploreActive(saturnState));
 
         expect(closed.notebook).toEqual({ open: false, planetKey: null });

@@ -12,7 +12,8 @@ describe('Paper learning catalog', () => {
             'sun', 'mercury', 'venus', 'earth', 'mars',
             'jupiter', 'saturn', 'uranus', 'neptune'
         ]);
-        expect(Object.keys(catalog)).toEqual(PAPER_LEARNING_KEYS);
+        expect(Object.keys(catalog)).toEqual(expect.arrayContaining(PAPER_LEARNING_KEYS));
+        expect(Object.keys(catalog).length).toBeGreaterThan(PAPER_LEARNING_KEYS.length);
         for (const key of PAPER_LEARNING_KEYS) {
             const record = catalog[key];
             expect(record.localPhoto).toBe(`/learning/${key}.jpg`);

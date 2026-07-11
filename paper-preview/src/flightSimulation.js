@@ -1,21 +1,29 @@
-export const MAX_SPEED = 5;
-export const BOOST_MAX_SPEED = 8.5;
+import { PRIMARY_WORLDS } from './world/worldCatalog.js';
+
+export const MAX_SPEED = 12;
+export const BOOST_MAX_SPEED = 24;
 export const FLIGHT_BOUNDS = Object.freeze({
-    minX: -50,
-    maxX: 50,
-    minY: -25,
-    maxY: 25,
-    minZ: -55,
-    maxZ: 30
+    minX: -35,
+    maxX: 170,
+    minY: -40,
+    maxY: 40,
+    minZ: -150,
+    maxZ: 35
 });
 
-export const PLANET_ANCHORS = Object.freeze({
-    sun: Object.freeze({ key: 'sun', x: 0, y: 0, z: 0, collisionRadius: 4.2, interactionRadius: 4.8 }),
-    earth: Object.freeze({ key: 'earth', x: 15, y: 4, z: -18, collisionRadius: 2.8, interactionRadius: 3.5 }),
-    saturn: Object.freeze({ key: 'saturn', x: -18, y: -5, z: -38, collisionRadius: 5.9, interactionRadius: 6.6 })
-});
+export const PLANET_ANCHORS = Object.freeze(Object.fromEntries(PRIMARY_WORLDS.map((world) => [
+    world.key,
+    Object.freeze({
+        key: world.key,
+        x: world.anchor[0],
+        y: world.anchor[1],
+        z: world.anchor[2],
+        collisionRadius: world.collisionRadius,
+        interactionRadius: world.interactionRadius
+    })
+])));
 
-const ACCELERATION = 7.5;
+const ACCELERATION = 15;
 const ACTIVE_DRAG = 0.25;
 const IDLE_DRAG = 2.4;
 const BRAKE_DRAG = 7.5;

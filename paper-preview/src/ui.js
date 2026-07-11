@@ -12,7 +12,10 @@ export function createPreviewUI({
     onCloseNotebook,
     onSelectSection,
     onAnswerQuiz,
-    onRetryQuiz
+    onRetryQuiz,
+    onMissionLogOpen,
+    onMissionLogClose,
+    onZoom
 }) {
     const elements = {
         objective: document.querySelector('#objective-chip'),
@@ -53,6 +56,20 @@ export function createPreviewUI({
         quizRetry: document.querySelector('#quiz-retry'),
         missionStamp: document.querySelector('#mission-stamp'),
         loading: document.querySelector('.stage-loading')
+        , navBeacon: document.querySelector('#nav-beacon')
+        , navArrow: document.querySelector('#nav-arrow')
+        , navTarget: document.querySelector('#nav-target')
+        , navDistance: document.querySelector('#nav-distance')
+        , missionLog: document.querySelector('#mission-log')
+        , closeMissionLog: document.querySelector('#close-mission-log')
+        , missionList: document.querySelector('#mission-list')
+        , apodCard: document.querySelector('#apod-card')
+        , apodImage: document.querySelector('#apod-image')
+        , apodTitle: document.querySelector('#apod-title')
+        , apodDate: document.querySelector('#apod-date')
+        , zoomOut: document.querySelector('#zoom-out')
+        , zoomCockpit: document.querySelector('#zoom-cockpit')
+        , zoomIn: document.querySelector('#zoom-in')
     };
 
     const handleTabClick = (event) => {
@@ -74,6 +91,18 @@ export function createPreviewUI({
         [elements.tabs[0].parentElement, 'click', handleTabClick],
         [elements.quizOptions, 'click', handleQuizClick],
         [elements.quizRetry, 'click', onRetryQuiz]
+        , [elements.objective, 'click', () => {
+            elements.missionLog.showModal();
+            onMissionLogOpen();
+        }]
+        , [elements.closeMissionLog, 'click', () => {
+            elements.missionLog.close();
+            onMissionLogClose();
+        }]
+        , [elements.missionLog, 'cancel', () => onMissionLogClose()]
+        , [elements.zoomOut, 'click', () => onZoom('out')]
+        , [elements.zoomCockpit, 'click', () => onZoom('cockpit')]
+        , [elements.zoomIn, 'click', () => onZoom('in')]
     ];
 
     for (const [element, eventName, handler] of listeners) {
@@ -158,33 +187,58 @@ export function createPreviewUI({
         elements.notebookFact.textContent = record.fact;
         elements.notebookNote.textContent = record.comparison;
         elements.notebookWow.textContent = record.wowFacts[0];
-        if (elements.notebookPhoto.getAttribute('src') !== record.localPhoto) {
-            elements.notebookPhoto.src = record.localPhoto;
+        const dynamicPhoto = state.learning.dataByObject[record.key]?.data?.imageUrl;
+        const photoUrl = dynamicPhoto ?? record.localPhoto;
+        if (elements.notebookPhoto.getAttribute('src') !== photoUrl) {
+            elements.notebookPhoto.src = photoUrl;
         }
         elements.notebookPhoto.alt = `Fotografia real de ${record.name}`;
-        elements.photoCaption.textContent = `Fotografia real de ${record.name}`;
-        elements.photoSource.textContent = record.photoSource.name;
-        elements.photoSource.href = record.photoSource.url;
+        elements.photoCaption.textContent = state.learning.dataByObject[record.key]?.data?.imageTitle
+            ?? `Fotografia real de ${record.name}`;
+        const dynamicSource = state.learning.dataByObject[record.key]?.data;
+        elements.photoSource.textContent = dynamicSource?.imageSourceName ?? record.photoSource.name;
+        elements.photoSource.href = dynamicSource?.imageSourceUrl ?? record.photoSource.url;
         renderTabs(state.learning.section);
         renderMeasurements(record);
         renderData(state.learning, record);
         renderQuiz(state.learning, record);
     }
 
-    function update(state, { flightState = null } = {}) {
+    function update(state, { flightState = null, nearbyObjectKey = null, missions = null } = {}) {
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
-            ? flightState.nearbyPlanetKey
+            ? (flightState.nearbyPlanetKey ?? nearbyObjectKey)
             : (fallbackPlanet?.key ?? null);
-        const nearbyPlanet = PLANETS.find((planet) => planet.key === nearbyKey);
+        const nearbyPlanet = nearbyKey
+            ? (learningCatalog[nearbyKey] ?? PLANETS.find((planet) => planet.key === nearbyKey))
+            : null;
         elements.explore.hidden = !nearbyPlanet || state.notebook.open;
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
         if (nearbyPlanet) elements.nearbyPlanetName.textContent = `Explorar ${nearbyPlanet.name}`;
-        elements.objective.classList.toggle('is-complete', state.missionComplete);
-        elements.objectiveText.textContent = state.missionComplete
-            ? 'Saturno encontrado — missão cumprida'
-            : 'Chega a Saturno';
+        const activeMission = missions?.active;
+        elements.objective.classList.toggle('is-complete', !activeMission);
+        elements.objectiveText.textContent = activeMission
+            ? `${activeMission.title} · ${activeMission.progress.current}/${activeMission.progress.total}`
+            : 'Todas as missões cumpridas';
+        if (missions) {
+            elements.missionList.replaceChildren(...missions.missions.map((mission) => {
+                const item = document.createElement('li');
+                item.classList.toggle('is-complete', mission.complete);
+                const copy = document.createElement('div');
+                const title = document.createElement('strong');
+                title.textContent = mission.title;
+                const description = document.createElement('p');
+                description.textContent = mission.description;
+                copy.append(title, description);
+                const progress = document.createElement('progress');
+                progress.max = mission.progress.total;
+                progress.value = mission.progress.current;
+                progress.setAttribute('aria-label', `${mission.progress.current} de ${mission.progress.total}`);
+                item.append(copy, progress);
+                return item;
+            }));
+        }
 
         if (state.notebook.open) {
             const record = learningCatalog[state.notebook.planetKey];
@@ -201,11 +255,29 @@ export function createPreviewUI({
         elements.loading?.remove();
     }
 
+    function updateNavigation(navigation) {
+        elements.navBeacon.hidden = !navigation;
+        if (!navigation) return;
+        elements.navTarget.textContent = navigation.name;
+        elements.navDistance.textContent = navigation.distance < 1.5
+            ? 'Ao alcance'
+            : `${Math.round(navigation.distance)} unidades`;
+        elements.navArrow.style.transform = `rotate(${navigation.angleRadians}rad)`;
+    }
+
+    function setApod(envelope) {
+        if (!envelope?.data?.imageUrl) return;
+        elements.apodImage.src = envelope.data.imageUrl;
+        elements.apodTitle.textContent = envelope.data.title;
+        elements.apodDate.textContent = `${envelope.data.date || 'Hoje'} · ${envelope.status === 'live' ? 'NASA ao vivo' : 'incluído/cache'}`;
+        elements.apodCard.hidden = false;
+    }
+
     function destroy() {
         for (const [element, eventName, handler] of listeners) {
             element.removeEventListener(eventName, handler);
         }
     }
 
-    return { update, markReady, destroy, elements };
+    return { update, updateNavigation, setApod, markReady, destroy, elements };
 }

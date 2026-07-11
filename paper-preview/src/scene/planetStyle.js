@@ -23,6 +23,20 @@ export const PLANET_STYLES = Object.freeze({
             corona: Object.freeze({ count: 14, innerRadius: 1.93, outerRadius: 2.18 })
         })
     }),
+    mercury: freezeStyle({
+        key: 'mercury', radius: 0.78, geometryDetail: 2, seed: 37,
+        surfaceColors: ['#928b7e', '#b0a797', '#716d68', '#c7baa7'],
+        outlineColor: '#292725', rimColor: '#665f56', outlineScale: 1.055,
+        paperRimScale: 1.028, emissive: '#302b26', emissiveIntensity: 0.03,
+        features: Object.freeze({ craters: Object.freeze({ count: 7 }) })
+    }),
+    venus: freezeStyle({
+        key: 'venus', radius: 1.12, geometryDetail: 2, seed: 41,
+        surfaceColors: ['#d8a85d', '#e8c47c', '#b97845', '#f0d596'],
+        outlineColor: '#35251c', rimColor: '#9d683f', outlineScale: 1.048,
+        paperRimScale: 1.024, emissive: '#63401f', emissiveIntensity: 0.05,
+        features: Object.freeze({ cloudBands: true })
+    }),
     earth: freezeStyle({
         key: 'earth',
         radius: 1.42,
@@ -40,6 +54,20 @@ export const PLANET_STYLES = Object.freeze({
             clouds: Object.freeze({ count: 4, minScale: 0.2, maxScale: 0.38 }),
             polarCaps: Object.freeze({ count: 2 })
         })
+    }),
+    mars: freezeStyle({
+        key: 'mars', radius: 0.94, geometryDetail: 2, seed: 53,
+        surfaceColors: ['#b85f42', '#cf7956', '#8f493a', '#dfa078', '#e5d9c7'],
+        outlineColor: '#321e1a', rimColor: '#7d4335', outlineScale: 1.05,
+        paperRimScale: 1.025, emissive: '#4a251f', emissiveIntensity: 0.03,
+        features: Object.freeze({ craters: Object.freeze({ count: 5 }), polarCaps: Object.freeze({ count: 2 }) })
+    }),
+    jupiter: freezeStyle({
+        key: 'jupiter', radius: 1.7, geometryDetail: 2, seed: 59,
+        surfaceColors: ['#d5b38a', '#ead7b2', '#ae7357', '#c88f69', '#f1e5cd'],
+        outlineColor: '#30241e', rimColor: '#8e674e', outlineScale: 1.04,
+        paperRimScale: 1.02, emissive: '#4e382c', emissiveIntensity: 0.03,
+        features: Object.freeze({ bands: true, greatSpot: true })
     }),
     saturn: freezeStyle({
         key: 'saturn',
@@ -61,6 +89,20 @@ export const PLANET_STYLES = Object.freeze({
                 tilt: 1.03
             })
         })
+    }),
+    uranus: freezeStyle({
+        key: 'uranus', radius: 1.28, geometryDetail: 2, seed: 71,
+        surfaceColors: ['#85c4c3', '#a9d8d2', '#6aa6ad', '#c3e4dc'],
+        outlineColor: '#173238', rimColor: '#4d8488', outlineScale: 1.045,
+        paperRimScale: 1.022, emissive: '#28585d', emissiveIntensity: 0.05,
+        features: Object.freeze({ rings: Object.freeze({ innerRadius: 1.55, outerRadius: 2.02, segments: 40, tilt: 1.32 }) })
+    }),
+    neptune: freezeStyle({
+        key: 'neptune', radius: 1.24, geometryDetail: 2, seed: 79,
+        surfaceColors: ['#426ea8', '#547fb9', '#31578f', '#7397c4'],
+        outlineColor: '#152442', rimColor: '#284d78', outlineScale: 1.045,
+        paperRimScale: 1.022, emissive: '#173c6a', emissiveIntensity: 0.09,
+        features: Object.freeze({ bands: true, greatSpot: true })
     })
 });
 

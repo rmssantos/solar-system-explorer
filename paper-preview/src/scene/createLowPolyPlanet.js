@@ -19,7 +19,7 @@ function standardMaterial(options) {
 }
 
 function pickBodyColor(style, key, faceIndex, normalizedY) {
-    if (key === 'saturn') {
+    if (['saturn', 'jupiter', 'venus', 'neptune'].includes(key)) {
         const bands = [0, 1, 0, 2, 1, 3, 0];
         const bandIndex = Math.min(bands.length - 1, Math.floor(((normalizedY + 1) / 2) * bands.length));
         return style.surfaceColors[bands[bandIndex]];
@@ -27,6 +27,43 @@ function pickBodyColor(style, key, faceIndex, normalizedY) {
     if (key === 'earth') return style.surfaceColors[faceIndex % 5 === 0 ? 1 : 0];
     const pattern = Math.abs(Math.sin((faceIndex + style.seed) * 12.9898) * 43758.5453) % 1;
     return style.surfaceColors[Math.floor(pattern * style.surfaceColors.length)];
+}
+
+function addSimpleSurfaceDetails(group, style) {
+    if (style.features.craters) {
+        const craterGroup = new THREE.Group();
+        craterGroup.name = `${style.key}-craters`;
+        createSeededDirections(style.seed + 220, style.features.craters.count).forEach((direction, index) => {
+            const crater = new THREE.Mesh(
+                new THREE.TorusGeometry(0.12 + (index % 3) * 0.035, 0.028, 4, 10),
+                standardMaterial({ color: style.surfaceColors[2], side: THREE.DoubleSide })
+            );
+            placeTangent(crater, direction, style.radius * 1.018, 1, 0.72);
+            craterGroup.add(crater);
+        });
+        group.add(craterGroup);
+    }
+
+    if (style.features.greatSpot) {
+        const spot = new THREE.Mesh(
+            new THREE.CircleGeometry(style.radius * 0.2, 12),
+            standardMaterial({ color: style.surfaceColors[2], side: THREE.DoubleSide })
+        );
+        placeTangent(spot, { x: 0.82, y: -0.3, z: 0.48 }, style.radius * 1.022, 1.45, 0.62);
+        spot.name = `${style.key}-storm`;
+        group.add(spot);
+    }
+
+    if (style.features.polarCaps && style.key !== 'earth') {
+        [{ x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 }].forEach((direction) => {
+            const cap = new THREE.Mesh(
+                new THREE.CircleGeometry(style.radius * 0.28, 12),
+                standardMaterial({ color: style.surfaceColors.at(-1), side: THREE.DoubleSide })
+            );
+            placeTangent(cap, direction, style.radius * 1.018, 1, 0.65);
+            group.add(cap);
+        });
+    }
 }
 
 function createBodyGeometry(style) {
@@ -157,7 +194,7 @@ function addEarthDetails(group, style) {
     group.add(land, clouds, caps);
 }
 
-function addSaturnRings(group, style) {
+function addPlanetRings(group, style) {
     const config = style.features.rings;
     const shape = new THREE.Shape();
     shape.absarc(0, 0, config.outerRadius, 0, Math.PI * 2, false);
@@ -174,7 +211,7 @@ function addSaturnRings(group, style) {
         standardMaterial({ color: style.surfaceColors[3], side: THREE.DoubleSide }),
         standardMaterial({ color: style.rimColor, side: THREE.DoubleSide })
     ]);
-    ring.name = 'saturn-rings';
+    ring.name = `${style.key}-rings`;
     ring.rotation.set(config.tilt, 0, -0.14);
     ring.castShadow = true;
     ring.receiveShadow = true;
@@ -183,7 +220,7 @@ function addSaturnRings(group, style) {
         geometry,
         new THREE.MeshBasicMaterial({ color: style.outlineColor, side: THREE.BackSide })
     );
-    outline.name = 'saturn-ring-outline';
+    outline.name = `${style.key}-ring-outline`;
     outline.rotation.copy(ring.rotation);
     outline.scale.setScalar(1.018);
     group.add(outline, ring);
@@ -229,6 +266,7 @@ export function createLowPolyPlanet(key) {
     group.add(outline, rim, body);
     if (key === 'sun') addSunCorona(group, style);
     if (key === 'earth') addEarthDetails(group, style);
-    if (key === 'saturn') addSaturnRings(group, style);
+    addSimpleSurfaceDetails(group, style);
+    if (style.features.rings) addPlanetRings(group, style);
     return group;
 }

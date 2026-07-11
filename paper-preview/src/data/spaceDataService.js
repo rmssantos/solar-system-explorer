@@ -88,7 +88,7 @@ export function createSpaceDataService({
         url.searchParams.set('q', query);
         url.searchParams.set('media_type', 'image');
         return load({
-            key: `nasa-image:${objectKey}`,
+            key: `nasa-image-v2:${objectKey}`,
             ttl: NASA_IMAGE_TTL,
             source: { name: 'NASA Image and Video Library', url: url.toString() },
             fallback,
@@ -113,7 +113,10 @@ export function createSpaceDataService({
     function getPlanetVector(objectKey, command, date, fallback) {
         const startDate = new Date(`${date}T00:00:00Z`);
         const stopDate = new Date(startDate.getTime() + DAY_MS).toISOString().slice(0, 10);
-        const url = new URL('https://ssd.jpl.nasa.gov/api/horizons.api');
+        const browserOrigin = globalThis.location?.origin;
+        const url = browserOrigin
+            ? new URL('/api/jpl-horizons', browserOrigin)
+            : new URL('https://ssd.jpl.nasa.gov/api/horizons.api');
         const params = {
             format: 'json', COMMAND: `'${command}'`, OBJ_DATA: "'NO'", MAKE_EPHEM: "'YES'",
             EPHEM_TYPE: "'VECTORS'", CENTER: "'500@10'", START_TIME: `'${date}'`,

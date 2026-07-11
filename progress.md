@@ -59,9 +59,14 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Serviço científico resiliente implementado para NASA Images, APOD, JPL Horizons e CelesTrak.
 - Cache com TTL específico por fonte (2 h a 7 dias), retorno de dados expirados em falha e fallback local preservam o modo offline.
 - 6 testes de parsing/cache/fallback passam; lint e build paper passam.
+- Catálogo expandido para Sol + 8 planetas, 14 luas, objetos humanos, asteroides, cometas e meteoritos/eventos históricos.
+- Planetas completos com identidades low-poly próprias; luas e pequenos corpos orbitam em posições de jogo comprimidas.
+- ISS e Hubble usam OMM CelesTrak + propagação SGP4 (`satellite.js`); Tesla/Starman usa a efeméride JPL Horizons `-143205`.
+- Proxy local dedicado ao JPL elimina o bloqueio CORS sem depender de proxies públicos; 0 erros de consola após validação.
+- Zoom contínuo por roda/pinch/botões e transição para cockpit paper-style implementados; `V` alterna a vista.
+- Seis missões encadeadas, progresso persistente, diário de missões, waypoint direcional e APOD diária implementados.
+- Evidência visual: `output/playwright/complete-game/mission-log.png`, `earth-system.png`, `jupiter-moons.png`, `neptune-triton.png`, `tesla-notebook.png`.
 
 ## TODO
 
-- Completar catálogo visual do Sistema Solar e luas relevantes.
-- Integrar objetos humanos, pequenos corpos, missões e persistência.
 - Executar verificação integral e decidir integração/entrega.

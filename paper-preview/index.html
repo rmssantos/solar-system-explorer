@@ -16,16 +16,27 @@
         </div>
 
         <header class="experience-header">
-            <section id="objective-chip" class="objective-chip" aria-live="polite">
+            <button id="objective-chip" class="objective-chip" type="button" aria-live="polite" aria-haspopup="dialog">
                 <span class="objective-kicker">Missão de bolso</span>
                 <strong id="objective-text">Chega a Saturno</strong>
-            </section>
+            </button>
 
             <button id="notebook-trigger" class="notebook-trigger" type="button" aria-haspopup="dialog">
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 3.5h11.5A2.5 2.5 0 0 1 19 6v14.5H7.5A2.5 2.5 0 0 1 5 18V3.5Zm2 2v12.4c.16-.04.33-.05.5-.05H17V6a.5.5 0 0 0-.5-.5H7Z"/></svg>
                 <span>Caderno</span>
             </button>
         </header>
+
+        <aside id="nav-beacon" class="nav-beacon" aria-live="polite">
+            <span id="nav-arrow" class="nav-arrow" aria-hidden="true">▲</span>
+            <span><strong id="nav-target">Saturno</strong><small id="nav-distance">—</small></span>
+        </aside>
+
+        <div class="zoom-controls" aria-label="Distância da câmara">
+            <button id="zoom-out" type="button" aria-label="Afastar câmara">−</button>
+            <button id="zoom-cockpit" type="button" aria-label="Entrar no cockpit">Cockpit</button>
+            <button id="zoom-in" type="button" aria-label="Aproximar câmara">+</button>
+        </div>
 
         <section id="flight-controls" class="flight-controls" aria-label="Controlos de voo">
             <div id="flight-joystick" class="flight-joystick" aria-label="Joystick de voo">
@@ -45,7 +56,7 @@
             </div>
         </section>
 
-        <p class="key-hint" aria-hidden="true">W/S frente · A/D lateral · Space/Ctrl vertical · rato olha · Shift boost · R/F roda</p>
+        <p class="key-hint" aria-hidden="true">W/S frente · A/D lateral · rato olha · roda zoom · V cockpit · Shift boost · R/F roda</p>
     </main>
 
     <dialog id="field-notebook" class="field-notebook" aria-labelledby="notebook-title">
@@ -111,6 +122,20 @@
                 </section>
             </div>
             <p id="mission-stamp" class="mission-stamp" hidden>Missão cumprida</p>
+        </article>
+    </dialog>
+
+    <dialog id="mission-log" class="mission-log" aria-labelledby="mission-log-title">
+        <article>
+            <button id="close-mission-log" class="close-notebook" type="button">Fechar</button>
+            <p class="notebook-kicker">Diário de bordo</p>
+            <h1 id="mission-log-title">Missões</h1>
+            <p class="mission-log-intro">Podes completar descobertas fora de ordem. O diário guarda tudo neste dispositivo.</p>
+            <figure id="apod-card" class="apod-card" hidden>
+                <img id="apod-image" alt="Imagem astronómica do dia" width="640" height="360">
+                <figcaption><strong id="apod-title">Céu de hoje</strong><span id="apod-date"></span></figcaption>
+            </figure>
+            <ol id="mission-list" class="mission-list"></ol>
         </article>
     </dialog>
 
