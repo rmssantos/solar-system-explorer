@@ -4,7 +4,7 @@ import globals from 'globals';
 export default [
     js.configs.recommended,
     {
-        files: ['src/**/*.js', 'tests/**/*.js', 'scripts/**/*.mjs', 'public/*.js', 'sw.js', '*.config.js'],
+        files: ['src/**/*.js', 'paper-preview/src/**/*.js', 'tests/**/*.js', 'scripts/**/*.mjs', 'public/*.js', 'sw.js', '*.config.js'],
         languageOptions: {
             ecmaVersion: 'latest',
             sourceType: 'module',
@@ -25,6 +25,6 @@ export default [
         },
     },
     {
-        ignores: ['dist/**', 'node_modules/**', '.local/**', 'icons/**', 'entrega-tema/**', 'audit_report.html', 'opus_validation_audit.html'],
+        ignores: ['**/dist/**', 'dist-paper-preview/**', 'node_modules/**', '.local/**', 'icons/**', 'entrega-tema/**', 'audit_report.html', 'opus_validation_audit.html'],
     },
 ];
