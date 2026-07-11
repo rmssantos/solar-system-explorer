@@ -46,11 +46,17 @@ button:focus-visible {
     outline-offset: 4px;
 }
 
-.game-home-link {
+.game-route-nav {
     position: fixed;
     z-index: 8;
     left: 18px;
     bottom: 18px;
+    display: flex;
+    gap: 7px;
+}
+
+.game-home-link,
+.game-library-link {
     padding: 9px 13px;
     color: var(--chalk);
     background: rgba(16, 25, 54, 0.82);
@@ -66,7 +72,9 @@ button:focus-visible {
 }
 
 .game-home-link:hover,
-.game-home-link:focus-visible {
+.game-home-link:focus-visible,
+.game-library-link:hover,
+.game-library-link:focus-visible {
     color: var(--graphite);
     background: var(--sun-pulp);
 }
@@ -74,7 +82,8 @@ button:focus-visible {
 .game-language-toggle { position: fixed; z-index: 8; left: 18px; bottom: 64px; width: 42px; aspect-ratio: 1; color: var(--chalk); background: rgba(16, 25, 54, .82); border: 1px solid rgba(255, 248, 223, .42); border-radius: 50%; font-size: .68rem; font-weight: 1000; cursor: pointer; backdrop-filter: blur(8px); }
 .game-language-toggle:hover, .game-language-toggle:focus-visible { color: var(--graphite); background: var(--sun-pulp); outline: 3px solid var(--chalk); outline-offset: 2px; }
 
-.game-home-link:focus-visible {
+.game-home-link:focus-visible,
+.game-library-link:focus-visible {
     outline: 4px solid var(--chalk);
     outline-offset: 3px;
 }

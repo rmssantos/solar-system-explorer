@@ -17,13 +17,14 @@ describe('Paper Solar Explorer homepage', () => {
 
     it('starts the dedicated game without loading the WebGL runtime on the homepage', () => {
         const html = read('../paper-preview/index.html');
-        expect(html).toContain('href="/jogo.html"');
+        expect(html).toContain('href="/jogo/"');
+        expect(html).toContain('href="/biblioteca/"');
         expect(html).not.toContain('id="paper-stage"');
         expect(html).not.toContain('src="/src/main.js"');
     });
 
     it('keeps the full game shell on the dedicated game page', () => {
-        const html = read('../paper-preview/jogo.html');
+        const html = read('../paper-preview/jogo/index.html');
         expect(html).toContain('id="paper-stage"');
         expect(html).toContain('src="/src/main.js"');
         expect(html).toContain('href="/"');

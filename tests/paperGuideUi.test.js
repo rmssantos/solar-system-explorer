@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-const html = readFileSync(new URL('../paper-preview/jogo.html', import.meta.url), 'utf8');
+const html = readFileSync(new URL('../paper-preview/jogo/index.html', import.meta.url), 'utf8');
 
 describe('Lumi guide transmission', () => {
     it('has a polite, dismissible and non-modal guide surface', () => {

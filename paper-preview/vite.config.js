@@ -17,7 +17,8 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 landing: fileURLToPath(new URL('./index.html', import.meta.url)),
-                game: fileURLToPath(new URL('./jogo.html', import.meta.url))
+                game: fileURLToPath(new URL('./jogo/index.html', import.meta.url)),
+                library: fileURLToPath(new URL('./biblioteca/index.html', import.meta.url))
             }
         }
     }
