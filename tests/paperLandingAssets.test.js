@@ -16,4 +16,11 @@ describe('original paper-style homepage assets', () => {
         expect(html).not.toContain('chapter-icon');
         expect(html).toContain('class="chapter-art"');
     });
+
+    it('uses original Saturn paper art in the field notebook instead of the CSS placeholder', () => {
+        expect(html).toContain('/art/field-notebook-saturn.webp');
+        expect(html).toContain('class="field-notebook-art"');
+        expect(html).not.toContain('planet-photo');
+        expect(statSync(assetPath('field-notebook-saturn')).size).toBeLessThan(180_000);
+    });
 });
