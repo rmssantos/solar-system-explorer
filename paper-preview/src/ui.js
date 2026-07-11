@@ -1,5 +1,6 @@
 import { PLANETS } from './state.js';
 import { chooseNearbyObject } from './world/proximity.js';
+import { AWARD_CATALOG, evaluateAwards, getExplorerLevel } from './progression/expeditionProgress.js';
 
 const numberFormatter = new Intl.NumberFormat('pt-PT');
 
@@ -74,6 +75,13 @@ export function createPreviewUI({
         , zoomCockpit: document.querySelector('#zoom-cockpit')
         , zoomIn: document.querySelector('#zoom-in')
         , orbitToggle: document.querySelector('#orbit-toggle')
+        , passportLevel: document.querySelector('#passport-level')
+        , passportXp: document.querySelector('#passport-xp')
+        , passportProgress: document.querySelector('#passport-progress')
+        , passportTabs: [...document.querySelectorAll('[data-passport-section]')]
+        , passportPanels: [...document.querySelectorAll('[data-passport-panel]')]
+        , collectionGrid: document.querySelector('#collection-grid')
+        , awardsGrid: document.querySelector('#awards-grid')
     };
 
     const handleTabClick = (event) => {
@@ -110,6 +118,17 @@ export function createPreviewUI({
         , [elements.orbitToggle, 'click', () => {
             const visible = onToggleOrbits();
             elements.orbitToggle.setAttribute('aria-pressed', String(visible));
+        }]
+        , [elements.passportTabs[0].parentElement, 'click', (event) => {
+            const tab = event.target.closest('[data-passport-section]');
+            if (!tab) return;
+            const section = tab.dataset.passportSection;
+            elements.passportTabs.forEach((candidate) => {
+                candidate.setAttribute('aria-selected', String(candidate === tab));
+            });
+            elements.passportPanels.forEach((panel) => {
+                panel.hidden = panel.dataset.passportPanel !== section;
+            });
         }]
     ];
 
@@ -212,7 +231,51 @@ export function createPreviewUI({
         renderQuiz(state.learning, record);
     }
 
-    function update(state, { flightState = null, nearbyObjectKey = null, missions = null } = {}) {
+    function renderProgression(state, missions, expeditionProgress) {
+        const level = getExplorerLevel(expeditionProgress?.xp ?? 0);
+        elements.passportLevel.textContent = `Nível ${level.level} · ${level.title}`;
+        elements.passportXp.textContent = `${expeditionProgress?.xp ?? 0} XP`;
+        elements.passportProgress.value = level.progress;
+
+        const discovered = new Set(state.learning.discoveredKeys);
+        elements.collectionGrid.replaceChildren(...Object.values(learningCatalog).map((record) => {
+            const unlocked = discovered.has(record.key);
+            const card = document.createElement('article');
+            card.className = `collection-card${unlocked ? ' is-unlocked' : ''}`;
+            const icon = document.createElement('span');
+            icon.textContent = unlocked ? (record.type === 'Lua' ? '☾' : record.type === 'Planeta' ? '●' : '✦') : '?';
+            const copy = document.createElement('div');
+            const name = document.createElement('strong');
+            name.textContent = unlocked ? record.name : 'Por descobrir';
+            const type = document.createElement('small');
+            type.textContent = unlocked ? record.type : 'Segue a curiosidade';
+            copy.append(name, type);
+            card.append(icon, copy);
+            return card;
+        }));
+
+        const unlockedAwards = new Set(evaluateAwards({
+            ...state.learning,
+            completedMissionIds: missions?.completedIds ?? []
+        }).map((award) => award.id));
+        elements.awardsGrid.replaceChildren(...AWARD_CATALOG.map((award) => {
+            const unlocked = unlockedAwards.has(award.id);
+            const card = document.createElement('article');
+            card.className = `award-card${unlocked ? ' is-unlocked' : ''}`;
+            const medal = document.createElement('span');
+            medal.textContent = unlocked ? award.icon : '·';
+            const copy = document.createElement('div');
+            const title = document.createElement('strong');
+            title.textContent = award.title;
+            const description = document.createElement('small');
+            description.textContent = award.description;
+            copy.append(title, description);
+            card.append(medal, copy);
+            return card;
+        }));
+    }
+
+    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null } = {}) {
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
             ? chooseNearbyObject(flightState.nearbyPlanetKey, nearbyObjectKey)
@@ -246,6 +309,7 @@ export function createPreviewUI({
                 item.append(copy, progress);
                 return item;
             }));
+            renderProgression(state, missions, expeditionProgress);
         }
 
         if (state.notebook.open) {

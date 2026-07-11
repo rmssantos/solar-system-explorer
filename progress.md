@@ -95,3 +95,7 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Direção visual da homepage usa dossier de expedição + observatório em papel, com orrery CSS original, cartões artesanais e CTA persistente para o jogo.
 - Desktop 1440×1000 e mobile 390×844 validados: zero overflow, zero erros de consola; CTA carrega o canvas 3D e o jogo oferece regresso ao início.
 - Evidência: `output/playwright/homepage/desktop.png`, `mobile.png` e `section-0.png`.
+- Passaporte gamificado implementado com XP idempotente por descoberta (+20), quiz (+35), surpresa (+15) e missão (+100), seis níveis e migração do progresso existente.
+- Coleção mostra cartões descobertos/por descobrir; sete prémios incluem medalhas e troféu final, sempre derivados de marcos significativos.
+- Playtest Saturno confirmou 120 XP exatos, avanço para nível 2, desbloqueio de duas medalhas, persistência e 0 erros de consola.
+- Evidência: `output/playwright/progression/missions.png` e `awards.png`.

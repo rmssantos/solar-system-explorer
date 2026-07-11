@@ -134,14 +134,38 @@
     <dialog id="mission-log" class="mission-log" aria-labelledby="mission-log-title">
         <article>
             <button id="close-mission-log" class="close-notebook" type="button">Fechar</button>
-            <p class="notebook-kicker">Diário de bordo</p>
-            <h1 id="mission-log-title">Missões</h1>
-            <p class="mission-log-intro">Podes completar descobertas fora de ordem. O diário guarda tudo neste dispositivo.</p>
-            <figure id="apod-card" class="apod-card" hidden>
-                <img id="apod-image" alt="Imagem astronómica do dia" width="640" height="360">
-                <figcaption><strong id="apod-title">Céu de hoje</strong><span id="apod-date"></span></figcaption>
-            </figure>
-            <ol id="mission-list" class="mission-list"></ol>
+            <div class="passport-heading">
+                <div>
+                    <p class="notebook-kicker">Passaporte de exploração</p>
+                    <h1 id="mission-log-title">Diário de bordo</h1>
+                </div>
+                <div class="passport-rank">
+                    <span id="passport-level">Nível 1 · Cadete de Papel</span>
+                    <strong id="passport-xp">0 XP</strong>
+                    <progress id="passport-progress" max="1" value="0" aria-label="Progresso para o nível seguinte"></progress>
+                </div>
+            </div>
+            <nav class="passport-tabs" role="tablist" aria-label="Secções do passaporte">
+                <button type="button" role="tab" data-passport-section="missions" aria-selected="true">Missões</button>
+                <button type="button" role="tab" data-passport-section="collection" aria-selected="false">Coleção</button>
+                <button type="button" role="tab" data-passport-section="awards" aria-selected="false">Prémios</button>
+            </nav>
+            <section class="passport-panel" data-passport-panel="missions">
+                <p class="mission-log-intro">Podes completar descobertas fora de ordem. O diário guarda tudo neste dispositivo.</p>
+                <figure id="apod-card" class="apod-card" hidden>
+                    <img id="apod-image" alt="Imagem astronómica do dia" width="640" height="360">
+                    <figcaption><strong id="apod-title">Céu de hoje</strong><span id="apod-date"></span></figcaption>
+                </figure>
+                <ol id="mission-list" class="mission-list"></ol>
+            </section>
+            <section class="passport-panel" data-passport-panel="collection" hidden>
+                <p class="mission-log-intro">Cada cartão é um lugar ou objeto que encontraste pessoalmente.</p>
+                <div id="collection-grid" class="collection-grid"></div>
+            </section>
+            <section class="passport-panel" data-passport-panel="awards" hidden>
+                <p class="mission-log-intro">Medalhas por curiosidade; troféus por viagens extraordinárias.</p>
+                <div id="awards-grid" class="awards-grid"></div>
+            </section>
         </article>
     </dialog>
 

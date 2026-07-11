@@ -25,6 +25,6 @@ export default [
         },
     },
     {
-        ignores: ['dist/**', 'dist-paper-preview/**', 'node_modules/**', '.local/**', 'icons/**', 'entrega-tema/**', 'audit_report.html', 'opus_validation_audit.html'],
+        ignores: ['**/dist/**', 'dist-paper-preview/**', 'node_modules/**', '.local/**', 'icons/**', 'entrega-tema/**', 'audit_report.html', 'opus_validation_audit.html'],
     },
 ];

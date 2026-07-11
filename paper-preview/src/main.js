@@ -18,10 +18,19 @@ import { chooseNearbyObject } from './world/proximity.js';
 import { calculateWaypoint } from './navigation/waypoint.js';
 import { evaluateMissions } from './missions/missionSystem.js';
 import { loadProgress, saveProgress } from './missions/progressStore.js';
+import {
+    createExpeditionProgress,
+    reconcileExpeditionProgress
+} from './progression/expeditionProgress.js';
 
 const stage = document.querySelector('#paper-stage');
 const learningCatalog = createPaperLearningCatalog('pt');
-let previewState = createPreviewState(loadProgress());
+const savedProgress = loadProgress();
+let previewState = createPreviewState(savedProgress);
+let expeditionProgress = reconcileExpeditionProgress(createExpeditionProgress(savedProgress), {
+    ...previewState.learning,
+    completedMissionIds: evaluateMissions(previewState.learning).completedIds
+});
 let flightState = createFlightState();
 let deterministicMode = false;
 let lastFrameTime = performance.now();
@@ -159,7 +168,7 @@ function handleExplore() {
     const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
     if (previewState.notebook.open || !nearbyKey) return;
     previewState = explorePlanet(previewState, nearbyKey);
-    saveProgress(previewState.learning);
+    reconcileAndSaveProgress();
     flightInput.setEnabled(false);
     syncUI(true);
     hydrateLearningData(nearbyKey).catch(() => {});
@@ -191,8 +200,17 @@ function handleAnswerQuiz(selectedIndex) {
         ...previewState,
         learning: answerLearningQuiz(previewState.learning, quiz, selectedIndex)
     };
-    saveProgress(previewState.learning);
+    reconcileAndSaveProgress();
     syncUI(true);
+}
+
+function reconcileAndSaveProgress() {
+    const missions = evaluateMissions(previewState.learning);
+    expeditionProgress = reconcileExpeditionProgress(expeditionProgress, {
+        ...previewState.learning,
+        completedMissionIds: missions.completedIds
+    });
+    saveProgress({ ...previewState.learning, ...expeditionProgress });
 }
 
 function handleRetryQuiz() {
@@ -244,7 +262,8 @@ function syncUI(force = false) {
     previewUI.update(previewState, {
         flightState,
         nearbyObjectKey: nearbyWorldObjectKey,
-        missions
+        missions,
+        expeditionProgress
     });
     lastUiSignature = signature;
 }
@@ -365,6 +384,7 @@ window.render_game_to_text = () => {
             quizStatus: previewState.learning.quiz.status,
             discoveredKeys: [...previewState.learning.discoveredKeys]
         },
+        progression: expeditionProgress,
         scene: paperScene.getState()
     });
 };
