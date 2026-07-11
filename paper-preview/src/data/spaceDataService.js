@@ -110,6 +110,14 @@ export function createSpaceDataService({
         });
     }
 
+    function getDailySky(fallback) {
+        return getNasaImage(
+            'daily-sky',
+            'deep space astronomy nebula telescope',
+            fallback
+        );
+    }
+
     function getPlanetVector(objectKey, command, date, fallback) {
         const startDate = new Date(`${date}T00:00:00Z`);
         const stopDate = new Date(startDate.getTime() + DAY_MS).toISOString().slice(0, 10);
@@ -147,5 +155,5 @@ export function createSpaceDataService({
         });
     }
 
-    return { getNasaImage, getApod, getPlanetVector, getSatelliteElements };
+    return { getNasaImage, getApod, getDailySky, getPlanetVector, getSatelliteElements };
 }

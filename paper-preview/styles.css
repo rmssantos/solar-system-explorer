@@ -362,7 +362,9 @@ button:focus-visible {
     font: 800 .75rem/1 var(--font-body, system-ui);
     box-shadow: 0 5px 16px rgb(0 0 0 / .2);
 }
-.zoom-controls button:not(:nth-child(2)) { font-size: 1.25rem; }
+.zoom-controls #zoom-out,
+.zoom-controls #zoom-in { font-size: 1.25rem; }
+.zoom-controls #orbit-toggle[aria-pressed="false"] { color: #8290a8; opacity: .78; }
 .zoom-controls button:focus-visible { outline: 3px solid #76b5c4; }
 
 .objective-chip { text-align: left; cursor: pointer; }
@@ -423,7 +425,8 @@ button:focus-visible {
     .nav-beacon { top: 5.5rem; min-width: 7.7rem; padding: .45rem .7rem; }
     .zoom-controls { right: .65rem; top: 42%; }
     .zoom-controls button { min-width: 2rem; min-height: 2rem; padding: .25rem .4rem; }
-    .zoom-controls button:nth-child(2) { font-size: .62rem; }
+    .zoom-controls #zoom-cockpit,
+    .zoom-controls #orbit-toggle { font-size: .62rem; }
 }
 
 .field-notebook {

@@ -116,7 +116,6 @@ async function hydrateLearningData(key) {
 }
 
 async function hydrateTrackedObjects() {
-    const earth = getWorldObject('earth');
     await Promise.all(['iss', 'hubble'].map(async (key) => {
         const object = getWorldObject(key);
         const envelope = await spaceData.getSatelliteElements(
@@ -126,11 +125,7 @@ async function hydrateTrackedObjects() {
         const propagated = propagateOmm(envelope.data, new Date());
         if (!propagated) return;
         const offset = projectEarthOrbit(propagated.positionKm, object.orbitRadius);
-        paperScene.setWorldObjectPosition(key, {
-            x: earth.anchor[0] + offset.x,
-            y: earth.anchor[1] + offset.y,
-            z: earth.anchor[2] + offset.z
-        });
+        paperScene.setWorldObjectOffset(key, offset);
     }));
 
     const date = new Date().toISOString().slice(0, 10);
@@ -152,10 +147,8 @@ async function hydrateTrackedObjects() {
 }
 
 async function hydrateDailySky() {
-    const envelope = await spaceData.getApod({
+    const envelope = await spaceData.getDailySky({
         title: 'O céu de hoje',
-        explanation: 'Imagem astronómica incluída para o modo offline.',
-        date: new Date().toISOString().slice(0, 10),
         imageUrl: '/learning/sun.jpg'
     });
     previewUI.setApod(envelope);
@@ -220,7 +213,8 @@ const previewUI = createPreviewUI({
     onMissionLogClose: () => flightInput.setEnabled(true),
     onZoom: (direction) => paperScene.adjustZoom(
         direction === 'cockpit' ? -100 : (direction === 'in' ? -0.9 : 0.9)
-    )
+    ),
+    onToggleOrbits: () => paperScene.toggleOrbits()
 });
 
 const flightInput = createFlightInput({
@@ -264,9 +258,7 @@ function updateMissionNavigation() {
         return;
     }
     const object = getWorldObject(targetKey);
-    const target = ['star', 'planet'].includes(object.type)
-        ? { x: object.anchor[0], y: object.anchor[1], z: object.anchor[2] }
-        : paperScene.getWorldObjectPosition(targetKey);
+    const target = paperScene.getWorldObjectPosition(targetKey);
     if (!target) return;
     const offset = {
         x: target.x - flightState.position.x,
@@ -396,9 +388,7 @@ window.__paperPreview = {
     nearbyAt: (position) => paperScene.findNearbyWorldObject(position),
     teleport: (key) => {
         const object = getWorldObject(key);
-        const target = object && ['star', 'planet'].includes(object.type)
-            ? { x: object.anchor[0], y: object.anchor[1], z: object.anchor[2] }
-            : paperScene.getWorldObjectPosition(key);
+        const target = object ? paperScene.getWorldObjectPosition(key) : null;
         if (!object || !target) return false;
         flightState = {
             ...flightState,

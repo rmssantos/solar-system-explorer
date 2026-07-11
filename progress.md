@@ -77,3 +77,14 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Novo self-improvement loop: universo heliocêntrico, homepage, surpresas, guia e gamificação.
 - Design/plano: `docs/plans/2026-07-11-heliocentric-explorer-design.md` e `2026-07-11-heliocentric-explorer-implementation.md`.
 - Remover a rota diagonal e migrar todos os consumidores para posições dinâmicas antes de construir novos sistemas.
+
+## 2026-07-11 — Heliocentric loop
+
+- Modelo orbital puro implementado com semi-eixo maior, excentricidade, inclinação, nodo, periapsis, anomalia e período para os 8 planetas.
+- Compressão logarítmica preserva a ordem real de 0,387–30,061 UA em 11–142 unidades jogáveis.
+- Voo, colisões e proximidade passaram a consumir snapshots de posições atuais; testes provam que anchors históricos deixam de afetar colisões.
+- Linha cosida/CatmullRom removida. Oito órbitas solares independentes, discretas e ocultáveis substituem-na.
+- Planetas movem-se por data simulada; luas seguem a posição dinâmica do planeta-pai; ISS/Hubble usam offsets propagados relativos à Terra móvel.
+- Cintura de asteroides reposicionada como anel heliocêntrico; bounds de voo agora são simétricos e cobrem órbitas completas.
+- APOD com `DEMO_KEY` produziu 429 no playtest; troca TDD para seleção diária CORS-safe da NASA Images eliminou erros de consola.
+- Evidência: `output/playwright/heliocentric-pass1/shot-0.png`, `saturn-dynamic.png`, `orbits-hidden.png`.

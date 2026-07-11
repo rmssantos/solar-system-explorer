@@ -55,6 +55,18 @@ describe('Scientific provider parsers', () => {
 });
 
 describe('Cached scientific data service', () => {
+    it('loads the daily sky through the CORS-safe NASA image library', async () => {
+        const fetchFn = vi.fn(async (url) => jsonResponse({
+            collection: { items: [{ data: [{ nasa_id: 'SKY1', title: 'Deep field' }], links: [{ href: 'https://images-assets.nasa.gov/sky.jpg', render: 'image' }] }] }
+        }));
+        const service = createSpaceDataService({ fetchFn, storage: memoryStorage() });
+        const result = await service.getDailySky({ title: 'Offline sky', imageUrl: '/learning/sun.jpg' });
+
+        expect(result.data.title).toBe('Deep field');
+        expect(String(fetchFn.mock.calls[0][0])).toContain('images-api.nasa.gov/search');
+        expect(String(fetchFn.mock.calls[0][0])).not.toContain('planetary/apod');
+    });
+
     it('returns live NASA data then reuses fresh cache without another request', async () => {
         const storage = memoryStorage();
         const fetchFn = vi.fn(async () => jsonResponse({

@@ -115,19 +115,30 @@ export function createPaperWorldObjects() {
         return { object, mesh };
     });
     const livePositions = new Map();
+    const liveOffsets = new Map();
 
-    function update(elapsed) {
+    function update(elapsed, primarySnapshot = {}) {
         for (const { object, mesh } of meshes) {
             const livePosition = livePositions.get(object.key);
+            const liveOffset = liveOffsets.get(object.key);
+            const parentPosition = object.parentKey
+                ? (primarySnapshot[object.parentKey]?.position ?? getWorldObject(object.parentKey).anchor)
+                : null;
             if (livePosition) mesh.position.set(livePosition.x, livePosition.y, livePosition.z);
+            else if (liveOffset && parentPosition) {
+                mesh.position.set(
+                    parentPosition.x + liveOffset.x,
+                    parentPosition.y + liveOffset.y,
+                    parentPosition.z + liveOffset.z
+                );
+            }
             else if (object.parentKey) {
-                const parent = getWorldObject(object.parentKey);
                 const angle = (object.orbitPhase ?? 0) + elapsed * (object.orbitSpeed ?? 0.08);
                 const tilt = Math.sin(angle * 0.63) * 0.28;
                 mesh.position.set(
-                    parent.anchor[0] + Math.cos(angle) * object.orbitRadius,
-                    parent.anchor[1] + Math.sin(angle) * object.orbitRadius * tilt,
-                    parent.anchor[2] + Math.sin(angle) * object.orbitRadius
+                    parentPosition.x + Math.cos(angle) * object.orbitRadius,
+                    parentPosition.y + Math.sin(angle) * object.orbitRadius * tilt,
+                    parentPosition.z + Math.sin(angle) * object.orbitRadius
                 );
             } else if (object.anchor) mesh.position.set(...object.anchor);
             mesh.rotation.y += 0.002 + object.scale * 0.001;
@@ -139,6 +150,12 @@ export function createPaperWorldObjects() {
     function setLivePosition(key, position) {
         if (!meshes.some((entry) => entry.object.key === key)) return false;
         livePositions.set(key, { x: position.x, y: position.y, z: position.z });
+        return true;
+    }
+    function setLiveOffset(key, offset) {
+        if (!meshes.some((entry) => entry.object.key === key)) return false;
+        livePositions.delete(key);
+        liveOffsets.set(key, { x: offset.x, y: offset.y, z: offset.z });
         return true;
     }
     function findNearby(position) {
@@ -165,5 +182,5 @@ export function createPaperWorldObjects() {
         const entry = meshes.find((candidate) => candidate.object.key === key);
         return entry ? { x: entry.mesh.position.x, y: entry.mesh.position.y, z: entry.mesh.position.z } : null;
     }
-    return { root, update, meshes, setLivePosition, findNearby, getPosition };
+    return { root, update, meshes, setLivePosition, setLiveOffset, findNearby, getPosition };
 }

@@ -3,12 +3,12 @@ import { PRIMARY_WORLDS } from './world/worldCatalog.js';
 export const MAX_SPEED = 12;
 export const BOOST_MAX_SPEED = 24;
 export const FLIGHT_BOUNDS = Object.freeze({
-    minX: -35,
-    maxX: 170,
-    minY: -40,
-    maxY: 40,
-    minZ: -150,
-    maxZ: 35
+    minX: -175,
+    maxX: 175,
+    minY: -50,
+    maxY: 50,
+    minZ: -175,
+    maxZ: 175
 });
 
 export const PLANET_ANCHORS = Object.freeze(Object.fromEntries(PRIMARY_WORLDS.map((world) => [

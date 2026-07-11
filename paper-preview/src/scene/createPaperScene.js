@@ -1,13 +1,16 @@
 import * as THREE from 'three';
-import { PLANET_ANCHORS } from '../flightSimulation.js';
 import { createLowPolyPlanet } from './createLowPolyPlanet.js';
 import { createPaperShip, updatePaperShipThrust } from './createPaperShip.js';
 import { createPaperTextures } from './paperTextures.js';
 import { PRIMARY_WORLDS } from '../world/worldCatalog.js';
 import { adjustCameraDistance, cameraModeForDistance } from './cameraZoom.js';
 import { createPaperWorldObjects } from './createPaperWorldObjects.js';
+import { createPrimarySnapshot } from '../world/orbitalSystem.js';
+import { createOrbitPaths } from './createOrbitPaths.js';
 
 const PLANET_KEYS = PRIMARY_WORLDS.map((world) => world.key);
+const ORBIT_DAYS_PER_SECOND = 0.35;
+const DAY_MS = 86_400_000;
 export const CHASE_CAMERA_LAYOUT = Object.freeze({ distance: 6.4, verticalOffset: 0.9 });
 
 function createPaperCockpit() {
@@ -134,11 +137,11 @@ function addPaperAtmosphere(scene) {
     };
     for (let index = 0; index < 90; index += 1) {
         const angle = random() * Math.PI * 2;
-        const radius = 7 + random() * 6;
+        const radius = 68 + random() * 8;
         const position = new THREE.Vector3(
-            57 + Math.cos(angle) * radius,
+            Math.cos(angle) * radius,
             -1 + (random() - 0.5) * 4,
-            -41 + Math.sin(angle) * radius
+            Math.sin(angle) * radius
         );
         const rotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(random() * 3, random() * 3, random() * 3));
         const size = 0.45 + random() * 1.35;
@@ -149,25 +152,6 @@ function addPaperAtmosphere(scene) {
     belt.name = 'paper-asteroid-belt';
     scene.add(belt);
     return nebulaTexture;
-}
-
-function createStitchedRoute() {
-    const route = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(0, 0, 7),
-        ...PRIMARY_WORLDS.map((world) => new THREE.Vector3(...world.anchor))
-    ]);
-    const line = new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints(route.getPoints(520)),
-        new THREE.LineDashedMaterial({
-            color: '#d8ca9e',
-            dashSize: 0.32,
-            gapSize: 0.24,
-            transparent: true,
-            opacity: 0.42
-        })
-    );
-    line.computeLineDistances();
-    return line;
 }
 
 export function createPaperScene(stage) {
@@ -195,7 +179,8 @@ export function createPaperScene(stage) {
     scene.add(background);
     addPaperStars(scene);
     const nebulaTexture = addPaperAtmosphere(scene);
-    scene.add(createStitchedRoute());
+    const orbitPaths = createOrbitPaths(PRIMARY_WORLDS);
+    scene.add(orbitPaths);
 
     scene.add(new THREE.HemisphereLight('#fff0c4', '#192346', 1.65));
     const keyLight = new THREE.DirectionalLight('#ffe8b0', 2.7);
@@ -207,14 +192,17 @@ export function createPaperScene(stage) {
     keyLight.shadow.camera.bottom = -10;
     scene.add(keyLight, keyLight.target);
 
+    const initialDate = new Date();
+    const initialSnapshot = createPrimarySnapshot(initialDate);
     const planets = PLANET_KEYS.map((key) => {
-        const anchor = PLANET_ANCHORS[key];
         const world = PRIMARY_WORLDS.find((candidate) => candidate.key === key);
         const planet = createLowPolyPlanet(key);
-        planet.userData.baseY = anchor.y;
-        planet.userData.baseZ = anchor.z;
         planet.userData.baseScale = world.scale;
-        planet.position.set(anchor.x, anchor.y, anchor.z);
+        planet.position.set(
+            initialSnapshot[key].position.x,
+            initialSnapshot[key].position.y,
+            initialSnapshot[key].position.z
+        );
         planet.scale.setScalar(planet.userData.baseScale);
         scene.add(planet);
         return planet;
@@ -228,6 +216,8 @@ export function createPaperScene(stage) {
 
     const runtime = {
         elapsed: 0,
+        simulationDateMs: initialDate.getTime(),
+        primarySnapshot: initialSnapshot,
         activeIndex: -1,
         contextLost: false,
         cameraPosition: new THREE.Vector3(0, 2.2, 13),
@@ -327,13 +317,16 @@ export function createPaperScene(stage) {
     function update(deltaSeconds) {
         const delta = Math.min(Math.max(deltaSeconds, 0), 0.1);
         runtime.elapsed += delta;
+        runtime.simulationDateMs += delta * ORBIT_DAYS_PER_SECOND * DAY_MS;
+        runtime.primarySnapshot = createPrimarySnapshot(new Date(runtime.simulationDateMs));
         planets.forEach((planet, index) => {
-            planet.position.y = planet.userData.baseY + Math.sin(runtime.elapsed * 0.44 + planet.userData.phase) * 0.055;
+            const position = runtime.primarySnapshot[planet.userData.key].position;
+            planet.position.set(position.x, position.y, position.z);
             planet.rotation.y += delta * (0.035 + index * 0.008);
             const selectedScale = planet.userData.baseScale * (index === runtime.activeIndex ? 1.045 : 1);
             planet.scale.lerp(new THREE.Vector3(selectedScale, selectedScale, selectedScale), Math.min(1, delta * 4));
         });
-        worldObjects.update(runtime.elapsed);
+        worldObjects.update(runtime.elapsed, runtime.primarySnapshot);
     }
 
     function render() {
@@ -370,6 +363,8 @@ export function createPaperScene(stage) {
             ),
             cameraMode: cameraModeForDistance(runtime.cameraDistance),
             cameraDistance: Number(runtime.cameraDistance.toFixed(2)),
+            orbitDate: new Date(runtime.simulationDateMs).toISOString(),
+            orbitsVisible: orbitPaths.visible,
             cameraForward: Object.fromEntries(
                 Object.entries(getNavigationBasis().forward)
                     .map(([key, value]) => [key, Number(value.toFixed(3))])
@@ -380,14 +375,25 @@ export function createPaperScene(stage) {
 
     function getPrimaryBodies() {
         return planets.map((planet) => {
-            const anchor = PLANET_ANCHORS[planet.userData.key];
+            const world = PRIMARY_WORLDS.find((entry) => entry.key === planet.userData.key);
             return {
                 key: planet.userData.key,
                 position: { x: planet.position.x, y: planet.position.y, z: planet.position.z },
-                collisionRadius: anchor.collisionRadius,
-                interactionRadius: anchor.interactionRadius
+                collisionRadius: world.collisionRadius,
+                interactionRadius: world.interactionRadius
             };
         });
+    }
+
+    function getWorldObjectPosition(key) {
+        const planet = planets.find((entry) => entry.userData.key === key);
+        if (planet) return { x: planet.position.x, y: planet.position.y, z: planet.position.z };
+        return worldObjects.getPosition(key);
+    }
+
+    function toggleOrbits(force) {
+        orbitPaths.visible = typeof force === 'boolean' ? force : !orbitPaths.visible;
+        return orbitPaths.visible;
     }
 
     function handleContextLost(event) {
@@ -435,8 +441,9 @@ export function createPaperScene(stage) {
     return {
         setFlightSnapshot,
         setWorldObjectPosition: worldObjects.setLivePosition,
+        setWorldObjectOffset: worldObjects.setLiveOffset,
         findNearbyWorldObject: worldObjects.findNearby,
-        getWorldObjectPosition: worldObjects.getPosition,
+        getWorldObjectPosition,
         update,
         render,
         resize,
@@ -444,6 +451,7 @@ export function createPaperScene(stage) {
         getPrimaryBodies,
         getState,
         adjustZoom,
+        toggleOrbits,
         destroy
     };
 }

@@ -16,7 +16,8 @@ export function createPreviewUI({
     onRetryQuiz,
     onMissionLogOpen,
     onMissionLogClose,
-    onZoom
+    onZoom,
+    onToggleOrbits
 }) {
     const elements = {
         objective: document.querySelector('#objective-chip'),
@@ -71,6 +72,7 @@ export function createPreviewUI({
         , zoomOut: document.querySelector('#zoom-out')
         , zoomCockpit: document.querySelector('#zoom-cockpit')
         , zoomIn: document.querySelector('#zoom-in')
+        , orbitToggle: document.querySelector('#orbit-toggle')
     };
 
     const handleTabClick = (event) => {
@@ -104,6 +106,10 @@ export function createPreviewUI({
         , [elements.zoomOut, 'click', () => onZoom('out')]
         , [elements.zoomCockpit, 'click', () => onZoom('cockpit')]
         , [elements.zoomIn, 'click', () => onZoom('in')]
+        , [elements.orbitToggle, 'click', () => {
+            const visible = onToggleOrbits();
+            elements.orbitToggle.setAttribute('aria-pressed', String(visible));
+        }]
     ];
 
     for (const [element, eventName, handler] of listeners) {
