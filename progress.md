@@ -91,3 +91,7 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Bug reportado pelo utilizador: “bolha azul” móvel ao afastar-se. Causa confirmada: canto dos bounds + chase camera (~264,5 u) atravessava sky dome de raio 260.
 - Fix TDD: sky dome segue a posição da câmara em cada render. Reproduzido no canto `(175, 50, 175)` sem bolha e com 0 erros. Evidência: `sky-corner-fixed.png`.
 - Waypoint agora calcula direção a partir da câmara e mostra `u no diorama` + distância científica em UA, sem fingir escala linear.
+- Homepage editorial criada em `/` e runtime WebGL isolado em `/jogo.html`: apresentação, públicos família/escola, aprendizagem, missões, prémios e proveniência NASA/JPL/CelesTrak/ESA.
+- Direção visual da homepage usa dossier de expedição + observatório em papel, com orrery CSS original, cartões artesanais e CTA persistente para o jogo.
+- Desktop 1440×1000 e mobile 390×844 validados: zero overflow, zero erros de consola; CTA carrega o canvas 3D e o jogo oferece regresso ao início.
+- Evidência: `output/playwright/homepage/desktop.png`, `mobile.png` e `section-0.png`.

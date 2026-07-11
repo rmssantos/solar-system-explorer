@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
     server: {
@@ -11,5 +12,13 @@ export default defineConfig({
             }
         }
     },
-    build: { chunkSizeWarningLimit: 750 }
+    build: {
+        chunkSizeWarningLimit: 750,
+        rollupOptions: {
+            input: {
+                landing: fileURLToPath(new URL('./index.html', import.meta.url)),
+                game: fileURLToPath(new URL('./jogo.html', import.meta.url))
+            }
+        }
+    }
 });

@@ -2,149 +2,142 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#101936">
-    <meta name="description" content="Preview visual de um Sistema Solar em diorama de papel.">
-    <title>Sistema Solar de Bolso — Paper Diorama</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='9' fill='%23f5b83d' stroke='%232b2f3a' stroke-width='2'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b132b">
+    <meta name="description" content="Explora o Sistema Solar num diorama 3D de papel, aprende com fontes científicas e completa missões em família ou na escola.">
+    <title>Sistema Solar de Bolso — Uma expedição de papel</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='9' fill='%23f4bd4f' stroke='%232b2f3a' stroke-width='2'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="/landing.css">
 </head>
 <body>
-    <main class="paper-shell">
-        <div id="paper-stage" class="paper-stage" role="img" aria-label="Diorama do Sistema Solar em papel">
-            <p class="stage-loading" aria-live="polite">A montar o diorama…</p>
-        </div>
+    <header class="site-header">
+        <a class="brand" href="#top" aria-label="Sistema Solar de Bolso, início">
+            <span class="brand-mark" aria-hidden="true">✦</span>
+            <span>Sistema Solar<br><strong>de Bolso</strong></span>
+        </a>
+        <nav aria-label="Navegação principal">
+            <a href="#expedicao">A expedição</a>
+            <a href="#aprender">Aprender</a>
+            <a href="#fontes">As fontes</a>
+        </nav>
+        <a class="button button-small" href="/jogo.html">Entrar no jogo <span aria-hidden="true">→</span></a>
+    </header>
 
-        <header class="experience-header">
-            <button id="objective-chip" class="objective-chip" type="button" aria-live="polite" aria-haspopup="dialog">
-                <span class="objective-kicker">Missão de bolso</span>
-                <strong id="objective-text">Chega a Saturno</strong>
-            </button>
-
-            <button id="notebook-trigger" class="notebook-trigger" type="button" aria-haspopup="dialog">
-                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 3.5h11.5A2.5 2.5 0 0 1 19 6v14.5H7.5A2.5 2.5 0 0 1 5 18V3.5Zm2 2v12.4c.16-.04.33-.05.5-.05H17V6a.5.5 0 0 0-.5-.5H7Z"/></svg>
-                <span>Caderno</span>
-            </button>
-        </header>
-
-        <aside id="nav-beacon" class="nav-beacon" aria-live="polite">
-            <span id="nav-arrow" class="nav-arrow" aria-hidden="true">▲</span>
-            <span>
-                <strong id="nav-target">Saturno</strong>
-                <small id="nav-distance">—</small>
-                <small id="nav-science" class="nav-science">—</small>
-            </span>
-        </aside>
-
-        <div class="zoom-controls" aria-label="Distância da câmara">
-            <button id="zoom-out" type="button" aria-label="Afastar câmara">−</button>
-            <button id="zoom-cockpit" type="button" aria-label="Entrar no cockpit">Cockpit</button>
-            <button id="zoom-in" type="button" aria-label="Aproximar câmara">+</button>
-            <button id="orbit-toggle" type="button" aria-pressed="true">Órbitas</button>
-        </div>
-
-        <section id="flight-controls" class="flight-controls" aria-label="Controlos de voo">
-            <div id="flight-joystick" class="flight-joystick" aria-label="Joystick de voo">
-                <div class="joystick-orbit" aria-hidden="true"></div>
-                <div id="joystick-knob" class="joystick-knob" aria-hidden="true"></div>
+    <main id="top">
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="hero-copy" data-reveal>
+                <p class="eyebrow">Uma expedição espacial calma e curiosa</p>
+                <h1 id="hero-title">Explora o Sistema Solar <em>por dentro.</em></h1>
+                <p class="hero-lead">Pilota uma pequena nave num universo 3D feito de papel. Visita planetas e luas, encontra sondas, resolve desafios e abre um caderno de campo cheio de descobertas reais.</p>
+                <div class="hero-actions">
+                    <a class="button" href="/jogo.html">Começar a expedição <span aria-hidden="true">↗</span></a>
+                    <a class="text-link" href="#expedicao">Ver como funciona <span aria-hidden="true">↓</span></a>
+                </div>
+                <ul class="hero-notes" aria-label="Características">
+                    <li>Voo livre 360°</li>
+                    <li>Sem anúncios</li>
+                    <li>Progresso neste dispositivo</li>
+                </ul>
             </div>
 
-            <button id="explore-nearby" class="explore-nearby" type="button" hidden>
-                <span class="explore-kicker">Ao alcance</span>
-                <strong id="nearby-planet-name">Explorar Sol</strong>
-            </button>
-
-            <div class="flight-actions" aria-label="Movimento vertical e impulso">
-                <button id="flight-up" type="button" aria-label="Subir"><span aria-hidden="true">↑</span></button>
-                <button id="flight-boost" class="flight-boost" type="button" aria-label="Ativar impulso"><span>Boost</span></button>
-                <button id="flight-down" type="button" aria-label="Descer"><span aria-hidden="true">↓</span></button>
+            <div class="hero-window" aria-label="Ilustração de um sistema solar artesanal" data-reveal>
+                <div class="paper-sky">
+                    <i class="star star-one"></i><i class="star star-two"></i><i class="star star-three"></i>
+                    <div class="orbit orbit-four"></div>
+                    <div class="orbit orbit-three"></div>
+                    <div class="orbit orbit-two"></div>
+                    <div class="orbit orbit-one"></div>
+                    <div class="paper-sun"><span></span></div>
+                    <div class="paper-planet earth"><span></span></div>
+                    <div class="paper-planet saturn"><span></span></div>
+                    <div class="paper-ship"><span></span></div>
+                </div>
+                <p class="window-caption"><span>01</span> Um diorama vivo, visto da tua nave</p>
             </div>
         </section>
 
-        <p class="key-hint" aria-hidden="true">W/S frente · A/D lateral · rato olha · roda zoom · V cockpit · Shift boost · R/F roda</p>
+        <section class="audience-strip" aria-label="Para quem é">
+            <article><span aria-hidden="true">⌂</span><div><strong>Para famílias</strong><p>Uma viagem partilhada, acessível e sem pressas.</p></div></article>
+            <article><span aria-hidden="true">✎</span><div><strong>Para escolas</strong><p>Ciência visual para explorar, perguntar e conversar.</p></div></article>
+            <article><span aria-hidden="true">◎</span><div><strong>Para pequenos curiosos</strong><p>Controlos simples, grandes perguntas e muitas surpresas.</p></div></article>
+        </section>
+
+        <section id="expedicao" class="expedition section-pad">
+            <div class="section-heading" data-reveal>
+                <p class="eyebrow">O teu mapa não acaba na Terra</p>
+                <h2>Uma aventura feita para <em>descobrir.</em></h2>
+                <p>O Sistema Solar é apresentado como um grande móvel de papel: simples de ler à distância, rico em histórias quando te aproximas.</p>
+            </div>
+            <div class="chapter-grid">
+                <article data-reveal><span class="chapter-number">01</span><div class="chapter-icon flight-icon" aria-hidden="true">➤</div><h3>Voa</h3><p>Segue a câmara em 360°, aproxima-te dos mundos ou entra no cockpit.</p></article>
+                <article data-reveal><span class="chapter-number">02</span><div class="chapter-icon discover-icon" aria-hidden="true">◉</div><h3>Descobre</h3><p>Encontra planetas, luas, estações, sondas, cometas e objetos inesperados.</p></article>
+                <article data-reveal><span class="chapter-number">03</span><div class="chapter-icon learn-icon" aria-hidden="true">✦</div><h3>Aprende</h3><p>Abre o caderno, compara medidas e observa fotografias reais do espaço.</p></article>
+                <article data-reveal><span class="chapter-number">04</span><div class="chapter-icon collect-icon" aria-hidden="true">✺</div><h3>Coleciona</h3><p>Cumpre missões, responde a quizzes e conquista prémios de explorador.</p></article>
+            </div>
+        </section>
+
+        <section id="aprender" class="notebook-feature section-pad">
+            <div class="notebook-mock" data-reveal aria-label="Exemplo do caderno de campo">
+                <span class="tape" aria-hidden="true"></span>
+                <p class="scribble">CADERNO DE CAMPO · 03</p>
+                <div class="photo-placeholder"><div class="planet-photo"></div><small>Saturno · Cassini</small></div>
+                <h3>Porque tem Saturno tantos anéis?</h3>
+                <p>Milhões de fragmentos de gelo e rocha orbitam o planeta. Alguns são tão pequenos como grãos de pó; outros são maiores do que uma casa.</p>
+                <span class="pencil-line"></span>
+            </div>
+            <div class="feature-copy" data-reveal>
+                <p class="eyebrow">Da fantasia à ciência</p>
+                <h2>Primeiro encanta.<br><em>Depois explica.</em></h2>
+                <p>O grafismo é artesanal, mas a aprendizagem é séria. Cada destino liga a medidas, curiosidades, missões históricas, quizzes e fotografias reais.</p>
+                <ul class="check-list">
+                    <li><span>✓</span> Comparações que uma criança consegue imaginar</li>
+                    <li><span>✓</span> Fontes identificadas e dados com data</li>
+                    <li><span>✓</span> Conteúdo guardado para funcionar mesmo offline</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="rewards section-pad" aria-labelledby="rewards-title">
+            <div class="section-heading" data-reveal>
+                <p class="eyebrow">Diário de bordo</p>
+                <h2 id="rewards-title">Pequenos objetivos.<br><em>Grandes viagens.</em></h2>
+            </div>
+            <div class="reward-display" data-reveal>
+                <div class="medal medal-sun"><span>☀</span><strong>Primeira luz</strong></div>
+                <div class="medal medal-moon"><span>☾</span><strong>Salta-luas</strong></div>
+                <div class="medal medal-ring"><span>◉</span><strong>Rota dos anéis</strong></div>
+                <div class="mission-ticket"><small>PRÓXIMA MISSÃO</small><strong>Escuta um sinal perdido</strong><span>+ 100 XP</span></div>
+            </div>
+            <p class="rewards-copy">As missões dão direção sem transformar a exploração numa lista de tarefas. Podes seguir a seta, desviar-te por curiosidade e regressar quando quiseres.</p>
+        </section>
+
+        <section id="fontes" class="sources section-pad">
+            <div data-reveal>
+                <p class="eyebrow">Um universo ligado ao universo real</p>
+                <h2>Dados abertos.<br><em>Fontes visíveis.</em></h2>
+            </div>
+            <div class="source-copy" data-reveal>
+                <p>O jogo combina uma simulação educativa com informação pública de instituições científicas. Quando existe ligação, pode atualizar efemérides, imagens e notícias; quando não existe, mantém conteúdo editorial revisto.</p>
+                <div class="source-list" aria-label="Fontes científicas">
+                    <span>NASA</span><span>JPL</span><span>CelesTrak</span><span>ESA</span>
+                </div>
+                <p class="source-note">As distâncias do diorama são comprimidas para serem jogáveis. O caderno distingue sempre o modelo visual dos valores científicos.</p>
+            </div>
+        </section>
+
+        <section class="final-cta">
+            <div class="cta-orbit" aria-hidden="true"></div>
+            <p class="eyebrow">A nave está pronta</p>
+            <h2>Qual será a tua<br><em>primeira descoberta?</em></h2>
+            <a class="button button-light" href="/jogo.html">Abrir o hangar <span aria-hidden="true">→</span></a>
+        </section>
     </main>
 
-    <dialog id="field-notebook" class="field-notebook" aria-labelledby="notebook-title">
-        <article class="notebook-page">
-            <div class="binding-holes" aria-hidden="true"></div>
-            <button id="close-notebook" class="close-notebook" type="button" aria-label="Fechar caderno">Fechar</button>
-            <header class="notebook-heading">
-                <p id="notebook-kicker" class="notebook-kicker">Nota de campo</p>
-                <h1 id="notebook-title">Sol</h1>
-            </header>
-
-            <nav class="notebook-tabs" role="tablist" aria-label="Secções do caderno">
-                <button id="tab-discover" type="button" role="tab" aria-controls="panel-discover" data-section="discover">Descobrir</button>
-                <button id="tab-measure" type="button" role="tab" aria-controls="panel-measure" data-section="measure">Medir</button>
-                <button id="tab-today" type="button" role="tab" aria-controls="panel-today" data-section="today">Hoje</button>
-                <button id="tab-challenge" type="button" role="tab" aria-controls="panel-challenge" data-section="challenge">Desafio</button>
-            </nav>
-
-            <div class="notebook-panels">
-                <section id="panel-discover" class="notebook-panel discover-panel" role="tabpanel" aria-labelledby="tab-discover">
-                    <figure class="real-photo-card">
-                        <img id="notebook-photo" alt="" width="720" height="480">
-                        <figcaption>
-                            <span id="notebook-photo-caption">Fotografia real</span>
-                            <a id="notebook-photo-source" href="#" target="_blank" rel="noreferrer">Fonte incluída</a>
-                        </figcaption>
-                    </figure>
-                    <div class="discover-copy">
-                        <p id="notebook-fact" class="notebook-fact"></p>
-                        <div class="pencil-rule" aria-hidden="true"></div>
-                        <p id="notebook-note" class="notebook-note"></p>
-                        <p id="notebook-wow" class="notebook-wow"></p>
-                    </div>
-                </section>
-
-                <section id="panel-measure" class="notebook-panel" role="tabpanel" aria-labelledby="tab-measure" hidden>
-                    <dl class="measurement-grid">
-                        <div><dt>Raio</dt><dd id="measure-radius">—</dd></div>
-                        <div><dt>Distância média ao Sol</dt><dd id="measure-distance">—</dd></div>
-                        <div><dt>Duração do dia</dt><dd id="measure-day">—</dd></div>
-                        <div><dt>Duração do ano</dt><dd id="measure-year">—</dd></div>
-                        <div><dt>Temperatura média</dt><dd id="measure-temperature">—</dd></div>
-                        <div><dt>Luas conhecidas</dt><dd id="measure-moons">—</dd></div>
-                    </dl>
-                    <p class="scale-note">Os tamanhos e distâncias do diorama são ampliados para poderes explorar.</p>
-                </section>
-
-                <section id="panel-today" class="notebook-panel" role="tabpanel" aria-labelledby="tab-today" hidden>
-                    <div class="data-provenance">
-                        <span id="data-status" class="data-status is-fallback">Dados incluídos</span>
-                        <time id="data-updated"></time>
-                    </div>
-                    <p id="data-summary">A atualização científica online será mostrada aqui quando estiver disponível.</p>
-                    <a id="data-source" href="#" target="_blank" rel="noreferrer">Ver fonte científica</a>
-                </section>
-
-                <section id="panel-challenge" class="notebook-panel" role="tabpanel" aria-labelledby="tab-challenge" hidden>
-                    <p class="quiz-kicker">Testa o que descobriste</p>
-                    <h2 id="quiz-question">Pergunta</h2>
-                    <div id="quiz-options" class="quiz-options"></div>
-                    <div id="quiz-feedback" class="quiz-feedback" aria-live="polite" hidden></div>
-                    <button id="quiz-retry" class="quiz-retry" type="button" hidden>Tentar novamente</button>
-                </section>
-            </div>
-            <p id="mission-stamp" class="mission-stamp" hidden>Missão cumprida</p>
-        </article>
-    </dialog>
-
-    <dialog id="mission-log" class="mission-log" aria-labelledby="mission-log-title">
-        <article>
-            <button id="close-mission-log" class="close-notebook" type="button">Fechar</button>
-            <p class="notebook-kicker">Diário de bordo</p>
-            <h1 id="mission-log-title">Missões</h1>
-            <p class="mission-log-intro">Podes completar descobertas fora de ordem. O diário guarda tudo neste dispositivo.</p>
-            <figure id="apod-card" class="apod-card" hidden>
-                <img id="apod-image" alt="Imagem astronómica do dia" width="640" height="360">
-                <figcaption><strong id="apod-title">Céu de hoje</strong><span id="apod-date"></span></figcaption>
-            </figure>
-            <ol id="mission-list" class="mission-list"></ol>
-        </article>
-    </dialog>
-
-    <noscript>Esta preview precisa de JavaScript para montar o diorama.</noscript>
-    <script type="module" src="/src/main.js"></script>
+    <footer>
+        <a class="brand footer-brand" href="#top"><span class="brand-mark">✦</span><span>Sistema Solar<br><strong>de Bolso</strong></span></a>
+        <p>Um laboratório de exploração espacial em papel.</p>
+        <a href="/jogo.html">Jogar agora →</a>
+    </footer>
+    <script type="module" src="/src/landing.js"></script>
 </body>
 </html>
