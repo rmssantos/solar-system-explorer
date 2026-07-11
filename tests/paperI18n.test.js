@@ -41,4 +41,11 @@ describe('Paper Solar Explorer PT/EN i18n', () => {
         const awards = evaluateAwards({ discoveredKeys: ['sun'] }, 'en');
         expect(awards[0].title).toBe('First light');
     });
+
+    it('uses singular result copy for one library record', () => {
+        const i18n = createPaperI18n({ storage: null, document: null });
+        expect(i18n.t('library.results.one')).toBe('1 objeto');
+        i18n.setLanguage('en');
+        expect(i18n.t('library.results.one')).toBe('1 object');
+    });
 });

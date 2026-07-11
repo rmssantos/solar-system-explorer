@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { getWorldObject, WORLD_OBJECTS } from '../world/worldCatalog.js';
+import { separateMoonSilhouette } from './moonLegibility.js';
 
 const OUTLINE = '#171b26';
 
@@ -9,23 +10,30 @@ function material(color, extra = {}) {
     });
 }
 
-function outlinedMesh(geometry, color, outlineScale = 1.08) {
+function outlinedMesh(geometry, color, outlineScale = 1.08, bodyExtra = {}) {
     const group = new THREE.Group();
     const outline = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: OUTLINE, side: THREE.BackSide }));
     outline.scale.setScalar(outlineScale);
-    const body = new THREE.Mesh(geometry, material(color));
+    const body = new THREE.Mesh(geometry, material(color, bodyExtra));
     body.castShadow = true;
     group.add(outline, body);
     return group;
 }
 
-function createMoon(object) {
+function createMoon(object, paperTextures = {}) {
     const palettes = {
         moon: '#c8c2b4', io: '#d9b45d', europa: '#dfcfaa', ganymede: '#8e806e',
         callisto: '#6d6258', titan: '#d29d55', enceladus: '#dce7e4', triton: '#8eb6bd',
         phobos: '#74685d', deimos: '#978879'
     };
-    const moon = outlinedMesh(new THREE.IcosahedronGeometry(object.scale, 1), palettes[object.key] ?? '#a9a39a', 1.07);
+    const icyMoons = new Set(['moon', 'europa', 'ganymede', 'callisto', 'mimas', 'enceladus', 'titania', 'oberon', 'triton']);
+    const paperMap = icyMoons.has(object.key) ? paperTextures.cream : paperTextures.cardboard;
+    const moon = outlinedMesh(
+        new THREE.IcosahedronGeometry(object.scale, 1),
+        palettes[object.key] ?? '#a9a39a',
+        1.07,
+        { map: paperMap ?? null }
+    );
     moon.name = `moon-${object.key}`;
     return moon;
 }
@@ -206,13 +214,13 @@ function createSmallBody(object) {
     return body;
 }
 
-export function createPaperWorldObjects() {
+export function createPaperWorldObjects({ paperTextures = {} } = {}) {
     const root = new THREE.Group();
     root.name = 'paper-world-objects';
     const entries = WORLD_OBJECTS.filter((object) => !['star', 'planet'].includes(object.type));
     const meshes = entries.map((object) => {
         const mesh = object.type === 'moon'
-            ? createMoon(object)
+            ? createMoon(object, paperTextures)
             : object.type === 'spacecraft'
                 ? createSpacecraft(object)
                 : createSmallBody(object);
@@ -285,9 +293,30 @@ export function createPaperWorldObjects() {
         }
         return closest;
     }
+    function keepMoonsLegible(cameraPosition, primarySnapshot = {}) {
+        for (const { object, mesh } of meshes) {
+            if (object.type !== 'moon' || !object.parentKey) continue;
+            const parentPosition = primarySnapshot[object.parentKey]?.position;
+            const parent = getWorldObject(object.parentKey);
+            if (!parentPosition || !parent) continue;
+            const cameraDistance = Math.hypot(
+                cameraPosition.x - parentPosition.x,
+                cameraPosition.y - parentPosition.y,
+                cameraPosition.z - parentPosition.z
+            );
+            if (cameraDistance > 18) continue;
+            const adjusted = separateMoonSilhouette({
+                moon: mesh.position,
+                parent: parentPosition,
+                camera: cameraPosition,
+                minimumSeparation: parent.collisionRadius + object.scale * 2.2 + 0.25
+            });
+            mesh.position.set(adjusted.x, adjusted.y, adjusted.z);
+        }
+    }
     function getPosition(key) {
         const entry = meshes.find((candidate) => candidate.object.key === key);
         return entry ? { x: entry.mesh.position.x, y: entry.mesh.position.y, z: entry.mesh.position.z } : null;
     }
-    return { root, update, meshes, setLivePosition, setLiveOffset, findNearby, getPosition };
+    return { root, update, meshes, setLivePosition, setLiveOffset, findNearby, getPosition, keepMoonsLegible };
 }

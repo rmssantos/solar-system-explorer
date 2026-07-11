@@ -29,8 +29,8 @@ function pickBodyColor(style, key, faceIndex, normalizedY) {
     return style.surfaceColors[Math.floor(pattern * style.surfaceColors.length)];
 }
 
-function addSimpleSurfaceDetails(group, style) {
-    if (style.features.craters) {
+function addSimpleSurfaceDetails(group, style, { includeCraters = true } = {}) {
+    if (style.features.craters && includeCraters) {
         const craterGroup = new THREE.Group();
         craterGroup.name = `${style.key}-craters`;
         createSeededDirections(style.seed + 220, style.features.craters.count).forEach((direction, index) => {
@@ -137,7 +137,7 @@ function addSunCorona(group, style) {
     group.add(corona);
 }
 
-function addEarthDetails(group, style) {
+function addEarthDetails(group, style, cloudTexture = null) {
     const land = new THREE.Group();
     land.name = 'earth-land-plates';
     const landConfig = style.features.landPlates;
@@ -166,7 +166,8 @@ function addEarthDetails(group, style) {
         const cloud = new THREE.Mesh(
             createIrregularPatch(style.seed + 80 + index, 8),
             standardMaterial({
-                color: style.surfaceColors[4],
+                color: '#fffaf0',
+                map: cloudTexture,
                 transparent: true,
                 opacity: 0.92,
                 side: THREE.DoubleSide,
@@ -186,7 +187,7 @@ function addEarthDetails(group, style) {
     [{ x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 }].forEach((direction, index) => {
         const cap = new THREE.Mesh(
             createIrregularPatch(style.seed + 160 + index, 9),
-            standardMaterial({ color: style.surfaceColors[4], side: THREE.DoubleSide })
+            standardMaterial({ color: '#fffaf0', map: cloudTexture, side: THREE.DoubleSide })
         );
         placeTangent(cap, direction, style.radius * 1.012, 0.46, 0.31);
         caps.add(cap);
@@ -226,7 +227,7 @@ function addPlanetRings(group, style) {
     group.add(outline, ring);
 }
 
-export function createLowPolyPlanet(key) {
+export function createLowPolyPlanet(key, { surfaceTexture = null, cloudTexture = null } = {}) {
     const style = PLANET_STYLES[key];
     if (!style) throw new Error(`Unknown low-poly planet: ${key}`);
 
@@ -253,7 +254,8 @@ export function createLowPolyPlanet(key) {
         geometry,
         standardMaterial({
             color: '#ffffff',
-            vertexColors: true,
+            map: surfaceTexture,
+            vertexColors: !surfaceTexture,
             emissive: style.emissive,
             emissiveIntensity: style.emissiveIntensity
         })
@@ -265,8 +267,8 @@ export function createLowPolyPlanet(key) {
 
     group.add(outline, rim, body);
     if (key === 'sun') addSunCorona(group, style);
-    if (key === 'earth') addEarthDetails(group, style);
-    addSimpleSurfaceDetails(group, style);
+    if (key === 'earth') addEarthDetails(group, style, cloudTexture);
+    addSimpleSurfaceDetails(group, style, { includeCraters: !surfaceTexture });
     if (style.features.rings) addPlanetRings(group, style);
     return group;
 }

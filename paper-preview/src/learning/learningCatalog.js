@@ -3,6 +3,7 @@ import { SOLAR_SYSTEM_DATA_EN } from '../../../src/data/objectsInfoEN.js';
 import { createQuizCatalog } from '../../../src/quizSystem.js';
 import { WORLD_OBJECTS } from '../world/worldCatalog.js';
 import { translateWorldObject } from '../i18n/paperObjectTranslations.js';
+import { getObjectPhoto } from './objectPhotoCatalog.js';
 
 export const PAPER_LEARNING_KEYS = Object.freeze([
     'sun',
@@ -72,10 +73,8 @@ export function createPaperLearningCatalog(language = 'pt') {
     for (const object of WORLD_OBJECTS) {
         if (records[object.key]) continue;
         const translatedObject = translateWorldObject(object, language);
-        const fallbackKey = object.key === 'tesla-roadster'
-            ? 'tesla-roadster'
-            : (PAPER_LEARNING_KEYS.includes(object.parentKey) ? object.parentKey : 'earth');
-        const localPhoto = `/learning/${fallbackKey}.jpg`;
+        const photo = getObjectPhoto(object.key);
+        if (!photo) throw new Error(`Missing real-photo catalog entry for ${object.key}`);
         const typeLabels = language === 'en'
             ? { moon: 'Moon', spacecraft: 'Human object', 'small-body': 'Small body' }
             : { moon: 'Lua', spacecraft: 'Objeto humano', 'small-body': 'Pequeno corpo' };
@@ -91,14 +90,12 @@ export function createPaperLearningCatalog(language = 'pt') {
                 : (language === 'en'
                     ? 'Its visual position is compressed to fit the diorama; the Today tab identifies the data source.'
                     : 'A posição visual é comprimida para caber no diorama; o separador Hoje identifica a origem dos dados.'),
-            localPhoto,
+            localPhoto: photo.localPhoto,
             photoSource: Object.freeze({
-                name: object.key === 'tesla-roadster' ? 'SpaceX — CC0 via Wikimedia Commons' : object.source.name,
-                status: 'fallback',
-                originalAsset: localPhoto,
-                url: object.key === 'tesla-roadster'
-                    ? 'https://commons.wikimedia.org/wiki/File:Elon_Musk%27s_Tesla_Roadster_(40110297852).jpg'
-                    : object.source.url
+                name: photo.sourceName,
+                status: 'verified',
+                originalAsset: photo.sourceUrl,
+                url: photo.sourceUrl
             }),
             measurements: {
                 radiusKm: 0,

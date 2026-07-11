@@ -4,22 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0b132b">
-    <meta name="description" content="Biblioteca educativa do Sistema Solar de Bolso.">
+    <meta name="description" content="Biblioteca educativa do Sistema Solar de Bolso: planetas, luas, missões, fotografias e quizzes.">
     <title>Biblioteca — Sistema Solar de Bolso</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='9' fill='%23f4bd4f'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="/landing.css">
+    <link rel="stylesheet" href="/library.css">
 </head>
-<body>
-    <header class="site-header">
-        <a class="brand" href="/" aria-label="Sistema Solar de Bolso, início"><span class="brand-mark" aria-hidden="true">✦</span><span>Sistema Solar<br><strong>de Bolso</strong></span></a>
-        <nav aria-label="Navegação principal"><a href="/">Início</a><a href="/jogo/">Jogo</a></nav>
-        <div class="header-actions"><button class="language-toggle" type="button" data-language-toggle aria-label="Mudar para English">EN</button><a class="button button-small" href="/jogo/">Entrar no jogo →</a></div>
+<body class="library-page">
+    <a class="skip-link" href="#library-catalog" data-i18n="shared.skip">Saltar para o conteúdo</a>
+    <header class="archive-header">
+        <a class="archive-brand" href="/" aria-label="Sistema Solar de Bolso, início"><span aria-hidden="true">✦</span><span><small data-i18n="home.brand.top">Sistema Solar</small><strong data-i18n="home.brand.bottom">de Bolso</strong></span></a>
+        <nav aria-label="Navegação principal"><a href="/" data-i18n="library.nav.home">Início</a><a href="#library-catalog" data-i18n="library.nav.catalog">Arquivo</a><a href="#library-awards-section" data-i18n="library.nav.awards">Prémios</a></nav>
+        <div class="archive-actions"><button class="language-toggle" type="button" data-language-toggle aria-label="Mudar para English">EN</button><a class="play-link" href="/jogo/"><span data-i18n="library.nav.play">Continuar expedição</span><span aria-hidden="true">→</span></a></div>
     </header>
-    <main id="top" class="section-pad">
-        <p class="eyebrow">Arquivo da expedição</p>
-        <h1>Biblioteca do <em>Sistema Solar.</em></h1>
-        <p class="hero-lead">A organizar fichas, fotografias e descobertas…</p>
+
+    <main>
+        <section class="archive-hero" aria-labelledby="library-title">
+            <div class="archive-hero-copy">
+                <p class="eyebrow" data-i18n="library.hero.eyebrow">Arquivo da expedição · edição viva</p>
+                <h1 id="library-title"><span data-i18n="library.hero.title">Tudo o que já sabemos.</span><br><em data-i18n="library.hero.emphasis">Tudo o que falta descobrir.</em></h1>
+                <p data-i18n="library.hero.copy">Abre fichas de planetas, luas, sondas e pequenos corpos. Compara medidas, observa fotografias reais e leva o conhecimento de volta ao cockpit.</p>
+                <a class="paper-link" href="#library-catalog"><span data-i18n="library.hero.browse">Abrir o arquivo</span><span aria-hidden="true">↓</span></a>
+            </div>
+            <aside class="explorer-dossier" aria-label="Progresso do explorador">
+                <span class="dossier-tape" aria-hidden="true"></span>
+                <p data-i18n="library.progress.kicker">Passaporte atual</p>
+                <strong id="library-rank">Nível 1 · Cadete de Papel</strong>
+                <span id="library-xp">0 XP</span>
+                <progress id="library-progress" max="100" value="0" aria-label="Progresso para o nível seguinte"></progress>
+                <dl><div><dt data-i18n="library.stats.discovered">Descobertos</dt><dd id="library-discovered">0 / 37</dd></div><div><dt data-i18n="library.stats.quizzes">Quizzes</dt><dd id="library-quizzes">0</dd></div><div><dt data-i18n="library.stats.awards">Prémios</dt><dd id="library-award-count">0 / 7</dd></div></dl>
+            </aside>
+        </section>
+
+        <section id="library-catalog" class="catalog-section" aria-labelledby="catalog-title">
+            <header class="catalog-heading">
+                <div><p class="eyebrow" data-i18n="library.catalog.eyebrow">37 fichas científicas</p><h2 id="catalog-title" data-i18n="library.catalog.title">Arquivo do Sistema Solar</h2></div>
+                <p id="library-results-status" role="status" aria-live="polite">37 objetos</p>
+            </header>
+
+            <div class="catalog-controls">
+                <label class="search-field"><span data-i18n="library.search.label">Pesquisar no arquivo</span><input id="library-search" type="search" autocomplete="off" placeholder="Planeta, lua, missão…" data-i18n-placeholder="library.search.placeholder"><i aria-hidden="true">⌕</i></label>
+                <div class="category-filters" role="group" aria-label="Categorias">
+                    <button type="button" data-library-category="all" aria-pressed="true" data-i18n="library.filter.all">Todos</button>
+                    <button type="button" data-library-category="worlds" aria-pressed="false" data-i18n="library.filter.worlds">Planetas</button>
+                    <button type="button" data-library-category="moons" aria-pressed="false" data-i18n="library.filter.moons">Luas</button>
+                    <button type="button" data-library-category="human" aria-pressed="false" data-i18n="library.filter.human">Exploração humana</button>
+                    <button type="button" data-library-category="small-bodies" aria-pressed="false" data-i18n="library.filter.small">Pequenos corpos</button>
+                </div>
+                <label class="discovery-filter"><span data-i18n="library.filter.progress">Estado</span><select id="library-discovery-filter"><option value="all" data-i18n="library.filter.any">Todos</option><option value="discovered" data-i18n="library.filter.discovered">Descobertos</option><option value="undiscovered" data-i18n="library.filter.undiscovered">Por descobrir</option></select></label>
+            </div>
+
+            <div id="library-grid" class="library-grid"></div>
+            <div id="library-empty" class="library-empty" hidden><span aria-hidden="true">⌕</span><strong data-i18n="library.empty.title">Nenhuma ficha encontrada</strong><p data-i18n="library.empty.copy">Experimenta outro nome ou remove um filtro.</p></div>
+        </section>
+
+        <section id="library-awards-section" class="awards-shelf" aria-labelledby="awards-title">
+            <div class="awards-copy"><p class="eyebrow" data-i18n="library.awards.eyebrow">Carimbos no passaporte</p><h2 id="awards-title"><span data-i18n="library.awards.title">Prémios que contam</span><br><em data-i18n="library.awards.emphasis">histórias reais.</em></h2><p data-i18n="library.awards.copy">Cada selo nasce de uma descoberta, missão ou conjunto de desafios. Não se compra e não desaparece.</p></div>
+            <div id="library-awards" class="library-awards-grid"></div>
+        </section>
     </main>
-    <script type="module" src="/src/landing.js"></script>
+
+    <dialog id="library-detail" class="library-detail" aria-labelledby="detail-title">
+        <article>
+            <button id="detail-close" class="detail-close" type="button" data-i18n="game.close">Fechar</button>
+            <header class="detail-heading"><div><p id="detail-type">Planeta</p><h2 id="detail-title">Terra</h2></div><span id="detail-discovery-stamp">Descoberto</span></header>
+            <div class="detail-layout">
+                <figure class="detail-photo-card"><img id="detail-photo" alt="" width="720" height="480"><figcaption><span id="detail-photo-caption">Fotografia real</span><a id="detail-source" href="#" target="_blank" rel="noreferrer">Ver fonte ↗</a></figcaption></figure>
+                <div class="detail-story"><p id="detail-fact" class="detail-fact"></p><p id="detail-comparison"></p><blockquote id="detail-wow"></blockquote></div>
+            </div>
+            <dl id="detail-measurements" class="detail-measurements"></dl>
+            <section id="library-quiz" class="library-quiz" aria-labelledby="library-quiz-question">
+                <p data-i18n="game.quiz.kicker">Testa o que descobriste</p>
+                <h3 id="library-quiz-question">Pergunta</h3>
+                <div id="library-quiz-options" class="library-quiz-options"></div>
+                <div id="library-quiz-feedback" class="library-quiz-feedback" role="status" aria-live="polite" hidden></div>
+            </section>
+        </article>
+    </dialog>
+
+    <footer><a class="archive-brand" href="/"><span aria-hidden="true">✦</span><span><small data-i18n="home.brand.top">Sistema Solar</small><strong data-i18n="home.brand.bottom">de Bolso</strong></span></a><p data-i18n="library.footer">Um arquivo vivo para regressar ao espaço com novas perguntas.</p><a href="/jogo/" data-i18n="library.nav.play">Continuar expedição →</a></footer>
+    <script type="module" src="/src/library.js"></script>
 </body>
 </html>

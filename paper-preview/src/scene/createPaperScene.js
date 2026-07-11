@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { createLowPolyPlanet } from './createLowPolyPlanet.js';
 import { createPaperShip, updatePaperShipThrust } from './createPaperShip.js';
 import { createPaperTextures } from './paperTextures.js';
-import { PRIMARY_WORLDS } from '../world/worldCatalog.js';
+import { PRIMARY_WORLDS, getWorldObject } from '../world/worldCatalog.js';
 import { adjustCameraDistance, cameraModeForDistance } from './cameraZoom.js';
 import { createPaperWorldObjects } from './createPaperWorldObjects.js';
 import { createPrimarySnapshot } from '../world/orbitalSystem.js';
@@ -247,6 +247,23 @@ function createSurpriseEffect() {
     return root;
 }
 
+function createAutopilotTrail() {
+    const trail = new THREE.Group();
+    trail.name = 'paper-autopilot-trail';
+    trail.visible = false;
+    const colors = ['#f4c85f', '#ef765c', '#79bca8', '#f5e8bb'];
+    for (let index = 0; index < 10; index += 1) {
+        const shard = new THREE.Mesh(
+            new THREE.TetrahedronGeometry(0.075 + (index % 3) * 0.025, 0),
+            new THREE.MeshBasicMaterial({ color: colors[index % colors.length], transparent: true, opacity: 0.86 })
+        );
+        shard.userData.phase = index * 1.73;
+        shard.position.z = 1.45 + index * 0.38;
+        trail.add(shard);
+    }
+    return trail;
+}
+
 export function createPaperScene(stage) {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#101936');
@@ -263,6 +280,16 @@ export function createPaperScene(stage) {
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.setAttribute('aria-hidden', 'true');
     stage.appendChild(renderer.domElement);
+
+    const surfaceTextureLoader = new THREE.TextureLoader();
+    const surfaceTextures = Object.fromEntries(PLANET_KEYS.map((key) => {
+        const texture = surfaceTextureLoader.load(`/art/textures/paper-${key}-surface.webp`);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+        return [key, texture];
+    }));
 
     const textures = createPaperTextures(renderer);
     const background = new THREE.Mesh(
@@ -289,7 +316,10 @@ export function createPaperScene(stage) {
     const initialSnapshot = createPrimarySnapshot(initialDate);
     const planets = PLANET_KEYS.map((key) => {
         const world = PRIMARY_WORLDS.find((candidate) => candidate.key === key);
-        const planet = createLowPolyPlanet(key);
+        const planet = createLowPolyPlanet(key, {
+            surfaceTexture: surfaceTextures[key] ?? null,
+            cloudTexture: key === 'earth' ? textures.cream : null
+        });
         planet.userData.baseScale = world.scale;
         planet.position.set(
             initialSnapshot[key].position.x,
@@ -300,7 +330,7 @@ export function createPaperScene(stage) {
         scene.add(planet);
         return planet;
     });
-    const worldObjects = createPaperWorldObjects();
+    const worldObjects = createPaperWorldObjects({ paperTextures: textures });
     scene.add(worldObjects.root);
 
     const rocket = createPaperShip();
@@ -308,6 +338,8 @@ export function createPaperScene(stage) {
     scene.add(rocket);
     const surpriseEffect = createSurpriseEffect();
     scene.add(surpriseEffect);
+    const autopilotTrail = createAutopilotTrail();
+    scene.add(autopilotTrail);
 
     const runtime = {
         elapsed: 0,
@@ -387,6 +419,8 @@ export function createPaperScene(stage) {
         runtime.shipPosition.set(flightState.position.x, flightState.position.y, flightState.position.z);
         rocket.position.copy(runtime.shipPosition);
         rocket.quaternion.copy(runtime.flightQuaternion);
+        autopilotTrail.position.copy(runtime.shipPosition);
+        autopilotTrail.quaternion.copy(runtime.flightQuaternion);
 
         const speed = Math.hypot(flightState.velocity.x, flightState.velocity.y, flightState.velocity.z);
         updatePaperShipThrust(rocket, speed, runtime.elapsed);
@@ -424,6 +458,16 @@ export function createPaperScene(stage) {
             planet.scale.lerp(new THREE.Vector3(selectedScale, selectedScale, selectedScale), Math.min(1, delta * 4));
         });
         worldObjects.update(runtime.elapsed, runtime.primarySnapshot);
+        worldObjects.keepMoonsLegible(camera.position, runtime.primarySnapshot);
+        if (autopilotTrail.visible) {
+            autopilotTrail.children.forEach((shard, index) => {
+                const wave = runtime.elapsed * 7 + shard.userData.phase;
+                shard.position.x = Math.sin(wave) * (0.22 + index * 0.025);
+                shard.position.y = Math.cos(wave * 0.83) * (0.16 + index * 0.018);
+                shard.rotation.x += delta * (1.8 + index * 0.07);
+                shard.rotation.y += delta * (2.3 + index * 0.05);
+            });
+        }
         if (runtime.surpriseRemaining > 0) {
             runtime.surpriseRemaining = Math.max(0, runtime.surpriseRemaining - delta);
             surpriseEffect.position.addScaledVector(runtime.surpriseVelocity, delta);
@@ -502,6 +546,49 @@ export function createPaperScene(stage) {
         return worldObjects.getPosition(key);
     }
 
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const projectedPointerTarget = new THREE.Vector3();
+    function pickWorldObject(clientX, clientY) {
+        const bounds = renderer.domElement.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return null;
+        pointer.x = ((clientX - bounds.left) / bounds.width) * 2 - 1;
+        pointer.y = -(((clientY - bounds.top) / bounds.height) * 2 - 1);
+        raycaster.setFromCamera(pointer, camera);
+        const hits = raycaster.intersectObjects([...planets, worldObjects.root], true);
+        for (const hit of hits) {
+            let candidate = hit.object;
+            while (candidate && candidate !== scene) {
+                const key = candidate.userData.worldKey ?? candidate.userData.key;
+                if (key && getWorldObject(key)) return key;
+                candidate = candidate.parent;
+            }
+        }
+        let closestKey = null;
+        let closestScreenDistance = 24;
+        const candidates = [
+            ...planets.map((mesh) => ({ key: mesh.userData.key, mesh })),
+            ...worldObjects.meshes.map(({ object, mesh }) => ({ key: object.key, mesh }))
+        ];
+        for (const candidate of candidates) {
+            projectedPointerTarget.copy(candidate.mesh.position).project(camera);
+            if (projectedPointerTarget.z < -1 || projectedPointerTarget.z > 1) continue;
+            const screenX = bounds.left + ((projectedPointerTarget.x + 1) / 2) * bounds.width;
+            const screenY = bounds.top + ((1 - projectedPointerTarget.y) / 2) * bounds.height;
+            const screenDistance = Math.hypot(clientX - screenX, clientY - screenY);
+            if (screenDistance < closestScreenDistance) {
+                closestScreenDistance = screenDistance;
+                closestKey = candidate.key;
+            }
+        }
+        if (closestKey) return closestKey;
+        return null;
+    }
+
+    function setAutopilotActive(active) {
+        autopilotTrail.visible = Boolean(active);
+    }
+
     function toggleOrbits(force) {
         orbitPaths.visible = typeof force === 'boolean' ? force : !orbitPaths.visible;
         return orbitPaths.visible;
@@ -565,6 +652,7 @@ export function createPaperScene(stage) {
             else object.material?.dispose?.();
         });
         Object.values(textures).forEach((texture) => texture.dispose());
+        Object.values(surfaceTextures).forEach((texture) => texture.dispose());
         nebulaTexture.dispose();
         renderer.dispose();
         renderer.domElement.remove();
@@ -576,6 +664,8 @@ export function createPaperScene(stage) {
         setWorldObjectOffset: worldObjects.setLiveOffset,
         findNearbyWorldObject: worldObjects.findNearby,
         getWorldObjectPosition,
+        pickWorldObject,
+        setAutopilotActive,
         update,
         render,
         resize,

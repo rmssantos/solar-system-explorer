@@ -24,6 +24,11 @@ describe('paper solar explorer world catalog', () => {
         expect(Math.max(...moons.map((moon) => moon.orbitSpeed))).toBeLessThan(0.03);
     });
 
+    it('keeps Mars moons visually separate from the planet silhouette', () => {
+        expect(getWorldObject('phobos')).toMatchObject({ orbitRadius: 3.1, scale: 0.18 });
+        expect(getWorldObject('deimos')).toMatchObject({ orbitRadius: 3.75, scale: 0.14 });
+    });
+
     it('includes spacecraft, famous small bodies and the Roadster', () => {
         expect(getWorldObject('iss').source.command).toBe('25544');
         expect(getWorldObject('hubble').source.command).toBe('20580');

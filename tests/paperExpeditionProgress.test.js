@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { existsSync, statSync } from 'node:fs';
 import {
     AWARD_CATALOG,
     EVENT_XP,
@@ -8,6 +9,7 @@ import {
     getExplorerLevel,
     reconcileExpeditionProgress
 } from '../paper-preview/src/progression/expeditionProgress.js';
+import { AWARD_ART } from '../paper-preview/src/progression/awardArt.js';
 
 describe('paper expedition progression', () => {
     it('awards discoveries, quizzes, surprises and missions only once', () => {
@@ -40,6 +42,17 @@ describe('paper expedition progression', () => {
             'first-light', 'inner-cartographer', 'moon-hopper', 'rings-route'
         ]));
         expect(AWARD_CATALOG.every((award) => award.title && award.description && award.kind)).toBe(true);
+    });
+
+    it('gives every award a distinct paper-style image asset', () => {
+        const art = AWARD_CATALOG.map((award) => AWARD_ART[award.id]);
+        expect(new Set(art).size).toBe(AWARD_CATALOG.length);
+        for (const assetPath of art) {
+            expect(assetPath).toMatch(/^\/art\/awards\/award-[a-z-]+\.webp$/);
+            const asset = new URL(`../paper-preview/public${assetPath}`, import.meta.url);
+            expect(existsSync(asset)).toBe(true);
+            expect(statSync(asset).size).toBeGreaterThan(10_000);
+        }
     });
 
     it('migrates existing discoveries, quizzes and missions into idempotent XP', () => {

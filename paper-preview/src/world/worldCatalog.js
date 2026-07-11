@@ -25,8 +25,8 @@ export const PRIMARY_WORLDS = Object.freeze([
 
 const MOONS = [
     ['moon', 'Lua', 'earth', 2.8, 0.42, 'A Lua estabiliza a inclinação da Terra e é o único mundo além da Terra visitado por humanos.'],
-    ['phobos', 'Fobos', 'mars', 2.15, 0.22, 'Fobos orbita Marte tão depressa que nasce no oeste e põe-se no leste do céu marciano.'],
-    ['deimos', 'Deimos', 'mars', 2.75, 0.17, 'Deimos é uma pequena lua irregular de Marte coberta por uma espessa camada de poeira.'],
+    ['phobos', 'Fobos', 'mars', 3.1, 0.18, 'Fobos orbita Marte tão depressa que nasce no oeste e põe-se no leste do céu marciano.'],
+    ['deimos', 'Deimos', 'mars', 3.75, 0.14, 'Deimos é uma pequena lua irregular de Marte coberta por uma espessa camada de poeira.'],
     ['io', 'Io', 'jupiter', 4.2, 0.35, 'Io é o mundo com maior atividade vulcânica conhecida no Sistema Solar.'],
     ['europa', 'Europa', 'jupiter', 5.0, 0.34, 'Europa esconde provavelmente um oceano global de água salgada sob a sua crosta de gelo.'],
     ['ganymede', 'Ganimedes', 'jupiter', 5.9, 0.48, 'Ganimedes é a maior lua do Sistema Solar e possui o seu próprio campo magnético.'],

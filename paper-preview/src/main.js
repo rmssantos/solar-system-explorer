@@ -1,5 +1,5 @@
 import { closeNotebook, createPreviewState, explorePlanet } from './state.js';
-import { createFlightState, stepFlight } from './flightSimulation.js';
+import { createFlightState, findNearbyPlanet, stepFlight } from './flightSimulation.js';
 import { createFlightInput } from './flightInput.js';
 import { createPaperLearningCatalog } from './learning/learningCatalog.js';
 import {
@@ -16,6 +16,7 @@ import { SATELLITE_FALLBACKS } from './data/spaceFallbacks.js';
 import { getWorldObject } from './world/worldCatalog.js';
 import { chooseNearbyObject } from './world/proximity.js';
 import { calculateWaypoint } from './navigation/waypoint.js';
+import { createAutopilot, stepAutopilot } from './navigation/autopilot.js';
 import { createCockpitTelemetry } from './scene/cockpitTelemetry.js';
 import { evaluateMissions } from './missions/missionSystem.js';
 import { loadProgress, saveProgress } from './missions/progressStore.js';
@@ -35,6 +36,12 @@ import { paperI18n } from './i18n/paperI18n.js';
 import { translateWorldObject } from './i18n/paperObjectTranslations.js';
 
 const stage = document.querySelector('#paper-stage');
+const objectHover = document.querySelector('#object-hover');
+const objectHoverName = document.querySelector('#object-hover-name');
+const autopilotStatus = document.querySelector('#autopilot-status');
+const autopilotTarget = document.querySelector('#autopilot-target');
+const autopilotProgress = document.querySelector('#autopilot-progress');
+const autopilotCancel = document.querySelector('#autopilot-cancel');
 let learningCatalog = createPaperLearningCatalog(paperI18n.language);
 const learningCatalogView = new Proxy({}, {
     get: (_target, key) => learningCatalog[key],
@@ -62,6 +69,7 @@ let lastFrameTime = performance.now();
 let lastUiSignature = '';
 let nearbyWorldObjectKey = null;
 let currentNavigation = null;
+let autoPilotState = null;
 let lastInput = {
     forward: 0,
     strafe: 0,
@@ -286,6 +294,13 @@ paperI18n.subscribe(() => {
     lastUiSignature = '';
     syncUI(true);
     updateMissionNavigation();
+    if (!objectHover.hidden && objectHover.dataset.worldKey) {
+        objectHoverName.textContent = translateWorldObject(
+            getWorldObject(objectHover.dataset.worldKey),
+            paperI18n.language
+        ).name;
+    }
+    updateAutopilotDisplay();
 });
 paperI18n.apply();
 
@@ -297,6 +312,74 @@ const flightInput = createFlightInput({
     downButton: previewUI.elements.downButton,
     boostButton: previewUI.elements.boostButton
 });
+
+function interactionRadiusFor(object) {
+    if (object.interactionRadius) return object.interactionRadius;
+    if (object.type === 'moon') return Math.max(2.2, object.scale * 3.5);
+    return Math.max(1.65, object.scale * 3.5);
+}
+
+function updateAutopilotDisplay() {
+    autopilotStatus.hidden = !autoPilotState;
+    paperScene.setAutopilotActive(Boolean(autoPilotState));
+    if (!autoPilotState) return;
+    const object = getWorldObject(autoPilotState.targetKey);
+    autopilotTarget.textContent = translateWorldObject(object, paperI18n.language).name;
+    autopilotProgress.value = Math.round(autoPilotState.progress * 100);
+}
+
+function cancelAutopilot() {
+    autoPilotState = null;
+    updateAutopilotDisplay();
+}
+
+function flyToWorldObject(key) {
+    const object = getWorldObject(key);
+    const target = paperScene.getWorldObjectPosition(key);
+    if (!object || !target || previewState.notebook.open || previewUI.elements.missionLog.open) return false;
+    flightInput.reset();
+    autoPilotState = createAutopilot(key, flightState.position, target, interactionRadiusFor(object));
+    objectHover.hidden = true;
+    updateAutopilotDisplay();
+    return true;
+}
+
+function showObjectHover(key, event) {
+    if (!key || autoPilotState || previewState.notebook.open || previewUI.elements.missionLog.open) {
+        objectHover.hidden = true;
+        return;
+    }
+    const object = getWorldObject(key);
+    objectHover.dataset.worldKey = key;
+    objectHoverName.textContent = translateWorldObject(object, paperI18n.language).name;
+    objectHover.style.left = `${Math.min(window.innerWidth - 210, Math.max(8, event.clientX))}px`;
+    objectHover.style.top = `${Math.min(window.innerHeight - 80, Math.max(8, event.clientY))}px`;
+    objectHover.hidden = false;
+}
+
+let selectionPointer = null;
+stage.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0 || previewState.notebook.open) return;
+    selectionPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
+});
+stage.addEventListener('pointermove', (event) => {
+    if (selectionPointer?.id === event.pointerId) {
+        selectionPointer.moved ||= Math.hypot(event.clientX - selectionPointer.x, event.clientY - selectionPointer.y) > 7;
+        if (selectionPointer.moved) objectHover.hidden = true;
+    }
+    if (event.buttons === 0) showObjectHover(paperScene.pickWorldObject(event.clientX, event.clientY), event);
+});
+stage.addEventListener('pointerup', (event) => {
+    if (!selectionPointer || selectionPointer.id !== event.pointerId) return;
+    const shouldSelect = !selectionPointer.moved;
+    selectionPointer = null;
+    if (!shouldSelect) return;
+    const key = paperScene.pickWorldObject(event.clientX, event.clientY);
+    if (key) flyToWorldObject(key);
+});
+stage.addEventListener('pointercancel', () => { selectionPointer = null; });
+stage.addEventListener('pointerleave', (event) => { if (event.buttons === 0) objectHover.hidden = true; });
+autopilotCancel.addEventListener('click', cancelAutopilot);
 
 function syncUI(force = false) {
     const missions = evaluateMissions(previewState.learning, paperI18n.language);
@@ -356,7 +439,26 @@ function step(seconds) {
         ...flightInput.sample(),
         movementBasis: paperScene.getNavigationBasis()
     };
-    if (!previewState.notebook.open) {
+    const hasManualInput = Math.abs(lastInput.forward) + Math.abs(lastInput.strafe)
+        + Math.abs(lastInput.vertical) + Math.abs(lastInput.yawDelta)
+        + Math.abs(lastInput.pitchDelta) + Math.abs(lastInput.roll) > 0.01
+        || lastInput.boost || lastInput.brake;
+    if (autoPilotState && hasManualInput) cancelAutopilot();
+    const dialogOpen = previewState.notebook.open || previewUI.elements.missionLog.open;
+    if (!dialogOpen && autoPilotState) {
+        const target = paperScene.getWorldObjectPosition(autoPilotState.targetKey);
+        if (!target) cancelAutopilot();
+        else {
+            const result = stepAutopilot(flightState, autoPilotState, target, seconds);
+            autoPilotState = result.autopilot;
+            flightState = {
+                ...result.flightState,
+                nearbyPlanetKey: findNearbyPlanet(result.flightState.position, paperScene.getPrimaryBodies())
+            };
+            updateAutopilotDisplay();
+            if (result.arrived) paperScene.triggerSurprise('star');
+        }
+    } else if (!dialogOpen) {
         flightState = stepFlight(flightState, lastInput, seconds, paperScene.getPrimaryBodies());
     }
     paperScene.update(seconds);
@@ -455,6 +557,7 @@ window.render_game_to_text = () => {
         },
         progression: { ...expeditionProgress, presentation: progressPresentation },
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
+        autopilot: autoPilotState ? { ...autoPilotState } : null,
         scene: paperScene.getState()
     });
 };
@@ -485,6 +588,8 @@ window.__paperPreview = {
         return true;
     },
     worldPosition: (key) => paperScene.getWorldObjectPosition(key),
+    flyTo: flyToWorldObject,
+    cancelAutopilot,
     nearbyAt: (position) => paperScene.findNearbyWorldObject(position),
     teleportPosition: (position) => {
         flightState = {

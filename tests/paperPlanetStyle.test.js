@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import * as THREE from 'three';
+import { existsSync, statSync } from 'node:fs';
 import {
     PLANET_STYLES,
     createSeededDirections
@@ -75,5 +77,33 @@ describe('Low-poly paper planet mesh', () => {
         expect(createLowPolyPlanet('earth').getObjectByName('earth-land-plates')).toBeTruthy();
         expect(createLowPolyPlanet('earth').getObjectByName('earth-clouds')).toBeTruthy();
         expect(createLowPolyPlanet('saturn').getObjectByName('saturn-rings')).toBeTruthy();
+    });
+
+    it('accepts an optional paper surface texture while preserving faceted lighting', () => {
+        const texture = new THREE.Texture();
+        const cloudTexture = new THREE.Texture();
+        const earth = createLowPolyPlanet('earth', { surfaceTexture: texture, cloudTexture });
+        const body = earth.getObjectByName('earth-body');
+        expect(body.material.map).toBe(texture);
+        expect(body.material.vertexColors).toBe(false);
+        expect(body.material.flatShading).toBe(true);
+        expect(earth.getObjectByName('earth-land-plates')).toBeTruthy();
+        expect(earth.getObjectByName('earth-clouds').children[0].material.map).toBe(cloudTexture);
+    });
+
+    it('does not stack raised crater buttons over a textured planetary surface', () => {
+        const texturedMars = createLowPolyPlanet('mars', { surfaceTexture: new THREE.Texture() });
+        const fallbackMars = createLowPolyPlanet('mars');
+        expect(texturedMars.getObjectByName('mars-craters')).toBeFalsy();
+        expect(fallbackMars.getObjectByName('mars-craters')).toBeTruthy();
+    });
+
+    it('ships a distinct optimized paper texture for every primary world', () => {
+        for (const key of Object.keys(PLANET_STYLES)) {
+            const asset = new URL(`../paper-preview/public/art/textures/paper-${key}-surface.webp`, import.meta.url);
+            expect(existsSync(asset), key).toBe(true);
+            expect(statSync(asset).size, key).toBeGreaterThan(50_000);
+            expect(statSync(asset).size, key).toBeLessThan(180_000);
+        }
     });
 });

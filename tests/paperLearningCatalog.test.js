@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { existsSync, statSync } from 'node:fs';
 import {
     PAPER_LEARNING_KEYS,
     createPaperLearningCatalog
 } from '../paper-preview/src/learning/learningCatalog.js';
+import { WORLD_OBJECTS } from '../paper-preview/src/world/worldCatalog.js';
 
 describe('Paper learning catalog', () => {
     it('adapts the Sun and eight planets from the original educational data', () => {
@@ -42,5 +44,24 @@ describe('Paper learning catalog', () => {
         expect(Object.isFrozen(catalog)).toBe(true);
         expect(Object.isFrozen(catalog.earth)).toBe(true);
         expect(Object.isFrozen(catalog.earth.quizzes)).toBe(true);
+    });
+
+    it('gives every moon, human object and small body its own real image and attribution', () => {
+        const catalog = createPaperLearningCatalog('pt');
+        const secondary = WORLD_OBJECTS.filter((object) => !PAPER_LEARNING_KEYS.includes(object.key));
+        const photos = secondary.map((object) => catalog[object.key].localPhoto);
+
+        expect(new Set(photos).size).toBe(secondary.length);
+        for (const object of secondary) {
+            const record = catalog[object.key];
+            const expected = `/learning/objects/${object.key}.jpg`;
+            const asset = new URL(`../paper-preview/public${expected}`, import.meta.url);
+            expect(record.localPhoto, object.key).toBe(expected);
+            expect(record.photoSource.url, object.key).toMatch(/^https:\/\//);
+            expect(record.photoSource.name, object.key).not.toMatch(/incluída|included/i);
+            expect(existsSync(asset), object.key).toBe(true);
+            expect(statSync(asset).size, object.key).toBeGreaterThan(4_000);
+            expect(statSync(asset).size, object.key).toBeLessThan(220_000);
+        }
     });
 });

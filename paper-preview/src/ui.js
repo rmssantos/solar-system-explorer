@@ -1,8 +1,10 @@
 import { PLANETS } from './state.js';
 import { chooseNearbyObject } from './world/proximity.js';
 import { AWARD_CATALOG, evaluateAwards } from './progression/expeditionProgress.js';
+import { getAwardArt } from './progression/awardArt.js';
 import { presentProgress } from './progression/progressPresentation.js';
 import { paperI18n } from './i18n/paperI18n.js';
+import { bindBackdropDismiss } from './ui/dialogDismiss.js';
 
 const numberFormatter = () => new Intl.NumberFormat(paperI18n.language === 'en' ? 'en-GB' : 'pt-PT');
 
@@ -155,6 +157,11 @@ export function createPreviewUI({
         onMissionLogOpen();
     }
 
+    function closeMissionLog() {
+        if (elements.missionLog.open) elements.missionLog.close();
+        onMissionLogClose();
+    }
+
     const listeners = [
         [elements.explore, 'click', onExplore],
         [elements.notebookTrigger, 'click', onExplore],
@@ -168,10 +175,7 @@ export function createPreviewUI({
         [elements.quizRetry, 'click', onRetryQuiz]
         , [elements.objective, 'click', () => openMissionLog('missions')]
         , [elements.rankChip, 'click', () => openMissionLog('awards')]
-        , [elements.closeMissionLog, 'click', () => {
-            elements.missionLog.close();
-            onMissionLogClose();
-        }]
+        , [elements.closeMissionLog, 'click', closeMissionLog]
         , [elements.missionLog, 'cancel', () => onMissionLogClose()]
         , [elements.zoomOut, 'click', () => onZoom('out')]
         , [elements.zoomCockpit, 'click', () => onZoom('cockpit')]
@@ -192,6 +196,8 @@ export function createPreviewUI({
     for (const [element, eventName, handler] of listeners) {
         element.addEventListener(eventName, handler);
     }
+    const unbindNotebookBackdrop = bindBackdropDismiss(elements.notebook, onCloseNotebook);
+    const unbindMissionBackdrop = bindBackdropDismiss(elements.missionLog, closeMissionLog);
 
     function renderTabs(section) {
         elements.tabs.forEach((tab) => {
@@ -330,8 +336,13 @@ export function createPreviewUI({
             const localizedDescription = paperI18n.language === 'en' ? award.descriptionEn : award.description;
             const card = document.createElement('article');
             card.className = `award-card${unlocked ? ' is-unlocked' : ''}`;
-            const medal = document.createElement('span');
-            medal.textContent = unlocked ? award.icon : '·';
+            const medal = document.createElement('img');
+            medal.src = getAwardArt(award.id);
+            medal.alt = '';
+            medal.width = 96;
+            medal.height = 96;
+            medal.loading = 'lazy';
+            medal.classList.toggle('is-locked', !unlocked);
             const copy = document.createElement('div');
             const title = document.createElement('strong');
             title.textContent = localizedTitle;
@@ -423,7 +434,8 @@ export function createPreviewUI({
     function showProgressFeedback(delta) {
         if (!delta || (!delta.xpGained && !delta.leveledUp && !delta.newAwards?.length)) return;
         const award = delta.newAwards?.[0] ?? null;
-        elements.rewardToastIcon.textContent = award?.icon ?? (delta.leveledUp ? '✦' : '+');
+        elements.rewardToastIcon.textContent = award ? '' : (delta.leveledUp ? '✦' : '+');
+        elements.rewardToastIcon.style.backgroundImage = award ? `url(${getAwardArt(award.id)})` : '';
         if (award) {
             elements.rewardToastKicker.textContent = paperI18n.t('game.progress.award');
             elements.rewardToastTitle.textContent = award.title;
@@ -474,6 +486,8 @@ export function createPreviewUI({
         if (lumiTimer) window.clearTimeout(lumiTimer);
         if (rewardTimer) window.clearTimeout(rewardTimer);
         unsubscribeLanguage();
+        unbindNotebookBackdrop();
+        unbindMissionBackdrop();
         for (const [element, eventName, handler] of listeners) {
             element.removeEventListener(eventName, handler);
         }

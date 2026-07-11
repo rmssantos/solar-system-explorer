@@ -47,6 +47,18 @@
             </span>
         </aside>
 
+        <aside id="object-hover" class="object-hover" aria-live="polite" hidden>
+            <strong id="object-hover-name">Terra</strong>
+            <small id="object-hover-action" data-i18n="game.autopilot.hover">Clica para ativar o piloto de papel</small>
+        </aside>
+
+        <aside id="autopilot-status" class="autopilot-status" aria-live="polite" hidden>
+            <span aria-hidden="true">✦</span>
+            <span><small data-i18n="game.autopilot.kicker">Piloto de papel</small><strong id="autopilot-target">Terra</strong></span>
+            <progress id="autopilot-progress" max="100" value="0" aria-label="Progresso da viagem"></progress>
+            <button id="autopilot-cancel" type="button" data-i18n="game.autopilot.cancel">Cancelar</button>
+        </aside>
+
         <aside id="lumi-transmission" class="lumi-transmission" aria-live="polite" hidden>
             <div class="lumi-avatar" aria-hidden="true"><span>✦</span></div>
             <div class="lumi-copy">
