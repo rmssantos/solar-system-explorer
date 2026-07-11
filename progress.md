@@ -74,4 +74,6 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 
 ## TODO
 
-- Executar verificação integral e decidir integração/entrega.
+- Novo self-improvement loop: universo heliocêntrico, homepage, surpresas, guia e gamificação.
+- Design/plano: `docs/plans/2026-07-11-heliocentric-explorer-design.md` e `2026-07-11-heliocentric-explorer-implementation.md`.
+- Remover a rota diagonal e migrar todos os consumidores para posições dinâmicas antes de construir novos sistemas.
