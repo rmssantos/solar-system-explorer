@@ -11,6 +11,6 @@
         "skipLibCheck": true,
         "lib": ["esnext", "dom", "dom.iterable"]
     },
-    "include": ["src/**/*.js", "src/**/*.d.ts", "tests/**/*.js"],
+    "include": ["src/**/*.js", "src/**/*.d.ts", "paper-preview/src/**/*.js", "paper-preview/src/**/*.d.ts"],
     "exclude": ["node_modules", "dist"]
 }

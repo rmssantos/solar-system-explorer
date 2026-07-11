@@ -547,3 +547,12 @@ export class QuizSystem {
         };
     }
 }
+
+/**
+ * Return the static bilingual quiz catalog without touching storage, DOM,
+ * audio or progression state. This lets isolated experiences reuse the
+ * educational content without constructing the full game system.
+ */
+export function createQuizCatalog() {
+    return QuizSystem.prototype.createQuizzes.call(null);
+}
