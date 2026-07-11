@@ -3,19 +3,24 @@ const JPL = Object.freeze({ name: 'NASA/JPL Horizons', url: 'https://ssd.jpl.nas
 const CELESTRAK = Object.freeze({ name: 'CelesTrak GP/OMM', url: 'https://celestrak.org/' });
 
 function entry(value) {
-    return Object.freeze({ discoverable: true, ...value, source: Object.freeze(value.source ?? NASA) });
+    return Object.freeze({
+        discoverable: true,
+        ...value,
+        orbit: value.orbit ? Object.freeze(value.orbit) : undefined,
+        source: Object.freeze(value.source ?? NASA)
+    });
 }
 
 export const PRIMARY_WORLDS = Object.freeze([
     entry({ key: 'sun', name: 'Sol', type: 'star', command: '10', anchor: [0, 0, 0], scale: 1.7, collisionRadius: 4.2, interactionRadius: 5.2, fact: 'A nossa estrela reúne quase toda a massa do Sistema Solar e alimenta a vida na Terra.' }),
-    entry({ key: 'mercury', name: 'Mercúrio', type: 'planet', command: '199', anchor: [11, 1, -6], scale: 1.15, collisionRadius: 1.2, interactionRadius: 2.4, fact: 'Mercúrio é o planeta mais próximo do Sol e possui uma superfície marcada por crateras.' }),
-    entry({ key: 'venus', name: 'Vénus', type: 'planet', command: '299', anchor: [22, -2, -13], scale: 1.3, collisionRadius: 1.7, interactionRadius: 2.9, fact: 'Vénus é o planeta mais quente devido ao intenso efeito de estufa da sua atmosfera.' }),
-    entry({ key: 'earth', name: 'Terra', type: 'planet', command: '399', anchor: [34, 3, -22], scale: 1.45, collisionRadius: 2.35, interactionRadius: 3.4, fact: 'A Terra é o único mundo conhecido com oceanos de água líquida e vida abundante.' }),
-    entry({ key: 'mars', name: 'Marte', type: 'planet', command: '499', anchor: [48, -4, -33], scale: 1.25, collisionRadius: 1.65, interactionRadius: 2.9, fact: 'Marte conserva vulcões gigantes, vales profundos e sinais de água no seu passado.' }),
-    entry({ key: 'jupiter', name: 'Júpiter', type: 'planet', command: '599', anchor: [68, 5, -50], scale: 1.75, collisionRadius: 3.5, interactionRadius: 4.7, fact: 'Júpiter é o maior planeta e a sua Grande Mancha Vermelha é uma tempestade colossal.' }),
-    entry({ key: 'saturn', name: 'Saturno', type: 'planet', command: '699', anchor: [91, -5, -72], scale: 1.7, collisionRadius: 5.8, interactionRadius: 6.8, fact: 'Os anéis de Saturno são compostos por incontáveis fragmentos de gelo e rocha.' }),
-    entry({ key: 'uranus', name: 'Urano', type: 'planet', command: '799', anchor: [116, 4, -96], scale: 1.55, collisionRadius: 2.65, interactionRadius: 3.8, fact: 'Urano gira quase deitado, provavelmente devido a uma colisão ocorrida há muito tempo.' }),
-    entry({ key: 'neptune', name: 'Neptuno', type: 'planet', command: '899', anchor: [143, -3, -122], scale: 1.55, collisionRadius: 2.65, interactionRadius: 3.8, fact: 'Neptuno tem alguns dos ventos mais rápidos já medidos em todo o Sistema Solar.' })
+    entry({ key: 'mercury', name: 'Mercúrio', type: 'planet', command: '199', anchor: [11, 1, -6], scale: 1.15, collisionRadius: 1.2, interactionRadius: 2.4, orbit: { semiMajorAxisAu: 0.3871, eccentricity: 0.2056, inclinationDeg: 7.005, ascendingNodeDeg: 48.331, argumentPeriapsisDeg: 29.124, meanAnomalyAtEpochDeg: 174.796, periodDays: 87.969 }, fact: 'Mercúrio é o planeta mais próximo do Sol e possui uma superfície marcada por crateras.' }),
+    entry({ key: 'venus', name: 'Vénus', type: 'planet', command: '299', anchor: [22, -2, -13], scale: 1.3, collisionRadius: 1.7, interactionRadius: 2.9, orbit: { semiMajorAxisAu: 0.7233, eccentricity: 0.0068, inclinationDeg: 3.3946, ascendingNodeDeg: 76.68, argumentPeriapsisDeg: 54.884, meanAnomalyAtEpochDeg: 50.115, periodDays: 224.701 }, fact: 'Vénus é o planeta mais quente devido ao intenso efeito de estufa da sua atmosfera.' }),
+    entry({ key: 'earth', name: 'Terra', type: 'planet', command: '399', anchor: [34, 3, -22], scale: 1.45, collisionRadius: 2.35, interactionRadius: 3.4, orbit: { semiMajorAxisAu: 1, eccentricity: 0.0167, inclinationDeg: 0.0001, ascendingNodeDeg: -11.261, argumentPeriapsisDeg: 114.198, meanAnomalyAtEpochDeg: 357.517, periodDays: 365.256 }, fact: 'A Terra é o único mundo conhecido com oceanos de água líquida e vida abundante.' }),
+    entry({ key: 'mars', name: 'Marte', type: 'planet', command: '499', anchor: [48, -4, -33], scale: 1.25, collisionRadius: 1.65, interactionRadius: 2.9, orbit: { semiMajorAxisAu: 1.5237, eccentricity: 0.0934, inclinationDeg: 1.85, ascendingNodeDeg: 49.558, argumentPeriapsisDeg: 286.502, meanAnomalyAtEpochDeg: 19.373, periodDays: 686.98 }, fact: 'Marte conserva vulcões gigantes, vales profundos e sinais de água no seu passado.' }),
+    entry({ key: 'jupiter', name: 'Júpiter', type: 'planet', command: '599', anchor: [68, 5, -50], scale: 1.75, collisionRadius: 3.5, interactionRadius: 4.7, orbit: { semiMajorAxisAu: 5.2028, eccentricity: 0.0484, inclinationDeg: 1.303, ascendingNodeDeg: 100.464, argumentPeriapsisDeg: 273.867, meanAnomalyAtEpochDeg: 20.02, periodDays: 4332.589 }, fact: 'Júpiter é o maior planeta e a sua Grande Mancha Vermelha é uma tempestade colossal.' }),
+    entry({ key: 'saturn', name: 'Saturno', type: 'planet', command: '699', anchor: [91, -5, -72], scale: 1.7, collisionRadius: 5.8, interactionRadius: 6.8, orbit: { semiMajorAxisAu: 9.5388, eccentricity: 0.0539, inclinationDeg: 2.489, ascendingNodeDeg: 113.666, argumentPeriapsisDeg: 339.392, meanAnomalyAtEpochDeg: 317.02, periodDays: 10759.22 }, fact: 'Os anéis de Saturno são compostos por incontáveis fragmentos de gelo e rocha.' }),
+    entry({ key: 'uranus', name: 'Urano', type: 'planet', command: '799', anchor: [116, 4, -96], scale: 1.55, collisionRadius: 2.65, interactionRadius: 3.8, orbit: { semiMajorAxisAu: 19.1914, eccentricity: 0.0473, inclinationDeg: 0.773, ascendingNodeDeg: 74.006, argumentPeriapsisDeg: 96.999, meanAnomalyAtEpochDeg: 142.2386, periodDays: 30688.5 }, fact: 'Urano gira quase deitado, provavelmente devido a uma colisão ocorrida há muito tempo.' }),
+    entry({ key: 'neptune', name: 'Neptuno', type: 'planet', command: '899', anchor: [143, -3, -122], scale: 1.55, collisionRadius: 2.65, interactionRadius: 3.8, orbit: { semiMajorAxisAu: 30.0611, eccentricity: 0.0086, inclinationDeg: 1.77, ascendingNodeDeg: 131.784, argumentPeriapsisDeg: 273.187, meanAnomalyAtEpochDeg: 256.228, periodDays: 60182 }, fact: 'Neptuno tem alguns dos ventos mais rápidos já medidos em todo o Sistema Solar.' })
 ]);
 
 const MOONS = [
