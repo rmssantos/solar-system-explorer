@@ -17,6 +17,7 @@ export function createPreviewUI({
     onRetryQuiz,
     onMissionLogOpen,
     onMissionLogClose,
+    onDismissSurprise,
     onZoom,
     onToggleOrbits
 }) {
@@ -82,7 +83,20 @@ export function createPreviewUI({
         , passportPanels: [...document.querySelectorAll('[data-passport-panel]')]
         , collectionGrid: document.querySelector('#collection-grid')
         , awardsGrid: document.querySelector('#awards-grid')
+        , lumiTransmission: document.querySelector('#lumi-transmission')
+        , lumiTitle: document.querySelector('#lumi-title')
+        , lumiMessage: document.querySelector('#lumi-message')
+        , dismissLumi: document.querySelector('#dismiss-lumi')
     };
+
+    let lumiTimer = null;
+
+    function hideSurprise() {
+        if (lumiTimer) window.clearTimeout(lumiTimer);
+        lumiTimer = null;
+        elements.lumiTransmission.hidden = true;
+        onDismissSurprise();
+    }
 
     const handleTabClick = (event) => {
         const tab = event.target.closest('[data-section]');
@@ -130,6 +144,7 @@ export function createPreviewUI({
                 panel.hidden = panel.dataset.passportPanel !== section;
             });
         }]
+        , [elements.dismissLumi, 'click', hideSurprise]
     ];
 
     for (const [element, eventName, handler] of listeners) {
@@ -344,11 +359,20 @@ export function createPreviewUI({
         elements.apodCard.hidden = false;
     }
 
+    function showSurprise(event) {
+        elements.lumiTitle.textContent = event.title;
+        elements.lumiMessage.textContent = event.message;
+        elements.lumiTransmission.hidden = false;
+        if (lumiTimer) window.clearTimeout(lumiTimer);
+        lumiTimer = window.setTimeout(hideSurprise, 14_000);
+    }
+
     function destroy() {
+        if (lumiTimer) window.clearTimeout(lumiTimer);
         for (const [element, eventName, handler] of listeners) {
             element.removeEventListener(eventName, handler);
         }
     }
 
-    return { update, updateNavigation, setApod, markReady, destroy, elements };
+    return { update, updateNavigation, setApod, showSurprise, markReady, destroy, elements };
 }

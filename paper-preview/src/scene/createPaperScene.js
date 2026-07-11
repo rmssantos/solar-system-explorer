@@ -155,6 +155,40 @@ function addPaperAtmosphere(scene) {
     return nebulaTexture;
 }
 
+function createSurpriseEffect() {
+    const root = new THREE.Group();
+    root.name = 'surprise-effect';
+    root.visible = false;
+
+    const core = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.72, 0),
+        new THREE.MeshBasicMaterial({ color: '#f4c85f', transparent: true })
+    );
+    core.name = 'surprise-core';
+    root.add(core);
+
+    const tailMaterial = new THREE.MeshBasicMaterial({ color: '#ef765c', transparent: true, opacity: 0.78 });
+    for (let index = 0; index < 5; index += 1) {
+        const tail = new THREE.Mesh(new THREE.ConeGeometry(0.13 + index * 0.04, 1.1 + index * 0.36, 4), tailMaterial.clone());
+        tail.name = 'surprise-tail';
+        tail.rotation.z = Math.PI / 2;
+        tail.position.set(1 + index * 0.52, (index - 2) * 0.16, 0);
+        root.add(tail);
+    }
+
+    for (let index = 0; index < 3; index += 1) {
+        const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(1.2 + index * 0.65, 0.035, 4, 24),
+            new THREE.MeshBasicMaterial({ color: '#79bca8', transparent: true, opacity: 0.66 - index * 0.12 })
+        );
+        ring.name = 'surprise-ring';
+        ring.rotation.x = Math.PI / 2;
+        root.add(ring);
+    }
+
+    return root;
+}
+
 export function createPaperScene(stage) {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#101936');
@@ -214,6 +248,8 @@ export function createPaperScene(stage) {
     const rocket = createPaperShip();
     rocket.position.set(0, 0, 7);
     scene.add(rocket);
+    const surpriseEffect = createSurpriseEffect();
+    scene.add(surpriseEffect);
 
     const runtime = {
         elapsed: 0,
@@ -232,6 +268,8 @@ export function createPaperScene(stage) {
         orientation: { yaw: 0, pitch: 0, roll: 0 }
         , cameraDistance: CHASE_CAMERA_LAYOUT.distance
         , targetCameraDistance: CHASE_CAMERA_LAYOUT.distance
+        , surpriseRemaining: 0
+        , surpriseVelocity: new THREE.Vector3()
     };
 
     const pinchPointers = new Map();
@@ -328,6 +366,17 @@ export function createPaperScene(stage) {
             planet.scale.lerp(new THREE.Vector3(selectedScale, selectedScale, selectedScale), Math.min(1, delta * 4));
         });
         worldObjects.update(runtime.elapsed, runtime.primarySnapshot);
+        if (runtime.surpriseRemaining > 0) {
+            runtime.surpriseRemaining = Math.max(0, runtime.surpriseRemaining - delta);
+            surpriseEffect.position.addScaledVector(runtime.surpriseVelocity, delta);
+            surpriseEffect.rotation.x += delta * 0.45;
+            surpriseEffect.rotation.z += delta * 0.75;
+            const opacity = Math.min(1, runtime.surpriseRemaining / 1.5);
+            surpriseEffect.traverse((child) => {
+                if (child.material) child.material.opacity = opacity * (child.name === 'surprise-ring' ? 0.62 : 1);
+            });
+            surpriseEffect.visible = runtime.surpriseRemaining > 0;
+        }
     }
 
     function render() {
@@ -400,6 +449,27 @@ export function createPaperScene(stage) {
         return orbitPaths.visible;
     }
 
+    function triggerSurprise(effect = 'star') {
+        runtime.right.set(1, 0, 0).applyQuaternion(runtime.flightQuaternion);
+        surpriseEffect.position.copy(runtime.shipPosition)
+            .addScaledVector(runtime.forward, 12)
+            .addScaledVector(runtime.right, effect === 'meteor' ? -6 : 6)
+            .addScaledVector(runtime.up, 3.2);
+        const colors = {
+            comet: '#f4c85f', signal: '#79bca8', postcard: '#ef765c',
+            meteor: '#e4a45d', capsule: '#6e8fc5', star: '#fff0a6'
+        };
+        surpriseEffect.getObjectByName('surprise-core').material.color.set(colors[effect] ?? colors.star);
+        surpriseEffect.children.filter((child) => child.name === 'surprise-ring')
+            .forEach((child) => { child.visible = effect === 'signal' || effect === 'capsule'; });
+        surpriseEffect.children.filter((child) => child.name === 'surprise-tail')
+            .forEach((child, index) => { child.visible = effect === 'comet' || effect === 'meteor' || index < 2; });
+        surpriseEffect.scale.setScalar(effect === 'meteor' ? 1.3 : 1);
+        runtime.surpriseVelocity.copy(runtime.right).multiplyScalar(effect === 'meteor' ? 5 : 1.4);
+        runtime.surpriseRemaining = 8;
+        surpriseEffect.visible = true;
+    }
+
     function handleContextLost(event) {
         event.preventDefault();
         runtime.contextLost = true;
@@ -456,6 +526,7 @@ export function createPaperScene(stage) {
         getState,
         adjustZoom,
         toggleOrbits,
+        triggerSurprise,
         destroy
     };
 }

@@ -401,6 +401,14 @@ button:focus-visible {
 .objective-chip { text-align: left; cursor: pointer; }
 .objective-chip:focus-visible { outline: 3px solid #76b5c4; outline-offset: 3px; }
 
+.lumi-transmission { position: fixed; z-index: 7; right: 1.4rem; bottom: 1.4rem; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .8rem; align-items: start; width: min(25rem, calc(100vw - 2rem)); padding: .85rem; color: #2c2a30; background: #f1e3b9; border: 3px solid #352c31; border-radius: 1rem .8rem 1.2rem .75rem; box-shadow: 7px 9px 0 rgb(15 19 39 / .45); animation: lumi-arrive .45s cubic-bezier(.2,.8,.2,1); }
+.lumi-transmission[hidden] { display: none; }
+.lumi-avatar { position: relative; display: grid; width: 3.5rem; aspect-ratio: 1; place-items: center; color: #2c2a30; background: #f1bd4f; border: 3px solid #352c31; border-radius: 50% 45% 52% 48%; box-shadow: 3px 4px 0 #d5634d; }
+.lumi-avatar::before, .lumi-avatar::after { content: ''; position: absolute; top: 1.35rem; width: .32rem; height: .38rem; background: #352c31; border-radius: 50%; }.lumi-avatar::before { left: .75rem; }.lumi-avatar::after { right: .75rem; }.lumi-avatar span { transform: translateY(-.75rem); color: #fff3ca; font-size: .8rem; }
+.lumi-copy { display: grid; gap: .2rem; }.lumi-copy small { color: #a14f42; font-size: .62rem; font-weight: 1000; letter-spacing: .1em; text-transform: uppercase; }.lumi-copy strong { font-family: 'Paper Fredoka', sans-serif; font-size: 1rem; }.lumi-copy p { margin: .15rem 0; color: #625747; font-size: .77rem; line-height: 1.42; }.lumi-copy > span { width: fit-content; padding: .12rem .38rem; color: #f3e6bd; background: #4c8375; border-radius: .35rem; font-size: .62rem; font-weight: 1000; }
+.lumi-transmission button { width: 1.8rem; aspect-ratio: 1; color: #f3e6bd; background: #a14f42; border: 2px solid #753d36; border-radius: 50%; font-weight: 1000; cursor: pointer; }
+@keyframes lumi-arrive { from { opacity: 0; transform: translateY(1rem) rotate(1deg); } }
+
 .mission-log {
     width: min(42rem, calc(100vw - 2rem));
     max-height: min(46rem, calc(100dvh - 2rem));
@@ -485,6 +493,7 @@ button:focus-visible {
     .passport-rank { min-width: min(100%, 15rem); }
     .collection-grid,
     .awards-grid { grid-template-columns: 1fr; }
+    .lumi-transmission { right: .75rem; bottom: 7.4rem; width: calc(100vw - 1.5rem); }
 }
 
 .field-notebook {

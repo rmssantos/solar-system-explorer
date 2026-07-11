@@ -91,5 +91,8 @@ export function reconcileExpeditionProgress(progress, snapshot = {}) {
     for (const id of unique(snapshot.completedQuizIds)) next = awardExpeditionEvent(next, { type: 'quiz', id });
     for (const id of unique(snapshot.completedMissionIds)) next = awardExpeditionEvent(next, { type: 'mission', id });
     for (const id of unique(snapshot.seenSurpriseIds)) next = awardExpeditionEvent(next, { type: 'surprise', id });
-    return next;
+    return createExpeditionProgress({
+        ...next,
+        seenSurpriseIds: unique([...(next.seenSurpriseIds ?? []), ...(snapshot.seenSurpriseIds ?? [])])
+    });
 }

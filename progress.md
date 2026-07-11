@@ -99,3 +99,7 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Coleção mostra cartões descobertos/por descobrir; sete prémios incluem medalhas e troféu final, sempre derivados de marcos significativos.
 - Playtest Saturno confirmou 120 XP exatos, avanço para nível 2, desbloqueio de duas medalhas, persistência e 0 erros de consola.
 - Evidência: `output/playwright/progression/missions.png` e `awards.png`.
+- Diretor de surpresas implementado com seis eventos, cooldown de 65–105 s, bloqueio durante diálogos, requisito de voo ativo e rotação completa antes de repetir.
+- Lumi surge numa transmissão não-modal e dispensável; cada evento tem curiosidade editorial, +15 XP idempotente e efeito 3D de papel temporário.
+- Cometa desktop e sinal mobile 390×844 validados com persistência, dismiss e 0 erros; o cartão mobile fica acima dos controlos de voo.
+- Evidência: `output/playwright/surprises/lumi-comet.png` e `mobile-signal.png`.

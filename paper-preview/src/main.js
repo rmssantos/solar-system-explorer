@@ -22,6 +22,12 @@ import {
     createExpeditionProgress,
     reconcileExpeditionProgress
 } from './progression/expeditionProgress.js';
+import {
+    createSurpriseState,
+    dismissSurprise,
+    getSurprise,
+    stepSurpriseDirector
+} from './surprises/surpriseDirector.js';
 
 const stage = document.querySelector('#paper-stage');
 const learningCatalog = createPaperLearningCatalog('pt');
@@ -31,6 +37,7 @@ let expeditionProgress = reconcileExpeditionProgress(createExpeditionProgress(sa
     ...previewState.learning,
     completedMissionIds: evaluateMissions(previewState.learning).completedIds
 });
+let surpriseState = createSurpriseState({ seenIds: savedProgress.seenSurpriseIds });
 let flightState = createFlightState();
 let deterministicMode = false;
 let lastFrameTime = performance.now();
@@ -208,9 +215,21 @@ function reconcileAndSaveProgress() {
     const missions = evaluateMissions(previewState.learning);
     expeditionProgress = reconcileExpeditionProgress(expeditionProgress, {
         ...previewState.learning,
-        completedMissionIds: missions.completedIds
+        completedMissionIds: missions.completedIds,
+        seenSurpriseIds: surpriseState.seenIds
     });
     saveProgress({ ...previewState.learning, ...expeditionProgress });
+}
+
+function handleSurprise(event) {
+    previewUI.showSurprise(event);
+    paperScene.triggerSurprise(event.effect);
+    reconcileAndSaveProgress();
+    syncUI(true);
+}
+
+function handleDismissSurprise() {
+    surpriseState = dismissSurprise(surpriseState);
 }
 
 function handleRetryQuiz() {
@@ -230,6 +249,7 @@ const previewUI = createPreviewUI({
     onRetryQuiz: handleRetryQuiz,
     onMissionLogOpen: () => flightInput.setEnabled(false),
     onMissionLogClose: () => flightInput.setEnabled(true),
+    onDismissSurprise: handleDismissSurprise,
     onZoom: (direction) => paperScene.adjustZoom(
         direction === 'cockpit' ? -100 : (direction === 'in' ? -0.9 : 0.9)
     ),
@@ -305,6 +325,14 @@ function step(seconds) {
     paperScene.update(seconds);
     nearbyWorldObjectKey = paperScene.findNearbyWorldObject(flightState.position);
     paperScene.setFlightSnapshot(flightState, seconds);
+    const surpriseResult = stepSurpriseDirector(surpriseState, {
+        deltaSeconds: seconds,
+        speed: Math.hypot(flightState.velocity.x, flightState.velocity.y, flightState.velocity.z),
+        distanceFromOrigin: Math.hypot(flightState.position.x, flightState.position.y, flightState.position.z),
+        dialogOpen: previewState.notebook.open || previewUI.elements.missionLog.open
+    });
+    surpriseState = surpriseResult.state;
+    if (surpriseResult.event) handleSurprise(surpriseResult.event);
     updateMissionNavigation();
     syncUI();
 }
@@ -385,6 +413,7 @@ window.render_game_to_text = () => {
             discoveredKeys: [...previewState.learning.discoveredKeys]
         },
         progression: expeditionProgress,
+        surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
         scene: paperScene.getState()
     });
 };
@@ -403,6 +432,17 @@ window.__paperPreview = {
     selectSection: handleSelectSection,
     answerQuiz: handleAnswerQuiz,
     retryQuiz: handleRetryQuiz,
+    triggerSurprise: (id) => {
+        const event = getSurprise(id);
+        if (!event) return false;
+        surpriseState = createSurpriseState({
+            ...surpriseState,
+            activeId: event.id,
+            seenIds: [...surpriseState.seenIds, event.id]
+        });
+        handleSurprise(event);
+        return true;
+    },
     worldPosition: (key) => paperScene.getWorldObjectPosition(key),
     nearbyAt: (position) => paperScene.findNearbyWorldObject(position),
     teleportPosition: (position) => {

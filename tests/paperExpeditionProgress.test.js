@@ -53,4 +53,13 @@ describe('paper expedition progression', () => {
         expect(second).toEqual(first);
         expect(first.xp).toBe((2 * EVENT_XP.discovery) + EVENT_XP.quiz + EVENT_XP.mission);
     });
+
+    it('persists surprise history together with its XP event', () => {
+        const progress = reconcileExpeditionProgress(createExpeditionProgress(), {
+            seenSurpriseIds: ['paper-comet']
+        });
+        expect(progress.seenSurpriseIds).toEqual(['paper-comet']);
+        expect(progress.awardedEventIds).toContain('surprise:paper-comet');
+        expect(progress.xp).toBe(EVENT_XP.surprise);
+    });
 });
