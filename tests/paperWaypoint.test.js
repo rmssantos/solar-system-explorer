@@ -38,4 +38,13 @@ describe('mission waypoint', () => {
         expect(result.distanceLabel).toBe('12 u no diorama');
         expect(result.scientificLabel).toBe('9,54 UA ao Sol');
     });
+
+    it('localizes playable and scientific distance labels in English', () => {
+        const result = calculateWaypoint({
+            from: { x: 0, y: 0, z: 0 }, to: { x: 0, y: 0, z: -10 }, basis,
+            solarDistanceAu: 9.5388, language: 'en'
+        });
+        expect(result.distanceLabel).toBe('10 u in the diorama');
+        expect(result.scientificLabel).toBe('9.54 AU from the Sun');
+    });
 });

@@ -110,3 +110,6 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Audit visual rejeitou o primeiro cockpit revisto: geometria próxima ocupava mais de metade do viewport.
 - Cockpit corrigido com moldura 3D fina e painel funcional limitado a ~14,9% desktop / ~13,5% mobile: velocímetro e agulha vivos, radar de missão, alvo móvel, XYZ e horizonte yaw/pitch/roll.
 - W + drag + roll alteraram velocidade `0,0→2,9`, agulha `-120°→-91,6°`, coordenadas, radar e atitude; 0 erros. Evidência: `cockpit-compact-dynamic.png` e `mobile-cockpit-compact.png`.
+- i18n PT/EN implementado com preferência persistente partilhada entre homepage e jogo; troca atualiza `html[lang]`, HUD, waypoint/UA-AU, caderno, 37 objetos, quizzes, missões, níveis, coleção, prémios e seis surpresas.
+- Fluxo real validado EN homepage → jogo → Earth → quiz → Lumi → PT: copy e dados mudaram sem reload, idioma persistiu e houve 0 erros. Evidência: `output/playwright/i18n/homepage-en.png` e `earth-en.png`.
+- Legenda hero movida para uma safe area interna mais alta; a posição anterior ainda era cortada pela aresta inclinada do `clip-path`.

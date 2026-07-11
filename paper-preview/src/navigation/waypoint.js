@@ -1,9 +1,10 @@
-const auFormatter = new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 2 });
-
-export function formatSolarDistance(distanceAu) {
-    if (distanceAu === 0) return 'Centro do sistema';
-    if (!Number.isFinite(distanceAu) || distanceAu < 0) return 'Órbita variável';
-    return `${auFormatter.format(distanceAu)} UA ao Sol`;
+export function formatSolarDistance(distanceAu, language = 'pt') {
+    if (distanceAu === 0) return language === 'en' ? 'Centre of the system' : 'Centro do sistema';
+    if (!Number.isFinite(distanceAu) || distanceAu < 0) return language === 'en' ? 'Variable orbit' : 'Órbita variável';
+    const formatter = new Intl.NumberFormat(language === 'en' ? 'en-GB' : 'pt-PT', { maximumFractionDigits: 2 });
+    return language === 'en'
+        ? `${formatter.format(distanceAu)} AU from the Sun`
+        : `${formatter.format(distanceAu)} UA ao Sol`;
 }
 
 export function calculateWaypoint({
@@ -11,7 +12,8 @@ export function calculateWaypoint({
     to,
     basis,
     interactionRadius = 0,
-    solarDistanceAu = 0
+    solarDistanceAu = 0,
+    language = 'pt'
 }) {
     const offset = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
     const distanceUnits = Math.hypot(offset.x, offset.y, offset.z);
@@ -31,7 +33,9 @@ export function calculateWaypoint({
         elevation: Math.asin(Math.min(1, Math.max(-1, upAmount))),
         distanceUnits,
         reached,
-        distanceLabel: reached ? 'Ao alcance' : `${Math.round(distanceUnits)} u no diorama`,
-        scientificLabel: formatSolarDistance(solarDistanceAu)
+        distanceLabel: reached
+            ? (language === 'en' ? 'Within reach' : 'Ao alcance')
+            : (language === 'en' ? `${Math.round(distanceUnits)} u in the diorama` : `${Math.round(distanceUnits)} u no diorama`),
+        scientificLabel: formatSolarDistance(solarDistanceAu, language)
     });
 }

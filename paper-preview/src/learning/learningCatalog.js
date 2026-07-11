@@ -1,6 +1,8 @@
 import { REAL_PHOTOS, SOLAR_SYSTEM_DATA } from '../../../src/data/objectsInfo.js';
+import { SOLAR_SYSTEM_DATA_EN } from '../../../src/data/objectsInfoEN.js';
 import { createQuizCatalog } from '../../../src/quizSystem.js';
 import { WORLD_OBJECTS } from '../world/worldCatalog.js';
+import { translateWorldObject } from '../i18n/paperObjectTranslations.js';
 
 export const PAPER_LEARNING_KEYS = Object.freeze([
     'sun',
@@ -37,7 +39,9 @@ export function createPaperLearningCatalog(language = 'pt') {
     const records = {};
 
     for (const key of PAPER_LEARNING_KEYS) {
-        const source = SOLAR_SYSTEM_DATA[key];
+        const baseSource = SOLAR_SYSTEM_DATA[key];
+        const translatedSource = language === 'en' ? SOLAR_SYSTEM_DATA_EN[key] : null;
+        const source = translatedSource ? { ...baseSource, ...translatedSource } : baseSource;
         const localPhoto = `/learning/${key}.jpg`;
         records[key] = freezeRecord({
             key,
@@ -47,7 +51,7 @@ export function createPaperLearningCatalog(language = 'pt') {
             comparison: source.comparison,
             localPhoto,
             photoSource: Object.freeze({
-                name: 'NASA/ESA — fotografia incluída',
+                name: language === 'en' ? 'NASA/ESA — included photograph' : 'NASA/ESA — fotografia incluída',
                 status: 'fallback',
                 originalAsset: source.realPhoto ?? REAL_PHOTOS[key],
                 url: localPhoto
@@ -67,21 +71,26 @@ export function createPaperLearningCatalog(language = 'pt') {
 
     for (const object of WORLD_OBJECTS) {
         if (records[object.key]) continue;
+        const translatedObject = translateWorldObject(object, language);
         const fallbackKey = object.key === 'tesla-roadster'
             ? 'tesla-roadster'
             : (PAPER_LEARNING_KEYS.includes(object.parentKey) ? object.parentKey : 'earth');
         const localPhoto = `/learning/${fallbackKey}.jpg`;
-        const typeLabels = {
-            moon: 'Lua', spacecraft: 'Objeto humano', 'small-body': 'Pequeno corpo'
-        };
+        const typeLabels = language === 'en'
+            ? { moon: 'Moon', spacecraft: 'Human object', 'small-body': 'Small body' }
+            : { moon: 'Lua', spacecraft: 'Objeto humano', 'small-body': 'Pequeno corpo' };
         records[object.key] = freezeRecord({
             key: object.key,
-            name: object.name,
-            type: typeLabels[object.type] ?? 'Objeto espacial',
-            fact: object.fact,
+            name: translatedObject.name,
+            type: translatedObject.typeLabel ?? typeLabels[object.type] ?? (language === 'en' ? 'Space object' : 'Objeto espacial'),
+            fact: translatedObject.fact,
             comparison: object.parentKey
-                ? `Encontra-se representado junto de ${WORLD_OBJECTS.find((entry) => entry.key === object.parentKey)?.name ?? 'o seu mundo'}. As escalas do diorama foram ampliadas para ser explorável.`
-                : 'A posição visual é comprimida para caber no diorama; o separador Hoje identifica a origem dos dados.',
+                ? (language === 'en'
+                    ? `It is shown beside ${translateWorldObject(WORLD_OBJECTS.find((entry) => entry.key === object.parentKey), 'en')?.name ?? 'its parent world'}. Diorama scales are enlarged for exploration.`
+                    : `Encontra-se representado junto de ${WORLD_OBJECTS.find((entry) => entry.key === object.parentKey)?.name ?? 'o seu mundo'}. As escalas do diorama foram ampliadas para ser explorável.`)
+                : (language === 'en'
+                    ? 'Its visual position is compressed to fit the diorama; the Today tab identifies the data source.'
+                    : 'A posição visual é comprimida para caber no diorama; o separador Hoje identifica a origem dos dados.'),
             localPhoto,
             photoSource: Object.freeze({
                 name: object.key === 'tesla-roadster' ? 'SpaceX — CC0 via Wikimedia Commons' : object.source.name,
@@ -94,22 +103,24 @@ export function createPaperLearningCatalog(language = 'pt') {
             measurements: {
                 radiusKm: 0,
                 distanceMillionKm: 0,
-                dayLength: 'Varia com a órbita',
-                yearLength: object.parentKey ? 'Orbita o mundo principal' : 'Órbita própria',
-                temperature: 'Depende da iluminação',
+                dayLength: language === 'en' ? 'Varies with its orbit' : 'Varia com a órbita',
+                yearLength: object.parentKey
+                    ? (language === 'en' ? 'Orbits its parent world' : 'Orbita o mundo principal')
+                    : (language === 'en' ? 'Independent orbit' : 'Órbita própria'),
+                temperature: language === 'en' ? 'Depends on illumination' : 'Depende da iluminação',
                 moonCount: 0
             },
-            wowFacts: Object.freeze([object.fact]),
+            wowFacts: Object.freeze([translatedObject.fact]),
             quizzes: Object.freeze([Object.freeze({
                 id: `${object.key}-identity`,
-                question: `O que torna ${object.name} especial?`,
-                options: Object.freeze([
-                    object.fact,
-                    'É uma estrela maior do que o Sol.',
-                    'Está parado e não se move no espaço.'
-                ]),
+                question: language === 'en' ? `What makes ${translatedObject.name} special?` : `O que torna ${object.name} especial?`,
+                options: Object.freeze(language === 'en' ? [
+                    translatedObject.fact,
+                    'It is a star larger than the Sun.',
+                    'It is stationary and never moves through space.'
+                ] : [object.fact, 'É uma estrela maior do que o Sol.', 'Está parado e não se move no espaço.']),
                 correctIndex: 0,
-                explanation: object.fact
+                explanation: translatedObject.fact
             })])
         });
     }

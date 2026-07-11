@@ -3,12 +3,12 @@ function surprise(value) {
 }
 
 export const SURPRISE_CATALOG = Object.freeze([
-    surprise({ id: 'paper-comet', title: 'Um risco no céu!', message: 'É um cometa: gelo, poeira e rocha a ganhar uma cauda quando se aproxima do Sol.', effect: 'comet' }),
-    surprise({ id: 'lost-signal', title: 'Bip… bip… recebemos algo', message: 'Um sinal muito fraco atravessou o rádio. No espaço real, as antenas da Deep Space Network escutam sondas a milhares de milhões de quilómetros.', effect: 'signal' }),
-    surprise({ id: 'probe-postcard', title: 'Postal de uma sonda', message: 'As Voyager levam um disco dourado com sons e imagens da Terra — uma mensagem para quem o possa encontrar.', effect: 'postcard' }),
-    surprise({ id: 'meteor-shower', title: 'Chuva de meteoros', message: 'Estes riscos luminosos seriam pequenos grãos a entrar numa atmosfera. Aqui passam como confettis cósmicos de papel.', effect: 'meteor' }),
-    surprise({ id: 'data-capsule', title: 'Cápsula científica', message: 'Encontraste uma nota: a luz do Sol demora cerca de 8 minutos e 20 segundos a chegar à Terra.', effect: 'capsule' }),
-    surprise({ id: 'golden-star', title: 'Estrela de navegação', message: 'Não é um prémio por velocidade. É um lembrete: as melhores descobertas acontecem quando olhamos para os lados.', effect: 'star' })
+    surprise({ id: 'paper-comet', title: 'Um risco no céu!', titleEn: 'A streak across the sky!', message: 'É um cometa: gelo, poeira e rocha a ganhar uma cauda quando se aproxima do Sol.', messageEn: 'It is a comet: ice, dust and rock growing a tail as it approaches the Sun.', effect: 'comet' }),
+    surprise({ id: 'lost-signal', title: 'Bip… bip… recebemos algo', titleEn: 'Beep… beep… something came through', message: 'Um sinal muito fraco atravessou o rádio. No espaço real, as antenas da Deep Space Network escutam sondas a milhares de milhões de quilómetros.', messageEn: 'A very faint signal crossed the radio. In real space, Deep Space Network antennas listen to probes billions of kilometres away.', effect: 'signal' }),
+    surprise({ id: 'probe-postcard', title: 'Postal de uma sonda', titleEn: 'A postcard from a probe', message: 'As Voyager levam um disco dourado com sons e imagens da Terra — uma mensagem para quem o possa encontrar.', messageEn: 'The Voyager probes carry a Golden Record with sounds and images from Earth — a message for whoever may find it.', effect: 'postcard' }),
+    surprise({ id: 'meteor-shower', title: 'Chuva de meteoros', titleEn: 'Meteor shower', message: 'Estes riscos luminosos seriam pequenos grãos a entrar numa atmosfera. Aqui passam como confettis cósmicos de papel.', messageEn: 'These bright streaks would be tiny grains entering an atmosphere. Here they pass like cosmic paper confetti.', effect: 'meteor' }),
+    surprise({ id: 'data-capsule', title: 'Cápsula científica', titleEn: 'Science capsule', message: 'Encontraste uma nota: a luz do Sol demora cerca de 8 minutos e 20 segundos a chegar à Terra.', messageEn: 'You found a note: sunlight takes about 8 minutes and 20 seconds to reach Earth.', effect: 'capsule' }),
+    surprise({ id: 'golden-star', title: 'Estrela de navegação', titleEn: 'Navigation star', message: 'Não é um prémio por velocidade. É um lembrete: as melhores descobertas acontecem quando olhamos para os lados.', messageEn: 'This is not a prize for speed. It is a reminder: the best discoveries happen when we look around.', effect: 'star' })
 ]);
 
 function unique(values = []) {
@@ -59,4 +59,10 @@ export function stepSurpriseDirector(state, context = {}) {
 
 export function getSurprise(id) {
     return SURPRISE_CATALOG.find((item) => item.id === id) ?? null;
+}
+
+export function getLocalizedSurprise(id, language = 'pt') {
+    const item = getSurprise(id);
+    if (!item || language !== 'en') return item;
+    return Object.freeze({ ...item, title: item.titleEn, message: item.messageEn });
 }

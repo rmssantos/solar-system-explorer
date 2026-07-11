@@ -6,12 +6,12 @@ export const EVENT_XP = Object.freeze({
 });
 
 const LEVELS = Object.freeze([
-    Object.freeze({ level: 1, threshold: 0, title: 'Cadete de Papel' }),
-    Object.freeze({ level: 2, threshold: 100, title: 'Cartógrafo Lunar' }),
-    Object.freeze({ level: 3, threshold: 250, title: 'Piloto de Órbita' }),
-    Object.freeze({ level: 4, threshold: 450, title: 'Navegador Solar' }),
-    Object.freeze({ level: 5, threshold: 700, title: 'Embaixador das Estrelas' }),
-    Object.freeze({ level: 6, threshold: 1000, title: 'Guardião do Sistema' })
+    Object.freeze({ level: 1, threshold: 0, title: 'Cadete de Papel', titleEn: 'Paper Cadet' }),
+    Object.freeze({ level: 2, threshold: 100, title: 'Cartógrafo Lunar', titleEn: 'Lunar Cartographer' }),
+    Object.freeze({ level: 3, threshold: 250, title: 'Piloto de Órbita', titleEn: 'Orbit Pilot' }),
+    Object.freeze({ level: 4, threshold: 450, title: 'Navegador Solar', titleEn: 'Solar Navigator' }),
+    Object.freeze({ level: 5, threshold: 700, title: 'Embaixador das Estrelas', titleEn: 'Star Ambassador' }),
+    Object.freeze({ level: 6, threshold: 1000, title: 'Guardião do Sistema', titleEn: 'Guardian of the System' })
 ]);
 
 function award(value) {
@@ -19,13 +19,13 @@ function award(value) {
 }
 
 export const AWARD_CATALOG = Object.freeze([
-    award({ id: 'first-light', icon: '☀', title: 'Primeira luz', description: 'Regista a primeira descoberta.', kind: 'medal' }),
-    award({ id: 'rings-route', icon: '◎', title: 'Rota dos anéis', description: 'Cumpre a missão de Saturno.', kind: 'medal' }),
-    award({ id: 'inner-cartographer', icon: '✥', title: 'Cartógrafo interior', description: 'Descobre Mercúrio, Vénus, Terra e Marte.', kind: 'medal' }),
-    award({ id: 'moon-hopper', icon: '☾', title: 'Salta-luas', description: 'Visita Lua, Europa, Encélado e Titã.', kind: 'medal' }),
-    award({ id: 'human-traces', icon: '⌁', title: 'Caçador de sinais', description: 'Encontra quatro pegadas humanas no espaço.', kind: 'medal' }),
-    award({ id: 'quiz-scholar', icon: '✎', title: 'Mente em órbita', description: 'Resolve cinco desafios científicos.', kind: 'medal' }),
-    award({ id: 'grand-tour', icon: '✦', title: 'Grande Volta', description: 'Completa a grande viagem do Sistema Solar.', kind: 'trophy' })
+    award({ id: 'first-light', icon: '☀', title: 'Primeira luz', titleEn: 'First light', description: 'Regista a primeira descoberta.', descriptionEn: 'Record your first discovery.', kind: 'medal' }),
+    award({ id: 'rings-route', icon: '◎', title: 'Rota dos anéis', titleEn: 'Route of the Rings', description: 'Cumpre a missão de Saturno.', descriptionEn: 'Complete the Saturn mission.', kind: 'medal' }),
+    award({ id: 'inner-cartographer', icon: '✥', title: 'Cartógrafo interior', titleEn: 'Inner cartographer', description: 'Descobre Mercúrio, Vénus, Terra e Marte.', descriptionEn: 'Discover Mercury, Venus, Earth and Mars.', kind: 'medal' }),
+    award({ id: 'moon-hopper', icon: '☾', title: 'Salta-luas', titleEn: 'Moon hopper', description: 'Visita Lua, Europa, Encélado e Titã.', descriptionEn: 'Visit the Moon, Europa, Enceladus and Titan.', kind: 'medal' }),
+    award({ id: 'human-traces', icon: '⌁', title: 'Caçador de sinais', titleEn: 'Signal hunter', description: 'Encontra quatro pegadas humanas no espaço.', descriptionEn: 'Find four human traces in space.', kind: 'medal' }),
+    award({ id: 'quiz-scholar', icon: '✎', title: 'Mente em órbita', titleEn: 'Mind in orbit', description: 'Resolve cinco desafios científicos.', descriptionEn: 'Solve five science challenges.', kind: 'medal' }),
+    award({ id: 'grand-tour', icon: '✦', title: 'Grande Volta', titleEn: 'Grand Tour', description: 'Completa a grande viagem do Sistema Solar.', descriptionEn: 'Complete the grand journey through the Solar System.', kind: 'trophy' })
 ]);
 
 function unique(values = []) {
@@ -52,7 +52,7 @@ export function awardExpeditionEvent(progress, event) {
     });
 }
 
-export function getExplorerLevel(xp = 0) {
+export function getExplorerLevel(xp = 0, language = 'pt') {
     const safeXp = Math.max(0, Number.isFinite(xp) ? xp : 0);
     const index = Math.max(0, LEVELS.findLastIndex((level) => safeXp >= level.threshold));
     const current = LEVELS[index];
@@ -62,6 +62,7 @@ export function getExplorerLevel(xp = 0) {
         : 1;
     return Object.freeze({
         ...current,
+        title: language === 'en' ? current.titleEn : current.title,
         nextThreshold: next?.threshold ?? current.threshold,
         progress: Math.max(0, Math.min(1, progress))
     });
@@ -71,7 +72,7 @@ function hasAll(set, values) {
     return values.every((value) => set.has(value));
 }
 
-export function evaluateAwards({ discoveredKeys = [], completedQuizIds = [], completedMissionIds = [] } = {}) {
+export function evaluateAwards({ discoveredKeys = [], completedQuizIds = [], completedMissionIds = [] } = {}, language = 'pt') {
     const discoveries = new Set(discoveredKeys);
     const missions = new Set(completedMissionIds);
     const unlocked = new Set();
@@ -82,7 +83,9 @@ export function evaluateAwards({ discoveredKeys = [], completedQuizIds = [], com
     if (missions.has('human-traces')) unlocked.add('human-traces');
     if (new Set(completedQuizIds).size >= 5) unlocked.add('quiz-scholar');
     if (missions.has('grand-tour')) unlocked.add('grand-tour');
-    return Object.freeze(AWARD_CATALOG.filter((item) => unlocked.has(item.id)));
+    return Object.freeze(AWARD_CATALOG.filter((item) => unlocked.has(item.id)).map((item) => language === 'en'
+        ? Object.freeze({ ...item, title: item.titleEn, description: item.descriptionEn })
+        : item));
 }
 
 export function reconcileExpeditionProgress(progress, snapshot = {}) {

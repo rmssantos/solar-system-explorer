@@ -26,17 +26,25 @@ import {
 import {
     createSurpriseState,
     dismissSurprise,
+    getLocalizedSurprise,
     getSurprise,
     stepSurpriseDirector
 } from './surprises/surpriseDirector.js';
+import { paperI18n } from './i18n/paperI18n.js';
+import { translateWorldObject } from './i18n/paperObjectTranslations.js';
 
 const stage = document.querySelector('#paper-stage');
-const learningCatalog = createPaperLearningCatalog('pt');
+let learningCatalog = createPaperLearningCatalog(paperI18n.language);
+const learningCatalogView = new Proxy({}, {
+    get: (_target, key) => learningCatalog[key],
+    ownKeys: () => Reflect.ownKeys(learningCatalog),
+    getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true })
+});
 const savedProgress = loadProgress();
 let previewState = createPreviewState(savedProgress);
 let expeditionProgress = reconcileExpeditionProgress(createExpeditionProgress(savedProgress), {
     ...previewState.learning,
-    completedMissionIds: evaluateMissions(previewState.learning).completedIds
+    completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds
 });
 let surpriseState = createSurpriseState({ seenIds: savedProgress.seenSurpriseIds });
 let flightState = createFlightState();
@@ -98,7 +106,7 @@ async function hydrateLearningData(key) {
                 source: world.source,
                 updatedAt: image.updatedAt,
                 data: {
-                    summary: world.fact,
+                    summary: paperI18n.language === 'en' ? translateWorldObject(world, 'en').fact : world.fact,
                     imageTitle: image.data.title,
                     imageUrl: image.data.imageUrl,
                     imageSourceName: image.source.name,
@@ -119,7 +127,9 @@ async function hydrateLearningData(key) {
         source: vector.source,
         updatedAt: vector.updatedAt,
         data: {
-            summary: `${record.name} está hoje a cerca de ${distance.toLocaleString('pt-PT', { maximumFractionDigits: 1 })} milhões de quilómetros do Sol. A posição é uma efeméride calculada pelo JPL; “ao vivo” não significa um sinal GPS instantâneo.`,
+            summary: paperI18n.language === 'en'
+                ? `${record.name} is about ${distance.toLocaleString('en-GB', { maximumFractionDigits: 1 })} million kilometres from the Sun today. This position is a JPL ephemeris; “live” does not mean an instant GPS signal.`
+                : `${record.name} está hoje a cerca de ${distance.toLocaleString('pt-PT', { maximumFractionDigits: 1 })} milhões de quilómetros do Sol. A posição é uma efeméride calculada pelo JPL; “ao vivo” não significa um sinal GPS instantâneo.`,
             positionKm: vector.data.positionKm,
             imageTitle: image.data.title,
             imageUrl: image.data.imageUrl,
@@ -214,7 +224,7 @@ function handleAnswerQuiz(selectedIndex) {
 }
 
 function reconcileAndSaveProgress() {
-    const missions = evaluateMissions(previewState.learning);
+    const missions = evaluateMissions(previewState.learning, paperI18n.language);
     expeditionProgress = reconcileExpeditionProgress(expeditionProgress, {
         ...previewState.learning,
         completedMissionIds: missions.completedIds,
@@ -224,7 +234,7 @@ function reconcileAndSaveProgress() {
 }
 
 function handleSurprise(event) {
-    previewUI.showSurprise(event);
+    previewUI.showSurprise(getLocalizedSurprise(event.id, paperI18n.language));
     paperScene.triggerSurprise(event.effect);
     reconcileAndSaveProgress();
     syncUI(true);
@@ -243,7 +253,7 @@ function handleRetryQuiz() {
 }
 
 const previewUI = createPreviewUI({
-    learningCatalog,
+    learningCatalog: learningCatalogView,
     onExplore: handleExplore,
     onCloseNotebook: handleCloseNotebook,
     onSelectSection: handleSelectSection,
@@ -258,6 +268,14 @@ const previewUI = createPreviewUI({
     onToggleOrbits: () => paperScene.toggleOrbits()
 });
 
+paperI18n.subscribe(() => {
+    learningCatalog = createPaperLearningCatalog(paperI18n.language);
+    lastUiSignature = '';
+    syncUI(true);
+    updateMissionNavigation();
+});
+paperI18n.apply();
+
 const flightInput = createFlightInput({
     stage,
     joystick: previewUI.elements.joystick,
@@ -268,7 +286,7 @@ const flightInput = createFlightInput({
 });
 
 function syncUI(force = false) {
-    const missions = evaluateMissions(previewState.learning);
+    const missions = evaluateMissions(previewState.learning, paperI18n.language);
     const signature = [
         flightState.nearbyPlanetKey ?? 'none',
         nearbyWorldObjectKey ?? 'none',
@@ -291,7 +309,7 @@ function syncUI(force = false) {
 }
 
 function updateMissionNavigation() {
-    const missions = evaluateMissions(previewState.learning);
+    const missions = evaluateMissions(previewState.learning, paperI18n.language);
     const targetKey = missions.active?.discover.find(
         (key) => !previewState.learning.discoveredKeys.includes(key)
     );
@@ -301,6 +319,7 @@ function updateMissionNavigation() {
         return;
     }
     const object = getWorldObject(targetKey);
+    const localizedObject = translateWorldObject(object, paperI18n.language);
     const target = paperScene.getWorldObjectPosition(targetKey);
     if (!target) return;
     const parent = object.parentKey ? getWorldObject(object.parentKey) : null;
@@ -309,10 +328,11 @@ function updateMissionNavigation() {
         to: target,
         basis: paperScene.getNavigationBasis(),
         interactionRadius: object.interactionRadius ?? (object.type === 'moon' ? 2.2 : 1.65),
-        solarDistanceAu: object.orbit?.semiMajorAxisAu ?? parent?.orbit?.semiMajorAxisAu ?? null
+        solarDistanceAu: object.orbit?.semiMajorAxisAu ?? parent?.orbit?.semiMajorAxisAu ?? null,
+        language: paperI18n.language
     });
     currentNavigation = {
-        name: object.name,
+        name: localizedObject.name,
         ...waypoint
     };
     previewUI.updateNavigation(currentNavigation);
@@ -410,9 +430,9 @@ window.render_game_to_text = () => {
         },
         interaction: nearbyPlanet ? `Explorar ${nearbyPlanet.name}` : null,
         objective: {
-            target: evaluateMissions(previewState.learning).active?.id ?? null,
-            complete: evaluateMissions(previewState.learning).active === null,
-            label: evaluateMissions(previewState.learning).active?.title ?? 'Todas as missões cumpridas'
+            target: evaluateMissions(previewState.learning, paperI18n.language).active?.id ?? null,
+            complete: evaluateMissions(previewState.learning, paperI18n.language).active === null,
+            label: evaluateMissions(previewState.learning, paperI18n.language).active?.title ?? paperI18n.t('game.missions.all')
         },
         notebook: {
             ...previewState.notebook,

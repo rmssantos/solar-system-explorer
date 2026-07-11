@@ -1,3 +1,5 @@
+import { paperI18n } from './i18n/paperI18n.js';
+
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const revealTargets = document.querySelectorAll('[data-reveal]');
 
@@ -13,3 +15,15 @@ if (reducedMotion || !('IntersectionObserver' in window)) {
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
     revealTargets.forEach((target) => observer.observe(target));
 }
+
+const languageToggle = document.querySelector('[data-language-toggle]');
+
+function renderLanguage() {
+    paperI18n.apply();
+    languageToggle.textContent = paperI18n.language === 'pt' ? 'EN' : 'PT';
+    languageToggle.setAttribute('aria-label', paperI18n.t('shared.switchTo'));
+}
+
+languageToggle.addEventListener('click', () => paperI18n.toggle());
+paperI18n.subscribe(renderLanguage);
+renderLanguage();

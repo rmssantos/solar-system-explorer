@@ -1,8 +1,9 @@
 import { PLANETS } from './state.js';
 import { chooseNearbyObject } from './world/proximity.js';
 import { AWARD_CATALOG, evaluateAwards, getExplorerLevel } from './progression/expeditionProgress.js';
+import { paperI18n } from './i18n/paperI18n.js';
 
-const numberFormatter = new Intl.NumberFormat('pt-PT');
+const numberFormatter = () => new Intl.NumberFormat(paperI18n.language === 'en' ? 'en-GB' : 'pt-PT');
 
 function activeQuiz(record) {
     return record.quizzes[0] ?? null;
@@ -99,9 +100,17 @@ export function createPreviewUI({
         , cockpitYaw: document.querySelector('#cockpit-yaw')
         , cockpitPitch: document.querySelector('#cockpit-pitch')
         , cockpitRoll: document.querySelector('#cockpit-roll')
+        , languageToggle: document.querySelector('[data-language-toggle]')
     };
 
     let lumiTimer = null;
+
+    function renderLanguageToggle() {
+        elements.languageToggle.textContent = paperI18n.language === 'pt' ? 'EN' : 'PT';
+        elements.languageToggle.setAttribute('aria-label', paperI18n.t('shared.switchTo'));
+    }
+    const unsubscribeLanguage = paperI18n.subscribe(renderLanguageToggle);
+    renderLanguageToggle();
 
     function hideSurprise() {
         if (lumiTimer) window.clearTimeout(lumiTimer);
@@ -157,6 +166,7 @@ export function createPreviewUI({
             });
         }]
         , [elements.dismissLumi, 'click', hideSurprise]
+        , [elements.languageToggle, 'click', () => paperI18n.toggle()]
     ];
 
     for (const [element, eventName, handler] of listeners) {
@@ -176,24 +186,25 @@ export function createPreviewUI({
 
     function renderMeasurements(record) {
         const measurements = record.measurements;
-        elements.measureRadius.textContent = `${numberFormatter.format(measurements.radiusKm)} km`;
+        const formatter = numberFormatter();
+        elements.measureRadius.textContent = `${formatter.format(measurements.radiusKm)} km`;
         elements.measureDistance.textContent = measurements.distanceMillionKm === 0
-            ? 'Centro do Sistema Solar'
-            : `${numberFormatter.format(measurements.distanceMillionKm)} milhões km`;
+            ? paperI18n.t('game.measure.center')
+            : paperI18n.t('game.measure.millionKm', { value: formatter.format(measurements.distanceMillionKm) });
         elements.measureDay.textContent = measurements.dayLength;
         elements.measureYear.textContent = measurements.yearLength;
         elements.measureTemperature.textContent = measurements.temperature;
-        elements.measureMoons.textContent = numberFormatter.format(measurements.moonCount);
+        elements.measureMoons.textContent = formatter.format(measurements.moonCount);
     }
 
     function renderData(learning, record) {
         const envelope = learning.dataByObject[record.key];
         const status = envelope?.status ?? 'fallback';
-        const labels = { live: 'Ao vivo', cached: 'Cache recente', fallback: 'Dados incluídos' };
+        const labels = { live: paperI18n.t('game.data.live'), cached: paperI18n.t('game.data.cached'), fallback: paperI18n.t('game.data.included') };
         elements.dataStatus.textContent = labels[status];
         elements.dataStatus.className = `data-status is-${status}`;
         elements.dataUpdated.textContent = envelope
-            ? `Atualizado ${new Date(envelope.updatedAt).toLocaleString('pt-PT')}`
+            ? paperI18n.t('game.data.updated', { value: new Date(envelope.updatedAt).toLocaleString(paperI18n.language === 'en' ? 'en-GB' : 'pt-PT') })
             : '';
         elements.dataSummary.textContent = envelope?.data?.summary
             ?? `${record.fact} A atualização científica online será acrescentada sem substituir estes dados incluídos.`;
@@ -205,7 +216,7 @@ export function createPreviewUI({
         const quiz = activeQuiz(record);
         elements.quizOptions.replaceChildren();
         if (!quiz) {
-            elements.quizQuestion.textContent = 'Ainda não há desafio para este objeto.';
+            elements.quizQuestion.textContent = paperI18n.t('game.quiz.none');
             elements.quizFeedback.hidden = true;
             elements.quizRetry.hidden = true;
             return;
@@ -230,7 +241,7 @@ export function createPreviewUI({
         const answered = learning.quiz.status !== 'idle' && learning.quiz.quizId === quiz.id;
         elements.quizFeedback.hidden = !answered;
         elements.quizFeedback.textContent = answered
-            ? `${learning.quiz.status === 'correct' ? 'Certo! ' : 'Ainda não. '}${learning.quiz.explanation}`
+            ? `${paperI18n.t(learning.quiz.status === 'correct' ? 'game.quiz.correct' : 'game.quiz.wrong')} ${learning.quiz.explanation}`
             : '';
         elements.quizRetry.hidden = learning.quiz.status !== 'wrong';
     }
@@ -246,9 +257,9 @@ export function createPreviewUI({
         if (elements.notebookPhoto.getAttribute('src') !== photoUrl) {
             elements.notebookPhoto.src = photoUrl;
         }
-        elements.notebookPhoto.alt = `Fotografia real de ${record.name}`;
+        elements.notebookPhoto.alt = paperI18n.t('game.photo.real', { name: record.name });
         elements.photoCaption.textContent = state.learning.dataByObject[record.key]?.data?.imageTitle
-            ?? `Fotografia real de ${record.name}`;
+            ?? paperI18n.t('game.photo.real', { name: record.name });
         const dynamicSource = state.learning.dataByObject[record.key]?.data;
         elements.photoSource.textContent = dynamicSource?.imageSourceName ?? record.photoSource.name;
         elements.photoSource.href = dynamicSource?.imageSourceUrl ?? record.photoSource.url;
@@ -259,8 +270,8 @@ export function createPreviewUI({
     }
 
     function renderProgression(state, missions, expeditionProgress) {
-        const level = getExplorerLevel(expeditionProgress?.xp ?? 0);
-        elements.passportLevel.textContent = `Nível ${level.level} · ${level.title}`;
+        const level = getExplorerLevel(expeditionProgress?.xp ?? 0, paperI18n.language);
+        elements.passportLevel.textContent = paperI18n.t('game.level', { level: level.level, title: level.title });
         elements.passportXp.textContent = `${expeditionProgress?.xp ?? 0} XP`;
         elements.passportProgress.value = level.progress;
 
@@ -273,9 +284,9 @@ export function createPreviewUI({
             icon.textContent = unlocked ? (record.type === 'Lua' ? '☾' : record.type === 'Planeta' ? '●' : '✦') : '?';
             const copy = document.createElement('div');
             const name = document.createElement('strong');
-            name.textContent = unlocked ? record.name : 'Por descobrir';
+            name.textContent = unlocked ? record.name : paperI18n.t('game.collection.locked');
             const type = document.createElement('small');
-            type.textContent = unlocked ? record.type : 'Segue a curiosidade';
+            type.textContent = unlocked ? record.type : paperI18n.t('game.collection.hint');
             copy.append(name, type);
             card.append(icon, copy);
             return card;
@@ -284,18 +295,20 @@ export function createPreviewUI({
         const unlockedAwards = new Set(evaluateAwards({
             ...state.learning,
             completedMissionIds: missions?.completedIds ?? []
-        }).map((award) => award.id));
+        }, paperI18n.language).map((award) => award.id));
         elements.awardsGrid.replaceChildren(...AWARD_CATALOG.map((award) => {
             const unlocked = unlockedAwards.has(award.id);
+            const localizedTitle = paperI18n.language === 'en' ? award.titleEn : award.title;
+            const localizedDescription = paperI18n.language === 'en' ? award.descriptionEn : award.description;
             const card = document.createElement('article');
             card.className = `award-card${unlocked ? ' is-unlocked' : ''}`;
             const medal = document.createElement('span');
             medal.textContent = unlocked ? award.icon : '·';
             const copy = document.createElement('div');
             const title = document.createElement('strong');
-            title.textContent = award.title;
+            title.textContent = localizedTitle;
             const description = document.createElement('small');
-            description.textContent = award.description;
+            description.textContent = unlocked ? localizedDescription : `${localizedDescription} · ${paperI18n.t('game.awards.locked')}`;
             copy.append(title, description);
             card.append(medal, copy);
             return card;
@@ -313,12 +326,12 @@ export function createPreviewUI({
         elements.explore.hidden = !nearbyPlanet || state.notebook.open;
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
-        if (nearbyPlanet) elements.nearbyPlanetName.textContent = `Explorar ${nearbyPlanet.name}`;
+        if (nearbyPlanet) elements.nearbyPlanetName.textContent = paperI18n.t('game.explore', { name: nearbyPlanet.name });
         const activeMission = missions?.active;
         elements.objective.classList.toggle('is-complete', !activeMission);
         elements.objectiveText.textContent = activeMission
             ? `${activeMission.title} · ${activeMission.progress.current}/${activeMission.progress.total}`
-            : 'Todas as missões cumpridas';
+            : paperI18n.t('game.missions.all');
         if (missions) {
             elements.missionList.replaceChildren(...missions.missions.map((mission) => {
                 const item = document.createElement('li');
@@ -367,7 +380,7 @@ export function createPreviewUI({
         if (!envelope?.data?.imageUrl) return;
         elements.apodImage.src = envelope.data.imageUrl;
         elements.apodTitle.textContent = envelope.data.title;
-        elements.apodDate.textContent = `${envelope.data.date || 'Hoje'} · ${envelope.status === 'live' ? 'NASA ao vivo' : 'incluído/cache'}`;
+        elements.apodDate.textContent = `${envelope.data.date || (paperI18n.language === 'en' ? 'Today' : 'Hoje')} · ${envelope.status === 'live' ? (paperI18n.language === 'en' ? 'NASA live' : 'NASA ao vivo') : (paperI18n.language === 'en' ? 'included/cache' : 'incluído/cache')}`;
         elements.apodCard.hidden = false;
     }
 
@@ -399,6 +412,7 @@ export function createPreviewUI({
 
     function destroy() {
         if (lumiTimer) window.clearTimeout(lumiTimer);
+        unsubscribeLanguage();
         for (const [element, eventName, handler] of listeners) {
             element.removeEventListener(eventName, handler);
         }
