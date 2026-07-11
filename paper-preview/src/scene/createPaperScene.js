@@ -246,7 +246,7 @@ export function createPaperScene(stage) {
     scene.add(worldObjects.root);
 
     const rocket = createPaperShip();
-    rocket.position.set(0, 0, 7);
+    rocket.position.set(0, 0, 14);
     scene.add(rocket);
     const surpriseEffect = createSurpriseEffect();
     scene.add(surpriseEffect);

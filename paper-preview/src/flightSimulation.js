@@ -63,7 +63,7 @@ export function findNearbyPlanet(position, bodies = []) {
 }
 
 export function createFlightState(bodies = []) {
-    const position = { x: 0, y: 0, z: 7 };
+    const position = { x: 0, y: 0, z: 14 };
     return {
         position,
         velocity: { x: 0, y: 0, z: 0 },

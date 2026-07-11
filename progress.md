@@ -103,3 +103,7 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Lumi surge numa transmissão não-modal e dispensável; cada evento tem curiosidade editorial, +15 XP idempotente e efeito 3D de papel temporário.
 - Cometa desktop e sinal mobile 390×844 validados com persistência, dismiss e 0 erros; o cartão mobile fica acima dos controlos de voo.
 - Evidência: `output/playwright/surprises/lumi-comet.png` e `mobile-signal.png`.
+- Arte hero original gerada para o projeto: nave-correio, Lumi e orrery heliocêntrico em low-poly/papel, paleta controlada e espaço editorial para copy.
+- Asset WebP otimizado (69 kB) integrado apenas na homepage em `/public/art/paper-expedition-hero.webp`; o jogo conserva geometria 3D nativa e leve.
+- Segundo passe visual: legenda hero encurtada para não cortar; posição inicial afastada de 7 para 14 unidades do Sol, revelando mais universo sem perder a partida cinematográfica.
+- Enquadramento inicial validado em 1440×900, com waypoint Saturno, nave clara e 0 erros. Evidência: `output/playwright/second-pass/opening.png`.
