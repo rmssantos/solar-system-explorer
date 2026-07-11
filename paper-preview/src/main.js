@@ -15,6 +15,7 @@ import { projectEarthOrbit, propagateOmm } from './data/orbitPropagation.js';
 import { SATELLITE_FALLBACKS } from './data/spaceFallbacks.js';
 import { getWorldObject } from './world/worldCatalog.js';
 import { chooseNearbyObject } from './world/proximity.js';
+import { calculateWaypoint } from './navigation/waypoint.js';
 import { evaluateMissions } from './missions/missionSystem.js';
 import { loadProgress, saveProgress } from './missions/progressStore.js';
 
@@ -260,19 +261,17 @@ function updateMissionNavigation() {
     const object = getWorldObject(targetKey);
     const target = paperScene.getWorldObjectPosition(targetKey);
     if (!target) return;
-    const offset = {
-        x: target.x - flightState.position.x,
-        y: target.y - flightState.position.y,
-        z: target.z - flightState.position.z
-    };
-    const distance = Math.hypot(offset.x, offset.y, offset.z) || 1;
-    const basis = paperScene.getNavigationBasis();
-    const rightAmount = (offset.x * basis.right.x + offset.y * basis.right.y + offset.z * basis.right.z) / distance;
-    const forwardAmount = (offset.x * basis.forward.x + offset.y * basis.forward.y + offset.z * basis.forward.z) / distance;
+    const parent = object.parentKey ? getWorldObject(object.parentKey) : null;
+    const waypoint = calculateWaypoint({
+        from: flightState.position,
+        to: target,
+        basis: paperScene.getNavigationBasis(),
+        interactionRadius: object.interactionRadius ?? (object.type === 'moon' ? 2.2 : 1.65),
+        solarDistanceAu: object.orbit?.semiMajorAxisAu ?? parent?.orbit?.semiMajorAxisAu ?? null
+    });
     previewUI.updateNavigation({
         name: object.name,
-        distance,
-        angleRadians: Math.atan2(rightAmount, forwardAmount)
+        ...waypoint
     });
 }
 
@@ -386,6 +385,17 @@ window.__paperPreview = {
     retryQuiz: handleRetryQuiz,
     worldPosition: (key) => paperScene.getWorldObjectPosition(key),
     nearbyAt: (position) => paperScene.findNearbyWorldObject(position),
+    teleportPosition: (position) => {
+        flightState = {
+            ...flightState,
+            position: { x: position.x, y: position.y, z: position.z },
+            velocity: { x: 0, y: 0, z: 0 },
+            nearbyPlanetKey: null
+        };
+        step(0.1);
+        paperScene.render();
+        return true;
+    },
     teleport: (key) => {
         const object = getWorldObject(key);
         const target = object ? paperScene.getWorldObjectPosition(key) : null;

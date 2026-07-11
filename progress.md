@@ -88,3 +88,6 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Cintura de asteroides reposicionada como anel heliocêntrico; bounds de voo agora são simétricos e cobrem órbitas completas.
 - APOD com `DEMO_KEY` produziu 429 no playtest; troca TDD para seleção diária CORS-safe da NASA Images eliminou erros de consola.
 - Evidência: `output/playwright/heliocentric-pass1/shot-0.png`, `saturn-dynamic.png`, `orbits-hidden.png`.
+- Bug reportado pelo utilizador: “bolha azul” móvel ao afastar-se. Causa confirmada: canto dos bounds + chase camera (~264,5 u) atravessava sky dome de raio 260.
+- Fix TDD: sky dome segue a posição da câmara em cada render. Reproduzido no canto `(175, 50, 175)` sem bolha e com 0 erros. Evidência: `sky-corner-fixed.png`.
+- Waypoint agora calcula direção a partir da câmara e mostra `u no diorama` + distância científica em UA, sem fingir escala linear.

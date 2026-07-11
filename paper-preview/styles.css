@@ -331,6 +331,7 @@ button:focus-visible {
 .nav-beacon span:last-child { display: grid; line-height: 1.05; }
 .nav-beacon strong { font-size: .78rem; letter-spacing: .025em; }
 .nav-beacon small { margin-top: .2rem; color: #aebbd0; font-size: .64rem; }
+.nav-beacon .nav-science { color: #d8c899; font-size: .58rem; }
 .nav-arrow {
     display: grid;
     place-items: center;

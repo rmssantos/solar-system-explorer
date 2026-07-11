@@ -7,6 +7,7 @@ import { adjustCameraDistance, cameraModeForDistance } from './cameraZoom.js';
 import { createPaperWorldObjects } from './createPaperWorldObjects.js';
 import { createPrimarySnapshot } from '../world/orbitalSystem.js';
 import { createOrbitPaths } from './createOrbitPaths.js';
+import { syncSkyDome } from './skyDome.js';
 
 const PLANET_KEYS = PRIMARY_WORLDS.map((world) => world.key);
 const ORBIT_DAYS_PER_SECOND = 0.35;
@@ -330,7 +331,10 @@ export function createPaperScene(stage) {
     }
 
     function render() {
-        if (!runtime.contextLost) renderer.render(scene, camera);
+        if (!runtime.contextLost) {
+            syncSkyDome(background, camera);
+            renderer.render(scene, camera);
+        }
     }
 
     function getNavigationBasis() {

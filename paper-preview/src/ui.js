@@ -62,6 +62,7 @@ export function createPreviewUI({
         , navArrow: document.querySelector('#nav-arrow')
         , navTarget: document.querySelector('#nav-target')
         , navDistance: document.querySelector('#nav-distance')
+        , navScience: document.querySelector('#nav-science')
         , missionLog: document.querySelector('#mission-log')
         , closeMissionLog: document.querySelector('#close-mission-log')
         , missionList: document.querySelector('#mission-list')
@@ -266,9 +267,8 @@ export function createPreviewUI({
         elements.navBeacon.hidden = !navigation;
         if (!navigation) return;
         elements.navTarget.textContent = navigation.name;
-        elements.navDistance.textContent = navigation.distance < 1.5
-            ? 'Ao alcance'
-            : `${Math.round(navigation.distance)} unidades`;
+        elements.navDistance.textContent = navigation.distanceLabel;
+        elements.navScience.textContent = navigation.scientificLabel;
         elements.navArrow.style.transform = `rotate(${navigation.angleRadians}rad)`;
     }
 
