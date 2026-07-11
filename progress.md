@@ -113,3 +113,6 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - i18n PT/EN implementado com preferência persistente partilhada entre homepage e jogo; troca atualiza `html[lang]`, HUD, waypoint/UA-AU, caderno, 37 objetos, quizzes, missões, níveis, coleção, prémios e seis surpresas.
 - Fluxo real validado EN homepage → jogo → Earth → quiz → Lumi → PT: copy e dados mudaram sem reload, idioma persistiu e houve 0 erros. Evidência: `output/playwright/i18n/homepage-en.png` e `earth-en.png`.
 - Legenda hero movida para uma safe area interna mais alta; a posição anterior ainda era cortada pela aresta inclinada do `clip-path`.
+- Quatro assets editoriais originais gerados em folha 2×2 e recortados/otimizados: Voa (25,7 kB), Descobre (37,1 kB), Aprende (41,1 kB), Coleciona (47,7 kB).
+- Placeholders circulares substituídos por ilustrações paper-style quadradas sem distorção; medalhas e troféu CSS foram também substituídos por recortes da mesma arte (5–7 kB cada).
+- Cards desktop e mobile validados sem overflow e com proporção 1:1. Evidência: `output/playwright/assets/steps-desktop-fixed.png`, `steps-mobile.png` e `rewards-paper-fixed.png`.
