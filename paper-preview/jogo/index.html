@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#101936">
+    <meta name="description" content="Preview visual de um Sistema Solar em diorama de papel.">
+    <title>Sistema Solar de Bolso — Paper Diorama</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='9' fill='%23f5b83d' stroke='%232b2f3a' stroke-width='2'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/privacy.css">
+</head>
+<body>
+    <main class="paper-shell">
+        <nav class="game-route-nav" aria-label="Navegação da expedição">
+            <a class="game-home-link" href="/" aria-label="Voltar à apresentação do Sistema Solar de Bolso" data-i18n="game.home">← Início</a>
+            <a class="game-library-link" href="/biblioteca/" data-i18n="game.library">Biblioteca</a>
+        </nav>
+        <button class="game-language-toggle" type="button" data-language-toggle aria-label="Mudar para English">EN</button>
+        <div id="paper-stage" class="paper-stage" role="img" aria-label="Diorama do Sistema Solar em papel">
+            <p class="stage-loading" aria-live="polite" data-i18n="game.loading">A montar o diorama…</p>
+        </div>
+
+        <header class="experience-header">
+            <button id="objective-chip" class="objective-chip" type="button" aria-live="polite" aria-haspopup="dialog">
+                <span class="objective-kicker" data-i18n="game.objective.kicker">Missão de bolso</span>
+                <strong id="objective-text">Chega a Saturno</strong>
+            </button>
+
+            <button id="rank-chip" class="rank-chip" type="button" aria-haspopup="dialog">
+                <span class="rank-chip-heading"><small data-i18n="game.rank.kicker">Patente de explorador</small><b id="rank-xp">0 XP</b></span>
+                <strong id="rank-title">Nível 1 · Cadete de Papel</strong>
+                <progress id="rank-progress" max="100" value="0" aria-label="Progresso para o nível seguinte"></progress>
+            </button>
+
+            <button id="notebook-trigger" class="notebook-trigger" type="button" aria-haspopup="dialog">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 3.5h11.5A2.5 2.5 0 0 1 19 6v14.5H7.5A2.5 2.5 0 0 1 5 18V3.5Zm2 2v12.4c.16-.04.33-.05.5-.05H17V6a.5.5 0 0 0-.5-.5H7Z"/></svg>
+                <span data-i18n="game.notebook">Caderno</span>
+            </button>
+        </header>
+
+        <aside id="nav-beacon" class="nav-beacon" aria-live="polite">
+            <span id="nav-arrow" class="nav-arrow" aria-hidden="true">▲</span>
+            <span>
+                <strong id="nav-target">Saturno</strong>
+                <small id="nav-distance">—</small>
+                <small id="nav-science" class="nav-science">—</small>
+            </span>
+        </aside>
+
+        <aside id="object-hover" class="object-hover" aria-live="polite" hidden>
+            <strong id="object-hover-name">Terra</strong>
+            <small id="object-hover-action" data-i18n="game.autopilot.hover">Clica para ativar o piloto de papel</small>
+        </aside>
+
+        <aside id="autopilot-status" class="autopilot-status" aria-live="polite" hidden>
+            <span aria-hidden="true">✦</span>
+            <span><small data-i18n="game.autopilot.kicker">Piloto de papel</small><strong id="autopilot-target">Terra</strong></span>
+            <progress id="autopilot-progress" max="100" value="0" aria-label="Progresso da viagem"></progress>
+            <button id="autopilot-cancel" type="button" data-i18n="game.autopilot.cancel">Cancelar</button>
+        </aside>
+
+        <aside id="lumi-transmission" class="lumi-transmission" aria-live="polite" hidden>
+            <div class="lumi-avatar" aria-hidden="true"><span>✦</span></div>
+            <div class="lumi-copy">
+                <small data-i18n="game.lumi.kicker">Lumi · guia de bordo</small>
+                <strong id="lumi-title">Uma descoberta!</strong>
+                <p id="lumi-message"></p>
+                <span id="lumi-reward" data-i18n="game.lumi.reward">+15 XP</span>
+            </div>
+            <button id="dismiss-lumi" type="button" aria-label="Fechar transmissão">×</button>
+        </aside>
+
+        <aside id="reward-toast" class="reward-toast" popover="manual" role="status" aria-live="polite" hidden>
+            <span id="reward-toast-icon" class="reward-toast-icon" aria-hidden="true">✦</span>
+            <span class="reward-toast-copy"><small id="reward-toast-kicker">Progresso registado</small><strong id="reward-toast-title">+20 XP</strong><span id="reward-toast-message">Continua a explorar.</span></span>
+        </aside>
+
+        <div class="zoom-controls" aria-label="Distância da câmara" data-i18n-aria="game.zoom.label">
+            <button id="zoom-out" type="button" aria-label="Afastar câmara">−</button>
+            <button id="zoom-cockpit" type="button" aria-label="Entrar no cockpit" data-i18n="game.cockpit">Cockpit</button>
+            <button id="zoom-in" type="button" aria-label="Aproximar câmara">+</button>
+            <button id="orbit-toggle" type="button" aria-pressed="true" data-i18n="game.orbits">Órbitas</button>
+        </div>
+
+        <section id="cockpit-instruments" class="cockpit-instruments" aria-label="Instrumentos do cockpit" hidden>
+            <div class="cockpit-module speed-module">
+                <small data-i18n="game.cockpit.speed">Velocidade</small>
+                <div class="speed-dial" aria-hidden="true"><i id="cockpit-speed-needle"></i><span></span></div>
+                <strong><span id="cockpit-speed">0.0</span> <small>u/s</small></strong>
+            </div>
+            <div class="cockpit-module radar-module">
+                <div class="radar-heading"><small data-i18n="game.cockpit.radar">Radar de missão</small><span id="cockpit-target">Saturno</span></div>
+                <div class="cockpit-radar" aria-hidden="true">
+                    <i class="radar-ring radar-ring-one"></i><i class="radar-ring radar-ring-two"></i>
+                    <span class="radar-ship">▲</span><span id="cockpit-radar-target" class="radar-target"></span>
+                </div>
+                <div class="cockpit-coordinates"><span>X <b id="cockpit-x">+000.0</b></span><span>Y <b id="cockpit-y">+000.0</b></span><span>Z <b id="cockpit-z">+000.0</b></span></div>
+            </div>
+            <div class="cockpit-module attitude-module">
+                <small data-i18n="game.cockpit.attitude">Atitude</small>
+                <div class="attitude-window" aria-hidden="true"><i id="cockpit-horizon"></i><span></span></div>
+                <div class="attitude-values"><span>YAW <b id="cockpit-yaw">0°</b></span><span>PITCH <b id="cockpit-pitch">0°</b></span><span>ROLL <b id="cockpit-roll">0°</b></span></div>
+            </div>
+        </section>
+
+        <section id="flight-controls" class="flight-controls" aria-label="Controlos de voo">
+            <div id="flight-joystick" class="flight-joystick" aria-label="Joystick de voo">
+                <div class="joystick-orbit" aria-hidden="true"></div>
+                <div id="joystick-knob" class="joystick-knob" aria-hidden="true"></div>
+            </div>
+
+            <button id="explore-nearby" class="explore-nearby" type="button" hidden>
+                <span class="explore-kicker" data-i18n="game.explore.kicker">Ao alcance</span>
+                <strong id="nearby-planet-name">Explorar Sol</strong>
+            </button>
+
+            <div class="flight-actions" aria-label="Movimento vertical e impulso">
+                <button id="flight-up" type="button" aria-label="Subir"><span aria-hidden="true">↑</span></button>
+                <button id="flight-boost" class="flight-boost" type="button" aria-label="Ativar impulso"><span data-i18n="game.flight.boost">Boost</span></button>
+                <button id="flight-down" type="button" aria-label="Descer"><span aria-hidden="true">↓</span></button>
+            </div>
+        </section>
+
+        <p class="key-hint" aria-hidden="true" data-i18n="game.controls">W/S frente · A/D lateral · rato olha · roda zoom · V cockpit · Shift boost · R/F roda</p>
+    </main>
+
+    <dialog id="field-notebook" class="field-notebook" aria-labelledby="notebook-title">
+        <article class="notebook-page">
+            <div class="binding-holes" aria-hidden="true"></div>
+            <button id="close-notebook" class="close-notebook" type="button" aria-label="Fechar caderno" data-i18n="game.close">Fechar</button>
+            <header class="notebook-heading">
+                <p id="notebook-kicker" class="notebook-kicker">Nota de campo</p>
+                <h1 id="notebook-title">Sol</h1>
+            </header>
+
+            <nav class="notebook-tabs" role="tablist" aria-label="Secções do caderno">
+                <button id="tab-discover" type="button" role="tab" aria-controls="panel-discover" data-section="discover" data-i18n="game.tabs.discover">Descobrir</button>
+                <button id="tab-measure" type="button" role="tab" aria-controls="panel-measure" data-section="measure" data-i18n="game.tabs.measure">Medir</button>
+                <button id="tab-today" type="button" role="tab" aria-controls="panel-today" data-section="today" data-i18n="game.tabs.today">Hoje</button>
+                <button id="tab-challenge" type="button" role="tab" aria-controls="panel-challenge" data-section="challenge" data-i18n="game.tabs.challenge">Desafio</button>
+            </nav>
+
+            <div class="notebook-panels">
+                <section id="panel-discover" class="notebook-panel discover-panel" role="tabpanel" aria-labelledby="tab-discover">
+                    <figure class="real-photo-card">
+                        <button id="notebook-photo-open" class="photo-open" type="button"><img id="notebook-photo" alt="" width="720" height="480"><span class="photo-open-label" data-i18n="media.enlarge">Ampliar fotografia</span></button>
+                        <figcaption>
+                            <span id="notebook-photo-caption">Fotografia real</span>
+                            <a id="notebook-photo-source" href="#" target="_blank" rel="noreferrer">Fonte incluída</a>
+                        </figcaption>
+                    </figure>
+                    <div class="discover-copy">
+                        <p id="notebook-fact" class="notebook-fact"></p>
+                        <div class="pencil-rule" aria-hidden="true"></div>
+                        <p id="notebook-note" class="notebook-note"></p>
+                        <p id="notebook-wow" class="notebook-wow"></p>
+                    </div>
+                </section>
+
+                <section id="panel-measure" class="notebook-panel" role="tabpanel" aria-labelledby="tab-measure" hidden>
+                    <dl class="measurement-grid">
+                        <div><dt data-i18n="game.measure.radius">Raio</dt><dd id="measure-radius">—</dd></div>
+                        <div><dt data-i18n="game.measure.distance">Distância média ao Sol</dt><dd id="measure-distance">—</dd></div>
+                        <div><dt data-i18n="game.measure.day">Duração do dia</dt><dd id="measure-day">—</dd></div>
+                        <div><dt data-i18n="game.measure.year">Duração do ano</dt><dd id="measure-year">—</dd></div>
+                        <div><dt data-i18n="game.measure.temperature">Temperatura média</dt><dd id="measure-temperature">—</dd></div>
+                        <div><dt data-i18n="game.measure.moons">Luas conhecidas</dt><dd id="measure-moons">—</dd></div>
+                    </dl>
+                    <p class="scale-note" data-i18n="game.measure.scale">Os tamanhos e distâncias do diorama são ampliados para poderes explorar.</p>
+                </section>
+
+                <section id="panel-today" class="notebook-panel" role="tabpanel" aria-labelledby="tab-today" hidden>
+                    <div class="data-provenance">
+                        <span id="data-status" class="data-status is-fallback">Dados incluídos</span>
+                        <time id="data-updated"></time>
+                    </div>
+                    <p id="data-summary">A atualização científica online será mostrada aqui quando estiver disponível.</p>
+                    <a id="data-source" href="#" target="_blank" rel="noreferrer">Ver fonte científica</a>
+                </section>
+
+                <section id="panel-challenge" class="notebook-panel" role="tabpanel" aria-labelledby="tab-challenge" hidden>
+                    <p class="quiz-kicker" data-i18n="game.quiz.kicker">Testa o que descobriste</p>
+                    <h2 id="quiz-question">Pergunta</h2>
+                    <div id="quiz-options" class="quiz-options"></div>
+                    <div id="quiz-feedback" class="quiz-feedback" aria-live="polite" hidden></div>
+                    <button id="quiz-retry" class="quiz-retry" type="button" hidden data-i18n="game.quiz.retry">Tentar novamente</button>
+                </section>
+            </div>
+            <p id="mission-stamp" class="mission-stamp" hidden data-i18n="game.mission.complete">Missão cumprida</p>
+        </article>
+    </dialog>
+
+    <dialog id="media-viewer" class="media-viewer" aria-labelledby="media-viewer-caption"><article><button class="media-viewer-close" type="button" data-media-close data-i18n-aria="media.close" aria-label="Fechar imagem">×</button><img data-media-image alt=""><footer><p id="media-viewer-caption" data-media-caption></p><a data-media-source href="#" target="_blank" rel="noreferrer"></a></footer></article></dialog>
+
+    <dialog id="mission-log" class="mission-log" aria-labelledby="mission-log-title">
+        <article>
+            <button id="close-mission-log" class="close-notebook" type="button" data-i18n="game.close">Fechar</button>
+            <div class="passport-heading">
+                <div>
+                    <p class="notebook-kicker" data-i18n="game.passport.kicker">Passaporte de exploração</p>
+                    <h1 id="mission-log-title" data-i18n="game.passport.title">Diário de bordo</h1>
+                </div>
+                <div class="passport-rank">
+                    <span id="passport-level">Nível 1 · Cadete de Papel</span>
+                    <strong id="passport-xp">0 XP</strong>
+                    <progress id="passport-progress" max="1" value="0" aria-label="Progresso para o nível seguinte"></progress>
+                </div>
+            </div>
+            <nav class="passport-tabs" role="tablist" aria-label="Secções do passaporte">
+                <button type="button" role="tab" data-passport-section="missions" aria-selected="true" data-i18n="game.passport.missions">Missões</button>
+                <button type="button" role="tab" data-passport-section="collection" aria-selected="false" data-i18n="game.passport.collection">Coleção</button>
+                <button type="button" role="tab" data-passport-section="awards" aria-selected="false" data-i18n="game.passport.awards">Prémios</button>
+            </nav>
+            <section class="passport-panel" data-passport-panel="missions">
+                <p class="mission-log-intro" data-i18n="game.passport.missionCopy">Podes completar descobertas fora de ordem. O diário guarda tudo neste dispositivo.</p>
+                <figure id="apod-card" class="apod-card" hidden>
+                    <img id="apod-image" alt="Imagem astronómica do dia" width="640" height="360">
+                    <figcaption><strong id="apod-title">Céu de hoje</strong><span id="apod-date"></span></figcaption>
+                </figure>
+                <ol id="mission-list" class="mission-list"></ol>
+            </section>
+            <section class="passport-panel" data-passport-panel="collection" hidden>
+                <p class="mission-log-intro" data-i18n="game.passport.collectionCopy">Cada cartão é um lugar ou objeto que encontraste pessoalmente.</p>
+                <div id="collection-grid" class="collection-grid"></div>
+            </section>
+            <section class="passport-panel" data-passport-panel="awards" hidden>
+                <p class="mission-log-intro" data-i18n="game.passport.awardsCopy">Medalhas por curiosidade; troféus por viagens extraordinárias.</p>
+                <div id="awards-grid" class="awards-grid"></div>
+            </section>
+        </article>
+    </dialog>
+    <noscript>Esta preview precisa de JavaScript para montar o diorama.</noscript>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

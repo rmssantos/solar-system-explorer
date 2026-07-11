@@ -1,0 +1,55 @@
+// Daily page views (visits, not unique people: persistent user cookies are disabled)
+pageViews
+| where timestamp > ago(30d)
+| summarize Visits=count() by Day=startofday(timestamp), Page=name
+| order by Day asc
+
+// Navigation choices by source surface and destination
+customEvents
+| where timestamp > ago(30d) and name == 'navigation_click'
+| summarize Clicks=count() by Surface=tostring(customDimensions.surface), Destination=tostring(customDimensions.destination)
+| order by Clicks desc
+
+// Most-opened scientific records
+customEvents
+| where timestamp > ago(30d) and name == 'object_open'
+| summarize Opens=count() by Object=tostring(customDimensions.objectKey), Category=tostring(customDimensions.category), Surface=tostring(customDimensions.surface)
+| order by Opens desc
+
+// Library discovery tools: filters and privacy-safe search outcome buckets
+customEvents
+| where timestamp > ago(30d) and name in ('library_filter', 'library_search')
+| summarize Uses=count() by name, Category=tostring(customDimensions.category), Results=tostring(customDimensions.resultBucket)
+| order by Uses desc
+
+// Real-image interest and source follow-through
+customEvents
+| where timestamp > ago(30d) and name in ('image_open', 'source_open')
+| summarize Actions=count() by name, Object=tostring(customDimensions.objectKey), Provider=tostring(customDimensions.provider), Surface=tostring(customDimensions.surface)
+| order by Actions desc
+
+// Quiz success by attempt bucket
+customEvents
+| where timestamp > ago(30d) and name == 'quiz_result'
+| summarize Attempts=count(), Correct=countif(tobool(customDimensions.correct)) by Quiz=tostring(customDimensions.quizId), Attempt=tostring(customDimensions.attemptBucket)
+| extend SuccessRate=round(100.0 * Correct / Attempts, 1)
+| order by Attempts desc
+
+// Mission completion trend
+customEvents
+| where timestamp > ago(30d) and name == 'mission_event' and tostring(customDimensions.state) == 'complete'
+| summarize Completions=count() by Mission=tostring(customDimensions.missionId), Week=startofweek(timestamp)
+| order by Week asc
+
+// Paper pilot starts, cancellations and arrivals
+customEvents
+| where timestamp > ago(30d) and name == 'autopilot_event'
+| summarize Events=count() by State=tostring(customDimensions.state), Object=tostring(customDimensions.objectKey)
+| order by Events desc
+
+// Safe client error categories (no messages or stack traces are collected automatically)
+customEvents
+| where timestamp > ago(30d) and name == 'error_event'
+| summarize Errors=count() by Type=tostring(customDimensions.errorType), Surface=tostring(customDimensions.surface), Day=startofday(timestamp)
+| order by Day desc
+

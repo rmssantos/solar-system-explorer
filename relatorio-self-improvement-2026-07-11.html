@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paper Solar Explorer — Relatório de self-improvement · 11 julho 2026</title>
+<style>
+:root{--space:#0b132b;--space2:#172747;--paper:#f6e9bd;--ink:#292631;--sun:#f4bd4f;--coral:#ef725b;--sea:#72aaa2;--muted:#817663}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:#eee4c5;font:16px/1.65 system-ui,-apple-system,Segoe UI,sans-serif}a{color:#945044}header{padding:80px max(24px,calc((100vw - 1180px)/2));color:var(--paper);background:var(--space)}header small,.eyebrow{font-weight:900;letter-spacing:.14em;text-transform:uppercase}h1,h2,h3{font-family:ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;line-height:1.05}h1{max-width:900px;margin:.35em 0;font-size:clamp(3rem,8vw,6.5rem)}header p{max-width:760px;color:#f6e9bdba;font-size:1.15rem}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}.meta span,.pill{padding:7px 11px;border:1px solid #f6e9bd55;border-radius:999px;font-size:.8rem;font-weight:800}nav{position:sticky;z-index:5;top:0;display:flex;gap:20px;padding:14px max(20px,calc((100vw - 1180px)/2));overflow:auto;background:#f6e9bdf2;border-bottom:2px solid #292631;backdrop-filter:blur(10px)}nav a{white-space:nowrap;color:var(--ink);font-size:.8rem;font-weight:900;text-decoration:none}main{width:min(1180px,calc(100% - 32px));margin:auto;padding:45px 0 100px}section{margin:45px 0;padding:38px;background:#fffaf0;border:2px solid var(--ink);border-radius:8px 16px 9px 13px;box-shadow:7px 8px 0 #29263118}h2{margin-top:0;font-size:clamp(2rem,5vw,3.6rem)}h3{margin-bottom:.4rem;font-size:1.35rem}.lead{font-size:1.1rem}.score{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.score article{padding:20px;background:var(--space);color:var(--paper);border-radius:8px}.score strong{display:block;color:var(--sun);font-size:2rem}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}.card{padding:22px;background:#f1e4b9;border-left:7px solid var(--sea)}.card.warn{border-color:var(--coral)}.card.good{border-color:#5d927d}.evidence{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}.evidence figure{margin:0;padding:10px;background:var(--space);border-radius:8px}.evidence img{display:block;width:100%;max-height:430px;object-fit:contain}.evidence figcaption{padding:10px;color:var(--paper);font-size:.8rem}table{width:100%;border-collapse:collapse}th,td{padding:13px;text-align:left;border-bottom:1px solid #29263122;vertical-align:top}th{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}.status{display:inline-block;padding:3px 8px;border-radius:99px;font-size:.7rem;font-weight:900}.done{background:#c6e2c9}.partial{background:#f4d292}.risk{background:#efae9e}ol.action-list>li{margin:18px 0;padding:18px 20px;background:#f1e4b9;border-left:7px solid var(--coral)}code{padding:.15em .4em;background:#29263112;border-radius:4px}footer{padding:45px;text-align:center;color:var(--paper);background:var(--space)}@media(max-width:760px){header{padding-top:55px}.score,.grid,.evidence{grid-template-columns:1fr}section{padding:24px}table{display:block;overflow:auto}}
+</style>
+</head>
+<body>
+<header>
+  <small>Revisão de produto e implementação · 11 julho 2026</small>
+  <h1>Paper Solar Explorer</h1>
+  <p>Relatório consolidado do self-improvement loop: direção visual, navegação, conteúdo científico, progressão, Biblioteca, acessibilidade, qualidade e dívida ainda existente.</p>
+  <div class="meta"><span>Branch codex/paper-diorama-preview</span><span>PT / EN</span><span>Desktop + mobile</span><span>Three.js + Vite</span></div>
+</header>
+<nav><a href="#veredito">Veredito</a><a href="#entregue">Entregue</a><a href="#visual">Visual</a><a href="#aprendizagem">Aprendizagem</a><a href="#qualidade">Qualidade</a><a href="#riscos">Feedback brutal</a><a href="#acoes">Action list</a></nav>
+<main>
+<section id="veredito">
+  <p class="eyebrow">Veredito honesto</p><h2>De preview promissora a produto coerente.</h2>
+  <p class="lead">A maior mudança não é cosmética. O projeto passou a ter uma linguagem própria — diorama low-poly em papel — e um ciclo de produto completo: apresentação → voo → descoberta → ciência real → quiz → XP/prémio → Biblioteca → nova missão.</p>
+  <div class="score">
+    <article><strong>37</strong>objetos educativos</article><article><strong>28</strong>fotos secundárias próprias</article><article><strong>9</strong>mundos com textura paper</article><article><strong>181</strong>testes automatizados</article>
+  </div>
+  <p><b>Conclusão:</b> já existe uma experiência demonstrável e memorável. Ainda não chamaria “produto educativo final” sem enriquecer as medições/quizzes secundários, testar em hardware móvel real e resolver estratégia de dados/backend. Mas a base de jogo, visual e UX deixou de ser um protótipo descartável.</p>
+</section>
+
+<section id="entregue">
+  <p class="eyebrow">Escopo implementado</p><h2>O que ficou realmente funcional</h2>
+  <table><thead><tr><th>Área</th><th>Estado</th><th>Evidência</th></tr></thead><tbody>
+    <tr><td>Homepage editorial</td><td><span class="status done">Concluído</span></td><td>Introdução, público, quatro passos, Caderno de Campo, fontes, prémios e CTA para o jogo.</td></tr>
+    <tr><td>Rotas limpas</td><td><span class="status done">Concluído</span></td><td><code>/</code>, <code>/jogo/</code>, <code>/biblioteca/</code>; todas respondem HTTP 200 e não existem links públicos <code>.html</code>.</td></tr>
+    <tr><td>Voo 360°</td><td><span class="status done">Concluído</span></td><td>Yaw, pitch, roll, strafe, vertical, boost, zoom e cockpit. Movimento segue a quaternion real da câmara.</td></tr>
+    <tr><td>Piloto por clique</td><td><span class="status done">Concluído</span></td><td>Hover com nome, clique curto, arco seguro, rasto de papel, cancelamento manual e chegada no raio de exploração.</td></tr>
+    <tr><td>Sistema Solar</td><td><span class="status done">Concluído</span></td><td>Sol, oito planetas, 14 luas, cinco objetos humanos e nove pequenos corpos/eventos.</td></tr>
+    <tr><td>Aprendizagem</td><td><span class="status done">Concluído</span></td><td>Caderno em quatro separadores, fotos reais, medidas, dados de hoje/fallback, factos e quizzes.</td></tr>
+    <tr><td>Gamificação</td><td><span class="status done">Concluído</span></td><td>XP idempotente, seis níveis, sete prémios únicos, missões, surpresas e feedback visual.</td></tr>
+    <tr><td>Biblioteca</td><td><span class="status done">Concluído</span></td><td>37 fichas, pesquisa, categorias, estado de descoberta, detalhe, fonte, quiz, progresso e prémios.</td></tr>
+    <tr><td>i18n</td><td><span class="status done">Concluído</span></td><td>PT/EN partilhado por homepage, jogo e Biblioteca, sem reload e com persistência.</td></tr>
+  </tbody></table>
+</section>
+
+<section id="visual">
+  <p class="eyebrow">Direção visual</p><h2>Papel não é um filtro; é o material do mundo.</h2>
+  <div class="grid">
+    <div class="card good"><h3>Nove identidades materiais</h3><p>Todos os mundos primários usam texturas próprias com fibras, pigmento e camadas de cartão. As paletas distinguem cada corpo à distância e continuam a receber iluminação facetada.</p></div>
+    <div class="card good"><h3>Silhueta preservada</h3><p>Saturno e Urano mantêm anéis sólidos; Terra mantém continentes, nuvens e polos elevados; o Sol conserva corona low-poly.</p></div>
+    <div class="card good"><h3>Nuvens em papel</h3><p>As nuvens elevadas da Terra usam o mapa fibroso creme do runtime em vez de branco liso.</p></div>
+    <div class="card good"><h3>Lua legível</h3><p>Quando uma lua transita diante do planeta em vista próxima, a composição preserva o raio orbital mas desloca a projeção para o limbo. Deixa de parecer uma peça colada.</p></div>
+  </div>
+  <div class="evidence">
+    <figure><img src="report-assets/worlds.webp" alt="Comparação visual dos nove mundos com texturas de papel"><figcaption>Nove mundos primários após aplicação das texturas.</figcaption></figure>
+    <figure><img src="report-assets/mars.webp" alt="Marte com Fobos visualmente separado"><figcaption>Marte sem crater ring saliente; Fobos permanece visível e explorável fora da silhueta.</figcaption></figure>
+    <figure><img src="report-assets/awards.webp" alt="Prémios da homepage"><figcaption>Prémios únicos em papel, sem reutilização de placeholders.</figcaption></figure>
+    <figure><img src="report-assets/autopilot.webp" alt="Piloto automático com rasto de papel"><figcaption>Piloto de papel com nave virada no sentido da velocidade e fragmentos atrás.</figcaption></figure>
+  </div>
+</section>
+
+<section id="aprendizagem">
+  <p class="eyebrow">Ciência e conteúdo</p><h2>As fotos passaram a provar o objeto certo.</h2>
+  <p>Foi removido o fallback que fazia 28 objetos secundários herdarem apenas sete imagens — muitas vezes a Terra ou o planeta-pai. O catálogo passou a exigir um asset e uma atribuição própria por lua, veículo e pequeno corpo.</p>
+  <div class="score"><article><strong>14/14</strong>luas únicas</article><article><strong>5/5</strong>objetos humanos únicos</article><article><strong>9/9</strong>pequenos corpos únicos</article><article><strong>HTTPS</strong>fonte em cada ficha</article></div>
+  <div class="evidence"><figure><img src="report-assets/photos.webp" alt="Folha de contacto das fotografias reais"><figcaption>Auditoria visual do catálogo completo de objetos secundários.</figcaption></figure><figure><img src="report-assets/phobos.webp" alt="Ficha da Biblioteca sobre Fobos"><figcaption>Fobos em PT com fotografia real própria; a mesma ficha muda para “Phobos” e legenda EN.</figcaption></figure></div>
+  <p>NASA/JPL sustentam a maioria das imagens e efemérides; CelesTrak/SGP4 sustentam ISS e Hubble; Tunguska, Hoba e Roadster usam arquivos licenciados do Wikimedia Commons. O jogo distingue “live”, cache e conteúdo incluído.</p>
+</section>
+
+<section id="qualidade">
+  <p class="eyebrow">Verificação</p><h2>Resultados observados, não pressupostos</h2>
+  <table><thead><tr><th>Gate</th><th>Resultado</th><th>Notas</th></tr></thead><tbody>
+    <tr><td>Testes</td><td><span class="status done">181/181</span></td><td>44 ficheiros Vitest; física, órbitas, dados, i18n, progressão, Biblioteca, assets, piloto e UI.</td></tr>
+    <tr><td>Lint</td><td><span class="status done">0 erros</span></td><td>ESLint no repositório.</td></tr>
+    <tr><td>Build</td><td><span class="status done">Passa</span></td><td>Vite produz as três rotas; bundle principal ~668 kB / 183 kB gzip.</td></tr>
+    <tr><td>Consola</td><td><span class="status done">0 erros</span></td><td>Homepage, jogo e Biblioteca em desktop/mobile nos fluxos auditados.</td></tr>
+    <tr><td>Mobile 390×844</td><td><span class="status done">Sem overflow</span></td><td>As três rotas; piloto ativo não sobrepõe joystick nem ações verticais.</td></tr>
+    <tr><td>Performance</td><td><span class="status done">~58 FPS</span></td><td>Medição headless de 2 s com piloto/texturas ativos.</td></tr>
+    <tr><td>Piloto</td><td><span class="status done">0,9975</span></td><td>Alinhamento frente visual/velocidade; 1,0 é perfeito.</td></tr>
+    <tr><td>Backdrops</td><td><span class="status done">Passa</span></td><td>Caderno, Passaporte e detalhe da Biblioteca fecham fora; conteúdo interno não fecha.</td></tr>
+  </tbody></table>
+</section>
+
+<section id="riscos">
+  <p class="eyebrow">Feedback brutal</p><h2>O que ainda não considero “acabado para sempre”</h2>
+  <div class="grid">
+    <div class="card warn"><h3>Conteúdo secundário ainda é desigual</h3><p>As fotos estão corretas, mas muitas luas/sondas usam medidas genéricas (“varia com a órbita”) e um quiz de identidade gerado. Para valor escolar forte, precisam de dados e perguntas próprios.</p></div>
+    <div class="card warn"><h3>Dados dinâmicos não são backend</h3><p>Cache/fallback tornam o jogo resiliente, mas APIs públicas podem mudar, limitar chamadas ou ficar indisponíveis. Um serviço próprio seria necessário para produção sustentada.</p></div>
+    <div class="card warn"><h3>Bundle principal é pesado</h3><p>~668 kB de JavaScript antes de gzip é aceitável para a demo, não ideal para telemóveis escolares modestos. Three.js e catálogos devem ser carregados progressivamente.</p></div>
+    <div class="card warn"><h3>QA real ainda falta</h3><p>Headless e viewport mobile não substituem Safari iOS, Android económico, touch real, leitor de ecrã e testes com crianças/professores.</p></div>
+    <div class="card warn"><h3>Piloto não é pathfinding universal</h3><p>A rota usa arco exterior e respeita o Sol, mas não calcula uma trajetória ótima entre múltiplos corpos móveis. Em rotas extremas pode precisar de waypoints adicionais.</p></div>
+    <div class="card warn"><h3>Progresso é local</h3><p>O passaporte vive no dispositivo. Não existe conta, sincronização familiar/escolar, perfis múltiplos ou recuperação depois de limpar storage.</p></div>
+  </div>
+</section>
+
+<section id="acoes">
+  <p class="eyebrow">Action list</p><h2>Próximo self-improvement loop</h2>
+  <ol class="action-list">
+    <li><b>P0 · Conteúdo científico por objeto.</b> Substituir medições genéricas e quiz de identidade por fichas curadas para as 28 entradas secundárias; rever fontes com professor/astrónomo.</li>
+    <li><b>P0 · Testes em dispositivos reais.</b> Safari iOS, Chrome Android económico, touch/pinch, WebGL context loss, consumo de memória e orientação.</li>
+    <li><b>P1 · Performance.</b> Lazy-load de Biblioteca/catálogos, compressão e carregamento progressivo das texturas, análise do chunk Three.js e LOD para cinturões/objetos pequenos.</li>
+    <li><b>P1 · Piloto avançado.</b> Waypoints seguros para múltiplos volumes, duração máxima previsível, voz/feedback de chegada e opção de velocidade reduzida.</li>
+    <li><b>P1 · Acessibilidade.</b> Auditoria com teclado integral, leitor de ecrã, alternativas ao canvas, contraste em estados bloqueados e preferência de movimento reduzido no rasto.</li>
+    <li><b>P2 · Perfis e escola.</b> Perfis familiares, exportação do passaporte, modo professor, objetivos curriculares e sincronização opcional.</li>
+    <li><b>P2 · Expansão editorial.</b> Guias Lumi, coleções temáticas, eventos sazonais, mais missões e narrativas que usem os dados dinâmicos sem fingir precisão instantânea.</li>
+  </ol>
+  <p>O handoff operacional para novas sessões está em <a href="SELF-IMPROVEMENT.md">SELF-IMPROVEMENT.md</a>; o diário cronológico está em <a href="progress.md">progress.md</a>.</p>
+</section>
+</main>
+<footer>Paper Solar Explorer · relatório gerado a partir do estado verificado da branch <b>codex/paper-diorama-preview</b></footer>
+</body></html>
