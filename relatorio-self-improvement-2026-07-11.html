@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper Solar Explorer — Relatório final de self-improvement</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='10' fill='%23f4bd4f'/%3E%3C/svg%3E">
+  <style>
+    :root{--space:#0c142b;--paper:#f3e6bd;--paper2:#fff7dc;--ink:#292a34;--sun:#f4bd4f;--coral:#df654f;--teal:#72aaa2;--muted:#776d5d}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--paper2);background:var(--space);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:inherit}.wrap{width:min(1180px,calc(100% - 36px));margin:auto}header{padding:72px 0 48px;border-bottom:1px solid #ffffff22}.tag,.kicker{color:var(--sun);font-size:.76rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}h1,h2,h3{font-family:"Trebuchet MS",system-ui,sans-serif;line-height:1.05;text-wrap:balance}h1{max-width:960px;margin:.2em 0;font-size:clamp(3rem,8vw,6.8rem);letter-spacing:-.055em}h1 em,h2 em{color:var(--sun);font-style:normal}.lead{max-width:760px;color:#fff7dcb8;font-size:1.18rem}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}.pill{padding:7px 12px;border:1px solid #ffffff30;border-radius:99px;font-size:.78rem;font-weight:800}.verdict{display:grid;grid-template-columns:1.4fr .6fr;gap:28px;margin:48px 0;padding:30px;color:var(--ink);background:var(--paper);border:3px solid var(--ink);border-radius:12px 20px 11px 18px;box-shadow:9px 10px 0 var(--coral)}.verdict strong{font-size:1.35rem}.score{display:grid;place-items:center;min-height:150px;background:var(--sun);border:3px solid var(--ink);border-radius:50% 44% 52% 46%;font-size:2.8rem;font-weight:1000}.score small{display:block;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase}section{padding:70px 0;border-bottom:1px dashed #ffffff28}h2{margin:0 0 26px;font-size:clamp(2rem,5vw,4.2rem);letter-spacing:-.035em}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card{padding:24px;color:var(--ink);background:var(--paper2);border:2px solid var(--ink);border-radius:9px 14px 8px 16px;box-shadow:5px 6px 0 #0007}.card:nth-child(2n){transform:rotate(.2deg)}.card h3{margin:0 0 8px;font-size:1.35rem}.card p{margin:0;color:var(--muted)}.card b{color:#9b493e}.evidence{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.evidence figure{margin:0;padding:10px;color:var(--ink);background:var(--paper);border-radius:8px 13px 9px 15px}.evidence img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;border:2px solid var(--ink);border-radius:4px}.evidence figcaption{padding:10px 5px 2px;font-size:.8rem;font-weight:800}.table-wrap{overflow-x:auto;border:2px solid #ffffff30;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:15px;text-align:left;border-bottom:1px solid #ffffff1d}th{color:var(--sun);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase}td:first-child{font-weight:850}.ok{color:#8fd1b9}.warn{color:#f5c66a}.roadmap{counter-reset:item;display:grid;gap:15px;margin:0;padding:0;list-style:none}.roadmap li{position:relative;padding:22px 22px 22px 78px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:9px 16px 8px 13px}.roadmap li:before{counter-increment:item;content:counter(item);position:absolute;left:18px;top:18px;display:grid;width:42px;aspect-ratio:1;place-items:center;background:var(--coral);border:2px solid var(--ink);border-radius:50%;font-weight:1000}.roadmap strong{display:block;font-size:1.05rem}.roadmap span{color:var(--muted)}.testline{display:flex;flex-wrap:wrap;gap:14px}.testline div{flex:1 1 180px;padding:20px;color:var(--ink);background:var(--teal);border:2px solid var(--ink);border-radius:9px}.testline b{display:block;font-size:1.8rem}.note{padding:22px;border-left:6px solid var(--sun);background:#ffffff0b}footer{padding:48px 0 70px;color:#fff7dc8f}@media(max-width:760px){.verdict,.grid,.evidence{grid-template-columns:1fr}.score{min-height:110px}section{padding:50px 0}}
+  </style>
+</head>
+<body>
+  <header><div class="wrap">
+    <p class="tag">Auditoria final · 11 julho 2026</p>
+    <h1>Paper Solar Explorer: <em>do protótipo a uma experiência com identidade.</em></h1>
+    <p class="lead">Revisão brutalmente honesta do produto, UX, direção artística, conteúdo científico, voo, cockpit, gamificação e preparação técnica após o self-improvement loop completo.</p>
+    <div class="meta"><span class="pill">PT + EN</span><span class="pill">Three.js / WebGL</span><span class="pill">Desktop + mobile</span><span class="pill">NASA · JPL · CelesTrak</span><span class="pill">152 testes</span></div>
+  </div></header>
+
+  <main class="wrap">
+    <div class="verdict"><div><p class="kicker">Veredicto sem filtro</p><strong>A versão Paper deixou de ser apenas uma experiência estética e já funciona como um jogo educativo coerente.</strong><p>Tem agora um motivo claro para existir: exploração espacial calma, livre e visualmente artesanal, reforçada por ciência real. Ainda é um pre-release ambicioso — não um produto acabado para milhões de utilizadores — sobretudo por performance inicial, profundidade editorial e ausência de uma matriz extensa de dispositivos. Mas a fundação atual é substancialmente mais forte do que o jogo original.</p></div><div class="score"><div>8,4<small>produto atual / 10</small></div></div></div>
+
+    <section><p class="kicker">O que mudou realmente</p><h2>Uma reconstrução, <em>não um reskin.</em></h2>
+      <div class="grid">
+        <article class="card"><h3>Universo heliocêntrico vivo</h3><p>O trajeto artificial entre planetas foi removido. Existem oito órbitas solares independentes, movimento por data, luas ligadas aos seus planetas, cintura de asteroides e distâncias comprimidas de forma declarada.</p></article>
+        <article class="card"><h3>Voo que respeita a câmara</h3><p>W/S e A/D seguem a orientação atual, com yaw, pitch e roll livres, chase camera suave, zoom progressivo e entrada total no cockpit.</p></article>
+        <article class="card"><h3>Produto antes do canvas</h3><p>A homepage explica o conceito, público, aprendizagem, fontes e progressão. O jogo já não atira o utilizador diretamente para um espaço sem contexto.</p></article>
+        <article class="card"><h3>Ciência integrada</h3><p>Fotografias reais, conteúdo editorial, NASA Images, JPL/Horizons e CelesTrak com cache e fallback. A interface distingue o diorama jogável dos valores científicos.</p></article>
+        <article class="card"><h3>Loop de jogo</h3><p>Missões, waypoint com direção/distância, quizzes, descobertas, coleção, XP, seis níveis, medalhas, troféus e seis surpresas guiadas pela Lumi.</p></article>
+        <article class="card"><h3>Identidade visual própria</h3><p>Planetas low-poly reconhecíveis, paper art original, nave revista, cockpit artesanal e objetos especiais — incluindo um novo Roadster descapotável com Starman.</p></article>
+      </div>
+    </section>
+
+    <section><p class="kicker">Evidência visual</p><h2>O resultado <em>em contexto.</em></h2>
+      <div class="evidence">
+        <figure><img src="output/playwright/final-audit/homepage-final.png" alt="Homepage final do Paper Solar Explorer"><figcaption>Homepage editorial: proposta clara, arte original e CTA para o jogo.</figcaption></figure>
+        <figure><img src="output/playwright/final-audit/cockpit-paper-controls.png" alt="Cockpit em papel com instrumentos"><figcaption>Cockpit compacto: radar, velocidade, coordenadas e atitude sem roubar o campo de visão.</figcaption></figure>
+        <figure><img src="output/playwright/final-audit/roadster-paper-approved.png" alt="Roadster e Starman em estilo de papel"><figcaption>Roadster reconstruído: carroceria vermelha baixa, cockpit aberto, rodas/jantes e Starman articulado.</figcaption></figure>
+        <figure><img src="output/playwright/final-audit/cockpit-paper-mobile.png" alt="Cockpit no ecrã móvel"><figcaption>Mobile 390×844: painel de 170×104 px, sem colisão com os controlos táteis.</figcaption></figure>
+      </div>
+    </section>
+
+    <section><p class="kicker">Auditoria por área</p><h2>O que está forte e <em>o que ainda não está.</em></h2>
+      <div class="table-wrap"><table><thead><tr><th>Área</th><th>Estado</th><th>Avaliação honesta</th></tr></thead><tbody>
+        <tr><td>Direção artística</td><td class="ok">Forte</td><td>Coerente, memorável e muito mais diferenciada do que o realismo 3D genérico anterior.</td></tr>
+        <tr><td>Navegação / voo</td><td class="ok">Validada</td><td>Movimento camera-relative comprovado com rato real, impulso, strafe e roll.</td></tr>
+        <tr><td>Cockpit</td><td class="ok">Forte</td><td>Útil, animado e compacto. Pode ganhar som e microanimações físicas numa fase posterior.</td></tr>
+        <tr><td>Conteúdo educativo</td><td class="ok">Bom</td><td>Já combina fantasia e fontes reais; precisa de mais narrativas encadeadas para sustentar sessões longas.</td></tr>
+        <tr><td>Sistema Solar</td><td class="ok">Bom modelo educativo</td><td>Distâncias relativas e órbitas são mais fiéis, mas não são uma efeméride científica de alta precisão.</td></tr>
+        <tr><td>Catálogo</td><td class="ok">Amplo, não exaustivo</td><td>8 planetas, Sol, luas selecionadas, sondas, estações, cometas e meteoritos; não inclui todas as centenas de luas conhecidas.</td></tr>
+        <tr><td>i18n</td><td class="ok">Completo PT/EN</td><td>Homepage, HUD, objetos, quizzes, missões, prémios e surpresas mudam sem reload e persistem.</td></tr>
+        <tr><td>Performance inicial</td><td class="warn">A otimizar</td><td>Bundle do jogo: 772,7 kB minificado / 220,1 kB gzip. É aceitável para preview, excessivo para lançamento.</td></tr>
+        <tr><td>Acessibilidade</td><td class="ok">Boa base</td><td>Skip link, foco visível, landmarks, labels, overscroll controlado e touch targets; falta auditoria com leitores de ecrã reais.</td></tr>
+        <tr><td>Compatibilidade</td><td class="warn">Parcialmente provada</td><td>Chrome desktop/mobile em vários viewports; falta matriz Safari/iOS, Firefox e Android de baixa gama.</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section><p class="kicker">Action list de self-improvement</p><h2>Próximas iterações, <em>por impacto.</em></h2>
+      <ol class="roadmap">
+        <li><strong>P0 · Code splitting e carregamento progressivo</strong><span>Separar Three.js, caderno, dados e homepage; lazy-load de fotografias/modelos; medir LCP, memória e tempo até ao primeiro voo em hardware fraco.</span></li>
+        <li><strong>P0 · Onboarding jogável de 90 segundos</strong><span>Ensinar olhar, W/S, A/D, zoom, descoberta e cockpit através de uma pequena missão guiada, com opção de saltar.</span></li>
+        <li><strong>P1 · Efemérides com nível de precisão explícito</strong><span>Pipeline server-side/cache para JPL Horizons, data da simulação visível e modo “posição atual”; manter compressão apenas na renderização.</span></li>
+        <li><strong>P1 · Capítulos editoriais</strong><span>Transformar missões soltas em expedições: mundos rochosos, gigantes gasosos, água/gelo e vestígios humanos, cada uma com conclusão e prémio original.</span></li>
+        <li><strong>P1 · Áudio calmo e acessível</strong><span>Ambiente espacial estilizado, feedback subtil de motor/radar/papel e controlos separados de volume, mute e redução sensorial.</span></li>
+        <li><strong>P1 · QA transversal</strong><span>Safari/iOS, Firefox, Android low-end, teclado-only, reduced-motion, leitores de ecrã e perda/restauro de contexto WebGL.</span></li>
+        <li><strong>P2 · Pipeline editorial sustentável</strong><span>Schema validado para novos objetos, fontes, traduções, imagens, quiz e missão; revisão científica e data de validade por conteúdo.</span></li>
+        <li><strong>P2 · Mais vida sem poluição visual</strong><span>Estações, sondas e eventos raros com LOD, áudio direcional e densidade adaptativa — preservar a calma como restrição central.</span></li>
+      </ol>
+    </section>
+
+    <section><p class="kicker">Prova técnica</p><h2>Verificação <em>reproduzível.</em></h2>
+      <div class="testline"><div><b>152 / 152</b>testes passaram</div><div><b>0</b>erros de lint</div><div><b>2 / 2</b>builds válidos</div><div><b>0</b>erros de consola no fluxo final</div></div>
+      <p class="note"><strong>Nota de rigor:</strong> “posições reais” não significa que a geometria visível esteja à escala absoluta nem que todos os corpos usem integração orbital de observatório. O jogo usa uma representação heliocêntrica educativa, compressão logarítmica de distâncias e dados oficiais onde isso acrescenta valor compreensível.</p>
+    </section>
+  </main>
+  <footer><div class="wrap">Paper Solar Explorer · Relatório final do self-improvement loop · Gerado e validado localmente em 11/07/2026.</div></footer>
+</body>
+</html>

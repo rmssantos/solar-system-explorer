@@ -2,7 +2,7 @@ const STORAGE_KEY = 'paperSolarExplorer:language';
 
 export const PAPER_TRANSLATIONS = Object.freeze({
     pt: Object.freeze({
-        'shared.language': 'Idioma', 'shared.switchTo': 'Mudar para English',
+        'shared.language': 'Idioma', 'shared.switchTo': 'Mudar para English', 'shared.skip': 'Saltar para o conteúdo',
         'home.brand.top': 'Sistema Solar', 'home.brand.bottom': 'de Bolso',
         'home.nav.expedition': 'A expedição', 'home.nav.learn': 'Aprender', 'home.nav.sources': 'As fontes', 'home.enter': 'Entrar no jogo',
         'home.hero.eyebrow': 'Uma expedição espacial calma e curiosa', 'home.hero.title': 'Explora o Sistema Solar', 'home.hero.emphasis': 'por dentro.',
@@ -49,7 +49,7 @@ export const PAPER_TRANSLATIONS = Object.freeze({
         'game.level': 'Nível {level} · {title}', 'game.distance.diorama': '{value} u no diorama', 'game.distance.solar': '{value} UA ao Sol'
     }),
     en: Object.freeze({
-        'shared.language': 'Language', 'shared.switchTo': 'Switch to Português',
+        'shared.language': 'Language', 'shared.switchTo': 'Switch to Português', 'shared.skip': 'Skip to content',
         'home.brand.top': 'Pocket Solar', 'home.brand.bottom': 'System',
         'home.nav.expedition': 'The expedition', 'home.nav.learn': 'Learn', 'home.nav.sources': 'Our sources', 'home.enter': 'Enter the game',
         'home.hero.eyebrow': 'A calm and curious space expedition', 'home.hero.title': 'Explore the Solar System', 'home.hero.emphasis': 'from within.',
