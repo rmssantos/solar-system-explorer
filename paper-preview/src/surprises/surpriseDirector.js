@@ -18,7 +18,8 @@ function unique(values = []) {
 export function createSurpriseState(value = {}) {
     return Object.freeze({
         elapsedSeconds: Number.isFinite(value.elapsedSeconds) ? Math.max(0, value.elapsedSeconds) : 0,
-        nextAtSeconds: Number.isFinite(value.nextAtSeconds) ? Math.max(0, value.nextAtSeconds) : 35,
+        nextAtSeconds: Number.isFinite(value.nextAtSeconds) ? Math.max(0, value.nextAtSeconds) : 90,
+        sessionEventCount: Number.isFinite(value.sessionEventCount) ? Math.max(0, Math.floor(value.sessionEventCount)) : 0,
         activeId: value.activeId ?? null,
         seenIds: Object.freeze(unique(value.seenIds))
     });
@@ -30,11 +31,13 @@ export function dismissSurprise(state) {
 
 export function stepSurpriseDirector(state, context = {}) {
     const base = createSurpriseState(state);
-    const elapsedSeconds = base.elapsedSeconds + Math.max(0, context.deltaSeconds ?? 0);
+    const activeFlight = (context.speed ?? 0) >= 1.2 && (context.distanceFromOrigin ?? 0) >= 12;
+    const canAccumulate = activeFlight && !base.activeId && !context.dialogOpen;
+    const elapsedSeconds = base.elapsedSeconds + (canAccumulate ? Math.max(0, context.deltaSeconds ?? 0) : 0);
     const waiting = base.activeId
         || context.dialogOpen
-        || (context.speed ?? 0) < 0.6
-        || (context.distanceFromOrigin ?? 0) < 8
+        || !activeFlight
+        || base.sessionEventCount >= 2
         || elapsedSeconds < base.nextAtSeconds;
     if (waiting) {
         return Object.freeze({ state: createSurpriseState({ ...base, elapsedSeconds }), event: null });
@@ -49,7 +52,8 @@ export function stepSurpriseDirector(state, context = {}) {
     return Object.freeze({
         state: createSurpriseState({
             elapsedSeconds,
-            nextAtSeconds: elapsedSeconds + 65 + cooldownRandom * 40,
+            nextAtSeconds: elapsedSeconds + 180 + cooldownRandom * 120,
+            sessionEventCount: base.sessionEventCount + 1,
             activeId: event.id,
             seenIds: [...base.seenIds, event.id]
         }),

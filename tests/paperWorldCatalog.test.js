@@ -29,6 +29,13 @@ describe('paper solar explorer world catalog', () => {
         expect(getWorldObject('deimos')).toMatchObject({ orbitRadius: 3.75, scale: 0.14 });
     });
 
+    it('keeps every moon outside the visible body or ring system of its parent', () => {
+        for (const moon of listWorldObjects('moon')) {
+            const parent = getWorldObject(moon.parentKey);
+            expect(moon.orbitRadius).toBeGreaterThan(parent.collisionRadius + moon.scale + 0.8);
+        }
+    });
+
     it('includes spacecraft, famous small bodies and the Roadster', () => {
         expect(getWorldObject('iss').source.command).toBe('25544');
         expect(getWorldObject('hubble').source.command).toBe('20580');

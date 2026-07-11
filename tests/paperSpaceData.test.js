@@ -78,7 +78,13 @@ describe('Cached scientific data service', () => {
         const cached = await service.getNasaImage('earth', 'Earth from space', { imageUrl: '/learning/earth.jpg' });
 
         expect(live.status).toBe('live');
+        expect(live.source).toEqual({
+            name: 'NASA Image and Video Library',
+            url: 'https://images.nasa.gov/details/EARTH1'
+        });
+        expect(live.source.url).not.toContain('images-api.nasa.gov');
         expect(cached.status).toBe('cached');
+        expect(cached.source.url).toBe('https://images.nasa.gov/details/EARTH1');
         expect(cached.data.nasaId).toBe('EARTH1');
         expect(fetchFn).toHaveBeenCalledTimes(1);
     });
@@ -118,5 +124,33 @@ describe('Cached scientific data service', () => {
         expect(live.status).toBe('live');
         expect(cached.status).toBe('cached');
         expect(fetchFn).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps technical JSON endpoints out of the source links shown to people', async () => {
+        const horizonsFetch = vi.fn(async () => jsonResponse({
+            result: "header\n$$SOE\n2461234.5, A.D. 2026-Jul-11, 1.1E+08, 0, 0, 0, 0, 0,\n$$EOE"
+        }));
+        const horizons = createSpaceDataService({ fetchFn: horizonsFetch, storage: memoryStorage() });
+        const vector = await horizons.getPlanetVector('mars', '499', '2026-07-11', {
+            positionKm: { x: 1, y: 0, z: 0 }, distanceKm: 1
+        });
+
+        expect(vector.source).toEqual({
+            name: 'NASA/JPL Horizons',
+            url: 'https://ssd.jpl.nasa.gov/horizons/'
+        });
+        expect(String(horizonsFetch.mock.calls[0][0])).toContain('horizons');
+        expect(vector.source.url).not.toContain('/api/');
+        expect(vector.source.url).not.toContain('?');
+
+        const ommFetch = vi.fn(async () => jsonResponse([{
+            OBJECT_NAME: 'ISS', NORAD_CAT_ID: '25544', EPOCH: '2026-07-11T00:00:00Z',
+            MEAN_MOTION: '15.5', ECCENTRICITY: '0.0006', INCLINATION: '51.64', RA_OF_ASC_NODE: '120',
+            ARG_OF_PERICENTER: '80', MEAN_ANOMALY: '22', BSTAR: '0'
+        }]));
+        const satellites = createSpaceDataService({ fetchFn: ommFetch, storage: memoryStorage() });
+        const elements = await satellites.getSatelliteElements(25544, {});
+        expect(elements.source.url).toBe('https://celestrak.org/NORAD/elements/');
+        expect(elements.source.url).not.toContain('FORMAT=JSON');
     });
 });

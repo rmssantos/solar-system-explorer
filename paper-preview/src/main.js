@@ -34,8 +34,14 @@ import {
 } from './surprises/surpriseDirector.js';
 import { paperI18n } from './i18n/paperI18n.js';
 import { translateWorldObject } from './i18n/paperObjectTranslations.js';
+import { siteAnalytics } from './analytics/siteAnalytics.js';
+import { createEphemerisPresentation } from './learning/ephemerisPresentation.js';
+
+/** DOM selectors are runtime-validated by the page structure tests. @type {any} */
+const document = globalThis.document;
 
 const stage = document.querySelector('#paper-stage');
+siteAnalytics.start('game');
 const objectHover = document.querySelector('#object-hover');
 const objectHoverName = document.querySelector('#object-hover-name');
 const autopilotStatus = document.querySelector('#autopilot-status');
@@ -55,6 +61,7 @@ let expeditionProgress = reconcileExpeditionProgress(createExpeditionProgress(sa
     completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds
 });
 let surpriseState = createSurpriseState({ seenIds: savedProgress.seenSurpriseIds });
+let trackedMissionIds = new Set(evaluateMissions(previewState.learning, paperI18n.language).completedIds);
 function currentProgressSnapshot() {
     return {
         ...previewState.learning,
@@ -138,15 +145,19 @@ async function hydrateLearningData(key) {
         spaceData.getPlanetVector(key, command, date, fallbackVector),
         imagePromise
     ]);
-    const distance = vector.data.distanceKm / 1_000_000;
+    const presentation = createEphemerisPresentation({
+        key,
+        name: record.name,
+        distanceKm: vector.data.distanceKm,
+        language: paperI18n.language
+    });
     const envelope = {
         status: strongestStatus([vector, image]),
+        presentationKind: presentation.kind,
         source: vector.source,
         updatedAt: vector.updatedAt,
         data: {
-            summary: paperI18n.language === 'en'
-                ? `${record.name} is about ${distance.toLocaleString('en-GB', { maximumFractionDigits: 1 })} million kilometres from the Sun today. This position is a JPL ephemeris; “live” does not mean an instant GPS signal.`
-                : `${record.name} está hoje a cerca de ${distance.toLocaleString('pt-PT', { maximumFractionDigits: 1 })} milhões de quilómetros do Sol. A posição é uma efeméride calculada pelo JPL; “ao vivo” não significa um sinal GPS instantâneo.`,
+            summary: presentation.summary,
             positionKm: vector.data.positionKm,
             imageTitle: image.data.title,
             imageUrl: image.data.imageUrl,
@@ -204,6 +215,11 @@ function handleExplore() {
     const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
     if (previewState.notebook.open || !nearbyKey) return;
     previewState = explorePlanet(previewState, nearbyKey);
+    const object = getWorldObject(nearbyKey);
+    const category = object.type === 'moon' ? 'moons'
+        : object.type === 'spacecraft' ? 'human'
+            : (object.type === 'star' || object.type === 'planet') ? 'worlds' : 'small-bodies';
+    siteAnalytics.track('object_open', { objectKey: nearbyKey, category, surface: 'game' });
     reconcileAndSaveProgress();
     flightInput.setEnabled(false);
     syncUI(true);
@@ -232,6 +248,13 @@ function currentLearningQuiz() {
 
 function handleAnswerQuiz(selectedIndex) {
     const quiz = currentLearningQuiz();
+    const attempt = previewState.learning.quiz.attempts + 1;
+    const attemptBucket = attempt >= 3 ? '3+' : String(attempt);
+    siteAnalytics.track('quiz_result', {
+        quizId: quiz.id,
+        correct: selectedIndex === quiz.correctIndex,
+        attemptBucket
+    });
     previewState = {
         ...previewState,
         learning: answerLearningQuiz(previewState.learning, quiz, selectedIndex)
@@ -243,6 +266,10 @@ function handleAnswerQuiz(selectedIndex) {
 function reconcileAndSaveProgress({ feedback = true } = {}) {
     const previousPresentation = progressPresentation;
     const missions = evaluateMissions(previewState.learning, paperI18n.language);
+    missions.completedIds.forEach((missionId) => {
+        if (!trackedMissionIds.has(missionId)) siteAnalytics.track('mission_event', { missionId, state: 'complete' });
+    });
+    trackedMissionIds = new Set(missions.completedIds);
     expeditionProgress = reconcileExpeditionProgress(expeditionProgress, {
         ...previewState.learning,
         completedMissionIds: missions.completedIds,
@@ -289,6 +316,7 @@ const previewUI = createPreviewUI({
 });
 
 paperI18n.subscribe(() => {
+    siteAnalytics.track('language_change', { language: paperI18n.language, surface: 'game' });
     learningCatalog = createPaperLearningCatalog(paperI18n.language);
     progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
     lastUiSignature = '';
@@ -329,6 +357,7 @@ function updateAutopilotDisplay() {
 }
 
 function cancelAutopilot() {
+    if (autoPilotState) siteAnalytics.track('autopilot_event', { objectKey: autoPilotState.targetKey, state: 'cancel' });
     autoPilotState = null;
     updateAutopilotDisplay();
 }
@@ -339,6 +368,7 @@ function flyToWorldObject(key) {
     if (!object || !target || previewState.notebook.open || previewUI.elements.missionLog.open) return false;
     flightInput.reset();
     autoPilotState = createAutopilot(key, flightState.position, target, interactionRadiusFor(object));
+    siteAnalytics.track('autopilot_event', { objectKey: key, state: 'start' });
     objectHover.hidden = true;
     updateAutopilotDisplay();
     return true;
@@ -449,6 +479,7 @@ function step(seconds) {
         const target = paperScene.getWorldObjectPosition(autoPilotState.targetKey);
         if (!target) cancelAutopilot();
         else {
+            const autopilotTargetKey = autoPilotState.targetKey;
             const result = stepAutopilot(flightState, autoPilotState, target, seconds);
             autoPilotState = result.autopilot;
             flightState = {
@@ -456,7 +487,10 @@ function step(seconds) {
                 nearbyPlanetKey: findNearbyPlanet(result.flightState.position, paperScene.getPrimaryBodies())
             };
             updateAutopilotDisplay();
-            if (result.arrived) paperScene.triggerSurprise('star');
+            if (result.arrived) {
+                siteAnalytics.track('autopilot_event', { objectKey: autopilotTargetKey, state: 'arrive' });
+                paperScene.triggerSurprise('star');
+            }
         }
     } else if (!dialogOpen) {
         flightState = stepFlight(flightState, lastInput, seconds, paperScene.getPrimaryBodies());

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import {
     PAPER_LEARNING_KEYS,
     createPaperLearningCatalog
@@ -63,5 +63,19 @@ describe('Paper learning catalog', () => {
             expect(statSync(asset).size, object.key).toBeGreaterThan(4_000);
             expect(statSync(asset).size, object.key).toBeLessThan(220_000);
         }
+    });
+
+    it('links primary-world fallback photos to human-readable NASA Science pages', () => {
+        const catalog = createPaperLearningCatalog('en');
+        for (const key of PAPER_LEARNING_KEYS) {
+            expect(catalog[key].photoSource.url, key).toBe(`https://science.nasa.gov/${key}/`);
+            expect(catalog[key].photoSource.url, key).not.toContain('/learning/');
+        }
+    });
+
+    it('keeps the curated object photo authoritative instead of replacing it with the first search result', () => {
+        const ui = readFileSync(new URL('../paper-preview/src/ui.js', import.meta.url), 'utf8');
+        expect(ui).toContain('const photoUrl = record.localPhoto');
+        expect(ui).not.toContain('const dynamicPhoto');
     });
 });

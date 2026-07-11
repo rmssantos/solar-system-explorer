@@ -57,11 +57,12 @@ export function createSpaceDataService({
         try {
             const payload = await requestJson(fetchFn, url, timeoutMs);
             const data = parser(payload);
-            const cacheValue = { cachedAt: currentTime, source, data };
+            const resolvedSource = typeof source === 'function' ? source(data) : source;
+            const cacheValue = { cachedAt: currentTime, source: resolvedSource, data };
             writeDataCache(storage, key, cacheValue);
             return Object.freeze({
                 status: 'live',
-                source: Object.freeze(source),
+                source: Object.freeze(resolvedSource),
                 updatedAt: currentDate.toISOString(),
                 data
             });
@@ -76,7 +77,7 @@ export function createSpaceDataService({
             }
             return Object.freeze({
                 status: 'fallback',
-                source: Object.freeze(source),
+                source: Object.freeze(typeof source === 'function' ? source(fallback) : source),
                 updatedAt: currentDate.toISOString(),
                 data: Object.freeze({ ...fallback })
             });
@@ -88,9 +89,14 @@ export function createSpaceDataService({
         url.searchParams.set('q', query);
         url.searchParams.set('media_type', 'image');
         return load({
-            key: `nasa-image-v2:${objectKey}`,
+            key: `nasa-image-v3:${objectKey}`,
             ttl: NASA_IMAGE_TTL,
-            source: { name: 'NASA Image and Video Library', url: url.toString() },
+            source: (data) => ({
+                name: 'NASA Image and Video Library',
+                url: data?.nasaId
+                    ? `https://images.nasa.gov/details/${encodeURIComponent(data.nasaId)}`
+                    : 'https://images.nasa.gov/'
+            }),
             fallback,
             url: url.toString(),
             parser: parseNasaImageSearch
@@ -134,7 +140,7 @@ export function createSpaceDataService({
         return load({
             key: `horizons:${objectKey}:${date}`,
             ttl: HORIZONS_TTL,
-            source: { name: 'NASA/JPL Horizons', url: url.toString() },
+            source: { name: 'NASA/JPL Horizons', url: 'https://ssd.jpl.nasa.gov/horizons/' },
             fallback,
             url: url.toString(),
             parser: parseHorizonsVector
@@ -148,7 +154,7 @@ export function createSpaceDataService({
         return load({
             key: `celestrak:${catalogNumber}`,
             ttl: SATELLITE_TTL,
-            source: { name: 'CelesTrak GP/OMM', url: url.toString() },
+            source: { name: 'CelesTrak GP/OMM', url: 'https://celestrak.org/NORAD/elements/' },
             fallback,
             url: url.toString(),
             parser: parseOmmElements

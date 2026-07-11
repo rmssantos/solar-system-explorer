@@ -24,29 +24,29 @@ export const PRIMARY_WORLDS = Object.freeze([
 ]);
 
 const MOONS = [
-    ['moon', 'Lua', 'earth', 2.8, 0.42, 'A Lua estabiliza a inclinação da Terra e é o único mundo além da Terra visitado por humanos.'],
+    ['moon', 'Lua', 'earth', 5.4, 0.42, 'A Lua estabiliza a inclinação da Terra e é o único mundo além da Terra visitado por humanos.'],
     ['phobos', 'Fobos', 'mars', 3.1, 0.18, 'Fobos orbita Marte tão depressa que nasce no oeste e põe-se no leste do céu marciano.'],
     ['deimos', 'Deimos', 'mars', 3.75, 0.14, 'Deimos é uma pequena lua irregular de Marte coberta por uma espessa camada de poeira.'],
-    ['io', 'Io', 'jupiter', 4.2, 0.35, 'Io é o mundo com maior atividade vulcânica conhecida no Sistema Solar.'],
-    ['europa', 'Europa', 'jupiter', 5.0, 0.34, 'Europa esconde provavelmente um oceano global de água salgada sob a sua crosta de gelo.'],
-    ['ganymede', 'Ganimedes', 'jupiter', 5.9, 0.48, 'Ganimedes é a maior lua do Sistema Solar e possui o seu próprio campo magnético.'],
-    ['callisto', 'Calisto', 'jupiter', 6.8, 0.44, 'Calisto tem uma das superfícies mais antigas e crateradas do Sistema Solar.'],
-    ['mimas', 'Mimas', 'saturn', 4.0, 0.2, 'A enorme cratera Herschel dá a Mimas uma silhueta imediatamente reconhecível.'],
-    ['enceladus', 'Encélado', 'saturn', 4.8, 0.24, 'Encélado lança jatos de água e gelo do oceano escondido sob a sua superfície.'],
-    ['titan', 'Titã', 'saturn', 6.2, 0.5, 'Titã tem uma atmosfera densa e lagos de metano e etano na superfície.'],
-    ['iapetus', 'Jápeto', 'saturn', 7.2, 0.28, 'Jápeto tem um hemisfério muito escuro e outro brilhante, além de uma grande crista equatorial.'],
-    ['titania', 'Titânia', 'uranus', 3.8, 0.34, 'Titânia é a maior lua de Urano e apresenta grandes falhas e desfiladeiros.'],
-    ['oberon', 'Oberon', 'uranus', 4.6, 0.31, 'Oberon é uma lua gelada e craterada que orbita longe das nuvens de Urano.'],
-    ['triton', 'Tritão', 'neptune', 4.1, 0.4, 'Tritão orbita Neptuno ao contrário e possui géiseres de azoto na superfície gelada.']
+    ['io', 'Io', 'jupiter', 5.4, 0.35, 'Io é o mundo com maior atividade vulcânica conhecida no Sistema Solar.'],
+    ['europa', 'Europa', 'jupiter', 6.3, 0.34, 'Europa esconde provavelmente um oceano global de água salgada sob a sua crosta de gelo.'],
+    ['ganymede', 'Ganimedes', 'jupiter', 7.3, 0.48, 'Ganimedes é a maior lua do Sistema Solar e possui o seu próprio campo magnético.'],
+    ['callisto', 'Calisto', 'jupiter', 8.4, 0.44, 'Calisto tem uma das superfícies mais antigas e crateradas do Sistema Solar.'],
+    ['mimas', 'Mimas', 'saturn', 7.4, 0.2, 'A enorme cratera Herschel dá a Mimas uma silhueta imediatamente reconhecível.'],
+    ['enceladus', 'Encélado', 'saturn', 8.4, 0.24, 'Encélado lança jatos de água e gelo do oceano escondido sob a sua superfície.'],
+    ['titan', 'Titã', 'saturn', 10.0, 0.5, 'Titã tem uma atmosfera densa e lagos de metano e etano na superfície.'],
+    ['iapetus', 'Jápeto', 'saturn', 11.4, 0.28, 'Jápeto tem um hemisfério muito escuro e outro brilhante, além de uma grande crista equatorial.'],
+    ['titania', 'Titânia', 'uranus', 4.7, 0.34, 'Titânia é a maior lua de Urano e apresenta grandes falhas e desfiladeiros.'],
+    ['oberon', 'Oberon', 'uranus', 5.8, 0.31, 'Oberon é uma lua gelada e craterada que orbita longe das nuvens de Urano.'],
+    ['triton', 'Tritão', 'neptune', 5.1, 0.4, 'Tritão orbita Neptuno ao contrário e possui géiseres de azoto na superfície gelada.']
 ].map(([key, name, parentKey, orbitRadius, scale, fact], index) => entry({
     key, name, type: 'moon', parentKey, orbitRadius, scale, orbitSpeed: 0.008 + (index % 5) * 0.003,
     orbitPhase: index * 1.71, fact, source: NASA
 }));
 
 const HUMAN_OBJECTS = [
-    entry({ key: 'iss', name: 'Estação Espacial Internacional', type: 'spacecraft', parentKey: 'earth', orbitRadius: 2.15, scale: 0.2, orbitSpeed: 0.018, fact: 'A ISS é um laboratório habitado que completa aproximadamente uma órbita da Terra a cada 90 minutos.', source: { ...CELESTRAK, command: '25544' } }),
-    entry({ key: 'hubble', name: 'Telescópio Hubble', type: 'spacecraft', parentKey: 'earth', orbitRadius: 2.45, scale: 0.18, orbitSpeed: 0.015, fact: 'O Hubble observa o Universo acima da maior parte da atmosfera terrestre desde 1990.', source: { ...CELESTRAK, command: '20580' } }),
-    entry({ key: 'jwst', name: 'Telescópio James Webb', type: 'spacecraft', parentKey: 'earth', orbitRadius: 5.4, scale: 0.24, orbitSpeed: 0.006, fact: 'O James Webb observa sobretudo em infravermelho perto do ponto de equilíbrio gravitacional L2.', source: JPL }),
+    entry({ key: 'iss', name: 'Estação Espacial Internacional', type: 'spacecraft', parentKey: 'earth', orbitRadius: 4.2, scale: 0.2, orbitSpeed: 0.018, fact: 'A ISS é um laboratório habitado que completa aproximadamente uma órbita da Terra a cada 90 minutos.', source: { ...CELESTRAK, command: '25544' } }),
+    entry({ key: 'hubble', name: 'Telescópio Hubble', type: 'spacecraft', parentKey: 'earth', orbitRadius: 4.8, scale: 0.18, orbitSpeed: 0.015, fact: 'O Hubble observa o Universo acima da maior parte da atmosfera terrestre desde 1990.', source: { ...CELESTRAK, command: '20580' } }),
+    entry({ key: 'jwst', name: 'Telescópio James Webb', type: 'spacecraft', parentKey: 'earth', orbitRadius: 7.2, scale: 0.24, orbitSpeed: 0.006, fact: 'O James Webb observa sobretudo em infravermelho perto do ponto de equilíbrio gravitacional L2.', source: JPL }),
     entry({ key: 'voyager-1', name: 'Voyager 1', type: 'spacecraft', anchor: [153, 9, -136], scale: 0.28, fact: 'A Voyager 1 é o objeto construído por humanos mais distante da Terra e explora o espaço interestelar.', source: JPL }),
     entry({ key: 'tesla-roadster', name: 'Tesla Roadster e Starman', type: 'spacecraft', anchor: [41, 8, -27], scale: 0.42, fact: 'O Roadster lançado no teste do Falcon Heavy percorre uma órbita heliocêntrica que cruza a órbita de Marte.', source: { ...JPL, command: '-143205' } })
 ];

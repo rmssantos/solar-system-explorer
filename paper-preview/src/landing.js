@@ -1,4 +1,5 @@
 import { paperI18n } from './i18n/paperI18n.js';
+import { siteAnalytics } from './analytics/siteAnalytics.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const revealTargets = document.querySelectorAll('[data-reveal]');
@@ -24,6 +25,10 @@ function renderLanguage() {
     languageToggle.setAttribute('aria-label', paperI18n.t('shared.switchTo'));
 }
 
-languageToggle.addEventListener('click', () => paperI18n.toggle());
+languageToggle.addEventListener('click', () => {
+    paperI18n.toggle();
+    siteAnalytics.track('language_change', { language: paperI18n.language, surface: 'home' });
+});
 paperI18n.subscribe(renderLanguage);
 renderLanguage();
+siteAnalytics.start('home');

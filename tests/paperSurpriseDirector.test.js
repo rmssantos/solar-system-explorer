@@ -41,6 +41,26 @@ describe('calm in-game surprise director', () => {
         expect(second.event.id).not.toBe(first.event.id);
     });
 
+    it('counts only meaningful flight time and caps interruptions per session', () => {
+        const waiting = createSurpriseState({ nextAtSeconds: 5 });
+        const idle = stepSurpriseDirector(waiting, { deltaSeconds: 120, speed: 0, distanceFromOrigin: 30 });
+        expect(idle.state.elapsedSeconds).toBe(0);
+        expect(idle.event).toBeNull();
+
+        const capped = createSurpriseState({ nextAtSeconds: 0, sessionEventCount: 2 });
+        const result = stepSurpriseDirector(capped, {
+            deltaSeconds: 600, speed: 4, distanceFromOrigin: 50, random: () => 0
+        });
+        expect(result.event).toBeNull();
+    });
+
+    it('uses a long calm-flight cooldown after each event', () => {
+        const result = stepSurpriseDirector(createSurpriseState({ nextAtSeconds: 0 }), {
+            deltaSeconds: 1, speed: 3, distanceFromOrigin: 30, random: () => 0
+        });
+        expect(result.state.nextAtSeconds - result.state.elapsedSeconds).toBeGreaterThanOrEqual(180);
+    });
+
     it('ships every surprise with guide copy and a visual effect', () => {
         expect(SURPRISE_CATALOG).toHaveLength(6);
         for (const surprise of SURPRISE_CATALOG) {

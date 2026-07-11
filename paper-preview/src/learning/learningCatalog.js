@@ -52,10 +52,10 @@ export function createPaperLearningCatalog(language = 'pt') {
             comparison: source.comparison,
             localPhoto,
             photoSource: Object.freeze({
-                name: language === 'en' ? 'NASA/ESA — included photograph' : 'NASA/ESA — fotografia incluída',
+                name: 'NASA Science',
                 status: 'fallback',
                 originalAsset: source.realPhoto ?? REAL_PHOTOS[key],
-                url: localPhoto
+                url: `https://science.nasa.gov/${key}/`
             }),
             measurements: {
                 radiusKm: source.radiusKm,

@@ -8,7 +8,7 @@ function categoryFor(type) {
     return 'small-bodies';
 }
 
-export function createLibraryCatalog({ language = 'pt', progress = {} } = {}) {
+export function createLibraryCatalog({ language = 'pt', progress = { discoveredKeys: [], completedQuizIds: [] } } = {}) {
     const learning = createPaperLearningCatalog(language);
     const discoveries = new Set(progress.discoveredKeys ?? []);
     const completedQuizzes = new Set(progress.completedQuizIds ?? []);
@@ -37,6 +37,7 @@ function normalizeSearch(value) {
     return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
 }
 
+/** @param {ReadonlyArray<any>} catalog */
 export function filterLibraryCatalog(catalog = [], { query = '', category = 'all', discovery = 'all' } = {}) {
     const needle = normalizeSearch(query).trim();
     return Object.freeze(catalog.filter((card) => {
@@ -48,6 +49,7 @@ export function filterLibraryCatalog(catalog = [], { query = '', category = 'all
     }));
 }
 
+/** @param {ReadonlyArray<any>} catalog */
 export function summarizeLibrary(catalog = []) {
     const discovered = catalog.filter((card) => card.discovered).length;
     return Object.freeze({

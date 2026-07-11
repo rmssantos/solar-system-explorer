@@ -1,0 +1,29 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*",
+      "/art/*",
+      "/fonts/*",
+      "/learning/*",
+      "/*.css",
+      "/*.js",
+      "/*.jpg",
+      "/*.webp"
+    ]
+  },
+  "globalHeaders": {
+    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://images-assets.nasa.gov https://apod.nasa.gov; connect-src 'self' https://images-api.nasa.gov https://images-assets.nasa.gov https://api.nasa.gov https://ssd.jpl.nasa.gov https://celestrak.org https://*.applicationinsights.azure.com https://*.in.applicationinsights.azure.com https://dc.services.visualstudio.com; font-src 'self'; media-src 'self' blob:; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
+  },
+  "mimeTypes": {
+    ".json": "application/json",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp"
+  }
+}
+

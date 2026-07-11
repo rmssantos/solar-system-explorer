@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { getWorldObject, WORLD_OBJECTS } from '../world/worldCatalog.js';
-import { separateMoonSilhouette } from './moonLegibility.js';
 
 const OUTLINE = '#171b26';
 
@@ -26,8 +25,7 @@ function createMoon(object, paperTextures = {}) {
         callisto: '#6d6258', titan: '#d29d55', enceladus: '#dce7e4', triton: '#8eb6bd',
         phobos: '#74685d', deimos: '#978879'
     };
-    const icyMoons = new Set(['moon', 'europa', 'ganymede', 'callisto', 'mimas', 'enceladus', 'titania', 'oberon', 'triton']);
-    const paperMap = icyMoons.has(object.key) ? paperTextures.cream : paperTextures.cardboard;
+    const paperMap = paperTextures.moon ?? paperTextures.cream ?? paperTextures.cardboard;
     const moon = outlinedMesh(
         new THREE.IcosahedronGeometry(object.scale, 1),
         palettes[object.key] ?? '#a9a39a',
@@ -38,21 +36,21 @@ function createMoon(object, paperTextures = {}) {
     return moon;
 }
 
-function addBox(group, size, position, color) {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material(color));
+function addBox(group, size, position, color, paperTexture = null) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material(color, { map: paperTexture }));
     mesh.position.set(...position);
     mesh.castShadow = true;
     group.add(mesh);
     return mesh;
 }
 
-function cylinderBetween(start, end, radius, color, segments = 7) {
+function cylinderBetween(start, end, radius, color, segments = 7, paperTexture = null) {
     const from = new THREE.Vector3(...start);
     const to = new THREE.Vector3(...end);
     const direction = to.clone().sub(from);
     const mesh = new THREE.Mesh(
         new THREE.CylinderGeometry(radius, radius, direction.length(), segments),
-        material(color)
+        material(color, { map: paperTexture })
     );
     mesh.position.copy(from.add(to).multiplyScalar(0.5));
     mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
@@ -60,7 +58,7 @@ function cylinderBetween(start, end, radius, color, segments = 7) {
     return mesh;
 }
 
-function createRoadster() {
+function createRoadster(paperTexture = null) {
     const group = new THREE.Group();
     const red = '#d84e3d';
     const redDark = '#963b35';
@@ -81,20 +79,20 @@ function createRoadster() {
         8, 9, 11, 8, 11, 10,  0, 2, 3, 0, 3, 1
     ]);
     bodyGeometry.computeVertexNormals();
-    const body = new THREE.Mesh(bodyGeometry, material(red));
+    const body = new THREE.Mesh(bodyGeometry, material(red, { map: paperTexture }));
     body.name = 'roadster-body';
     body.castShadow = true;
     group.add(body);
-    const underbody = addBox(group, [.82, .045, .34], [-.02, -.085, 0], OUTLINE);
+    const underbody = addBox(group, [.82, .045, .34], [-.02, -.085, 0], OUTLINE, paperTexture);
     underbody.name = 'roadster-ink-underbody';
 
-    const hood = addBox(group, [.39, .018, .3], [.285, .045, 0], '#ec6a4f');
+    const hood = addBox(group, [.39, .018, .3], [.285, .045, 0], '#ec6a4f', paperTexture);
     hood.name = 'roadster-hood-paper-layer';
     hood.rotation.z = -.12;
-    const rearDeck = addBox(group, [.17, .045, .36], [-.39, .11, 0], redDark);
+    const rearDeck = addBox(group, [.17, .045, .36], [-.39, .11, 0], redDark, paperTexture);
     rearDeck.name = 'roadster-rear-deck';
 
-    const cockpit = outlinedMesh(new THREE.CylinderGeometry(.17, .17, .035, 8), OUTLINE, 1.06);
+    const cockpit = outlinedMesh(new THREE.CylinderGeometry(.17, .17, .035, 8), OUTLINE, 1.06, { map: paperTexture });
     cockpit.name = 'roadster-open-cockpit';
     cockpit.scale.set(1.28, 1, .92);
     cockpit.position.set(-.14, .115, 0);
@@ -102,7 +100,7 @@ function createRoadster() {
 
     const windscreen = new THREE.Mesh(
         new THREE.BoxGeometry(.025, .14, .31),
-        material(glass, { transparent: true, opacity: .78 })
+        material(glass, { map: paperTexture, transparent: true, opacity: .78 })
     );
     windscreen.name = 'roadster-windscreen';
     windscreen.position.set(.055, .145, 0);
@@ -131,11 +129,11 @@ function createRoadster() {
 
     const starman = new THREE.Group();
     starman.name = 'starman';
-    const torso = outlinedMesh(new THREE.BoxGeometry(.15, .16, .115), paper, 1.055);
+    const torso = outlinedMesh(new THREE.BoxGeometry(.15, .16, .115), paper, 1.055, { map: paperTexture });
     torso.position.set(-.145, .215, -.075);
     torso.rotation.z = -.16;
     starman.add(torso);
-    const helmet = outlinedMesh(new THREE.IcosahedronGeometry(.087, 1), paper, 1.055);
+    const helmet = outlinedMesh(new THREE.IcosahedronGeometry(.087, 1), paper, 1.055, { map: paperTexture });
     helmet.position.set(-.175, .33, -.075);
     starman.add(helmet);
     const visor = new THREE.Mesh(new THREE.IcosahedronGeometry(.066, 1), material('#263b4a'));
@@ -144,10 +142,10 @@ function createRoadster() {
     visor.scale.set(.32, .73, .78);
     starman.add(visor);
     starman.add(
-        cylinderBetween([-.12, .27, -.125], [-.005, .21, -.12], .025, paper),
-        cylinderBetween([-.12, .27, -.025], [-.005, .21, -.03], .025, paper),
-        cylinderBetween([-.18, .15, -.115], [-.02, .11, -.12], .03, paper),
-        cylinderBetween([-.18, .15, -.035], [-.01, .105, -.02], .03, paper)
+        cylinderBetween([-.12, .27, -.125], [-.005, .21, -.12], .025, paper, 7, paperTexture),
+        cylinderBetween([-.12, .27, -.025], [-.005, .21, -.03], .025, paper, 7, paperTexture),
+        cylinderBetween([-.18, .15, -.115], [-.02, .11, -.12], .03, paper, 7, paperTexture),
+        cylinderBetween([-.18, .15, -.035], [-.01, .105, -.02], .03, paper, 7, paperTexture)
     );
     group.add(starman);
 
@@ -163,43 +161,44 @@ function createRoadster() {
     return group;
 }
 
-function createSpacecraft(object) {
+function createSpacecraft(object, paperTextures = {}) {
     const group = new THREE.Group();
     group.name = `spacecraft-${object.key}`;
     const gold = '#d5ad55';
     const blue = '#557ba4';
     const cream = '#d9d2bd';
 
+    const paperTexture = paperTextures.craft ?? null;
     if (object.key === 'tesla-roadster') {
-        group.add(createRoadster());
+        group.add(createRoadster(paperTexture));
     } else if (object.key === 'iss') {
-        addBox(group, [0.7, 0.12, 0.14], [0, 0, 0], cream);
-        addBox(group, [1.45, 0.035, 0.36], [0, 0, 0], blue);
-        addBox(group, [0.08, 0.42, 0.08], [0, 0, 0], gold);
+        addBox(group, [0.7, 0.12, 0.14], [0, 0, 0], cream, paperTexture);
+        addBox(group, [1.45, 0.035, 0.36], [0, 0, 0], blue, paperTexture);
+        addBox(group, [0.08, 0.42, 0.08], [0, 0, 0], gold, paperTexture);
     } else if (object.key === 'hubble') {
-        const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.52, 8), material(cream));
+        const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.52, 8), material(cream, { map: paperTexture }));
         tube.rotation.x = Math.PI / 2;
         group.add(tube);
-        addBox(group, [0.75, 0.03, 0.25], [0, 0, 0], blue);
+        addBox(group, [0.75, 0.03, 0.25], [0, 0, 0], blue, paperTexture);
     } else if (object.key === 'jwst') {
-        const mirror = outlinedMesh(new THREE.CylinderGeometry(0.28, 0.28, 0.05, 6), gold, 1.06);
+        const mirror = outlinedMesh(new THREE.CylinderGeometry(0.28, 0.28, 0.05, 6), gold, 1.06, { map: paperTexture });
         mirror.rotation.x = Math.PI / 2;
         group.add(mirror);
-        addBox(group, [0.75, 0.025, 0.42], [0, -0.18, 0.08], cream);
+        addBox(group, [0.75, 0.025, 0.42], [0, -0.18, 0.08], cream, paperTexture);
     } else {
-        const dish = outlinedMesh(new THREE.CylinderGeometry(0.28, 0.08, 0.09, 12), cream, 1.06);
+        const dish = outlinedMesh(new THREE.CylinderGeometry(0.28, 0.08, 0.09, 12), cream, 1.06, { map: paperTexture });
         dish.rotation.x = Math.PI / 2;
         group.add(dish);
-        addBox(group, [0.25, 0.18, 0.32], [0, 0, 0.2], gold);
-        addBox(group, [0.85, 0.025, 0.18], [0, 0, 0.18], blue);
+        addBox(group, [0.25, 0.18, 0.32], [0, 0, 0.2], gold, paperTexture);
+        addBox(group, [0.85, 0.025, 0.18], [0, 0, 0.18], blue, paperTexture);
     }
     group.scale.setScalar(object.scale * (object.key === 'tesla-roadster' ? 5 : 3.4));
     return group;
 }
 
-function createSmallBody(object) {
+function createSmallBody(object, paperTextures = {}) {
     const geometry = new THREE.IcosahedronGeometry(object.scale, 1);
-    const body = outlinedMesh(geometry, object.key === 'ceres' ? '#8d8375' : '#75685c', 1.08);
+    const body = outlinedMesh(geometry, object.key === 'ceres' ? '#8d8375' : '#75685c', 1.08, { map: paperTextures.rocky ?? null });
     body.name = `small-body-${object.key}`;
     body.scale.set(1.18, 0.82, 0.95);
     if (['halley', '67p', 'chelyabinsk'].includes(object.key)) {
@@ -222,8 +221,8 @@ export function createPaperWorldObjects({ paperTextures = {} } = {}) {
         const mesh = object.type === 'moon'
             ? createMoon(object, paperTextures)
             : object.type === 'spacecraft'
-                ? createSpacecraft(object)
-                : createSmallBody(object);
+                ? createSpacecraft(object, paperTextures)
+                : createSmallBody(object, paperTextures);
         mesh.userData.worldKey = object.key;
         mesh.userData.orbitPhase = object.orbitPhase ?? object.key.length * 0.73;
         root.add(mesh);
@@ -293,30 +292,9 @@ export function createPaperWorldObjects({ paperTextures = {} } = {}) {
         }
         return closest;
     }
-    function keepMoonsLegible(cameraPosition, primarySnapshot = {}) {
-        for (const { object, mesh } of meshes) {
-            if (object.type !== 'moon' || !object.parentKey) continue;
-            const parentPosition = primarySnapshot[object.parentKey]?.position;
-            const parent = getWorldObject(object.parentKey);
-            if (!parentPosition || !parent) continue;
-            const cameraDistance = Math.hypot(
-                cameraPosition.x - parentPosition.x,
-                cameraPosition.y - parentPosition.y,
-                cameraPosition.z - parentPosition.z
-            );
-            if (cameraDistance > 18) continue;
-            const adjusted = separateMoonSilhouette({
-                moon: mesh.position,
-                parent: parentPosition,
-                camera: cameraPosition,
-                minimumSeparation: parent.collisionRadius + object.scale * 2.2 + 0.25
-            });
-            mesh.position.set(adjusted.x, adjusted.y, adjusted.z);
-        }
-    }
     function getPosition(key) {
         const entry = meshes.find((candidate) => candidate.object.key === key);
         return entry ? { x: entry.mesh.position.x, y: entry.mesh.position.y, z: entry.mesh.position.z } : null;
     }
-    return { root, update, meshes, setLivePosition, setLiveOffset, findNearby, getPosition, keepMoonsLegible };
+    return { root, update, meshes, setLivePosition, setLiveOffset, findNearby, getPosition };
 }

@@ -3,14 +3,13 @@ import * as THREE from 'three';
 import { createPaperWorldObjects } from '../paper-preview/src/scene/createPaperWorldObjects.js';
 
 describe('paper moon materials', () => {
-    it('uses fibrous paper maps for rocky and icy moons', () => {
-        const cardboard = new THREE.Texture();
-        const cream = new THREE.Texture();
-        const { root } = createPaperWorldObjects({ paperTextures: { cardboard, cream } });
+    it('uses the dedicated fibrous moon map for every moon palette', () => {
+        const moon = new THREE.Texture();
+        const { root } = createPaperWorldObjects({ paperTextures: { moon } });
         const phobosBody = root.getObjectByName('moon-phobos').children[1];
         const enceladusBody = root.getObjectByName('moon-enceladus').children[1];
-        expect(phobosBody.material.map).toBe(cardboard);
-        expect(enceladusBody.material.map).toBe(cream);
+        expect(phobosBody.material.map).toBe(moon);
+        expect(enceladusBody.material.map).toBe(moon);
         expect(phobosBody.material.flatShading).toBe(true);
     });
 });

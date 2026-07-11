@@ -74,6 +74,17 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 
 ## TODO
 
+- 2026-07-11: feedback final de produção em curso. A ficha Hoje do Sol já não calcula “0 milhões de km do Sol”; apresenta-o como referência central e a fonte visível aponta para a página humana do JPL Horizons, não para JSON/proxy.
+- Privacidade removida do playfield e integrada discretamente no rodapé do passaporte. Homepage recebeu header sticky e footer editorial responsivo com mapa do site, feedback e área legal.
+- Criados formulários GitHub para bugs, ideias, correções científicas e acessibilidade; Issues em branco ficam desativados.
+- Câmara: causa do wobble identificada no smoothing do offset chase completo. O rig agora suaviza apenas a translação e usa slerp de rotação independente do frame rate; drag contínuo validado sem erros de consola.
+- Lumi/surpresas: só contam voo ativo, primeiro evento após 90 s de voo, cooldown seguinte de 180–300 s e máximo de 2 interrupções por sessão.
+- Pedido seguinte: removidos totalmente os links persistentes de privacidade do passaporte/jogo. O aviso inicial de consentimento continua a existir por obrigação funcional, mas desaparece após a escolha.
+- Homepage e biblioteca partilham agora `shared-header.css`: 68 px, largura total, sticky, navegação e ações visualmente idênticas.
+- Skins expandidas a luas, pequenos corpos, sondas/estações, Tesla + Starman e nave do jogador através de três famílias de mapas (`moon`, `rocky`, `craft`) com cor específica por objeto.
+- QA visual: ambos os headers medem 1440×68 em desktop; jogo sem links persistentes de privacidade nem erros de consola. Capturas em `output/playwright/paper-all-skins/` no workspace principal.
+- Evidência atual: `output/playwright/latest-camera/drag-fixed.png`, `sun-today-fixed.png`, `footer-fixed.png` (algumas capturas no workspace principal por causa do cwd do browser REPL).
+
 - Novo self-improvement loop: universo heliocêntrico, homepage, surpresas, guia e gamificação.
 - Design/plano: `docs/plans/2026-07-11-heliocentric-explorer-design.md` e `2026-07-11-heliocentric-explorer-implementation.md`.
 - Remover a rota diagonal e migrar todos os consumidores para posições dinâmicas antes de construir novos sistemas.

@@ -11,9 +11,10 @@ export const PAPER_SHIP_STYLE = Object.freeze({
     exhaust: '#e3a63b'
 });
 
-function paperMaterial(color, options = {}) {
+function paperMaterial(color, options = {}, paperTexture = null) {
     return new THREE.MeshStandardMaterial({
         color,
+        map: paperTexture,
         roughness: 0.92,
         metalness: 0,
         flatShading: true,
@@ -37,7 +38,7 @@ function extrudedShape(points, depth = 0.08) {
     return geometry;
 }
 
-function createWing(name, mirrored = false) {
+function createWing(name, mirrored = false, paperTexture = null) {
     const geometry = extrudedShape([
         [0.08, 0.08],
         [1.12, 0.48],
@@ -45,8 +46,8 @@ function createWing(name, mirrored = false) {
         [0.2, 0.78]
     ], 0.09);
     const wing = new THREE.Mesh(geometry, [
-        paperMaterial(PAPER_SHIP_STYLE.palette.coral, { side: THREE.DoubleSide }),
-        paperMaterial(PAPER_SHIP_STYLE.palette.cardboard, { side: THREE.DoubleSide })
+        paperMaterial(PAPER_SHIP_STYLE.palette.coral, { side: THREE.DoubleSide }, paperTexture),
+        paperMaterial(PAPER_SHIP_STYLE.palette.cardboard, { side: THREE.DoubleSide }, paperTexture)
     ]);
     wing.name = name;
     wing.rotation.x = Math.PI / 2;
@@ -56,7 +57,7 @@ function createWing(name, mirrored = false) {
     return wing;
 }
 
-function createTailFin() {
+function createTailFin(paperTexture = null) {
     const fin = new THREE.Mesh(
         extrudedShape([
             [0, 0],
@@ -66,8 +67,8 @@ function createTailFin() {
             [0.2, 0.5]
         ], 0.085),
         [
-            paperMaterial(PAPER_SHIP_STYLE.palette.coral, { side: THREE.DoubleSide }),
-            paperMaterial(PAPER_SHIP_STYLE.palette.cardboard, { side: THREE.DoubleSide })
+            paperMaterial(PAPER_SHIP_STYLE.palette.coral, { side: THREE.DoubleSide }, paperTexture),
+            paperMaterial(PAPER_SHIP_STYLE.palette.cardboard, { side: THREE.DoubleSide }, paperTexture)
         ]
     );
     fin.name = 'courier-envelope-fin';
@@ -77,10 +78,10 @@ function createTailFin() {
     return fin;
 }
 
-function createEngine(name, x) {
+function createEngine(name, x, paperTexture = null) {
     const engine = new THREE.Mesh(
         new THREE.CylinderGeometry(0.13, 0.16, 0.38, 6, 1, false),
-        paperMaterial(PAPER_SHIP_STYLE.palette.cardboard)
+        paperMaterial(PAPER_SHIP_STYLE.palette.cardboard, {}, paperTexture)
     );
     engine.name = name;
     engine.rotation.x = Math.PI / 2;
@@ -99,7 +100,7 @@ function createExhaust(x) {
     return exhaust;
 }
 
-export function createPaperShip() {
+export function createPaperShip({ paperTexture = null } = {}) {
     const ship = new THREE.Group();
     ship.name = 'paper-courier-ship';
 
@@ -115,14 +116,14 @@ export function createPaperShip() {
 
     const rim = new THREE.Mesh(
         fuselageGeometry,
-        paperMaterial(PAPER_SHIP_STYLE.palette.cardboard, { side: THREE.BackSide })
+        paperMaterial(PAPER_SHIP_STYLE.palette.cardboard, { side: THREE.BackSide }, paperTexture)
     );
     rim.name = 'courier-paper-rim';
     rim.scale.setScalar(1.035);
 
     const fuselage = new THREE.Mesh(
         fuselageGeometry,
-        paperMaterial(PAPER_SHIP_STYLE.palette.ivory)
+        paperMaterial(PAPER_SHIP_STYLE.palette.ivory, {}, paperTexture)
     );
     fuselage.name = 'courier-fuselage';
     fuselage.userData.closedVolume = true;
@@ -130,18 +131,18 @@ export function createPaperShip() {
 
     const cockpit = new THREE.Mesh(
         new THREE.SphereGeometry(0.28, 6, 4),
-        paperMaterial(PAPER_SHIP_STYLE.palette.cockpit)
+        paperMaterial(PAPER_SHIP_STYLE.palette.cockpit, {}, paperTexture)
     );
     cockpit.name = 'courier-cockpit';
     cockpit.scale.set(0.72, 0.58, 1.2);
     cockpit.position.set(0, 0.2, -0.34);
     cockpit.castShadow = true;
 
-    const leftWing = createWing('courier-wing-left');
-    const rightWing = createWing('courier-wing-right', true);
-    const tailFin = createTailFin();
-    const leftEngine = createEngine('courier-engine-left', -0.21);
-    const rightEngine = createEngine('courier-engine-right', 0.21);
+    const leftWing = createWing('courier-wing-left', false, paperTexture);
+    const rightWing = createWing('courier-wing-right', true, paperTexture);
+    const tailFin = createTailFin(paperTexture);
+    const leftEngine = createEngine('courier-engine-left', -0.21, paperTexture);
+    const rightEngine = createEngine('courier-engine-right', 0.21, paperTexture);
 
     const exhaust = new THREE.Group();
     exhaust.name = 'courier-exhaust';

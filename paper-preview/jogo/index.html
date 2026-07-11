@@ -8,6 +8,7 @@
     <title>Sistema Solar de Bolso — Paper Diorama</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='9' fill='%23f5b83d' stroke='%232b2f3a' stroke-width='2'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/privacy.css">
 </head>
 <body>
     <main class="paper-shell">
@@ -143,7 +144,7 @@
             <div class="notebook-panels">
                 <section id="panel-discover" class="notebook-panel discover-panel" role="tabpanel" aria-labelledby="tab-discover">
                     <figure class="real-photo-card">
-                        <img id="notebook-photo" alt="" width="720" height="480">
+                        <button id="notebook-photo-open" class="photo-open" type="button"><img id="notebook-photo" alt="" width="720" height="480"><span class="photo-open-label" data-i18n="media.enlarge">Ampliar fotografia</span></button>
                         <figcaption>
                             <span id="notebook-photo-caption">Fotografia real</span>
                             <a id="notebook-photo-source" href="#" target="_blank" rel="noreferrer">Fonte incluída</a>
@@ -190,6 +191,8 @@
         </article>
     </dialog>
 
+    <dialog id="media-viewer" class="media-viewer" aria-labelledby="media-viewer-caption"><article><button class="media-viewer-close" type="button" data-media-close data-i18n-aria="media.close" aria-label="Fechar imagem">×</button><img data-media-image alt=""><footer><p id="media-viewer-caption" data-media-caption></p><a data-media-source href="#" target="_blank" rel="noreferrer"></a></footer></article></dialog>
+
     <dialog id="mission-log" class="mission-log" aria-labelledby="mission-log-title">
         <article>
             <button id="close-mission-log" class="close-notebook" type="button" data-i18n="game.close">Fechar</button>
@@ -227,7 +230,6 @@
             </section>
         </article>
     </dialog>
-
     <noscript>Esta preview precisa de JavaScript para montar o diorama.</noscript>
     <script type="module" src="/src/main.js"></script>
 </body>

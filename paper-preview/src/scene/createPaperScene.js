@@ -8,6 +8,7 @@ import { createPaperWorldObjects } from './createPaperWorldObjects.js';
 import { createPrimarySnapshot } from '../world/orbitalSystem.js';
 import { createOrbitPaths } from './createOrbitPaths.js';
 import { syncSkyDome } from './skyDome.js';
+import { cameraFollowAlpha } from './cameraFollow.js';
 
 const PLANET_KEYS = PRIMARY_WORLDS.map((world) => world.key);
 const ORBIT_DAYS_PER_SECOND = 0.35;
@@ -290,6 +291,18 @@ export function createPaperScene(stage) {
         texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
         return [key, texture];
     }));
+    const objectSurfaceTextures = Object.fromEntries(Object.entries({
+        moon: '/art/textures/paper-moon-surface.webp',
+        rocky: '/art/textures/paper-rocky-surface.webp',
+        craft: '/art/textures/paper-craft-surface.webp'
+    }).map(([key, path]) => {
+        const texture = surfaceTextureLoader.load(path);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+        return [key, texture];
+    }));
 
     const textures = createPaperTextures(renderer);
     const background = new THREE.Mesh(
@@ -330,10 +343,10 @@ export function createPaperScene(stage) {
         scene.add(planet);
         return planet;
     });
-    const worldObjects = createPaperWorldObjects({ paperTextures: textures });
+    const worldObjects = createPaperWorldObjects({ paperTextures: objectSurfaceTextures });
     scene.add(worldObjects.root);
 
-    const rocket = createPaperShip();
+    const rocket = createPaperShip({ paperTexture: objectSurfaceTextures.craft });
     rocket.position.set(0, 0, 14);
     scene.add(rocket);
     const surpriseEffect = createSurpriseEffect();
@@ -348,7 +361,9 @@ export function createPaperScene(stage) {
         activeIndex: -1,
         contextLost: false,
         cameraPosition: new THREE.Vector3(0, 2.2, 13),
+        followedShipPosition: new THREE.Vector3(0, 0, 14),
         flightQuaternion: new THREE.Quaternion(),
+        targetFlightQuaternion: new THREE.Quaternion(),
         forward: new THREE.Vector3(),
         right: new THREE.Vector3(),
         up: new THREE.Vector3(),
@@ -356,8 +371,8 @@ export function createPaperScene(stage) {
         lightOffset: new THREE.Vector3(-4, 7, 8),
         shipPosition: new THREE.Vector3(0, 0, 7),
         orientation: { yaw: 0, pitch: 0, roll: 0 }
-        , cameraDistance: CHASE_CAMERA_LAYOUT.distance
-        , targetCameraDistance: CHASE_CAMERA_LAYOUT.distance
+        , cameraDistance: /** @type {number} */ (CHASE_CAMERA_LAYOUT.distance)
+        , targetCameraDistance: /** @type {number} */ (CHASE_CAMERA_LAYOUT.distance)
         , surpriseRemaining: 0
         , surpriseVelocity: new THREE.Vector3()
     };
@@ -410,12 +425,13 @@ export function createPaperScene(stage) {
     function setFlightSnapshot(flightState, deltaSeconds) {
         const delta = Math.min(Math.max(deltaSeconds, 0), 0.1);
         runtime.orientation = { ...flightState.orientation };
-        runtime.flightQuaternion.setFromEuler(new THREE.Euler(
+        runtime.targetFlightQuaternion.setFromEuler(new THREE.Euler(
             flightState.orientation.pitch,
             flightState.orientation.yaw,
             flightState.orientation.roll,
             'YXZ'
         ));
+        runtime.flightQuaternion.slerp(runtime.targetFlightQuaternion, cameraFollowAlpha(delta));
         runtime.shipPosition.set(flightState.position.x, flightState.position.y, flightState.position.z);
         rocket.position.copy(runtime.shipPosition);
         rocket.quaternion.copy(runtime.flightQuaternion);
@@ -431,10 +447,13 @@ export function createPaperScene(stage) {
             * (1 - Math.exp(-7 * delta));
         const cameraMode = cameraModeForDistance(runtime.cameraDistance);
         const verticalOffset = cameraMode === 'cockpit' ? 0.36 : CHASE_CAMERA_LAYOUT.verticalOffset;
-        runtime.desiredCamera.copy(runtime.shipPosition)
+        // Smooth only translation. Smoothing the complete camera position also smooths the
+        // rotated chase offset, which makes the ship wobble on screen while looking around.
+        runtime.followedShipPosition.lerp(runtime.shipPosition, 1 - Math.exp(-5.2 * delta));
+        runtime.desiredCamera.copy(runtime.followedShipPosition)
             .addScaledVector(runtime.forward, cameraMode === 'cockpit' ? 0.28 : -runtime.cameraDistance)
             .addScaledVector(runtime.up, verticalOffset);
-        runtime.cameraPosition.lerp(runtime.desiredCamera, 1 - Math.exp(-5.2 * delta));
+        runtime.cameraPosition.copy(runtime.desiredCamera);
         camera.position.copy(runtime.cameraPosition);
         camera.quaternion.copy(runtime.flightQuaternion);
         cockpit.visible = cameraMode === 'cockpit';
@@ -458,7 +477,6 @@ export function createPaperScene(stage) {
             planet.scale.lerp(new THREE.Vector3(selectedScale, selectedScale, selectedScale), Math.min(1, delta * 4));
         });
         worldObjects.update(runtime.elapsed, runtime.primarySnapshot);
-        worldObjects.keepMoonsLegible(camera.position, runtime.primarySnapshot);
         if (autopilotTrail.visible) {
             autopilotTrail.children.forEach((shard, index) => {
                 const wave = runtime.elapsed * 7 + shard.userData.phase;

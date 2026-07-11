@@ -8,7 +8,7 @@ function seededRandom(seed) {
     };
 }
 
-function makeCanvasTexture({ size = 384, baseColor, seed, paint }) {
+function makeCanvasTexture({ size = 384, baseColor, seed, paint = null }) {
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
@@ -102,6 +102,7 @@ function paintEarth(context, size) {
 }
 
 function paintSaturn(context, size) {
+    /** @type {Array<[string, number, number]>} */
     const bands = [
         ['#d9a55a', 0.1, 0.17],
         ['#f0cb83', 0.23, 0.1],

@@ -5,6 +5,12 @@ import { getAwardArt } from './progression/awardArt.js';
 import { presentProgress } from './progression/progressPresentation.js';
 import { paperI18n } from './i18n/paperI18n.js';
 import { bindBackdropDismiss } from './ui/dialogDismiss.js';
+import { createMediaViewer } from './ui/mediaViewer.js';
+import { siteAnalytics } from './analytics/siteAnalytics.js';
+import { providerFamily } from './analytics/eventCatalog.js';
+
+/** DOM selectors are runtime-validated by the page structure tests. @type {any} */
+const document = globalThis.document;
 
 const numberFormatter = () => new Intl.NumberFormat(paperI18n.language === 'en' ? 'en-GB' : 'pt-PT');
 
@@ -44,6 +50,7 @@ export function createPreviewUI({
         notebookNote: document.querySelector('#notebook-note'),
         notebookWow: document.querySelector('#notebook-wow'),
         notebookPhoto: document.querySelector('#notebook-photo'),
+        notebookPhotoOpen: document.querySelector('#notebook-photo-open'),
         photoCaption: document.querySelector('#notebook-photo-caption'),
         photoSource: document.querySelector('#notebook-photo-source'),
         tabs: [...document.querySelectorAll('.notebook-tabs [role="tab"]')],
@@ -113,10 +120,20 @@ export function createPreviewUI({
         , rewardToastTitle: document.querySelector('#reward-toast-title')
         , rewardToastMessage: document.querySelector('#reward-toast-message')
         , languageToggle: document.querySelector('[data-language-toggle]')
+        , mediaViewer: document.querySelector('#media-viewer')
     };
 
     let lumiTimer = null;
     let rewardTimer = null;
+    let activeMedia = null;
+    const mediaViewer = createMediaViewer(elements.mediaViewer, {
+        onImageOpen: (media) => siteAnalytics.track('image_open', { objectKey: media.objectKey, surface: 'game' }),
+        onSourceOpen: (media) => siteAnalytics.track('source_open', {
+            objectKey: media.objectKey,
+            provider: providerFamily(media.source?.name),
+            surface: 'game'
+        })
+    });
 
     function renderLanguageToggle() {
         elements.languageToggle.textContent = paperI18n.language === 'pt' ? 'EN' : 'PT';
@@ -191,6 +208,16 @@ export function createPreviewUI({
         }]
         , [elements.dismissLumi, 'click', hideSurprise]
         , [elements.languageToggle, 'click', () => paperI18n.toggle()]
+        , [elements.notebookPhotoOpen, 'click', () => {
+            if (activeMedia) mediaViewer.open({ ...activeMedia, trigger: elements.notebookPhotoOpen });
+        }]
+        , [elements.photoSource, 'click', () => {
+            if (activeMedia) siteAnalytics.track('source_open', {
+                objectKey: activeMedia.objectKey,
+                provider: providerFamily(activeMedia.source?.name),
+                surface: 'game'
+            });
+        }]
     ];
 
     for (const [element, eventName, handler] of listeners) {
@@ -227,7 +254,9 @@ export function createPreviewUI({
         const envelope = learning.dataByObject[record.key];
         const status = envelope?.status ?? 'fallback';
         const labels = { live: paperI18n.t('game.data.live'), cached: paperI18n.t('game.data.cached'), fallback: paperI18n.t('game.data.included') };
-        elements.dataStatus.textContent = labels[status];
+        elements.dataStatus.textContent = envelope?.presentationKind === 'reference'
+            ? paperI18n.t('game.data.reference')
+            : labels[status];
         elements.dataStatus.className = `data-status is-${status}`;
         elements.dataUpdated.textContent = envelope
             ? paperI18n.t('game.data.updated', { value: new Date(envelope.updatedAt).toLocaleString(paperI18n.language === 'en' ? 'en-GB' : 'pt-PT') })
@@ -278,17 +307,24 @@ export function createPreviewUI({
         elements.notebookFact.textContent = record.fact;
         elements.notebookNote.textContent = record.comparison;
         elements.notebookWow.textContent = record.wowFacts[0];
-        const dynamicPhoto = state.learning.dataByObject[record.key]?.data?.imageUrl;
-        const photoUrl = dynamicPhoto ?? record.localPhoto;
+        const photoUrl = record.localPhoto;
         if (elements.notebookPhoto.getAttribute('src') !== photoUrl) {
             elements.notebookPhoto.src = photoUrl;
         }
         elements.notebookPhoto.alt = paperI18n.t('game.photo.real', { name: record.name });
-        elements.photoCaption.textContent = state.learning.dataByObject[record.key]?.data?.imageTitle
-            ?? paperI18n.t('game.photo.real', { name: record.name });
-        const dynamicSource = state.learning.dataByObject[record.key]?.data;
-        elements.photoSource.textContent = dynamicSource?.imageSourceName ?? record.photoSource.name;
-        elements.photoSource.href = dynamicSource?.imageSourceUrl ?? record.photoSource.url;
+        elements.photoCaption.textContent = paperI18n.t('game.photo.real', { name: record.name });
+        elements.photoSource.textContent = record.photoSource.name;
+        elements.photoSource.href = record.photoSource.url;
+        activeMedia = {
+            objectKey: record.key,
+            src: photoUrl,
+            alt: elements.notebookPhoto.alt,
+            caption: elements.photoCaption.textContent,
+            source: {
+                name: elements.photoSource.textContent,
+                url: elements.photoSource.href
+            }
+        };
         renderTabs(state.learning.section);
         renderMeasurements(record);
         renderData(state.learning, record);
@@ -486,6 +522,7 @@ export function createPreviewUI({
         if (lumiTimer) window.clearTimeout(lumiTimer);
         if (rewardTimer) window.clearTimeout(rewardTimer);
         unsubscribeLanguage();
+        mediaViewer.destroy();
         unbindNotebookBackdrop();
         unbindMissionBackdrop();
         for (const [element, eventName, handler] of listeners) {

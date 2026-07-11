@@ -86,6 +86,7 @@ export function setLearningDataEnvelope(state, objectKey, envelope) {
 
     const normalized = Object.freeze({
         status: envelope.status,
+        presentationKind: envelope.presentationKind === 'reference' ? 'reference' : 'ephemeris',
         source: Object.freeze({ name: envelope.source.name, url: envelope.source.url }),
         updatedAt: new Date(envelope.updatedAt).toISOString(),
         data: Object.freeze({ ...envelope.data })

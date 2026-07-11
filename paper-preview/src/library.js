@@ -11,6 +11,12 @@ import {
 import { presentProgress } from './progression/progressPresentation.js';
 import { getAwardArt } from './progression/awardArt.js';
 import { bindBackdropDismiss } from './ui/dialogDismiss.js';
+import { siteAnalytics } from './analytics/siteAnalytics.js';
+import { providerFamily, resultCountBucket } from './analytics/eventCatalog.js';
+import { createMediaViewer } from './ui/mediaViewer.js';
+
+/** DOM selectors are runtime-validated by the page structure tests. @type {any} */
+const document = globalThis.document;
 
 const elements = {
     languageToggle: document.querySelector('[data-language-toggle]'),
@@ -33,6 +39,7 @@ const elements = {
     detailTitle: document.querySelector('#detail-title'),
     detailStamp: document.querySelector('#detail-discovery-stamp'),
     detailPhoto: document.querySelector('#detail-photo'),
+    detailPhotoOpen: document.querySelector('#detail-photo-open'),
     detailPhotoCaption: document.querySelector('#detail-photo-caption'),
     detailSource: document.querySelector('#detail-source'),
     detailFact: document.querySelector('#detail-fact'),
@@ -42,21 +49,35 @@ const elements = {
     quiz: document.querySelector('#library-quiz'),
     quizQuestion: document.querySelector('#library-quiz-question'),
     quizOptions: document.querySelector('#library-quiz-options'),
-    quizFeedback: document.querySelector('#library-quiz-feedback')
+    quizFeedback: document.querySelector('#library-quiz-feedback'),
+    mediaViewer: document.querySelector('#media-viewer')
 };
 
 let progress = loadProgress();
+/** @type {ReadonlyArray<any>} */
 let catalog = [];
 let activeCategory = 'all';
 let activeKey = null;
 let wrongQuizIndex = null;
+let quizAttempts = 0;
+let visibleResultCount = 0;
+let searchTimer = null;
+
+const mediaViewer = createMediaViewer(elements.mediaViewer, {
+    onImageOpen: (media) => siteAnalytics.track('image_open', { objectKey: media.objectKey, surface: 'library' }),
+    onSourceOpen: (media) => siteAnalytics.track('source_open', {
+        objectKey: media.objectKey,
+        provider: providerFamily(media.source?.name),
+        surface: 'library'
+    })
+});
 
 function progressSnapshot() {
     const missions = evaluateMissions(progress, paperI18n.language);
     return {
         discoveredKeys: progress.discoveredKeys,
         completedQuizIds: progress.completedQuizIds,
-        completedMissionIds: missions.completedIds,
+        completedMissionIds: [...missions.completedIds],
         seenSurpriseIds: progress.seenSurpriseIds
     };
 }
@@ -134,6 +155,7 @@ function renderCatalog() {
         category: activeCategory,
         discovery: elements.discoveryFilter.value
     });
+    visibleResultCount = visible.length;
     elements.grid.replaceChildren(...visible.map(makeCard));
     elements.empty.hidden = visible.length !== 0;
     elements.resultsStatus.textContent = visible.length === 1
@@ -242,8 +264,10 @@ function openDetail(key) {
     if (!record) return;
     activeKey = key;
     wrongQuizIndex = null;
+    quizAttempts = 0;
     renderDetail(record);
     elements.detail.showModal();
+    siteAnalytics.track('object_open', { objectKey: record.key, category: record.category, surface: 'library' });
 }
 
 function closeDetail() {
@@ -262,18 +286,60 @@ function rebuild({ preserveDetail = false } = {}) {
     if (preserveDetail && activeKey) renderDetail(catalog.find((record) => record.key === activeKey));
 }
 
-elements.search.addEventListener('input', renderCatalog);
-elements.discoveryFilter.addEventListener('change', renderCatalog);
+elements.search.addEventListener('input', () => {
+    renderCatalog();
+    if (searchTimer) window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(() => siteAnalytics.track('library_search', {
+        resultBucket: resultCountBucket(visibleResultCount),
+        category: activeCategory,
+        language: paperI18n.language
+    }), 500);
+});
+elements.discoveryFilter.addEventListener('change', () => {
+    renderCatalog();
+    siteAnalytics.track('library_filter', {
+        category: activeCategory,
+        discovery: elements.discoveryFilter.value,
+        resultBucket: resultCountBucket(visibleResultCount),
+        language: paperI18n.language
+    });
+});
 elements.categoryButtons.forEach((button) => button.addEventListener('click', () => {
     activeCategory = button.dataset.libraryCategory;
     elements.categoryButtons.forEach((candidate) => candidate.setAttribute('aria-pressed', String(candidate === button)));
     renderCatalog();
+    siteAnalytics.track('library_filter', {
+        category: activeCategory,
+        discovery: elements.discoveryFilter.value,
+        resultBucket: resultCountBucket(visibleResultCount),
+        language: paperI18n.language
+    });
 }));
 elements.grid.addEventListener('click', (event) => {
     const card = event.target.closest('[data-library-key]');
     if (card) openDetail(card.dataset.libraryKey);
 });
 elements.detailClose.addEventListener('click', closeDetail);
+elements.detailPhotoOpen.addEventListener('click', () => {
+    const record = catalog.find((candidate) => candidate.key === activeKey);
+    if (!record) return;
+    mediaViewer.open({
+        objectKey: record.key,
+        src: record.photo,
+        alt: paperI18n.t('library.detail.realPhoto', { name: record.name }),
+        caption: elements.detailPhotoCaption.textContent,
+        source: record.source,
+        trigger: elements.detailPhotoOpen
+    });
+});
+elements.detailSource.addEventListener('click', () => {
+    const record = catalog.find((candidate) => candidate.key === activeKey);
+    if (record) siteAnalytics.track('source_open', {
+        objectKey: record.key,
+        provider: providerFamily(record.source.name),
+        surface: 'library'
+    });
+});
 elements.detail.addEventListener('cancel', (event) => { event.preventDefault(); closeDetail(); });
 bindBackdropDismiss(elements.detail, closeDetail);
 elements.quizOptions.addEventListener('click', (event) => {
@@ -282,7 +348,10 @@ elements.quizOptions.addEventListener('click', (event) => {
     const quiz = record?.quizzes[0];
     if (!button || !quiz || progress.completedQuizIds.includes(quiz.id)) return;
     const selected = Number(button.dataset.libraryQuizIndex);
+    quizAttempts += 1;
+    const attemptBucket = quizAttempts >= 3 ? '3+' : String(quizAttempts);
     if (selected !== quiz.correctIndex) {
+        siteAnalytics.track('quiz_result', { quizId: quiz.id, correct: false, attemptBucket });
         wrongQuizIndex = selected;
         renderQuiz(record);
         elements.quizFeedback.textContent = `${paperI18n.t('library.quiz.wrong')} ${quiz.explanation}`;
@@ -290,12 +359,17 @@ elements.quizOptions.addEventListener('click', (event) => {
         return;
     }
     progress = { ...progress, completedQuizIds: [...new Set([...progress.completedQuizIds, quiz.id])] };
+    siteAnalytics.track('quiz_result', { quizId: quiz.id, correct: true, attemptBucket });
     wrongQuizIndex = null;
     rebuild({ preserveDetail: true });
     elements.quizFeedback.textContent = `${paperI18n.t('library.quiz.correct')} ${quiz.explanation}`;
     elements.quizFeedback.hidden = false;
 });
-elements.languageToggle.addEventListener('click', () => paperI18n.toggle());
+elements.languageToggle.addEventListener('click', () => {
+    paperI18n.toggle();
+    siteAnalytics.track('language_change', { language: paperI18n.language, surface: 'library' });
+});
 paperI18n.subscribe(() => rebuild({ preserveDetail: elements.detail.open }));
 
 rebuild();
+siteAnalytics.start('library');
