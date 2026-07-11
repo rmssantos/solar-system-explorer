@@ -16,6 +16,7 @@ import { SATELLITE_FALLBACKS } from './data/spaceFallbacks.js';
 import { getWorldObject } from './world/worldCatalog.js';
 import { chooseNearbyObject } from './world/proximity.js';
 import { calculateWaypoint } from './navigation/waypoint.js';
+import { createCockpitTelemetry } from './scene/cockpitTelemetry.js';
 import { evaluateMissions } from './missions/missionSystem.js';
 import { loadProgress, saveProgress } from './missions/progressStore.js';
 import {
@@ -43,6 +44,7 @@ let deterministicMode = false;
 let lastFrameTime = performance.now();
 let lastUiSignature = '';
 let nearbyWorldObjectKey = null;
+let currentNavigation = null;
 let lastInput = {
     forward: 0,
     strafe: 0,
@@ -294,6 +296,7 @@ function updateMissionNavigation() {
         (key) => !previewState.learning.discoveredKeys.includes(key)
     );
     if (!targetKey) {
+        currentNavigation = null;
         previewUI.updateNavigation(null);
         return;
     }
@@ -308,10 +311,11 @@ function updateMissionNavigation() {
         interactionRadius: object.interactionRadius ?? (object.type === 'moon' ? 2.2 : 1.65),
         solarDistanceAu: object.orbit?.semiMajorAxisAu ?? parent?.orbit?.semiMajorAxisAu ?? null
     });
-    previewUI.updateNavigation({
+    currentNavigation = {
         name: object.name,
         ...waypoint
-    });
+    };
+    previewUI.updateNavigation(currentNavigation);
 }
 
 function step(seconds) {
@@ -334,6 +338,10 @@ function step(seconds) {
     surpriseState = surpriseResult.state;
     if (surpriseResult.event) handleSurprise(surpriseResult.event);
     updateMissionNavigation();
+    previewUI.updateCockpitTelemetry(
+        createCockpitTelemetry(flightState, currentNavigation, paperScene.getState().cameraMode),
+        currentNavigation
+    );
     syncUI();
 }
 
@@ -484,6 +492,10 @@ paperScene.update(0);
 paperScene.setFlightSnapshot(flightState, 0.1);
 syncUI(true);
 updateMissionNavigation();
+previewUI.updateCockpitTelemetry(
+    createCockpitTelemetry(flightState, currentNavigation, paperScene.getState().cameraMode),
+    currentNavigation
+);
 previewUI.markReady();
 paperScene.render();
 hydrateTrackedObjects().catch(() => {});

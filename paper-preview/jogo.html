@@ -55,6 +55,27 @@
             <button id="orbit-toggle" type="button" aria-pressed="true">Órbitas</button>
         </div>
 
+        <section id="cockpit-instruments" class="cockpit-instruments" aria-label="Instrumentos do cockpit" hidden>
+            <div class="cockpit-module speed-module">
+                <small>Velocidade</small>
+                <div class="speed-dial" aria-hidden="true"><i id="cockpit-speed-needle"></i><span></span></div>
+                <strong><span id="cockpit-speed">0.0</span> <small>u/s</small></strong>
+            </div>
+            <div class="cockpit-module radar-module">
+                <div class="radar-heading"><small>Radar de missão</small><span id="cockpit-target">Saturno</span></div>
+                <div class="cockpit-radar" aria-hidden="true">
+                    <i class="radar-ring radar-ring-one"></i><i class="radar-ring radar-ring-two"></i>
+                    <span class="radar-ship">▲</span><span id="cockpit-radar-target" class="radar-target"></span>
+                </div>
+                <div class="cockpit-coordinates"><span>X <b id="cockpit-x">+000.0</b></span><span>Y <b id="cockpit-y">+000.0</b></span><span>Z <b id="cockpit-z">+000.0</b></span></div>
+            </div>
+            <div class="cockpit-module attitude-module">
+                <small>Atitude</small>
+                <div class="attitude-window" aria-hidden="true"><i id="cockpit-horizon"></i><span></span></div>
+                <div class="attitude-values"><span>YAW <b id="cockpit-yaw">0°</b></span><span>PITCH <b id="cockpit-pitch">0°</b></span><span>ROLL <b id="cockpit-roll">0°</b></span></div>
+            </div>
+        </section>
+
         <section id="flight-controls" class="flight-controls" aria-label="Controlos de voo">
             <div id="flight-joystick" class="flight-joystick" aria-label="Joystick de voo">
                 <div class="joystick-orbit" aria-hidden="true"></div>

@@ -107,3 +107,6 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Asset WebP otimizado (69 kB) integrado apenas na homepage em `/public/art/paper-expedition-hero.webp`; o jogo conserva geometria 3D nativa e leve.
 - Segundo passe visual: legenda hero encurtada para não cortar; posição inicial afastada de 7 para 14 unidades do Sol, revelando mais universo sem perder a partida cinematográfica.
 - Enquadramento inicial validado em 1440×900, com waypoint Saturno, nave clara e 0 erros. Evidência: `output/playwright/second-pass/opening.png`.
+- Audit visual rejeitou o primeiro cockpit revisto: geometria próxima ocupava mais de metade do viewport.
+- Cockpit corrigido com moldura 3D fina e painel funcional limitado a ~14,9% desktop / ~13,5% mobile: velocímetro e agulha vivos, radar de missão, alvo móvel, XYZ e horizonte yaw/pitch/roll.
+- W + drag + roll alteraram velocidade `0,0→2,9`, agulha `-120°→-91,6°`, coordenadas, radar e atitude; 0 erros. Evidência: `cockpit-compact-dynamic.png` e `mobile-cockpit-compact.png`.

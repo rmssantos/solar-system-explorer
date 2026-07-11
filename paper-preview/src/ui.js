@@ -87,6 +87,18 @@ export function createPreviewUI({
         , lumiTitle: document.querySelector('#lumi-title')
         , lumiMessage: document.querySelector('#lumi-message')
         , dismissLumi: document.querySelector('#dismiss-lumi')
+        , cockpitInstruments: document.querySelector('#cockpit-instruments')
+        , cockpitSpeed: document.querySelector('#cockpit-speed')
+        , cockpitSpeedNeedle: document.querySelector('#cockpit-speed-needle')
+        , cockpitTarget: document.querySelector('#cockpit-target')
+        , cockpitRadarTarget: document.querySelector('#cockpit-radar-target')
+        , cockpitX: document.querySelector('#cockpit-x')
+        , cockpitY: document.querySelector('#cockpit-y')
+        , cockpitZ: document.querySelector('#cockpit-z')
+        , cockpitHorizon: document.querySelector('#cockpit-horizon')
+        , cockpitYaw: document.querySelector('#cockpit-yaw')
+        , cockpitPitch: document.querySelector('#cockpit-pitch')
+        , cockpitRoll: document.querySelector('#cockpit-roll')
     };
 
     let lumiTimer = null;
@@ -367,6 +379,24 @@ export function createPreviewUI({
         lumiTimer = window.setTimeout(hideSurprise, 14_000);
     }
 
+    function updateCockpitTelemetry(telemetry, navigation) {
+        elements.cockpitInstruments.hidden = !telemetry.visible;
+        document.body.classList.toggle('is-cockpit', telemetry.visible);
+        if (!telemetry.visible) return;
+        elements.cockpitSpeed.textContent = telemetry.speed.toFixed(1);
+        elements.cockpitSpeedNeedle.style.transform = `rotate(${telemetry.speedNeedleDeg}deg)`;
+        elements.cockpitTarget.textContent = navigation?.name ?? '—';
+        elements.cockpitRadarTarget.style.left = `${telemetry.radar.xPercent}%`;
+        elements.cockpitRadarTarget.style.top = `${telemetry.radar.yPercent}%`;
+        elements.cockpitX.textContent = telemetry.coordinates.x;
+        elements.cockpitY.textContent = telemetry.coordinates.y;
+        elements.cockpitZ.textContent = telemetry.coordinates.z;
+        elements.cockpitHorizon.style.transform = `translateY(${telemetry.horizonOffsetPercent}%) rotate(${-telemetry.rollDeg}deg)`;
+        elements.cockpitYaw.textContent = `${telemetry.yawDeg}°`;
+        elements.cockpitPitch.textContent = `${telemetry.pitchDeg}°`;
+        elements.cockpitRoll.textContent = `${telemetry.rollDeg}°`;
+    }
+
     function destroy() {
         if (lumiTimer) window.clearTimeout(lumiTimer);
         for (const [element, eventName, handler] of listeners) {
@@ -374,5 +404,5 @@ export function createPreviewUI({
         }
     }
 
-    return { update, updateNavigation, setApod, showSurprise, markReady, destroy, elements };
+    return { update, updateNavigation, updateCockpitTelemetry, setApod, showSurprise, markReady, destroy, elements };
 }

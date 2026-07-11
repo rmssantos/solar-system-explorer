@@ -14,48 +14,106 @@ const ORBIT_DAYS_PER_SECOND = 0.35;
 const DAY_MS = 86_400_000;
 export const CHASE_CAMERA_LAYOUT = Object.freeze({ distance: 6.4, verticalOffset: 0.9 });
 
+export const PAPER_COCKPIT_STYLE = Object.freeze({
+    palette: Object.freeze({
+        paper: '#e7c98a', ink: '#241f2a', panel: '#263d59', glass: '#6fb3c0', signal: '#f4c85f'
+    }),
+    components: Object.freeze([
+        'canopy-arch', 'canopy-struts', 'dashboard', 'radar', 'gauges', 'signal-lights', 'reticle'
+    ])
+});
+
 function createPaperCockpit() {
     const cockpit = new THREE.Group();
     cockpit.name = 'paper-cockpit';
-    const paper = new THREE.MeshBasicMaterial({ color: '#e7c98a' });
-    const edge = new THREE.MeshBasicMaterial({ color: '#241f2a' });
-    const panel = new THREE.MeshBasicMaterial({ color: '#263d59' });
-    const glass = new THREE.MeshBasicMaterial({ color: '#6fb3c0', transparent: true, opacity: 0.52 });
+    const { palette } = PAPER_COCKPIT_STYLE;
+    const paper = new THREE.MeshBasicMaterial({ color: palette.paper });
+    const edge = new THREE.MeshBasicMaterial({ color: palette.ink });
+    const panel = new THREE.MeshBasicMaterial({ color: palette.panel });
+    const glass = new THREE.MeshBasicMaterial({ color: palette.glass, transparent: true, opacity: 0.68 });
 
-    const dashboard = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.5, 0.16), panel);
-    dashboard.position.set(0, -0.84, -1.42);
-    cockpit.add(dashboard);
+    const dashboardEdge = new THREE.Mesh(new THREE.BoxGeometry(2.72, 0.38, 0.17), edge);
+    dashboardEdge.position.set(0, -1, -2.2);
+    const dashboard = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.32, 0.18), panel);
+    dashboard.name = 'cockpit-dashboard';
+    dashboard.position.set(0, -0.98, -2.1);
+    const dashboardLipEdge = new THREE.Mesh(new THREE.BoxGeometry(2.82, 0.13, 0.2), edge);
+    dashboardLipEdge.position.set(0, -0.78, -2.18);
+    const dashboardLip = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.08, 0.21), paper);
+    dashboardLip.position.set(0, -0.78, -2.07);
+    cockpit.add(dashboardEdge, dashboard, dashboardLipEdge, dashboardLip);
 
-    [-0.9, 0.9].forEach((x, index) => {
-        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.05, 0.12), paper);
-        strut.position.set(x, 0.02, -1.48);
+    [-1.15, 1.15].forEach((x, index) => {
+        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.055, 2.2, 0.08), paper);
+        strut.name = 'cockpit-canopy-strut';
+        strut.position.set(x, 0.08, -1.7);
         strut.rotation.z = index === 0 ? -0.23 : 0.23;
-        const strutEdge = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.09, 0.14), edge);
+        const strutEdge = new THREE.Mesh(new THREE.BoxGeometry(0.085, 2.24, 0.1), edge);
         strutEdge.position.copy(strut.position);
+        strutEdge.position.z = -1.78;
         strutEdge.rotation.copy(strut.rotation);
         cockpit.add(strutEdge, strut);
     });
 
-    const canopy = new THREE.Mesh(new THREE.CircleGeometry(0.23, 8), glass);
-    canopy.position.set(0, -0.72, -1.32);
-    cockpit.add(canopy);
+    const archEdge = new THREE.Mesh(new THREE.TorusGeometry(1.33, 0.04, 4, 24, Math.PI), edge);
+    archEdge.name = 'cockpit-canopy-arch';
+    archEdge.position.set(0, 0.1, -1.78);
+    const arch = new THREE.Mesh(new THREE.TorusGeometry(1.33, 0.022, 4, 24, Math.PI), paper);
+    arch.position.set(0, 0.1, -1.7);
+    cockpit.add(archEdge, arch);
+
+    const radarFrame = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.43, 0.08), edge);
+    radarFrame.position.set(0, -0.98, -2.01);
+    const radar = new THREE.Mesh(new THREE.CircleGeometry(0.17, 12), glass);
+    radar.name = 'cockpit-radar';
+    radar.position.set(0, -0.98, -1.94);
+    const radarOrbit = new THREE.Mesh(
+        new THREE.TorusGeometry(0.11, 0.012, 4, 16),
+        new THREE.MeshBasicMaterial({ color: palette.signal })
+    );
+    radarOrbit.position.set(0, -0.98, -1.91);
+    cockpit.add(radarFrame, radar, radarOrbit);
+
+    [-0.72, 0.72].forEach((x, index) => {
+        const gaugeFrame = new THREE.Mesh(new THREE.CircleGeometry(0.18, 12), edge);
+        gaugeFrame.position.set(x, -0.98, -2.01);
+        const gauge = new THREE.Mesh(
+            new THREE.CircleGeometry(0.145, 12),
+            new THREE.MeshBasicMaterial({ color: index === 0 ? '#e7c98a' : '#79bca8' })
+        );
+        gauge.name = 'cockpit-gauge';
+        gauge.position.set(x, -0.98, -1.94);
+        const needle = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.12, 0.02), edge);
+        needle.position.set(x, -0.97, -1.9);
+        needle.rotation.z = index === 0 ? -0.7 : 0.55;
+        cockpit.add(gaugeFrame, gauge, needle);
+    });
 
     ['#ef765c', '#f4c85f', '#79bca8', '#6e8fc5'].forEach((color, index) => {
         const light = new THREE.Mesh(
             new THREE.CircleGeometry(0.045, 8),
             new THREE.MeshBasicMaterial({ color })
         );
-        light.position.set(-0.38 + index * 0.25, -0.9, -1.31);
+        light.name = 'cockpit-signal-light';
+        light.position.set(-0.3 + index * 0.2, -1.11, -1.94);
         cockpit.add(light);
     });
+
+    const handleBase = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.16, 0.08), paper);
+    handleBase.position.set(0.96, -1.08, -1.94);
+    const handle = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.3, 0.07), new THREE.MeshBasicMaterial({ color: '#ef765c' }));
+    handle.position.set(0.96, -0.94, -1.9);
+    handle.rotation.z = -0.18;
+    cockpit.add(handleBase, handle);
 
     const reticle = new THREE.LineSegments(
         new THREE.BufferGeometry().setFromPoints([
             new THREE.Vector3(-0.12, 0, -1.6), new THREE.Vector3(0.12, 0, -1.6),
             new THREE.Vector3(0, -0.12, -1.6), new THREE.Vector3(0, 0.12, -1.6)
         ]),
-        new THREE.LineBasicMaterial({ color: '#f6d77c', transparent: true, opacity: 0.78 })
+        new THREE.LineBasicMaterial({ color: '#f6d77c', transparent: true, opacity: 0.76 })
     );
+    reticle.name = 'cockpit-reticle';
     cockpit.add(reticle);
     cockpit.visible = false;
     return cockpit;
