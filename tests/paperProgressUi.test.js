@@ -13,4 +13,18 @@ describe('paper expedition passport UI', () => {
         expect(html).toContain('id="collection-grid"');
         expect(html).toContain('id="awards-grid"');
     });
+
+    it('keeps rank and reward feedback visible outside the passport dialog', () => {
+        expect(html).toContain('id="rank-chip"');
+        expect(html).toContain('id="rank-title"');
+        expect(html).toContain('id="rank-xp"');
+        expect(html).toContain('id="rank-progress"');
+        expect(html).toContain('id="reward-toast"');
+        expect(html).toContain('role="status"');
+        expect(html).toContain('aria-live="polite"');
+    });
+
+    it('places reward feedback in the browser top layer above notebook dialogs', () => {
+        expect(html).toContain('id="reward-toast" class="reward-toast" popover="manual"');
+    });
 });

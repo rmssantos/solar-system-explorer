@@ -46,7 +46,9 @@ export const PAPER_TRANSLATIONS = Object.freeze({
         'game.passport.missionCopy': 'Podes completar descobertas fora de ordem. O diário guarda tudo neste dispositivo.', 'game.passport.collectionCopy': 'Cada cartão é um lugar ou objeto que encontraste pessoalmente.', 'game.passport.awardsCopy': 'Medalhas por curiosidade; troféus por viagens extraordinárias.',
         'game.collection.locked': 'Por descobrir', 'game.collection.hint': 'Segue a curiosidade', 'game.awards.locked': 'Ainda por conquistar',
         'game.lumi.kicker': 'Lumi · guia de bordo', 'game.lumi.reward': '+15 XP', 'game.lumi.dismiss': 'Fechar transmissão',
-        'game.level': 'Nível {level} · {title}', 'game.distance.diorama': '{value} u no diorama', 'game.distance.solar': '{value} UA ao Sol'
+        'game.level': 'Nível {level} · {title}', 'game.rank.kicker': 'Patente de explorador',
+        'game.progress.saved': 'Progresso registado', 'game.progress.keep': 'Continua a explorar.', 'game.progress.levelUp': 'Nova patente', 'game.progress.award': 'Novo prémio',
+        'game.distance.diorama': '{value} u no diorama', 'game.distance.solar': '{value} UA ao Sol'
     }),
     en: Object.freeze({
         'shared.language': 'Language', 'shared.switchTo': 'Switch to Português', 'shared.skip': 'Skip to content',
@@ -93,7 +95,9 @@ export const PAPER_TRANSLATIONS = Object.freeze({
         'game.passport.missionCopy': 'Discoveries can be completed out of order. This log is saved on your device.', 'game.passport.collectionCopy': 'Each card is a place or object you personally found.', 'game.passport.awardsCopy': 'Medals for curiosity; trophies for extraordinary journeys.',
         'game.collection.locked': 'Undiscovered', 'game.collection.hint': 'Follow your curiosity', 'game.awards.locked': 'Not earned yet',
         'game.lumi.kicker': 'Lumi · flight guide', 'game.lumi.reward': '+15 XP', 'game.lumi.dismiss': 'Close transmission',
-        'game.level': 'Level {level} · {title}', 'game.distance.diorama': '{value} u in the diorama', 'game.distance.solar': '{value} AU from the Sun'
+        'game.level': 'Level {level} · {title}', 'game.rank.kicker': 'Explorer rank',
+        'game.progress.saved': 'Progress recorded', 'game.progress.keep': 'Keep exploring.', 'game.progress.levelUp': 'New rank', 'game.progress.award': 'New award',
+        'game.distance.diorama': '{value} u in the diorama', 'game.distance.solar': '{value} AU from the Sun'
     })
 });
 

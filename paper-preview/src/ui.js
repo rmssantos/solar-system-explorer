@@ -1,6 +1,7 @@
 import { PLANETS } from './state.js';
 import { chooseNearbyObject } from './world/proximity.js';
-import { AWARD_CATALOG, evaluateAwards, getExplorerLevel } from './progression/expeditionProgress.js';
+import { AWARD_CATALOG, evaluateAwards } from './progression/expeditionProgress.js';
+import { presentProgress } from './progression/progressPresentation.js';
 import { paperI18n } from './i18n/paperI18n.js';
 
 const numberFormatter = () => new Intl.NumberFormat(paperI18n.language === 'en' ? 'en-GB' : 'pt-PT');
@@ -80,6 +81,10 @@ export function createPreviewUI({
         , passportLevel: document.querySelector('#passport-level')
         , passportXp: document.querySelector('#passport-xp')
         , passportProgress: document.querySelector('#passport-progress')
+        , rankChip: document.querySelector('#rank-chip')
+        , rankTitle: document.querySelector('#rank-title')
+        , rankXp: document.querySelector('#rank-xp')
+        , rankProgress: document.querySelector('#rank-progress')
         , passportTabs: [...document.querySelectorAll('[data-passport-section]')]
         , passportPanels: [...document.querySelectorAll('[data-passport-panel]')]
         , collectionGrid: document.querySelector('#collection-grid')
@@ -100,10 +105,16 @@ export function createPreviewUI({
         , cockpitYaw: document.querySelector('#cockpit-yaw')
         , cockpitPitch: document.querySelector('#cockpit-pitch')
         , cockpitRoll: document.querySelector('#cockpit-roll')
+        , rewardToast: document.querySelector('#reward-toast')
+        , rewardToastIcon: document.querySelector('#reward-toast-icon')
+        , rewardToastKicker: document.querySelector('#reward-toast-kicker')
+        , rewardToastTitle: document.querySelector('#reward-toast-title')
+        , rewardToastMessage: document.querySelector('#reward-toast-message')
         , languageToggle: document.querySelector('[data-language-toggle]')
     };
 
     let lumiTimer = null;
+    let rewardTimer = null;
 
     function renderLanguageToggle() {
         elements.languageToggle.textContent = paperI18n.language === 'pt' ? 'EN' : 'PT';
@@ -127,6 +138,23 @@ export function createPreviewUI({
         const option = event.target.closest('[data-quiz-index]');
         if (option) onAnswerQuiz(Number(option.dataset.quizIndex));
     };
+    function selectPassportSection(section) {
+        elements.passportTabs.forEach((candidate) => {
+            const selected = candidate.dataset.passportSection === section;
+            candidate.setAttribute('aria-selected', String(selected));
+            candidate.tabIndex = selected ? 0 : -1;
+        });
+        elements.passportPanels.forEach((panel) => {
+            panel.hidden = panel.dataset.passportPanel !== section;
+        });
+    }
+
+    function openMissionLog(section) {
+        selectPassportSection(section);
+        elements.missionLog.showModal();
+        onMissionLogOpen();
+    }
+
     const listeners = [
         [elements.explore, 'click', onExplore],
         [elements.notebookTrigger, 'click', onExplore],
@@ -138,10 +166,8 @@ export function createPreviewUI({
         [elements.tabs[0].parentElement, 'click', handleTabClick],
         [elements.quizOptions, 'click', handleQuizClick],
         [elements.quizRetry, 'click', onRetryQuiz]
-        , [elements.objective, 'click', () => {
-            elements.missionLog.showModal();
-            onMissionLogOpen();
-        }]
+        , [elements.objective, 'click', () => openMissionLog('missions')]
+        , [elements.rankChip, 'click', () => openMissionLog('awards')]
         , [elements.closeMissionLog, 'click', () => {
             elements.missionLog.close();
             onMissionLogClose();
@@ -157,13 +183,7 @@ export function createPreviewUI({
         , [elements.passportTabs[0].parentElement, 'click', (event) => {
             const tab = event.target.closest('[data-passport-section]');
             if (!tab) return;
-            const section = tab.dataset.passportSection;
-            elements.passportTabs.forEach((candidate) => {
-                candidate.setAttribute('aria-selected', String(candidate === tab));
-            });
-            elements.passportPanels.forEach((panel) => {
-                panel.hidden = panel.dataset.passportPanel !== section;
-            });
+            selectPassportSection(tab.dataset.passportSection);
         }]
         , [elements.dismissLumi, 'click', hideSurprise]
         , [elements.languageToggle, 'click', () => paperI18n.toggle()]
@@ -270,10 +290,18 @@ export function createPreviewUI({
     }
 
     function renderProgression(state, missions, expeditionProgress) {
-        const level = getExplorerLevel(expeditionProgress?.xp ?? 0, paperI18n.language);
-        elements.passportLevel.textContent = paperI18n.t('game.level', { level: level.level, title: level.title });
-        elements.passportXp.textContent = `${expeditionProgress?.xp ?? 0} XP`;
-        elements.passportProgress.value = level.progress;
+        const progressView = presentProgress(expeditionProgress, {
+            ...state.learning,
+            completedMissionIds: missions?.completedIds ?? []
+        }, paperI18n.language);
+        const rankLabel = paperI18n.t('game.level', { level: progressView.level, title: progressView.title });
+        elements.passportLevel.textContent = rankLabel;
+        elements.passportXp.textContent = `${progressView.xp} XP`;
+        elements.passportProgress.value = progressView.progressPercent / 100;
+        elements.rankTitle.textContent = rankLabel;
+        elements.rankXp.textContent = `${progressView.xp} XP`;
+        elements.rankProgress.value = progressView.progressPercent;
+        elements.rankChip.setAttribute('aria-label', `${rankLabel} · ${progressView.xp} XP`);
 
         const discovered = new Set(state.learning.discoveredKeys);
         elements.collectionGrid.replaceChildren(...Object.values(learningCatalog).map((record) => {
@@ -392,6 +420,38 @@ export function createPreviewUI({
         lumiTimer = window.setTimeout(hideSurprise, 14_000);
     }
 
+    function showProgressFeedback(delta) {
+        if (!delta || (!delta.xpGained && !delta.leveledUp && !delta.newAwards?.length)) return;
+        const award = delta.newAwards?.[0] ?? null;
+        elements.rewardToastIcon.textContent = award?.icon ?? (delta.leveledUp ? '✦' : '+');
+        if (award) {
+            elements.rewardToastKicker.textContent = paperI18n.t('game.progress.award');
+            elements.rewardToastTitle.textContent = award.title;
+            elements.rewardToastMessage.textContent = `${award.description}${delta.xpGained ? ` · +${delta.xpGained} XP` : ''}`;
+        } else if (delta.leveledUp) {
+            elements.rewardToastKicker.textContent = paperI18n.t('game.progress.levelUp');
+            elements.rewardToastTitle.textContent = paperI18n.t('game.level', delta.newLevel);
+            elements.rewardToastMessage.textContent = delta.xpGained ? `+${delta.xpGained} XP` : paperI18n.t('game.progress.keep');
+        } else {
+            elements.rewardToastKicker.textContent = paperI18n.t('game.progress.saved');
+            elements.rewardToastTitle.textContent = `+${delta.xpGained} XP`;
+            elements.rewardToastMessage.textContent = paperI18n.t('game.progress.keep');
+        }
+        if (rewardTimer) window.clearTimeout(rewardTimer);
+        window.setTimeout(() => {
+            elements.rewardToast.hidden = false;
+            if (typeof elements.rewardToast.showPopover === 'function' && !elements.rewardToast.matches(':popover-open')) {
+                elements.rewardToast.showPopover();
+            }
+        }, 0);
+        rewardTimer = window.setTimeout(() => {
+            if (typeof elements.rewardToast.hidePopover === 'function' && elements.rewardToast.matches(':popover-open')) {
+                elements.rewardToast.hidePopover();
+            }
+            elements.rewardToast.hidden = true;
+        }, 5_500);
+    }
+
     function updateCockpitTelemetry(telemetry, navigation) {
         elements.cockpitInstruments.hidden = !telemetry.visible;
         document.body.classList.toggle('is-cockpit', telemetry.visible);
@@ -412,11 +472,12 @@ export function createPreviewUI({
 
     function destroy() {
         if (lumiTimer) window.clearTimeout(lumiTimer);
+        if (rewardTimer) window.clearTimeout(rewardTimer);
         unsubscribeLanguage();
         for (const [element, eventName, handler] of listeners) {
             element.removeEventListener(eventName, handler);
         }
     }
 
-    return { update, updateNavigation, updateCockpitTelemetry, setApod, showSurprise, markReady, destroy, elements };
+    return { update, updateNavigation, updateCockpitTelemetry, setApod, showSurprise, showProgressFeedback, markReady, destroy, elements };
 }

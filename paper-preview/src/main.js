@@ -23,6 +23,7 @@ import {
     createExpeditionProgress,
     reconcileExpeditionProgress
 } from './progression/expeditionProgress.js';
+import { compareProgress, presentProgress } from './progression/progressPresentation.js';
 import {
     createSurpriseState,
     dismissSurprise,
@@ -47,6 +48,14 @@ let expeditionProgress = reconcileExpeditionProgress(createExpeditionProgress(sa
     completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds
 });
 let surpriseState = createSurpriseState({ seenIds: savedProgress.seenSurpriseIds });
+function currentProgressSnapshot() {
+    return {
+        ...previewState.learning,
+        completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds,
+        seenSurpriseIds: surpriseState.seenIds
+    };
+}
+let progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
 let flightState = createFlightState();
 let deterministicMode = false;
 let lastFrameTime = performance.now();
@@ -223,20 +232,23 @@ function handleAnswerQuiz(selectedIndex) {
     syncUI(true);
 }
 
-function reconcileAndSaveProgress() {
+function reconcileAndSaveProgress({ feedback = true } = {}) {
+    const previousPresentation = progressPresentation;
     const missions = evaluateMissions(previewState.learning, paperI18n.language);
     expeditionProgress = reconcileExpeditionProgress(expeditionProgress, {
         ...previewState.learning,
         completedMissionIds: missions.completedIds,
         seenSurpriseIds: surpriseState.seenIds
     });
+    progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
     saveProgress({ ...previewState.learning, ...expeditionProgress });
+    if (feedback) previewUI.showProgressFeedback(compareProgress(previousPresentation, progressPresentation));
 }
 
 function handleSurprise(event) {
     previewUI.showSurprise(getLocalizedSurprise(event.id, paperI18n.language));
     paperScene.triggerSurprise(event.effect);
-    reconcileAndSaveProgress();
+    reconcileAndSaveProgress({ feedback: false });
     syncUI(true);
 }
 
@@ -270,6 +282,7 @@ const previewUI = createPreviewUI({
 
 paperI18n.subscribe(() => {
     learningCatalog = createPaperLearningCatalog(paperI18n.language);
+    progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
     lastUiSignature = '';
     syncUI(true);
     updateMissionNavigation();
@@ -440,7 +453,7 @@ window.render_game_to_text = () => {
             quizStatus: previewState.learning.quiz.status,
             discoveredKeys: [...previewState.learning.discoveredKeys]
         },
-        progression: expeditionProgress,
+        progression: { ...expeditionProgress, presentation: progressPresentation },
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
         scene: paperScene.getState()
     });
@@ -454,7 +467,7 @@ window.advanceTime = (milliseconds) => {
 };
 
 window.__paperPreview = {
-    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, scene: paperScene.getState() }),
+    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, scene: paperScene.getState() }),
     explore: handleExplore,
     closeNotebook: handleCloseNotebook,
     selectSection: handleSelectSection,
