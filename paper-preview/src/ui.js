@@ -29,7 +29,8 @@ export function createPreviewUI({
     onMissionLogClose,
     onDismissSurprise,
     onZoom,
-    onToggleOrbits
+    onToggleOrbits,
+    onSoundToggle
 }) {
     const elements = {
         objective: document.querySelector('#objective-chip'),
@@ -87,6 +88,7 @@ export function createPreviewUI({
         , zoomCockpit: document.querySelector('#zoom-cockpit')
         , zoomIn: document.querySelector('#zoom-in')
         , orbitToggle: document.querySelector('#orbit-toggle')
+        , soundToggle: document.querySelector('#sound-toggle')
         , passportLevel: document.querySelector('#passport-level')
         , passportXp: document.querySelector('#passport-xp')
         , passportProgress: document.querySelector('#passport-progress')
@@ -126,6 +128,7 @@ export function createPreviewUI({
     let lumiTimer = null;
     let rewardTimer = null;
     let activeMedia = null;
+    let audioState = { enabled: true, unlocked: false };
     const mediaViewer = createMediaViewer(elements.mediaViewer, {
         onImageOpen: (media) => siteAnalytics.track('image_open', { objectKey: media.objectKey, surface: 'game' }),
         onSourceOpen: (media) => siteAnalytics.track('source_open', {
@@ -138,6 +141,7 @@ export function createPreviewUI({
     function renderLanguageToggle() {
         elements.languageToggle.textContent = paperI18n.language === 'pt' ? 'EN' : 'PT';
         elements.languageToggle.setAttribute('aria-label', paperI18n.t('shared.switchTo'));
+        updateAudioState(audioState);
     }
     const unsubscribeLanguage = paperI18n.subscribe(renderLanguageToggle);
     renderLanguageToggle();
@@ -201,6 +205,7 @@ export function createPreviewUI({
             const visible = onToggleOrbits();
             elements.orbitToggle.setAttribute('aria-pressed', String(visible));
         }]
+        , [elements.soundToggle, 'click', () => updateAudioState(onSoundToggle())]
         , [elements.passportTabs[0].parentElement, 'click', (event) => {
             const tab = event.target.closest('[data-passport-section]');
             if (!tab) return;
@@ -500,6 +505,14 @@ export function createPreviewUI({
         }, 5_500);
     }
 
+    function updateAudioState(nextState) {
+        audioState = { ...audioState, ...nextState };
+        elements.soundToggle.setAttribute('aria-pressed', String(audioState.enabled));
+        elements.soundToggle.classList.toggle('is-muted', !audioState.enabled);
+        elements.soundToggle.classList.toggle('is-unlocked', audioState.unlocked);
+        elements.soundToggle.setAttribute('aria-label', paperI18n.t(audioState.enabled ? 'game.audio.mute' : 'game.audio.enable'));
+    }
+
     function updateCockpitTelemetry(telemetry, navigation) {
         elements.cockpitInstruments.hidden = !telemetry.visible;
         document.body.classList.toggle('is-cockpit', telemetry.visible);
@@ -530,5 +543,5 @@ export function createPreviewUI({
         }
     }
 
-    return { update, updateNavigation, updateCockpitTelemetry, setApod, showSurprise, showProgressFeedback, markReady, destroy, elements };
+    return { update, updateNavigation, updateCockpitTelemetry, updateAudioState, setApod, showSurprise, showProgressFeedback, markReady, destroy, elements };
 }

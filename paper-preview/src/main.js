@@ -36,6 +36,7 @@ import { paperI18n } from './i18n/paperI18n.js';
 import { translateWorldObject } from './i18n/paperObjectTranslations.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
 import { createEphemerisPresentation } from './learning/ephemerisPresentation.js';
+import { createAudioDirector } from './audio/audioDirector.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -89,6 +90,7 @@ let lastInput = {
 };
 
 const paperScene = createPaperScene(stage);
+const audioDirector = createAudioDirector();
 const spaceData = createSpaceDataService();
 const NASA_SEARCH_TERMS = Object.freeze({
     sun: 'Sun solar observatory', mercury: 'Mercury planet', venus: 'Venus planet',
@@ -215,6 +217,7 @@ function handleExplore() {
     const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
     if (previewState.notebook.open || !nearbyKey) return;
     previewState = explorePlanet(previewState, nearbyKey);
+    audioDirector.play('paper-fold');
     const object = getWorldObject(nearbyKey);
     const category = object.type === 'moon' ? 'moons'
         : object.type === 'spacecraft' ? 'human'
@@ -229,6 +232,7 @@ function handleExplore() {
 function handleCloseNotebook() {
     if (!previewState.notebook.open) return;
     previewState = closeNotebook(previewState);
+    audioDirector.play('paper-fold');
     flightInput.setEnabled(true);
     syncUI(true);
 }
@@ -248,6 +252,7 @@ function currentLearningQuiz() {
 
 function handleAnswerQuiz(selectedIndex) {
     const quiz = currentLearningQuiz();
+    audioDirector.play(selectedIndex === quiz.correctIndex ? 'quiz-correct' : 'quiz-wrong');
     const attempt = previewState.learning.quiz.attempts + 1;
     const attemptBucket = attempt >= 3 ? '3+' : String(attempt);
     siteAnalytics.track('quiz_result', {
@@ -277,10 +282,15 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
     });
     progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
     saveProgress({ ...previewState.learning, ...expeditionProgress });
-    if (feedback) previewUI.showProgressFeedback(compareProgress(previousPresentation, progressPresentation));
+    if (feedback) {
+        const delta = compareProgress(previousPresentation, progressPresentation);
+        previewUI.showProgressFeedback(delta);
+        if (delta.xpGained || delta.leveledUp || delta.newAwards?.length) audioDirector.play('reward-chime');
+    }
 }
 
 function handleSurprise(event) {
+    audioDirector.play('lumi-signal');
     previewUI.showSurprise(getLocalizedSurprise(event.id, paperI18n.language));
     paperScene.triggerSurprise(event.effect);
     reconcileAndSaveProgress({ feedback: false });
@@ -312,8 +322,22 @@ const previewUI = createPreviewUI({
     onZoom: (direction) => paperScene.adjustZoom(
         direction === 'cockpit' ? -100 : (direction === 'in' ? -0.9 : 0.9)
     ),
-    onToggleOrbits: () => paperScene.toggleOrbits()
+    onToggleOrbits: () => paperScene.toggleOrbits(),
+    onSoundToggle: () => {
+        audioDirector.toggle();
+        return audioDirector.getState();
+    }
 });
+previewUI.updateAudioState(audioDirector.getState());
+
+function unlockAudio() {
+    audioDirector.unlock();
+    previewUI.updateAudioState(audioDirector.getState());
+    window.removeEventListener('pointerdown', unlockAudio, true);
+    window.removeEventListener('keydown', unlockAudio, true);
+}
+window.addEventListener('pointerdown', unlockAudio, { capture: true, once: true });
+window.addEventListener('keydown', unlockAudio, { capture: true, once: true });
 
 paperI18n.subscribe(() => {
     siteAnalytics.track('language_change', { language: paperI18n.language, surface: 'game' });
@@ -368,6 +392,7 @@ function flyToWorldObject(key) {
     if (!object || !target || previewState.notebook.open || previewUI.elements.missionLog.open) return false;
     flightInput.reset();
     autoPilotState = createAutopilot(key, flightState.position, target, interactionRadiusFor(object));
+    audioDirector.play('autopilot-start');
     siteAnalytics.track('autopilot_event', { objectKey: key, state: 'start' });
     objectHover.hidden = true;
     updateAutopilotDisplay();
@@ -488,6 +513,7 @@ function step(seconds) {
             };
             updateAutopilotDisplay();
             if (result.arrived) {
+                audioDirector.play('autopilot-arrive');
                 siteAnalytics.track('autopilot_event', { objectKey: autopilotTargetKey, state: 'arrive' });
                 paperScene.triggerSurprise('star');
             }
@@ -506,6 +532,12 @@ function step(seconds) {
     });
     surpriseState = surpriseResult.state;
     if (surpriseResult.event) handleSurprise(surpriseResult.event);
+    audioDirector.update({
+        speed: Math.hypot(flightState.velocity.x, flightState.velocity.y, flightState.velocity.z),
+        boost: lastInput.boost,
+        autopilot: Boolean(autoPilotState),
+        dialogOpen
+    }, seconds);
     updateMissionNavigation();
     previewUI.updateCockpitTelemetry(
         createCockpitTelemetry(flightState, currentNavigation, paperScene.getState().cameraMode),
@@ -592,6 +624,7 @@ window.render_game_to_text = () => {
         progression: { ...expeditionProgress, presentation: progressPresentation },
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
         autopilot: autoPilotState ? { ...autoPilotState } : null,
+        audio: audioDirector.getState(),
         scene: paperScene.getState()
     });
 };
@@ -655,8 +688,11 @@ window.__paperPreview = {
 window.addEventListener('keydown', handleKeydown);
 document.addEventListener('fullscreenchange', paperScene.resize);
 window.addEventListener('beforeunload', () => {
+    window.removeEventListener('pointerdown', unlockAudio, true);
+    window.removeEventListener('keydown', unlockAudio, true);
     flightInput.destroy();
     previewUI.destroy();
+    audioDirector.destroy();
     paperScene.destroy();
 }, { once: true });
 
