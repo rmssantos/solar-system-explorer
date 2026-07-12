@@ -64,6 +64,8 @@ describe('Release governance', () => {
         expect(workflow).toContain('VERSION=$(node -p "require(\'./package.json\').version")');
         expect(workflow).toContain('VITE_APP_VERSION: ${{ steps.build.outputs.version }}');
         expect(workflow).toContain('VITE_GIT_SHA: ${{ steps.build.outputs.sha }}');
+        expect(workflow).toContain('return await core.getIDToken()');
+        expect(workflow).not.toContain("const core = require('@actions/core')");
     });
 
     it('formats and mounts visible build identity on editorial surfaces', async () => {
