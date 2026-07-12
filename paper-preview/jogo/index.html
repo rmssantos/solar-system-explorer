@@ -25,7 +25,8 @@
                 </button>
             </div>
         </header>
-        <div id="paper-stage" class="paper-stage" role="img" aria-label="Diorama do Sistema Solar em papel">
+        <p id="flight-control-instructions" class="visually-hidden" data-i18n="game.accessibleControls">No ecrã tátil, usa o joystick inferior esquerdo para mover, arrasta o cenário com um dedo para olhar e usa dois dedos para zoom. Com teclado, usa W, A, S, D ou as setas para mover.</p>
+        <div id="paper-stage" class="paper-stage" role="region" tabindex="0" aria-describedby="flight-control-instructions" aria-label="Diorama interativo do Sistema Solar em papel" data-i18n-aria="game.stage">
             <p class="stage-loading" aria-live="polite" data-i18n="game.loading">A montar o diorama…</p>
         </div>
 
@@ -114,7 +115,7 @@
         </section>
 
         <section id="flight-controls" class="flight-controls" aria-label="Controlos de voo">
-            <div id="flight-joystick" class="flight-joystick flight-move-joystick" data-flight-control aria-label="Mover nave" data-i18n-aria="game.flight.move">
+            <div id="flight-joystick" class="flight-joystick flight-move-joystick" data-flight-control role="group" aria-describedby="flight-control-instructions" aria-label="Mover nave" data-i18n-aria="game.flight.move">
                 <div class="joystick-orbit" aria-hidden="true"></div>
                 <div id="joystick-knob" class="joystick-knob" aria-hidden="true"></div>
                 <span class="joystick-label" data-i18n="game.flight.move">Mover</span>

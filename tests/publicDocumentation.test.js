@@ -25,6 +25,14 @@ describe('public repository documentation', () => {
         ]) expect(readme).not.toContain(legacyClaim);
     });
 
+    it('provides a working preview command for the Paper build output', () => {
+        const packageMetadata = JSON.parse(read('package.json'));
+
+        expect(packageMetadata.scripts['preview:paper'])
+            .toBe('vite preview paper-preview --outDir ../dist-paper-preview');
+        expect(read('README.md')).toContain('npm run preview:paper');
+    });
+
     it('documents the current deployment-token SWA CLI release path in English', () => {
         const releases = read('docs/releases.md');
 

@@ -47,6 +47,17 @@ button:focus-visible {
     outline-offset: 4px;
 }
 
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .game-topbar {
     position: fixed;
     z-index: 14;
@@ -270,6 +281,11 @@ button:focus-visible {
 .paper-stage {
     cursor: grab;
     touch-action: none;
+}
+
+.paper-stage:focus-visible {
+    outline: 3px solid var(--sun-pulp);
+    outline-offset: -3px;
 }
 
 .paper-stage.is-looking {

@@ -74,7 +74,16 @@ describe('Mobile-first paper flight controls', () => {
 
     it('keeps control gestures out of stage selection', () => {
         expect(main).toContain("closest?.('[data-flight-control]')");
-        expect(main).toContain("event.pointerType === 'touch'");
+        expect(main).toContain('createStageSelectionGesture()');
+    });
+
+    it('exposes localized drag, pinch, and keyboard instructions to assistive technology', () => {
+        expect(html).toMatch(/id="paper-stage"[^>]*role="region"[^>]*tabindex="0"[^>]*aria-describedby="flight-control-instructions"/);
+        expect(html).toContain('id="flight-control-instructions"');
+        expect(html).toContain('data-i18n="game.accessibleControls"');
+        expect(html).toMatch(/id="flight-joystick"[^>]*role="group"[^>]*aria-describedby="flight-control-instructions"/);
+        expect(css).toContain('.visually-hidden');
+        expect(i18n).toContain("'game.accessibleControls'");
     });
 
     it('activates for coarse pointers with safe-area-aware thumb zones', () => {

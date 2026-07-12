@@ -59,10 +59,10 @@ npm test              # Vitest suite
 npm run lint          # ESLint
 npm run typecheck     # TypeScript checkJs validation
 npm run build:paper   # production build in dist-paper-preview/
-npx vite preview paper-preview
+npm run preview:paper
 ```
 
-Pull requests run tests, lint, type checking, a production build, and an Azure preview deployment.
+Human-authored product pull requests run tests, lint, type checking, a production build, and an Azure preview deployment. Dependency pull requests run the validation checks without receiving deployment secrets or a preview environment.
 
 ## Versioning and production
 
