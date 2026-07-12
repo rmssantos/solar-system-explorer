@@ -109,9 +109,10 @@
         </section>
 
         <section id="flight-controls" class="flight-controls" aria-label="Controlos de voo">
-            <div id="flight-joystick" class="flight-joystick" aria-label="Joystick de voo">
+            <div id="flight-joystick" class="flight-joystick flight-move-joystick" data-flight-control aria-label="Mover nave" data-i18n-aria="game.flight.move">
                 <div class="joystick-orbit" aria-hidden="true"></div>
                 <div id="joystick-knob" class="joystick-knob" aria-hidden="true"></div>
+                <span class="joystick-label" data-i18n="game.flight.move">Mover</span>
             </div>
 
             <button id="explore-nearby" class="explore-nearby" type="button" hidden>
@@ -119,14 +120,24 @@
                 <strong id="nearby-planet-name">Explorar Sol</strong>
             </button>
 
-            <div class="flight-actions" aria-label="Movimento vertical e impulso">
-                <button id="flight-up" type="button" aria-label="Subir"><span aria-hidden="true">↑</span></button>
-                <button id="flight-boost" class="flight-boost" type="button" aria-label="Ativar impulso"><span data-i18n="game.flight.boost">Boost</span></button>
-                <button id="flight-down" type="button" aria-label="Descer"><span aria-hidden="true">↓</span></button>
+            <div class="flight-actions" aria-label="Manobras da nave">
+                <button id="flight-roll-left" data-flight-control type="button" aria-label="Rodar para a esquerda" data-i18n-aria="game.flight.rollLeft"><span aria-hidden="true">↶</span></button>
+                <button id="flight-up" data-flight-control type="button" aria-label="Subir" data-i18n-aria="game.flight.up"><span aria-hidden="true">↑</span></button>
+                <button id="flight-roll-right" data-flight-control type="button" aria-label="Rodar para a direita" data-i18n-aria="game.flight.rollRight"><span aria-hidden="true">↷</span></button>
+                <button id="flight-brake" class="flight-brake" data-flight-control type="button" aria-label="Travar" data-i18n-aria="game.flight.brake"><span data-i18n="game.flight.brake">Travão</span></button>
+                <button id="flight-down" data-flight-control type="button" aria-label="Descer" data-i18n-aria="game.flight.down"><span aria-hidden="true">↓</span></button>
+                <button id="flight-boost" class="flight-boost" data-flight-control type="button" aria-pressed="false" aria-label="Alternar impulso" data-i18n-aria="game.flight.boostToggle"><span data-i18n="game.flight.boost">Boost</span></button>
+            </div>
+
+            <div id="flight-look-joystick" class="flight-joystick flight-look-joystick" data-flight-control aria-label="Orientar nave" data-i18n-aria="game.flight.look">
+                <div class="joystick-orbit" aria-hidden="true"></div>
+                <div id="look-joystick-knob" class="joystick-knob joystick-look-knob" aria-hidden="true"></div>
+                <span class="joystick-label" data-i18n="game.flight.look">Olhar</span>
             </div>
         </section>
 
         <p class="key-hint" aria-hidden="true" data-i18n="game.controls">W/S frente · A/D lateral · rato olha · roda zoom · V cockpit · Shift boost · R/F roda</p>
+        <p class="touch-hint" aria-hidden="true" data-i18n="game.touchControls">Dois polegares: mover à esquerda · olhar à direita</p>
     </main>
 
     <dialog id="field-notebook" class="field-notebook" aria-labelledby="notebook-title">
