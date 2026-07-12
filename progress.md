@@ -164,7 +164,7 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Smoke do cliente oficial com os assets ElevenLabs: gesto de voo desbloqueou áudio, nave chegou a 5,109 u/s, ambiente ficou em 0,197, motor em 0,199 e playback rate em 1,140; sem erros de consola. Evidência: `output/playwright/elevenlabs-audio-smoke/shot-0.png` e `state-0.json`.
 - TODO real: fazer audição humana dos nove resultados em colunas e auscultadores, desktop e telemóvel, e ajustar apenas níveis do mixer se algum sinal competir com o ambiente.
 
-## 2026-07-12 — Voo mobile-first e touch
+## 2026-07-12: Voo mobile-first e touch
 
 - Auditoria inicial encontrou a causa principal da navegação impossível: os controlos apareciam apenas abaixo de 720 px, por isso tablets 820×1180 com coarse pointer recebiam apenas instruções de teclado. Em phone, navegação/idioma ocupavam a zona do joystick esquerdo e olhar dependia de drag no mesmo palco usado por seleção/autopilot.
 - Implementado modelo de dois polegares: stick esquerdo contínuo para frente/trás/strafe e stick direito contínuo para yaw/pitch; subir, descer, travão e roll esquerdo/direito são hold controls; boost é um toggle acessível com `aria-pressed`.

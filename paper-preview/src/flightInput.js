@@ -39,6 +39,7 @@ export function createFlightInput({
         rollRight: false
     };
     const cleanup = [];
+    const resetHolds = [];
     let enabled = true;
     let lookPointerId = null;
     let lookPrevious = { x: 0, y: 0 };
@@ -147,10 +148,18 @@ export function createFlightInput({
     }
 
     function bindHold(button, key) {
+        let pointerId = null;
+        const resetHold = () => {
+            pointerId = null;
+            mobileIntent[key] = false;
+            button.classList.remove('is-active');
+        };
         const begin = (event) => {
             if (!enabled) return;
             event.preventDefault();
             event.stopPropagation();
+            if (pointerId !== null) return;
+            pointerId = event.pointerId;
             mobileIntent[key] = true;
             button.setPointerCapture(event.pointerId);
             button.classList.add('is-active');
@@ -158,13 +167,15 @@ export function createFlightInput({
         const end = (event) => {
             event.preventDefault();
             event.stopPropagation();
-            mobileIntent[key] = false;
-            button.classList.remove('is-active');
+            if (event.pointerId !== pointerId) return;
+            resetHold();
         };
         button.addEventListener('pointerdown', begin);
         button.addEventListener('pointerup', end);
         button.addEventListener('pointercancel', end);
+        resetHolds.push(resetHold);
         cleanup.push(() => {
+            pointerId = null;
             button.removeEventListener('pointerdown', begin);
             button.removeEventListener('pointerup', end);
             button.removeEventListener('pointercancel', end);
@@ -233,6 +244,7 @@ export function createFlightInput({
     function reset() {
         pressedKeys.clear();
         Object.keys(mobileIntent).forEach((key) => { mobileIntent[key] = false; });
+        resetHolds.forEach((resetHold) => resetHold());
         [upButton, downButton, boostButton, brakeButton, rollLeftButton, rollRightButton]
             .forEach((button) => button.classList.remove('is-active'));
         boostButton.setAttribute('aria-pressed', 'false');

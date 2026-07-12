@@ -908,7 +908,8 @@ button:focus-visible {
 @media (any-pointer: coarse), (max-width: 720px) {
     .paper-shell {
         --touch-stick-size: clamp(112px, 16vw, 128px);
-        --touch-edge-gap: max(14px, env(safe-area-inset-left));
+        --touch-edge-gap-left: max(14px, env(safe-area-inset-left));
+        --touch-edge-gap-right: max(14px, env(safe-area-inset-right));
     }
 
     .experience-header {
@@ -950,7 +951,7 @@ button:focus-visible {
         top: auto;
         right: auto;
         bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 16px);
-        left: max(14px, env(safe-area-inset-left));
+        left: var(--touch-edge-gap-left);
         gap: 5px;
     }
 
@@ -967,7 +968,7 @@ button:focus-visible {
         top: auto;
         right: auto;
         bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 73px);
-        left: max(14px, env(safe-area-inset-left));
+        left: var(--touch-edge-gap-left);
         width: 52px;
         min-height: 52px;
     }
@@ -984,11 +985,11 @@ button:focus-visible {
     }
 
     .flight-move-joystick {
-        left: max(14px, env(safe-area-inset-left));
+        left: var(--touch-edge-gap-left);
     }
 
     .flight-look-joystick {
-        right: max(14px, env(safe-area-inset-right));
+        right: var(--touch-edge-gap-right);
     }
 
     .joystick-orbit {
@@ -1047,7 +1048,7 @@ button:focus-visible {
 
     .flight-actions {
         position: absolute;
-        right: max(14px, env(safe-area-inset-right));
+        right: var(--touch-edge-gap-right);
         bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 10px);
         display: grid;
         grid-template-columns: repeat(3, 52px);

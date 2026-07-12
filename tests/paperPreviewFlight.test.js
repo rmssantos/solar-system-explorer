@@ -228,41 +228,52 @@ describe('Paper flight input', () => {
 
     it('combines simultaneous movement and continuous look sticks', () => {
         const harness = createInputHarness();
-        const input = createFlightInput(harness.options);
+        let input;
+        try {
+            input = createFlightInput(harness.options);
 
-        harness.left.emit('pointerdown', pointerEvent(1, 100, 50, harness.left));
-        harness.look.emit('pointerdown', pointerEvent(2, 50, 100, harness.look));
+            harness.left.emit('pointerdown', pointerEvent(1, 100, 50, harness.left));
+            harness.look.emit('pointerdown', pointerEvent(2, 50, 100, harness.look));
 
-        const active = input.sample();
-        expect(active.strafe).toBeCloseTo(1, 4);
-        expect(active.forward).toBeCloseTo(0, 4);
-        expect(active.yawDelta).toBeCloseTo(0, 4);
-        expect(active.pitchDelta).toBeLessThan(0);
-        expect(input.sample().pitchDelta).toBeLessThan(0);
+            const active = input.sample();
+            expect(active.strafe).toBeCloseTo(1, 4);
+            expect(active.forward).toBeCloseTo(0, 4);
+            expect(active.yawDelta).toBeCloseTo(0, 4);
+            expect(active.pitchDelta).toBeLessThan(0);
+            expect(input.sample().pitchDelta).toBeLessThan(0);
 
-        harness.left.emit('pointerup', pointerEvent(1, 100, 50, harness.left));
-        harness.look.emit('pointerup', pointerEvent(2, 50, 100, harness.look));
-        input.destroy();
-        harness.restore();
+            harness.left.emit('pointerup', pointerEvent(1, 100, 50, harness.left));
+            harness.look.emit('pointerup', pointerEvent(2, 50, 100, harness.look));
+        } finally {
+            input?.destroy();
+            harness.restore();
+        }
     });
 
     it('offers complete touch manoeuvres and clears latched boost on reset', () => {
         const harness = createInputHarness();
-        const input = createFlightInput(harness.options);
+        let input;
+        try {
+            input = createFlightInput(harness.options);
 
-        harness.up.emit('pointerdown', pointerEvent(3, 0, 0, harness.up));
-        harness.rollRight.emit('pointerdown', pointerEvent(4, 0, 0, harness.rollRight));
-        harness.brake.emit('pointerdown', pointerEvent(5, 0, 0, harness.brake));
-        harness.boost.emit('click', pointerEvent(6, 0, 0, harness.boost));
+            harness.up.emit('pointerdown', pointerEvent(3, 0, 0, harness.up));
+            harness.rollRight.emit('pointerdown', pointerEvent(4, 0, 0, harness.rollRight));
+            harness.brake.emit('pointerdown', pointerEvent(5, 0, 0, harness.brake));
+            harness.boost.emit('click', pointerEvent(6, 0, 0, harness.boost));
+            harness.up.emit('pointerup', pointerEvent(99, 0, 0, harness.up));
 
-        expect(input.sample()).toMatchObject({ vertical: 1, roll: 1, brake: true, boost: true });
-        expect(harness.boost.attributes.get('aria-pressed')).toBe('true');
+            expect(input.sample()).toMatchObject({ vertical: 1, roll: 1, brake: true, boost: true });
+            expect(harness.boost.attributes.get('aria-pressed')).toBe('true');
+            expect(harness.boost.classList.values.has('is-active')).toBe(true);
 
-        input.reset();
-        expect(input.sample()).toMatchObject({ vertical: 0, roll: 0, brake: false, boost: false });
-        expect(harness.boost.attributes.get('aria-pressed')).toBe('false');
-        input.destroy();
-        harness.restore();
+            input.reset();
+            expect(input.sample()).toMatchObject({ vertical: 0, roll: 0, brake: false, boost: false });
+            expect(harness.boost.attributes.get('aria-pressed')).toBe('false');
+            expect(harness.boost.classList.values.has('is-active')).toBe(false);
+        } finally {
+            input?.destroy();
+            harness.restore();
+        }
     });
 });
 
@@ -275,7 +286,13 @@ class FakeControl {
         this.classList = {
             values: new Set(),
             add: (...names) => names.forEach((name) => this.classList.values.add(name)),
-            remove: (...names) => names.forEach((name) => this.classList.values.delete(name))
+            remove: (...names) => names.forEach((name) => this.classList.values.delete(name)),
+            toggle: (name, force) => {
+                const shouldAdd = force ?? !this.classList.values.has(name);
+                if (shouldAdd) this.classList.values.add(name);
+                else this.classList.values.delete(name);
+                return shouldAdd;
+            }
         };
     }
 

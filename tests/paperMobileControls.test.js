@@ -6,6 +6,7 @@ const css = readFileSync(new URL('../paper-preview/styles.css', import.meta.url)
 const ui = readFileSync(new URL('../paper-preview/src/ui.js', import.meta.url), 'utf8');
 const main = readFileSync(new URL('../paper-preview/src/main.js', import.meta.url), 'utf8');
 const i18n = readFileSync(new URL('../paper-preview/src/i18n/paperI18n.js', import.meta.url), 'utf8');
+const COARSE_POINTER_QUERY = /@media\s*\(any-pointer:\s*coarse\)/;
 
 describe('Mobile-first paper flight controls', () => {
     it('provides two labelled touch sticks and complete manoeuvre controls', () => {
@@ -37,8 +38,10 @@ describe('Mobile-first paper flight controls', () => {
     });
 
     it('activates for coarse pointers with safe-area-aware thumb zones', () => {
-        expect(css).toMatch(/@media\s*\(any-pointer:\s*coarse\)/);
+        expect(css).toMatch(COARSE_POINTER_QUERY);
         expect(css).toContain('--touch-stick-size: clamp(112px, 16vw, 128px)');
+        expect(css).toContain('--touch-edge-gap-left: max(14px, env(safe-area-inset-left))');
+        expect(css).toContain('--touch-edge-gap-right: max(14px, env(safe-area-inset-right))');
         expect(css).toContain('env(safe-area-inset-left)');
         expect(css).toContain('env(safe-area-inset-right)');
         expect(css).toContain('min-width: 52px');
