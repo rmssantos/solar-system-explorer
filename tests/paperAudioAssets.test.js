@@ -46,10 +46,12 @@ describe('paper audio asset pipeline', () => {
         expect(script).toContain("force ? '-y' : '-n'");
     });
 
-    it('keeps implementation plan task headings directly below the title hierarchy', () => {
-        const plan = readFileSync(new URL('../docs/plans/2026-07-12-paper-soundscape-implementation.md', import.meta.url), 'utf8');
-        expect(plan).not.toMatch(/^### Task /m);
-        expect(plan.match(/^## Task /gm)).toHaveLength(5);
+    it('keeps internal plans and generated review artefacts out of git', () => {
+        const gitignore = readFileSync(new URL('../.gitignore', import.meta.url), 'utf8');
+        expect(gitignore).toMatch(/^\/docs\/plans\/$/m);
+        expect(gitignore).toMatch(/^\/report-assets\/$/m);
+        expect(gitignore).toMatch(/^\/\.playwright-cli\/$/m);
+        expect(gitignore).toMatch(/^\/output\/$/m);
     });
 
     it('ships non-empty generated MP3 assets', () => {
