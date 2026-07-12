@@ -2,6 +2,13 @@
 
 Public changes to the Paper Solar Explorer are maintained automatically by Release Please from Conventional Commits.
 
+## [1.1.3](https://github.com/rmssantos/solar-system-explorer/compare/v1.1.2...v1.1.3) (2026-07-12)
+
+
+### Bug Fixes
+
+* complete mobile-first touch controls and repository docs ([#33](https://github.com/rmssantos/solar-system-explorer/issues/33)) ([65ab454](https://github.com/rmssantos/solar-system-explorer/commit/65ab4549255ef605cfc491366dfeb87c6e782627))
+
 ## [1.1.2](https://github.com/rmssantos/solar-system-explorer/compare/v1.1.1...v1.1.2) (2026-07-12)
 
 
