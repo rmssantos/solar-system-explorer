@@ -1,88 +1,99 @@
 # Solar System Explorer
 
-An interactive 3D educational journey through the Solar System, built for kids.
+A mobile-first, bilingual 3D paper-diorama journey through the Solar System, designed for curious children and families.
 
 **Play now:** <https://green-smoke-09dea4a03.3.azurestaticapps.net/>
 
-## Features
+## What ships today
 
-- **Interactive 3D Solar System** with accurate orbits, rotation, and relative scales
-- **Cinematic intro** with cockpit HUD overlay
-- **20+ guided missions** with XP, level progression, achievements, and quizzes
-- **Daily Challenge** and endgame certificate with themed frames
-- **In-app Biblioteca** (encyclopedia) with NASA photos and detailed facts
-- **Planet Comparator** — compare size, temperature, and distance
-- **Photo Mode** with social sharing
-- **Mini-Map** radar and collectibles to discover
-- **Manual flight mode** with WASD spaceship controls
-- **Text-to-Speech** with voice selection and speed control
-- **First-time user tutorial** with smart card positioning
-- **Bilingual:** Portuguese and English
-- **PWA support** — installable, works offline
-- **Mobile-friendly** with touch controls
+- **Free 3D flight** through a handcrafted paper Solar System with moving orbits and intentionally compressed exploration distances.
+- **Touch-first controls** for phones and tablets, with responsive portrait and landscape layouts.
+- **Paper pilot autopilot** — tap a world to travel towards it, or fly the ship yourself.
+- **Chase and cockpit cameras**, orbital-path controls, radar, flight telemetry, and fullscreen mode.
+- **Pocket missions and progression** with XP, explorer ranks, awards, discoveries, and device-local saves.
+- **Field notebook and quizzes** with measurements, scientific references, NASA imagery, and live-data fallbacks.
+- **Solar System Library** for browsing planets, moons, dwarf planets, comets, asteroids, and human-made objects.
+- **Reactive soundscape** for flight, autopilot, discoveries, quizzes, and rewards.
+- **Portuguese and English** across the homepage, game, library, and privacy experience.
+- **Privacy-first optional analytics** that remain disabled until the visitor makes a choice.
+
+The deployed experience is the Paper Solar Explorer under `paper-preview/`. Diorama sizes and distances are adjusted for playability; the UI labels those values rather than presenting them as a scale model.
 
 ## Controls
 
-### Mouse / Touch
+### Phone and tablet
 
-- Left click + drag — rotate camera
-- Right click + drag — pan camera
-- Scroll wheel — zoom
-- Click a planet — select and view info
+- **Move:** use the lower-left movement joystick.
+- **Look:** drag anywhere on the scene to look while continuing to move.
+- Pinch — zoom.
+- Tap a visible world — start the paper pilot.
+- Tap **Explore** when it appears — open that object's field notebook.
+
+The right side of the playfield is deliberately free of a second joystick. One finger controls looking; a two-finger pinch controls zoom without rotating the camera.
+
+### Mouse
+
+- Left-drag the scene — look around.
+- Mouse wheel — zoom.
+- Click a world — start the paper pilot.
 
 ### Keyboard
 
-- `M` — toggle manual flight mode
-- `Space` — pause / resume orbits
-- `+` / `-` — speed up / slow down time
-- `Esc` — close open dialogs/panels
-
-### Manual flight mode (`M`)
-
-- `W A S D` — fly spaceship
-- `Space` / `Ctrl` — ascend / descend (Space does not pause while flying)
-- `R` / `F` — roll left / right
-- `Shift` — boost
-- `X` — brake
-- `I` — show info for the nearest planet
-- `Esc` — close info panel, then exit flight mode
+- `W` / `S` or `↑` / `↓` — forward / backward.
+- `A` / `D` or `←` / `→` — strafe left / right.
+- `Space` / `Ctrl` — climb / descend.
+- `R` / `F` — roll left / right.
+- `Shift` — boost; `X` — brake.
+- `V` — switch between chase and cockpit camera.
+- `+` / `-` — zoom in / out.
+- `G` — toggle fullscreen; `Esc` — close the open notebook.
 
 ## Development
 
+Requires Node.js 22.
+
 ```bash
-npm install
-npm run dev:paper # Paper experience on a local Vite server
-npm run build:paper # production build to dist-paper-preview/
-npm run preview  # preview the production build
-npm test         # run tests
-npm run lint     # ESLint
-npm run typecheck # TypeScript checkJs over the JS sources
+npm ci
+npm run dev:paper     # local Paper experience
+npm test              # Vitest suite
+npm run lint          # ESLint
+npm run typecheck     # TypeScript checkJs validation
+npm run build:paper   # production build in dist-paper-preview/
+npx vite preview paper-preview
 ```
 
-CI runs tests, lint, and typecheck for pull requests before creating an Azure preview.
+Pull requests run tests, lint, type checking, a production build, and an Azure preview deployment.
 
-## Deployment
+## Versioning and production
 
-Production is deployed to Azure Static Web Apps only from a reviewed Semantic Version release.
-Release Please maintains the release PR, changelog, `vX.Y.Z` tag and GitHub Release; merging an
-ordinary feature PR into `main` does not deploy production. See [docs/releases.md](docs/releases.md)
-for Conventional Commits, repository setup and immutable-tag rollback.
+The repository uses Conventional Commits, Semantic Versioning, Release Please, immutable `vX.Y.Z` tags, and GitHub Releases. Merging a feature PR updates the release PR; only publishing that release deploys production.
 
-## Project Structure
+See [docs/releases.md](docs/releases.md) for the release, rollback, and deployment-token runbook.
 
-- `index.html` — main 3D app
-- `biblioteca.html` — Solar System Library
-- `src/main.js` — App entry point and scene loop
-- `src/solarSystem.js` — planets, moons, orbits, comets, probes
-- `src/missionSystem.js` — quests and progression
-- `src/i18n.js` — Portuguese / English translations
-- `src/data/` — planet and library content
-- `public/textures/` — planet textures and NASA photos
+## Project structure
 
-## Tech Stack
+- `paper-preview/index.html` — public landing page.
+- `paper-preview/jogo/index.html` — 3D flight experience and HUD.
+- `paper-preview/biblioteca/index.html` — object library.
+- `paper-preview/privacidade/index.html` — privacy notice and analytics controls.
+- `paper-preview/src/main.js` — production game entry point and integration loop.
+- `paper-preview/src/flightInput.js` / `flightSimulation.js` — input and deterministic flight model.
+- `paper-preview/src/scene/` — Three.js paper world, ship, cameras, and rendering.
+- `paper-preview/src/missions/` / `progression/` — missions, ranks, discoveries, and awards.
+- `paper-preview/src/learning/` / `data/` — learning content and scientific data adapters.
+- `paper-preview/public/` — shipped fonts, artwork, sound effects, and static-web-app configuration.
+- `tests/` — unit, integration, UI-contract, privacy, and release-governance tests.
 
-Three.js · Vite · Vanilla JavaScript (ES modules) · TypeScript (`checkJs` type-checking, no compile step) · Vitest · ESLint
+The root-level `src/`, `index.html`, and related assets belong to the older prototype and are not part of the production build.
+
+## Legacy ideas under evaluation — not shipped
+
+The older prototype contains concepts that may be redesigned and integrated later: offline/PWA support, text-to-speech, a standalone comparator, photo mode, daily challenges, a minimap, certificates, and a guided first-run tutorial. They are roadmap candidates, not current product features.
+
+## Tech stack
+
+Three.js · Vite · Vanilla JavaScript modules · TypeScript `checkJs` · Vitest · ESLint · Azure Static Web Apps
 
 ## License
 
-MIT — Created for Gonçalo.
+MIT — created for Gonçalo.

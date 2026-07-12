@@ -1,29 +1,29 @@
-name: Sugerir uma melhoria
-description: Uma ideia para tornar a expedição mais útil, clara ou divertida.
-title: "[Ideia]: "
+name: Suggest an improvement
+description: An idea to make the expedition more useful, clear, or fun.
+title: "[Idea]: "
 labels: [enhancement, triage]
 body:
   - type: dropdown
     id: audience
     attributes:
-      label: Quem beneficiaria mais?
-      options: [Crianças, Famílias, Professores e escolas, Todos]
+      label: Who would benefit most?
+      options: [Children, Families, Teachers and schools, Everyone]
     validations: { required: true }
   - type: textarea
     id: need
     attributes:
-      label: Que necessidade resolve?
-      description: Explica primeiro o problema ou oportunidade.
+      label: What need does it address?
+      description: Explain the problem or opportunity first.
     validations: { required: true }
   - type: textarea
     id: idea
     attributes:
-      label: Como imaginas a experiência?
+      label: How do you imagine the experience?
     validations: { required: true }
   - type: checkboxes
     id: safety
     attributes:
-      label: Privacidade
+      label: Privacy
       options:
-        - label: A sugestão não exige recolher dados pessoais de crianças.
+        - label: This suggestion does not require collecting children's personal data.
           required: true

@@ -47,7 +47,7 @@ $connectionString | gh secret set VITE_APPLICATIONINSIGHTS_CONNECTION_STRING `
   --repo rmssantos/solar-system-explorer
 ```
 
-The production workflow exposes that value only to the main-branch `npm run build:paper` deployment. Pull-request previews, forks and local builds remain telemetry-free no-ops even when a reviewer accepts the consent card.
+The production workflow exposes that value only to the release-tagged `npm run build:paper` deployment. Pull-request previews, forks and local builds remain telemetry-free no-ops even when a reviewer accepts the consent card.
 
 ## Consent QA before merge
 

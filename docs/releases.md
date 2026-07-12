@@ -1,66 +1,74 @@
-# Releases e produção
+# Releases and production
 
-Este repositório usa Semantic Versioning, Release Please e tags imutáveis. Um merge normal em `main` atualiza o Release PR, mas não publica produção. Só o merge desse Release PR cria uma tag `vX.Y.Z`, uma GitHub Release e um deploy Azure de produção.
+This repository uses Semantic Versioning, Release Please, immutable tags, and GitHub Releases. A normal merge into `main` updates the release pull request but does not publish production. Merging the release pull request creates a `vX.Y.Z` tag and GitHub Release; that immutable tag is then validated and deployed to Azure Static Web Apps.
 
-## Como escolher a versão
+## Choosing the next version
 
-Usa Conventional Commits no título/commit de squash do PR:
+Use a Conventional Commit title for the pull request and squash commit:
 
-- `fix: corrigir orientação da nave` → patch (`1.2.3` → `1.2.4`);
-- `feat: adicionar controlos touch` → minor (`1.2.3` → `1.3.0`);
-- `feat!: substituir o formato do progresso` ou um corpo com `BREAKING CHANGE:` → major (`1.2.3` → `2.0.0`);
-- `docs:`, `test:`, `chore:` e `ci:` são registados quando relevante, mas não sobem a versão por si próprios.
+- `fix: correct ship orientation` produces a patch (`1.2.3` → `1.2.4`).
+- `feat: add touch controls` produces a minor release (`1.2.3` → `1.3.0`).
+- `feat!: replace the save format`, or a body containing `BREAKING CHANGE:`, produces a major release (`1.2.3` → `2.0.0`).
+- `docs:`, `test:`, `chore:`, and `ci:` changes are recorded when relevant but do not raise the version on their own.
 
-O Release Please mantém `CHANGELOG.md`, `package.json`, `package-lock.json` e `.release-please-manifest.json` no mesmo Release PR. Não alteres esses números manualmente fora de uma operação de bootstrap documentada.
+Release Please keeps `CHANGELOG.md`, `package.json`, `package-lock.json`, and `.release-please-manifest.json` together in the release pull request. Do not edit those version numbers manually outside a documented bootstrap operation.
 
-## Fluxo normal
+## Normal release flow
 
-1. O PR de produto recebe testes, preview Azure e revisão CodeRabbit.
-2. Depois do merge em `main`, `release.yml` cria ou atualiza um único Release PR.
-3. Confirma no Release PR a versão proposta, changelog, checks verdes e aprovação CodeRabbit.
-4. Faz merge do Release PR. O Release Please cria a tag e a GitHub Release.
-5. O job `deploy-production` faz checkout dessa tag, repete testes/lint/typecheck e publica o build identificado em Azure.
-6. Confirma no rodapé `vX.Y.Z · <sha>` e os fluxos críticos de `/`, `/jogo/` e `/biblioteca/`.
+1. A product pull request receives tests, lint, type checking, a production build, review, and an Azure preview.
+2. After it merges into `main`, `.github/workflows/release.yml` creates or updates one release pull request.
+3. Review the proposed version and changelog and require green checks before merging the release pull request.
+4. Release Please creates the immutable tag and GitHub Release.
+5. `deploy-production` checks out that tag, repeats the full quality gate, and embeds `VITE_APP_VERSION` plus `VITE_GIT_SHA` in the build.
+6. The pinned Azure Static Web Apps CLI deploys `dist-paper-preview` with the production deployment token.
+7. Verify the footer version and smoke-test `/`, `/jogo/`, `/biblioteca/`, and `/privacidade/` on the production hostname.
 
-Não faças deploy de produção a partir de um commit solto de `main`. Os previews de PR permanecem sem Application Insights; a connection string só entra no build de produção.
+Do not deploy an arbitrary untagged `main` commit as a normal release. Pull-request previews remain telemetry-free; the Application Insights connection string is injected only into the release-tagged production build.
 
-## Configuração única do repositório
+## Repository and Azure configuration
 
-O workflow requer o secret `RELEASE_PLEASE_TOKEN`. Um token de utilizador é intencional: recursos criados pelo `GITHUB_TOKEN` não disparam novos workflows, pelo que o Release PR ficaria sem CI e sem a revisão automática do CodeRabbit.
+The workflow requires these GitHub secrets:
 
-Para um fine-grained PAT, limita-o a este repositório e concede Metadata read, Contents read/write, Pull requests read/write e Issues read/write. Em alternativa, um classic PAT precisa de `repo`. Guarda-o sem o imprimir:
+- `RELEASE_PLEASE_TOKEN` — a repository-scoped user token used to create pull requests whose checks can run.
+- `AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03` — the current Azure deployment token.
+- `VITE_APPLICATIONINSIGHTS_CONNECTION_STRING` — the production telemetry routing identifier.
+
+For a fine-grained Release Please token, restrict it to this repository and grant Metadata read, Contents read/write, Pull requests read/write, and Issues read/write. A classic token requires `repo`. Store it without printing it:
 
 ```powershell
 gh auth token | gh secret set RELEASE_PLEASE_TOKEN
 gh secret list
 ```
 
-Em Settings → Actions → General, mantém Workflow permissions compatíveis com criação de PRs. O ambiente GitHub `production` pode receber required reviewers se se pretender uma aprovação humana adicional antes do deploy.
+The Static Web App deployment authorization policy must be `DeploymentToken`. If the Azure token is rotated, update the matching GitHub secret before the next release. The workflow deliberately uses the pinned Azure Static Web Apps CLI command recorded in `release.yml`; change the workflow and this runbook together.
 
-## Rollback / redeploy
+The GitHub `production` environment can require human reviewers if an additional manual deployment gate is desired.
 
-Rollback significa voltar a publicar uma tag existente e verificada; não cria nem reescreve história. Escolhe a última release estável na página Releases e executa:
+## Rollback or deliberate redeploy
+
+A rollback republishes an existing verified tag. It does not rewrite tags or Git history.
 
 ```powershell
-gh workflow run release.yml --ref main -f ref=v1.2.3 -f reason='Rollback de v1.3.0 por regressão no arranque'
+gh workflow run release.yml --ref main -f ref=v1.2.3 -f reason='Rollback from v1.3.0 after a startup regression'
 gh run list --workflow release.yml --limit 3
 gh run watch
 ```
 
-Também podes usar Actions → Release and production deploy → Run workflow e preencher `ref` com a tag. O job volta a correr a gate completa, deriva versão/SHA do ref e publica exatamente esse código.
+The same operation is available under **Actions → Release and production deploy → Run workflow**. The job validates the requested ref, derives its version and SHA, rebuilds it, and sends that exact artefact to production.
 
-Depois do rollback:
+After a rollback:
 
-1. confirma que o workflow terminou verde e que o rodapé mostra a versão antiga esperada;
-2. faz smoke de homepage, jogo, biblioteca, privacidade e telemetria;
-3. abre um `fix:` para a regressão e produz uma nova patch release;
-4. regista motivo, tag anterior, tag restaurada e resultado no incidente/issue.
+1. Confirm the workflow is green and the footer shows the expected older version.
+2. Smoke-test the homepage, game, library, privacy controls, and telemetry boundary.
+3. Open a `fix:` pull request for the regression and publish a new patch release.
+4. Record the reason, previous tag, restored tag, and verification result in the incident or issue.
 
-Nunca apagues nem movas uma tag para “corrigir” uma release. Se uma release está errada, faz rollback para uma tag existente e depois publica uma versão nova.
+Never delete or move an existing release tag to “correct” it. Restore a known tag, then publish a new version containing the fix.
 
-## Diagnóstico rápido
+## Troubleshooting
 
-- Release PR não aparece: abre o run de `release.yml`, confirma `RELEASE_PLEASE_TOKEN` e verifica se houve um `feat:`/`fix:` desde a baseline/tag.
-- Release PR sem checks ou CodeRabbit: confirma que o workflow está a usar `RELEASE_PLEASE_TOKEN`, não `GITHUB_TOKEN`.
-- GitHub Release existe mas produção não mudou: abre o job `deploy-production`, confirma o ambiente `production`, OIDC e secrets Azure.
-- Versão no rodapé não corresponde: confirma `VITE_APP_VERSION`, `VITE_GIT_SHA` e o ref usado pelo checkout no run de deploy.
+- **No release pull request:** inspect the `release.yml` run, verify `RELEASE_PLEASE_TOKEN`, and confirm a releasable `feat:` or `fix:` exists after the latest tag.
+- **Release pull request has no checks:** confirm Release Please uses `RELEASE_PLEASE_TOKEN`, not the workflow `GITHUB_TOKEN`.
+- **GitHub Release exists but production did not change:** inspect `deploy-production`, verify the `production` environment, the deployment-token secret, and Azure's `DeploymentToken` authorization policy.
+- **Azure CLI reports an invalid token:** rotate the Static Web App deployment token and update `AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03` without logging the value.
+- **Footer version is wrong:** verify the checked-out tag and the `VITE_APP_VERSION` / `VITE_GIT_SHA` values in the build step.
