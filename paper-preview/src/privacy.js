@@ -1,5 +1,6 @@
 import { paperI18n } from './i18n/paperI18n.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
+import { mountBuildInfo } from './buildInfo.js';
 
 const languageToggle = document.querySelector('[data-language-toggle]');
 
@@ -12,5 +13,6 @@ function renderLanguage() {
 languageToggle.addEventListener('click', () => paperI18n.toggle());
 paperI18n.subscribe(renderLanguage);
 renderLanguage();
+mountBuildInfo();
 siteAnalytics.start('privacy');
 

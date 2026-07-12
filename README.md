@@ -51,21 +51,22 @@ An interactive 3D educational journey through the Solar System, built for kids.
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # production build to dist/
+npm run dev:paper # Paper experience on a local Vite server
+npm run build:paper # production build to dist-paper-preview/
 npm run preview  # preview the production build
 npm test         # run tests
 npm run lint     # ESLint
 npm run typecheck # TypeScript checkJs over the JS sources
 ```
 
-CI runs tests, lint, and typecheck on every push before deploying.
+CI runs tests, lint, and typecheck for pull requests before creating an Azure preview.
 
 ## Deployment
 
-Deployed automatically to Azure Static Web Apps on push to `main` via GitHub Actions
-(see [.github/workflows](.github/workflows/)). Build output (`dist/`) is served with the
-configuration in [staticwebapp.config.json](staticwebapp.config.json).
+Production is deployed to Azure Static Web Apps only from a reviewed Semantic Version release.
+Release Please maintains the release PR, changelog, `vX.Y.Z` tag and GitHub Release; merging an
+ordinary feature PR into `main` does not deploy production. See [docs/releases.md](docs/releases.md)
+for Conventional Commits, repository setup and immutable-tag rollback.
 
 ## Project Structure
 

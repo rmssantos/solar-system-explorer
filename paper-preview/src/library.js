@@ -13,6 +13,7 @@ import { getAwardArt } from './progression/awardArt.js';
 import { bindBackdropDismiss } from './ui/dialogDismiss.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
 import { providerFamily, resultCountBucket } from './analytics/eventCatalog.js';
+import { mountBuildInfo } from './buildInfo.js';
 import { createMediaViewer } from './ui/mediaViewer.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
@@ -372,4 +373,5 @@ elements.languageToggle.addEventListener('click', () => {
 paperI18n.subscribe(() => rebuild({ preserveDetail: elements.detail.open }));
 
 rebuild();
+mountBuildInfo();
 siteAnalytics.start('library');

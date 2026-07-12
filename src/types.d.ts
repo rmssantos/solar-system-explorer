@@ -17,5 +17,9 @@ interface Window {
 }
 
 interface ImportMeta {
-    env?: { DEV?: boolean };
+    env?: {
+        DEV?: boolean;
+        VITE_APP_VERSION?: string;
+        VITE_GIT_SHA?: string;
+    };
 }

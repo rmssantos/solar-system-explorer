@@ -1,5 +1,6 @@
 import { paperI18n } from './i18n/paperI18n.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
+import { mountBuildInfo } from './buildInfo.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const revealTargets = document.querySelectorAll('[data-reveal]');
@@ -31,4 +32,5 @@ languageToggle.addEventListener('click', () => {
 });
 paperI18n.subscribe(renderLanguage);
 renderLanguage();
+mountBuildInfo();
 siteAnalytics.start('home');

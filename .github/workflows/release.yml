@@ -1,0 +1,103 @@
+name: Release and production deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Existing release tag or commit to redeploy (for example v1.2.3)
+        required: true
+        type: string
+      reason:
+        description: Why this production redeploy is needed
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Open or publish the release
+        id: release
+        uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  deploy-production:
+    needs: release-please
+    if: ${{ always() && (github.event_name == 'workflow_dispatch' || needs.release-please.outputs.release_created == 'true') }}
+    runs-on: ubuntu-latest
+    name: Validate and deploy production
+    environment:
+      name: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out immutable release or requested rollback ref
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || needs.release-please.outputs.tag_name }}
+          fetch-depth: 0
+          submodules: true
+          lfs: false
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Resolve build identity
+        id: build
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Install OIDC client
+        run: npm install --no-save @actions/core@1.6.0 @actions/http-client@2.2.3
+      - name: Get Azure ID token
+        uses: actions/github-script@v9
+        id: idtoken
+        with:
+          script: |
+            const core = require('@actions/core')
+            return await core.getIDToken()
+          result-encoding: string
+      - name: Build and deploy production
+        uses: Azure/static-web-apps-deploy@v1
+        env:
+          VITE_APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.VITE_APPLICATIONINSIGHTS_CONNECTION_STRING }}
+          VITE_APP_VERSION: ${{ steps.build.outputs.version }}
+          VITE_GIT_SHA: ${{ steps.build.outputs.sha }}
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03 }}
+          action: upload
+          app_location: /
+          api_location: ""
+          app_build_command: npm run build:paper
+          output_location: dist-paper-preview
+          github_id_token: ${{ steps.idtoken.outputs.result }}
