@@ -1,10 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outputDir = join(root, 'paper-preview', 'public', 'audio');
+const force = process.argv.includes('--force');
 const sampleRate = 44_100;
 const twoPi = Math.PI * 2;
 let seed = 0x51a7cafe;
@@ -77,10 +78,18 @@ function writeWav(path, duration, sampleAt) {
 
 mkdirSync(outputDir, { recursive: true });
 for (const [filename, duration, sampleAt] of designs) {
-    const wav = join(outputDir, `${filename}.wav`);
     const mp3 = join(outputDir, filename);
+    if (!force && existsSync(mp3)) {
+        console.log(`skipped existing ${filename} (use --force to overwrite)`);
+        continue;
+    }
+    const wav = join(outputDir, `${filename}.wav`);
     writeWav(wav, duration, sampleAt);
-    execFileSync('ffmpeg', ['-y', '-hide_banner', '-loglevel', 'error', '-i', wav, '-codec:a', 'libmp3lame', '-b:a', '128k', mp3]);
-    rmSync(wav, { force: true });
+    try {
+        const overwrite = force ? '-y' : '-n';
+        execFileSync('ffmpeg', [overwrite, '-hide_banner', '-loglevel', 'error', '-i', wav, '-codec:a', 'libmp3lame', '-b:a', '128k', mp3]);
+    } finally {
+        rmSync(wav, { force: true });
+    }
     console.log(`generated local fallback ${filename}`);
 }

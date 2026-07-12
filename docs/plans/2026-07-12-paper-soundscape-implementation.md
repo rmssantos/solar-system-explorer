@@ -10,7 +10,7 @@
 
 ---
 
-### Task 1: Secret hygiene and reproducible asset generation
+## Task 1: Secret hygiene and reproducible asset generation
 
 **Files:**
 - Modify: `.gitignore`
@@ -24,7 +24,7 @@
 4. Generate the nine MP3 assets using `eleven_text_to_sound_v2`, with looping only for ambience and engine.
 5. Re-run the focused test and inspect file sizes/types.
 
-### Task 2: Pure sound mix
+## Task 2: Pure sound mix
 
 **Files:**
 - Create: `paper-preview/src/audio/audioState.js`
@@ -35,7 +35,7 @@
 3. Implement clamped speed normalization and target ambience/engine volume/playback-rate calculations.
 4. Re-run the focused test and refactor only while green.
 
-### Task 3: Browser audio director
+## Task 3: Browser audio director
 
 **Files:**
 - Create: `paper-preview/src/audio/audioDirector.js`
@@ -46,7 +46,7 @@
 3. Implement injected audio/storage/document dependencies and the public API: `unlock()`, `toggle()`, `update(snapshot, dt)`, `play(cue)`, `getState()`, `destroy()`.
 4. Re-run tests and keep all failures non-fatal.
 
-### Task 4: Game and UI integration
+## Task 4: Game and UI integration
 
 **Files:**
 - Modify: `paper-preview/jogo/index.html`
@@ -63,7 +63,7 @@
 5. Trigger cues for explore/fold, quiz result, progress receipt, Lumi, autopilot start/arrival/cancel; add audio state to `render_game_to_text`.
 6. Re-run focused audio tests.
 
-### Task 5: Full verification and handoff
+## Task 5: Full verification and handoff
 
 **Files:**
 - Modify: `progress.md`

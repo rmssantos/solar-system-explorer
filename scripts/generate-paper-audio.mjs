@@ -4,6 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const API_URL = 'https://api.elevenlabs.io/v1/sound-generation';
+const REQUEST_TIMEOUT_MS = 90_000;
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outputDir = join(projectRoot, 'paper-preview', 'public', 'audio');
 const force = process.argv.includes('--force');
@@ -96,20 +97,28 @@ async function generateCue(cue, apiKey) {
         console.log(`skip ${cue.filename}`);
         return;
     }
-    const response = await fetch(`${API_URL}?output_format=mp3_44100_128`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'xi-api-key': apiKey
-        },
-        body: JSON.stringify({
-            text: cue.text,
-            duration_seconds: cue.duration_seconds,
-            loop: cue.loop,
-            prompt_influence: 0.45,
-            model_id: 'eleven_text_to_sound_v2'
-        })
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    let response;
+    try {
+        response = await fetch(`${API_URL}?output_format=mp3_44100_128`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'xi-api-key': apiKey
+            },
+            signal: controller.signal,
+            body: JSON.stringify({
+                text: cue.text,
+                duration_seconds: cue.duration_seconds,
+                loop: cue.loop,
+                prompt_influence: 0.45,
+                model_id: 'eleven_text_to_sound_v2'
+            })
+        });
+    } finally {
+        clearTimeout(timeout);
+    }
     if (!response.ok) {
         const detail = (await response.text()).slice(0, 500);
         throw new Error(`ElevenLabs ${response.status} while generating ${cue.filename}: ${detail}`);
