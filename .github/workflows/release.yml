@@ -76,16 +76,13 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-      - name: Build and deploy production
-        uses: Azure/static-web-apps-deploy@v1
+      - name: Build production
         env:
           VITE_APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.VITE_APPLICATIONINSIGHTS_CONNECTION_STRING }}
           VITE_APP_VERSION: ${{ steps.build.outputs.version }}
           VITE_GIT_SHA: ${{ steps.build.outputs.sha }}
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03 }}
-          action: upload
-          app_location: /
-          api_location: ""
-          app_build_command: npm run build:paper
-          output_location: dist-paper-preview
+        run: npm run build:paper
+      - name: Deploy production
+        env:
+          SWA_CLI_DEPLOYMENT_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03 }}
+        run: npx --yes @azure/static-web-apps-cli@2.0.9 deploy dist-paper-preview --env production --deployment-token "$SWA_CLI_DEPLOYMENT_TOKEN"

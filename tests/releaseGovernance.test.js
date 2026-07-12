@@ -64,11 +64,17 @@ describe('Release governance', () => {
         expect(workflow).toContain('VERSION=$(node -p "require(\'./package.json\').version")');
         expect(workflow).toContain('VITE_APP_VERSION: ${{ steps.build.outputs.version }}');
         expect(workflow).toContain('VITE_GIT_SHA: ${{ steps.build.outputs.sha }}');
-        expect(workflow).toContain('azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03 }}');
+        expect(workflow).not.toContain('azure_static_web_apps_api_token:');
         expect(workflow).not.toContain('id-token: write');
         expect(workflow).not.toContain('Install OIDC client');
         expect(workflow).not.toContain('Get Azure ID token');
         expect(workflow).not.toContain('github_id_token:');
+        expect(workflow).toContain('npm run build:paper');
+        expect(workflow).toContain('@azure/static-web-apps-cli@2.0.9');
+        expect(workflow).toContain('deploy dist-paper-preview');
+        expect(workflow).toContain('--env production');
+        expect(workflow).toContain('SWA_CLI_DEPLOYMENT_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03 }}');
+        expect(workflow).not.toContain('uses: Azure/static-web-apps-deploy@v1');
     });
 
     it('formats and mounts visible build identity on editorial surfaces', async () => {
