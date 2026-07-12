@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const html = readFileSync(new URL('../paper-preview/jogo/index.html', import.meta.url), 'utf8');
+const ui = readFileSync(new URL('../paper-preview/src/ui.js', import.meta.url), 'utf8');
 
 describe('paper expedition passport UI', () => {
     it('provides missions, collection and awards without covering the flight view', () => {
@@ -26,5 +27,10 @@ describe('paper expedition passport UI', () => {
 
     it('places reward feedback in the browser top layer above notebook dialogs', () => {
         expect(html).toContain('id="reward-toast" class="reward-toast" popover="manual"');
+    });
+
+    it('resets the passport scroll position whenever a HUD chip opens it', () => {
+        expect(ui).toContain("missionLogBody: document.querySelector('#mission-log > article')");
+        expect(ui).toContain('elements.missionLogBody.scrollTop = 0');
     });
 });

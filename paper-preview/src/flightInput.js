@@ -18,28 +18,13 @@ export function createFlightInput({
     joystick,
     joystickKnob,
     lookJoystick,
-    lookJoystickKnob,
-    upButton,
-    downButton,
-    boostButton,
-    brakeButton,
-    rollLeftButton,
-    rollRightButton
+    lookJoystickKnob
 }) {
     const pressedKeys = new Set();
     const joystickIntent = { x: 0, y: 0 };
     const lookJoystickIntent = { x: 0, y: 0 };
     const lookDelta = { yaw: 0, pitch: 0 };
-    const mobileIntent = {
-        up: false,
-        down: false,
-        boost: false,
-        brake: false,
-        rollLeft: false,
-        rollRight: false
-    };
     const cleanup = [];
-    const resetHolds = [];
     let enabled = true;
     let lookPointerId = null;
     let lookPrevious = { x: 0, y: 0 };
@@ -147,63 +132,6 @@ export function createFlightInput({
         pressedKeys.delete(event.code);
     }
 
-    function bindHold(button, key) {
-        let pointerId = null;
-        const resetHold = () => {
-            pointerId = null;
-            mobileIntent[key] = false;
-            button.classList.remove('is-active');
-        };
-        const begin = (event) => {
-            if (!enabled) return;
-            event.preventDefault();
-            event.stopPropagation();
-            if (pointerId !== null) return;
-            pointerId = event.pointerId;
-            mobileIntent[key] = true;
-            button.setPointerCapture(event.pointerId);
-            button.classList.add('is-active');
-        };
-        const end = (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (event.pointerId !== pointerId) return;
-            resetHold();
-        };
-        button.addEventListener('pointerdown', begin);
-        button.addEventListener('pointerup', end);
-        button.addEventListener('pointercancel', end);
-        resetHolds.push(resetHold);
-        cleanup.push(() => {
-            pointerId = null;
-            button.removeEventListener('pointerdown', begin);
-            button.removeEventListener('pointerup', end);
-            button.removeEventListener('pointercancel', end);
-        });
-    }
-
-    function bindToggle(button, key) {
-        const consumePointer = (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-        };
-        const toggle = (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (!enabled) return;
-            mobileIntent[key] = !mobileIntent[key];
-            button.classList.toggle?.('is-active', mobileIntent[key]);
-            button.setAttribute('aria-pressed', String(mobileIntent[key]));
-        };
-        button.setAttribute('aria-pressed', 'false');
-        button.addEventListener('pointerdown', consumePointer);
-        button.addEventListener('click', toggle);
-        cleanup.push(() => {
-            button.removeEventListener('pointerdown', consumePointer);
-            button.removeEventListener('click', toggle);
-        });
-    }
-
     function sample() {
         if (!enabled) {
             lookDelta.yaw = 0;
@@ -218,10 +146,9 @@ export function createFlightInput({
             - Number(pressedKeys.has('KeyA') || pressedKeys.has('ArrowLeft'));
         const forward = Number(pressedKeys.has('KeyW') || pressedKeys.has('ArrowUp'))
             - Number(pressedKeys.has('KeyS') || pressedKeys.has('ArrowDown'));
-        const vertical = Number(pressedKeys.has('Space') || mobileIntent.up)
-            - Number(pressedKeys.has('ControlLeft') || pressedKeys.has('ControlRight') || mobileIntent.down);
+        const vertical = Number(pressedKeys.has('Space'))
+            - Number(pressedKeys.has('ControlLeft') || pressedKeys.has('ControlRight'));
         const keyboardRoll = Number(pressedKeys.has('KeyR')) - Number(pressedKeys.has('KeyF'));
-        const touchRoll = Number(mobileIntent.rollRight) - Number(mobileIntent.rollLeft);
         const combinedStrafe = strafe + joystickIntent.x;
         const combinedForward = forward + joystickIntent.y;
         const planarLength = Math.hypot(combinedStrafe, combinedForward);
@@ -232,9 +159,9 @@ export function createFlightInput({
             vertical: clamp(vertical, -1, 1),
             yawDelta: lookDelta.yaw - (lookJoystickIntent.x * 0.032),
             pitchDelta: lookDelta.pitch - (lookJoystickIntent.y * 0.026),
-            roll: clamp(keyboardRoll + touchRoll, -1, 1),
-            boost: pressedKeys.has('ShiftLeft') || pressedKeys.has('ShiftRight') || mobileIntent.boost,
-            brake: pressedKeys.has('KeyX') || mobileIntent.brake
+            roll: clamp(keyboardRoll, -1, 1),
+            boost: pressedKeys.has('ShiftLeft') || pressedKeys.has('ShiftRight'),
+            brake: pressedKeys.has('KeyX')
         };
         lookDelta.yaw = 0;
         lookDelta.pitch = 0;
@@ -243,11 +170,6 @@ export function createFlightInput({
 
     function reset() {
         pressedKeys.clear();
-        Object.keys(mobileIntent).forEach((key) => { mobileIntent[key] = false; });
-        resetHolds.forEach((resetHold) => resetHold());
-        [upButton, downButton, boostButton, brakeButton, rollLeftButton, rollRightButton]
-            .forEach((button) => button.classList.remove('is-active'));
-        boostButton.setAttribute('aria-pressed', 'false');
         resetMovementStick();
         resetLookStick();
         lookPointerId = null;
@@ -259,12 +181,6 @@ export function createFlightInput({
         if (!enabled) reset();
     }
 
-    bindHold(upButton, 'up');
-    bindHold(downButton, 'down');
-    bindToggle(boostButton, 'boost');
-    bindHold(brakeButton, 'brake');
-    bindHold(rollLeftButton, 'rollLeft');
-    bindHold(rollRightButton, 'rollRight');
     stage.addEventListener('pointerdown', handleLookDown);
     stage.addEventListener('pointermove', handleLookMove);
     stage.addEventListener('pointerup', handleLookUp);

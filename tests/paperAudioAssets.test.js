@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 
 const audioDir = new URL('../paper-preview/public/audio/', import.meta.url);
+const DOCS_PLANS_PATTERN = /^\/docs\/plans\/$/m;
+const REPORT_ASSETS_PATTERN = /^\/report-assets\/$/m;
+const PLAYWRIGHT_CLI_PATTERN = /^\/\.playwright-cli\/$/m;
+const OUTPUT_PATTERN = /^\/output\/$/m;
 const expectedAssets = [
     'cosmic-ambience.mp3',
     'paper-engine.mp3',
@@ -46,10 +50,12 @@ describe('paper audio asset pipeline', () => {
         expect(script).toContain("force ? '-y' : '-n'");
     });
 
-    it('keeps implementation plan task headings directly below the title hierarchy', () => {
-        const plan = readFileSync(new URL('../docs/plans/2026-07-12-paper-soundscape-implementation.md', import.meta.url), 'utf8');
-        expect(plan).not.toMatch(/^### Task /m);
-        expect(plan.match(/^## Task /gm)).toHaveLength(5);
+    it('keeps internal plans and generated review artefacts out of git', () => {
+        const gitignore = readFileSync(new URL('../.gitignore', import.meta.url), 'utf8');
+        expect(gitignore).toMatch(DOCS_PLANS_PATTERN);
+        expect(gitignore).toMatch(REPORT_ASSETS_PATTERN);
+        expect(gitignore).toMatch(PLAYWRIGHT_CLI_PATTERN);
+        expect(gitignore).toMatch(OUTPUT_PATTERN);
     });
 
     it('ships non-empty generated MP3 assets', () => {

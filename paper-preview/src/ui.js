@@ -41,12 +41,6 @@ export function createPreviewUI({
         joystickKnob: document.querySelector('#joystick-knob'),
         lookJoystick: document.querySelector('#flight-look-joystick'),
         lookJoystickKnob: document.querySelector('#look-joystick-knob'),
-        upButton: document.querySelector('#flight-up'),
-        downButton: document.querySelector('#flight-down'),
-        boostButton: document.querySelector('#flight-boost'),
-        brakeButton: document.querySelector('#flight-brake'),
-        rollLeftButton: document.querySelector('#flight-roll-left'),
-        rollRightButton: document.querySelector('#flight-roll-right'),
         notebookTrigger: document.querySelector('#notebook-trigger'),
         notebook: document.querySelector('#field-notebook'),
         closeNotebook: document.querySelector('#close-notebook'),
@@ -81,9 +75,10 @@ export function createPreviewUI({
         , navArrow: document.querySelector('#nav-arrow')
         , navTarget: document.querySelector('#nav-target')
         , navDistance: document.querySelector('#nav-distance')
-        , navScience: document.querySelector('#nav-science')
-        , missionLog: document.querySelector('#mission-log')
-        , closeMissionLog: document.querySelector('#close-mission-log')
+         , navScience: document.querySelector('#nav-science')
+         , missionLog: document.querySelector('#mission-log')
+         , missionLogBody: document.querySelector('#mission-log > article')
+         , closeMissionLog: document.querySelector('#close-mission-log')
         , missionList: document.querySelector('#mission-list')
         , apodCard: document.querySelector('#apod-card')
         , apodImage: document.querySelector('#apod-image')
@@ -180,6 +175,7 @@ export function createPreviewUI({
     function openMissionLog(section) {
         selectPassportSection(section);
         elements.missionLog.showModal();
+        elements.missionLogBody.scrollTop = 0;
         onMissionLogOpen();
     }
 
