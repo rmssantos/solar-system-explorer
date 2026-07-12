@@ -1,6 +1,6 @@
 # Azure Application Insights rollout
 
-This runbook connects the production Paper Solar Explorer to privacy-first product metrics. The current Azure Static Web App is `solar-system-explorer`, in resource group `solarsystem`, region **West Europe**, subscription `Visual Studio Enterprise Subscription`.
+This runbook connects the production Paper Solar Explorer to privacy-first product metrics. Keep account-specific resource names and subscription details in ignored `.local/` operator notes or shell variables, never in the public repository.
 
 ## Data boundary
 
@@ -10,24 +10,29 @@ Keep Azure's default IP masking. Do **not** set `DisableIpMasking` to `true`. Az
 
 ## Create the European resources
 
-Run with the already selected Azure subscription:
+Select the intended Azure subscription, then provide names for that environment:
 
 ```powershell
+$resourceGroup = '<resource-group>'
+$location = '<azure-region>'
+$workspaceName = '<log-analytics-workspace>'
+$appInsightsName = '<application-insights-resource>'
+
 az monitor log-analytics workspace create `
-  --resource-group solarsystem `
-  --workspace-name solar-system-explorer-logs `
-  --location westeurope `
+  --resource-group $resourceGroup `
+  --workspace-name $workspaceName `
+  --location $location `
   --retention-time 30
 
 $workspaceId = az monitor log-analytics workspace show `
-  --resource-group solarsystem `
-  --workspace-name solar-system-explorer-logs `
+  --resource-group $resourceGroup `
+  --workspace-name $workspaceName `
   --query id -o tsv
 
 az monitor app-insights component create `
-  --app solar-system-explorer-insights `
-  --location westeurope `
-  --resource-group solarsystem `
+  --app $appInsightsName `
+  --location $location `
+  --resource-group $resourceGroup `
   --workspace $workspaceId
 ```
 
@@ -39,8 +44,8 @@ Application Insights connection strings are browser-visible routing identifiers,
 
 ```powershell
 $connectionString = az monitor app-insights component show `
-  --app solar-system-explorer-insights `
-  --resource-group solarsystem `
+  --app $appInsightsName `
+  --resource-group $resourceGroup `
   --query connectionString -o tsv
 
 $connectionString | gh secret set VITE_APPLICATIONINSIGHTS_CONNECTION_STRING `

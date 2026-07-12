@@ -28,9 +28,10 @@ describe('production paper experience deployment', () => {
         expect(config.globalHeaders['Permissions-Policy']).toContain('geolocation=()');
     });
 
-    it('documents the exact West Europe resource, opt-in validation and actionable product queries', () => {
-        expect(setup).toContain('solar-system-explorer-insights');
-        expect(setup).toContain('West Europe');
+    it('documents configurable European resources, opt-in validation and actionable product queries', () => {
+        expect(setup).toContain("$resourceGroup = '<resource-group>'");
+        expect(setup).toContain("$location = '<azure-region>'");
+        expect(setup).toContain("$appInsightsName = '<application-insights-resource>'");
         expect(setup).toContain('30 days');
         expect(setup).toContain('VITE_APPLICATIONINSIGHTS_CONNECTION_STRING');
         expect(setup).toContain('Decline');

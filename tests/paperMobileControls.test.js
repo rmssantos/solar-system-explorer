@@ -45,6 +45,9 @@ describe('Mobile-first paper flight controls', () => {
         expect(css).not.toContain('.flight-look-joystick');
         expect(css).not.toContain('.joystick-look-knob');
         expect(css).toMatch(/@media \(any-pointer: coarse\), \(max-width: 720px\)[\s\S]*?\.explore-nearby\s*\{[^}]*right:\s*var\(--touch-edge-gap-right\);[^}]*left:\s*auto;/);
+
+        const placementRule = css.match(/\.joystick-label[\s\S]*?\.explore-nearby\s*\{([^}]*)\}/)?.[1] ?? '';
+        expect(placementRule).not.toMatch(/min-(?:width|height)|padding/);
     });
 
     it('groups primary routes, language, and notebook in one safe top bar', () => {
@@ -54,6 +57,9 @@ describe('Mobile-first paper flight controls', () => {
         expect(topbar).toContain('class="game-library-link"');
         expect(topbar).toContain('class="game-language-toggle"');
         expect(topbar).toContain('id="notebook-trigger"');
+        expect(topbar).toMatch(/id="notebook-trigger"[^>]*data-i18n-aria="game\.notebook"/);
+        expect(css).toMatch(/\.notebook-trigger span\s*\{\s*display:\s*none;/);
+        expect(css).not.toMatch(/\.notebook-trigger span\s*\{[^}]*clip:/);
         expect(css).toContain('padding-top: env(safe-area-inset-top)');
         expect(css).toContain('--touch-target-min: 44px');
     });
@@ -83,6 +89,9 @@ describe('Mobile-first paper flight controls', () => {
         expect(html).toContain('data-i18n="game.accessibleControls"');
         expect(html).toMatch(/id="flight-joystick"[^>]*role="group"[^>]*aria-describedby="flight-control-instructions"/);
         expect(css).toContain('.visually-hidden');
+        const visuallyHiddenRule = css.match(/\.visually-hidden\s*\{([^}]*)\}/)?.[1] ?? '';
+        expect(visuallyHiddenRule).toContain('clip-path: inset(50%)');
+        expect(visuallyHiddenRule).not.toMatch(/(?:^|;)\s*clip\s*:/);
         expect(i18n).toContain("'game.accessibleControls'");
     });
 

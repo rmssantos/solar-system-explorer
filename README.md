@@ -8,7 +8,7 @@ A mobile-first, bilingual 3D paper-diorama journey through the Solar System, des
 
 - **Free 3D flight** through a handcrafted paper Solar System with moving orbits and intentionally compressed exploration distances.
 - **Touch-first controls** for phones and tablets, with responsive portrait and landscape layouts.
-- **Paper pilot autopilot** — tap a world to travel towards it, or fly the ship yourself.
+- **Paper pilot autopilot:** tap a world to travel towards it, or fly the ship yourself.
 - **Chase and cockpit cameras**, orbital-path controls, radar, flight telemetry, and fullscreen mode.
 - **Pocket missions and progression** with XP, explorer ranks, awards, discoveries, and device-local saves.
 - **Field notebook and quizzes** with measurements, scientific references, NASA imagery, and live-data fallbacks.
@@ -25,28 +25,28 @@ The deployed experience is the Paper Solar Explorer under `paper-preview/`. Dior
 
 - **Move:** use the lower-left movement joystick.
 - **Look:** drag anywhere on the scene to look while continuing to move.
-- Pinch — zoom.
-- Tap a visible world — start the paper pilot.
-- Tap **Explore** when it appears — open that object's field notebook.
+- Pinch: zoom.
+- Tap a visible world: start the paper pilot.
+- Tap **Explore** when it appears: open that object's field notebook.
 
 The right side of the playfield is deliberately free of a second joystick. One finger controls looking; a two-finger pinch controls zoom without rotating the camera.
 
 ### Mouse
 
-- Left-drag the scene — look around.
-- Mouse wheel — zoom.
-- Click a world — start the paper pilot.
+- Left-drag the scene: look around.
+- Mouse wheel: zoom.
+- Click a world: start the paper pilot.
 
 ### Keyboard
 
-- `W` / `S` or `↑` / `↓` — forward / backward.
-- `A` / `D` or `←` / `→` — strafe left / right.
-- `Space` / `Ctrl` — climb / descend.
-- `R` / `F` — roll left / right.
-- `Shift` — boost; `X` — brake.
-- `V` — switch between chase and cockpit camera.
-- `+` / `-` — zoom in / out.
-- `G` — toggle fullscreen; `Esc` — close the open notebook.
+- `W` / `S` or `↑` / `↓`: forward / backward.
+- `A` / `D` or `←` / `→`: strafe left / right.
+- `Space` / `Ctrl`: climb / descend.
+- `R` / `F`: roll left / right.
+- `Shift`: boost; `X`: brake.
+- `V`: switch between chase and cockpit camera.
+- `+` / `-`: zoom in / out.
+- `G`: toggle fullscreen; `Esc`: close the open notebook.
 
 ## Development
 
@@ -72,21 +72,21 @@ See [docs/releases.md](docs/releases.md) for the release, rollback, and deployme
 
 ## Project structure
 
-- `paper-preview/index.html` — public landing page.
-- `paper-preview/jogo/index.html` — 3D flight experience and HUD.
-- `paper-preview/biblioteca/index.html` — object library.
-- `paper-preview/privacidade/index.html` — privacy notice and analytics controls.
-- `paper-preview/src/main.js` — production game entry point and integration loop.
-- `paper-preview/src/flightInput.js` / `flightSimulation.js` — input and deterministic flight model.
-- `paper-preview/src/scene/` — Three.js paper world, ship, cameras, and rendering.
-- `paper-preview/src/missions/` / `progression/` — missions, ranks, discoveries, and awards.
-- `paper-preview/src/learning/` / `data/` — learning content and scientific data adapters.
-- `paper-preview/public/` — shipped fonts, artwork, sound effects, and static-web-app configuration.
-- `tests/` — unit, integration, UI-contract, privacy, and release-governance tests.
+- `paper-preview/index.html`: public landing page.
+- `paper-preview/jogo/index.html`: 3D flight experience and HUD.
+- `paper-preview/biblioteca/index.html`: object library.
+- `paper-preview/privacidade/index.html`: privacy notice and analytics controls.
+- `paper-preview/src/main.js`: production game entry point and integration loop.
+- `paper-preview/src/flightInput.js` / `flightSimulation.js`: input and deterministic flight model.
+- `paper-preview/src/scene/`: Three.js paper world, ship, cameras, and rendering.
+- `paper-preview/src/missions/` / `progression/`: missions, ranks, discoveries, and awards.
+- `paper-preview/src/learning/` / `data/`: learning content and scientific data adapters.
+- `paper-preview/public/`: shipped fonts, artwork, sound effects, and static-web-app configuration.
+- `tests/`: unit, integration, UI-contract, privacy, and release-governance tests.
 
 The root-level `src/`, `index.html`, and related assets belong to the older prototype and are not part of the production build.
 
-## Legacy ideas under evaluation — not shipped
+## Legacy ideas under evaluation: not shipped
 
 The older prototype contains concepts that may be redesigned and integrated later: offline/PWA support, text-to-speech, a standalone comparator, photo mode, daily challenges, a minimap, certificates, and a guided first-run tutorial. They are roadmap candidates, not current product features.
 
@@ -96,4 +96,4 @@ Three.js · Vite · Vanilla JavaScript modules · TypeScript `checkJs` · Vitest
 
 ## License
 
-MIT — created for Gonçalo.
+MIT: created for Gonçalo.

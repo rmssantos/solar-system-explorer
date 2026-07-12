@@ -29,8 +29,8 @@ Do not deploy an arbitrary untagged `main` commit as a normal release. Pull-requ
 
 The release and deployment path requires these GitHub secrets:
 
-- `RELEASE_PLEASE_TOKEN` — a repository-scoped user token used to create pull requests whose checks can run.
-- `AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03` — the current Azure deployment token.
+- `RELEASE_PLEASE_TOKEN`: a repository-scoped user token used to create pull requests whose checks can run.
+- `AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03`: the current Azure deployment token.
 
 `VITE_APPLICATIONINSIGHTS_CONNECTION_STRING` is optional. When configured, it provides the production telemetry routing identifier; when absent, the privacy and analytics adapter remains a telemetry-free no-op.
 
