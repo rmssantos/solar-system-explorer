@@ -48,7 +48,6 @@ jobs:
       name: production
     permissions:
       contents: read
-      id-token: write
     steps:
       - name: Check out immutable release or requested rollback ref
         uses: actions/checkout@v6
@@ -77,15 +76,6 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-      - name: Install OIDC client
-        run: npm install --no-save @actions/core@1.6.0 @actions/http-client@2.2.3
-      - name: Get Azure ID token
-        uses: actions/github-script@v9
-        id: idtoken
-        with:
-          script: |
-            return await core.getIDToken()
-          result-encoding: string
       - name: Build and deploy production
         uses: Azure/static-web-apps-deploy@v1
         env:
@@ -99,4 +89,3 @@ jobs:
           api_location: ""
           app_build_command: npm run build:paper
           output_location: dist-paper-preview
-          github_id_token: ${{ steps.idtoken.outputs.result }}

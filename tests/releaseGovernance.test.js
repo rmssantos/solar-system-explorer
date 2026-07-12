@@ -64,8 +64,11 @@ describe('Release governance', () => {
         expect(workflow).toContain('VERSION=$(node -p "require(\'./package.json\').version")');
         expect(workflow).toContain('VITE_APP_VERSION: ${{ steps.build.outputs.version }}');
         expect(workflow).toContain('VITE_GIT_SHA: ${{ steps.build.outputs.sha }}');
-        expect(workflow).toContain('return await core.getIDToken()');
-        expect(workflow).not.toContain("const core = require('@actions/core')");
+        expect(workflow).toContain('azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03 }}');
+        expect(workflow).not.toContain('id-token: write');
+        expect(workflow).not.toContain('Install OIDC client');
+        expect(workflow).not.toContain('Get Azure ID token');
+        expect(workflow).not.toContain('github_id_token:');
     });
 
     it('formats and mounts visible build identity on editorial surfaces', async () => {
