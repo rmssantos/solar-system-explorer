@@ -34,8 +34,28 @@ npm-debug.log*
 .claude/
 .local/
 CLAUDE.md
+AGENTS.md
 Screenshot*.png
+Screenshot*.jpg
+screenshot*.png
+screenshot*.jpg
 src/assets/textures/
+
+# Private working documents (never publish)
+/SELF-IMPROVEMENT.md
+/progress.md
+/docs/plans/
+/relatorio*.html
+/report-assets/
+/*review*.html
+
+# Browser QA output (keep under .local/)
+/.playwright-cli/
+/output/
+/playwright-report/
+/test-results/
+/blob-report/
+*.trace.zip
 
 # Duplicate mascot images (keep only PNG)
 public/mascot/*.jpeg
