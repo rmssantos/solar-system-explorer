@@ -41,6 +41,11 @@ describe('Release governance', () => {
         expect(preview).toContain('cancel-in-progress: true');
         expect(preview).toContain("VITE_APPLICATIONINSIGHTS_CONNECTION_STRING: ''");
         expect(preview).toContain('npm run build:paper');
+        expect(preview).toContain('@azure/static-web-apps-cli@2.0.9');
+        expect(preview).toContain('--env "${{ github.event.pull_request.number }}"');
+        expect(preview).toContain('SWA_CLI_DEPLOYMENT_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03 }}');
+        expect(preview).not.toContain('id-token: write');
+        expect(preview).not.toContain('github_id_token:');
     });
 
     it('creates releases with Release Please v5 and deploys only a release or manual ref', () => {

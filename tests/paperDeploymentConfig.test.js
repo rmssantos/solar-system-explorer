@@ -8,11 +8,15 @@ const setup = read('../docs/analytics/application-insights-setup.md');
 const queries = read('../docs/analytics/product-queries.kql');
 
 describe('production paper experience deployment', () => {
-    it('builds and publishes the paper distribution with telemetry injected at build time', () => {
-        expect(workflow).toContain('app_build_command: "npm run build:paper"');
-        expect(workflow).toContain('output_location: "dist-paper-preview"');
-        expect(workflow).toContain('VITE_APPLICATIONINSIGHTS_CONNECTION_STRING');
-        expect(workflow).not.toContain('output_location: "dist"');
+    it('builds and publishes telemetry-free PR previews through the pinned SWA CLI', () => {
+        expect(workflow).toContain('name: Build preview');
+        expect(workflow).toContain('run: npm run build:paper');
+        expect(workflow).toContain('@azure/static-web-apps-cli@2.0.9');
+        expect(workflow).toContain('deploy dist-paper-preview');
+        expect(workflow).toContain('--env "${{ github.event.pull_request.number }}"');
+        expect(workflow).toContain("VITE_APPLICATIONINSIGHTS_CONNECTION_STRING: ''");
+        expect(workflow).not.toContain('github_id_token:');
+        expect(workflow).not.toContain('app_build_command:');
     });
 
     it('ships clean routes, privacy headers and bounded external origins', () => {
