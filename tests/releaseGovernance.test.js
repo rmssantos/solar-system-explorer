@@ -31,6 +31,8 @@ describe('Release governance', () => {
 
         expect(preview).not.toMatch(/^\s{2}push:/m);
         expect(preview).toMatch(/^\s{2}pull_request:/m);
+        expect(preview).toContain('group: ${{ github.workflow }}-${{ github.event.pull_request.number }}');
+        expect(preview).toContain('cancel-in-progress: true');
         expect(preview).toContain("VITE_APPLICATIONINSIGHTS_CONNECTION_STRING: ''");
         expect(preview).toContain('npm run build:paper');
     });
@@ -45,11 +47,14 @@ describe('Release governance', () => {
         expect(workflow).toContain('release_created: ${{ steps.release.outputs.release_created }}');
         expect(workflow).toContain('tag_name: ${{ steps.release.outputs.tag_name }}');
         expect(workflow).toContain('workflow_dispatch:');
+        expect(workflow).toContain('group: ${{ github.workflow }}');
+        expect(workflow).toContain('cancel-in-progress: false');
         expect(workflow).toMatch(/ref:\s*\r?\n\s+description:[^\r\n]*\r?\n\s+required: true/);
         expect(workflow).toContain("name: production");
         expect(workflow).toContain("needs.release-please.outputs.release_created == 'true'");
         expect(workflow).toContain("github.event_name == 'workflow_dispatch'");
         expect(workflow).toContain('ref: ${{');
+        expect(workflow).toContain('persist-credentials: false');
         expect(workflow).toContain('VERSION=$(node -p "require(\'./package.json\').version")');
         expect(workflow).toContain('VITE_APP_VERSION: ${{ steps.build.outputs.version }}');
         expect(workflow).toContain('VITE_GIT_SHA: ${{ steps.build.outputs.sha }}');
