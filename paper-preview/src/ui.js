@@ -75,9 +75,10 @@ export function createPreviewUI({
         , navArrow: document.querySelector('#nav-arrow')
         , navTarget: document.querySelector('#nav-target')
         , navDistance: document.querySelector('#nav-distance')
-        , navScience: document.querySelector('#nav-science')
-        , missionLog: document.querySelector('#mission-log')
-        , closeMissionLog: document.querySelector('#close-mission-log')
+         , navScience: document.querySelector('#nav-science')
+         , missionLog: document.querySelector('#mission-log')
+         , missionLogBody: document.querySelector('#mission-log > article')
+         , closeMissionLog: document.querySelector('#close-mission-log')
         , missionList: document.querySelector('#mission-list')
         , apodCard: document.querySelector('#apod-card')
         , apodImage: document.querySelector('#apod-image')
@@ -173,7 +174,9 @@ export function createPreviewUI({
 
     function openMissionLog(section) {
         selectPassportSection(section);
+        elements.missionLogBody.scrollTop = 0;
         elements.missionLog.showModal();
+        elements.missionLogBody.scrollTop = 0;
         onMissionLogOpen();
     }
 

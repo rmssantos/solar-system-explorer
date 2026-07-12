@@ -57,6 +57,12 @@ describe('Mobile-first paper flight controls', () => {
         expect(css).toContain('@media (min-width: 721px) and (any-pointer: coarse)');
     });
 
+    it('moves the tool rail away from the look stick on short landscape screens', () => {
+        expect(css).toMatch(
+            /@media \(max-height: 520px\) and \(orientation: landscape\)[\s\S]*?\.zoom-controls\s*\{[^}]*right:\s*50%;[^}]*display:\s*flex;[^}]*transform:\s*translateX\(50%\)/
+        );
+    });
+
     it('keeps control gestures out of stage selection', () => {
         expect(main).toContain("closest?.('[data-flight-control]')");
         expect(main).toContain("event.pointerType === 'touch'");

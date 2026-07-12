@@ -1263,7 +1263,13 @@ button:focus-visible {
         min-height: 44px;
     }
     .flight-joystick { bottom: max(8px, env(safe-area-inset-bottom)); }
-    .zoom-controls { top: 57%; }
+    .zoom-controls {
+        top: max(52px, calc(env(safe-area-inset-top) + 49px));
+        right: 50%;
+        display: flex;
+        gap: .28rem;
+        transform: translateX(50%);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
