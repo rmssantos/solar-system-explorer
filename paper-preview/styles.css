@@ -21,6 +21,7 @@
     --coral-pencil: #d85d4a;
     --graphite: #2b2f3a;
     --chalk: #fff8df;
+    --touch-target-min: 44px;
     font-family: 'Field Nunito', 'Trebuchet MS', sans-serif;
 }
 
@@ -75,7 +76,7 @@ button:focus-visible {
 .game-home-link,
 .game-library-link {
     display: inline-flex;
-    min-height: 44px;
+    min-height: var(--touch-target-min);
     align-items: center;
     padding: 8px 12px;
     color: var(--chalk);
@@ -99,7 +100,7 @@ button:focus-visible {
     background: var(--sun-pulp);
 }
 
-.game-language-toggle { width: 44px; min-width: 44px; min-height: 44px; aspect-ratio: 1; color: var(--chalk); background: rgba(16, 25, 54, .82); border: 1px solid rgba(255, 248, 223, .42); border-radius: 50%; font-size: .68rem; font-weight: 1000; cursor: pointer; backdrop-filter: blur(8px); }
+.game-language-toggle { width: var(--touch-target-min); min-width: var(--touch-target-min); min-height: var(--touch-target-min); aspect-ratio: 1; color: var(--chalk); background: rgba(16, 25, 54, .82); border: 1px solid rgba(255, 248, 223, .42); border-radius: 50%; font-size: .68rem; font-weight: 1000; cursor: pointer; backdrop-filter: blur(8px); }
 .game-language-toggle:hover, .game-language-toggle:focus-visible { color: var(--graphite); background: var(--sun-pulp); outline: 3px solid var(--chalk); outline-offset: 2px; }
 
 .game-home-link:focus-visible,
@@ -241,8 +242,8 @@ button:focus-visible {
 
 .notebook-trigger {
     display: inline-flex;
-    min-width: 44px;
-    min-height: 44px;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
     align-items: center;
     gap: 9px;
     padding: 0 17px;
@@ -1141,16 +1142,16 @@ button:focus-visible {
 
     .game-home-link,
     .game-library-link {
-        min-height: 44px;
+        min-height: var(--touch-target-min);
         padding: 7px 9px;
         font-size: .6rem;
     }
 
     .game-language-toggle,
     .notebook-trigger {
-        width: 44px;
-        min-width: 44px;
-        min-height: 44px;
+        width: var(--touch-target-min);
+        min-width: var(--touch-target-min);
+        min-height: var(--touch-target-min);
     }
 
     .experience-header {
@@ -1211,7 +1212,7 @@ button:focus-visible {
     .nav-beacon .nav-science { display: none; }
 
     .zoom-controls { right: max(.55rem, env(safe-area-inset-right)); top: 47%; gap: .28rem; }
-    .zoom-controls button { min-width: 44px; min-height: 44px; padding: .3rem .4rem; }
+    .zoom-controls button { min-width: var(--touch-target-min); min-height: var(--touch-target-min); padding: .3rem .4rem; }
 
     .explore-nearby {
         bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 16px);

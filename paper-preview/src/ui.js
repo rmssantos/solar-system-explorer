@@ -174,7 +174,6 @@ export function createPreviewUI({
 
     function openMissionLog(section) {
         selectPassportSection(section);
-        elements.missionLogBody.scrollTop = 0;
         elements.missionLog.showModal();
         elements.missionLogBody.scrollTop = 0;
         onMissionLogOpen();
