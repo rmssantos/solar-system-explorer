@@ -359,9 +359,7 @@ paperI18n.apply();
 const flightInput = createFlightInput({
     stage,
     joystick: previewUI.elements.joystick,
-    joystickKnob: previewUI.elements.joystickKnob,
-    lookJoystick: previewUI.elements.lookJoystick,
-    lookJoystickKnob: previewUI.elements.lookJoystickKnob
+    joystickKnob: previewUI.elements.joystickKnob
 });
 
 function interactionRadiusFor(object) {

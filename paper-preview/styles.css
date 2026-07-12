@@ -1009,10 +1009,6 @@ button:focus-visible {
         left: var(--touch-edge-gap-left);
     }
 
-    .flight-look-joystick {
-        right: var(--touch-edge-gap-right);
-    }
-
     .joystick-orbit {
         position: absolute;
         inset: 4px;
@@ -1037,16 +1033,6 @@ button:focus-visible {
         transition: none;
     }
 
-    .flight-look-joystick .joystick-orbit {
-        border-style: solid;
-        border-color: rgba(114, 170, 162, 0.72);
-    }
-
-    .joystick-look-knob {
-        background: #b8d9ce;
-        border-color: #4d887e;
-    }
-
     .joystick-label {
         position: absolute;
         top: 50%;
@@ -1061,10 +1047,13 @@ button:focus-visible {
     }
 
     .explore-nearby {
-        bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 134px);
+        right: var(--touch-edge-gap-right);
+        bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
+        left: auto;
         min-width: 180px;
         min-height: 64px;
         padding-inline: 13px;
+        transform: rotate(.2deg);
     }
 
     .touch-hint {
@@ -1127,7 +1116,7 @@ button:focus-visible {
     }
 }
 
-/* Touch HUD composition: one top bar, one mission cluster, two thumb sticks. */
+/* Touch HUD composition: one top bar, one mission cluster, and one movement stick. */
 @media (any-pointer: coarse), (max-width: 720px) {
     .game-topbar {
         min-height: calc(58px + env(safe-area-inset-top));
@@ -1215,11 +1204,14 @@ button:focus-visible {
     .zoom-controls button { min-width: var(--touch-target-min); min-height: var(--touch-target-min); padding: .3rem .4rem; }
 
     .explore-nearby {
-        bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 16px);
+        right: var(--touch-edge-gap-right);
+        bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
+        left: auto;
         min-width: 0;
-        width: min(184px, calc(100vw - (var(--touch-stick-size) * 2) - 46px));
+        width: min(184px, calc(100vw - var(--touch-stick-size) - var(--touch-edge-gap-left) - var(--touch-edge-gap-right) - 20px));
         min-height: 50px;
         padding: 6px 10px 7px;
+        transform: rotate(.2deg);
     }
 
     .explore-kicker { font-size: .5rem; }
@@ -1243,7 +1235,7 @@ button:focus-visible {
 
     .nav-beacon { max-width: 150px; padding: .55rem .7rem; }
     .nav-beacon .nav-science { display: block; }
-    .explore-nearby { width: min(220px, calc(100vw - (var(--touch-stick-size) * 2) - 70px)); }
+    .explore-nearby { width: min(220px, calc(100vw - var(--touch-stick-size) - var(--touch-edge-gap-left) - var(--touch-edge-gap-right) - 32px)); }
 }
 
 @media (max-height: 520px) and (orientation: landscape) {
@@ -1260,7 +1252,7 @@ button:focus-visible {
     .nav-beacon { max-width: 108px; padding: .34rem .45rem; }
     .joystick-label { transform: translateY(31px); }
     .explore-nearby {
-        bottom: calc(max(8px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 8px);
+        bottom: max(8px, env(safe-area-inset-bottom));
         min-height: 44px;
     }
     .flight-joystick { bottom: max(8px, env(safe-area-inset-bottom)); }
