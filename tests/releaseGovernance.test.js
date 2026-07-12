@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const root = new URL('../', import.meta.url);
+const SEMVER_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
 function read(path) {
     const url = new URL(path, root);
@@ -24,7 +25,9 @@ describe('Release governance', () => {
         expect(config['include-component-in-tag']).toBe(false);
         expect(config['bootstrap-sha']).toBe('1fb471d0c270d4b5686da424eb9c34bf522609da');
         expect(config.packages?.['.']?.['package-name']).toBe('solar-system-explorer');
-        expect(releaseVersion).toMatch(/^\d+\.\d+\.\d+$/);
+        expect(releaseVersion).toMatch(SEMVER_PATTERN);
+        expect('1.2.3-alpha.1+build.5').toMatch(SEMVER_PATTERN);
+        expect('01.2.3').not.toMatch(SEMVER_PATTERN);
         expect(packageJson.version).toBe(releaseVersion);
         expect(read('CHANGELOG.md')).toContain('# Changelog');
     });
