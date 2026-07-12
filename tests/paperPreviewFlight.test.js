@@ -250,26 +250,20 @@ describe('Paper flight input', () => {
         }
     });
 
-    it('offers complete touch manoeuvres and clears latched boost on reset', () => {
+    it('keeps advanced manoeuvres available to desktop keyboard pilots', () => {
         const harness = createInputHarness();
         let input;
         try {
             input = createFlightInput(harness.options);
 
-            harness.up.emit('pointerdown', pointerEvent(3, 0, 0, harness.up));
-            harness.rollRight.emit('pointerdown', pointerEvent(4, 0, 0, harness.rollRight));
-            harness.brake.emit('pointerdown', pointerEvent(5, 0, 0, harness.brake));
-            harness.boost.emit('click', pointerEvent(6, 0, 0, harness.boost));
-            harness.up.emit('pointerup', pointerEvent(99, 0, 0, harness.up));
+            for (const code of ['Space', 'KeyR', 'ShiftLeft', 'KeyX']) {
+                harness.window.emit('keydown', keyEvent(code));
+            }
 
             expect(input.sample()).toMatchObject({ vertical: 1, roll: 1, brake: true, boost: true });
-            expect(harness.boost.attributes.get('aria-pressed')).toBe('true');
-            expect(harness.boost.classList.values.has('is-active')).toBe(true);
 
             input.reset();
             expect(input.sample()).toMatchObject({ vertical: 0, roll: 0, brake: false, boost: false });
-            expect(harness.boost.attributes.get('aria-pressed')).toBe('false');
-            expect(harness.boost.classList.values.has('is-active')).toBe(false);
         } finally {
             input?.destroy();
             harness.restore();
@@ -316,6 +310,10 @@ function pointerEvent(pointerId, clientX, clientY, target) {
     };
 }
 
+function keyEvent(code) {
+    return { code, preventDefault() {} };
+}
+
 function createInputHarness() {
     const previousWindow = globalThis.window;
     const fakeWindow = new FakeControl();
@@ -325,26 +323,14 @@ function createInputHarness() {
     const look = new FakeControl();
     const leftKnob = new FakeControl();
     const lookKnob = new FakeControl();
-    const up = new FakeControl();
-    const down = new FakeControl();
-    const boost = new FakeControl();
-    const brake = new FakeControl();
-    const rollLeft = new FakeControl();
-    const rollRight = new FakeControl();
     return {
-        stage, left, look, up, down, boost, brake, rollLeft, rollRight,
+        window: fakeWindow, stage, left, look,
         options: {
             stage,
             joystick: left,
             joystickKnob: leftKnob,
             lookJoystick: look,
-            lookJoystickKnob: lookKnob,
-            upButton: up,
-            downButton: down,
-            boostButton: boost,
-            brakeButton: brake,
-            rollLeftButton: rollLeft,
-            rollRightButton: rollRight
+            lookJoystickKnob: lookKnob
         },
         restore() { globalThis.window = previousWindow; }
     };

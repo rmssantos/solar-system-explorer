@@ -361,13 +361,7 @@ const flightInput = createFlightInput({
     joystick: previewUI.elements.joystick,
     joystickKnob: previewUI.elements.joystickKnob,
     lookJoystick: previewUI.elements.lookJoystick,
-    lookJoystickKnob: previewUI.elements.lookJoystickKnob,
-    upButton: previewUI.elements.upButton,
-    downButton: previewUI.elements.downButton,
-    boostButton: previewUI.elements.boostButton,
-    brakeButton: previewUI.elements.brakeButton,
-    rollLeftButton: previewUI.elements.rollLeftButton,
-    rollRightButton: previewUI.elements.rollRightButton
+    lookJoystickKnob: previewUI.elements.lookJoystickKnob
 });
 
 function interactionRadiusFor(object) {

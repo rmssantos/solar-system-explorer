@@ -12,41 +12,46 @@
 </head>
 <body>
     <main class="paper-shell">
-        <nav class="game-route-nav" aria-label="Navegação da expedição">
-            <a class="game-home-link" href="/" aria-label="Voltar à apresentação do Sistema Solar de Bolso" data-i18n="game.home">← Início</a>
-            <a class="game-library-link" href="/biblioteca/" data-i18n="game.library">Biblioteca</a>
-        </nav>
-        <button class="game-language-toggle" type="button" data-language-toggle aria-label="Mudar para English">EN</button>
+        <header class="game-topbar">
+            <nav class="game-route-nav" aria-label="Navegação da expedição">
+                <a class="game-home-link" href="/" aria-label="Voltar à apresentação do Sistema Solar de Bolso" data-i18n="game.home">← Início</a>
+                <a class="game-library-link" href="/biblioteca/" data-i18n="game.library">Biblioteca</a>
+            </nav>
+            <div class="game-topbar-tools">
+                <button class="game-language-toggle" type="button" data-language-toggle aria-label="Mudar para English">EN</button>
+                <button id="notebook-trigger" class="notebook-trigger" type="button" aria-haspopup="dialog">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 3.5h11.5A2.5 2.5 0 0 1 19 6v14.5H7.5A2.5 2.5 0 0 1 5 18V3.5Zm2 2v12.4c.16-.04.33-.05.5-.05H17V6a.5.5 0 0 0-.5-.5H7Z"/></svg>
+                    <span data-i18n="game.notebook">Caderno</span>
+                </button>
+            </div>
+        </header>
         <div id="paper-stage" class="paper-stage" role="img" aria-label="Diorama do Sistema Solar em papel">
             <p class="stage-loading" aria-live="polite" data-i18n="game.loading">A montar o diorama…</p>
         </div>
 
         <header class="experience-header">
-            <button id="objective-chip" class="objective-chip" type="button" aria-live="polite" aria-haspopup="dialog">
-                <span class="objective-kicker" data-i18n="game.objective.kicker">Missão de bolso</span>
-                <strong id="objective-text">Chega a Saturno</strong>
-            </button>
+            <div class="mission-status-cluster">
+                <button id="objective-chip" class="objective-chip" type="button" aria-live="polite" aria-haspopup="dialog">
+                    <span class="objective-kicker" data-i18n="game.objective.kicker">Missão de bolso</span>
+                    <strong id="objective-text">Chega a Saturno</strong>
+                </button>
 
-            <button id="rank-chip" class="rank-chip" type="button" aria-haspopup="dialog">
-                <span class="rank-chip-heading"><small data-i18n="game.rank.kicker">Patente de explorador</small><b id="rank-xp">0 XP</b></span>
-                <strong id="rank-title">Nível 1 · Cadete de Papel</strong>
-                <progress id="rank-progress" max="100" value="0" aria-label="Progresso para o nível seguinte"></progress>
-            </button>
+                <button id="rank-chip" class="rank-chip" type="button" aria-haspopup="dialog">
+                    <span class="rank-chip-heading"><small data-i18n="game.rank.kicker">Patente de explorador</small><b id="rank-xp">0 XP</b></span>
+                    <strong id="rank-title">Nível 1 · Cadete de Papel</strong>
+                    <progress id="rank-progress" max="100" value="0" aria-label="Progresso para o nível seguinte"></progress>
+                </button>
+            </div>
 
-            <button id="notebook-trigger" class="notebook-trigger" type="button" aria-haspopup="dialog">
-                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 3.5h11.5A2.5 2.5 0 0 1 19 6v14.5H7.5A2.5 2.5 0 0 1 5 18V3.5Zm2 2v12.4c.16-.04.33-.05.5-.05H17V6a.5.5 0 0 0-.5-.5H7Z"/></svg>
-                <span data-i18n="game.notebook">Caderno</span>
-            </button>
+            <aside id="nav-beacon" class="nav-beacon" aria-live="polite">
+                <span id="nav-arrow" class="nav-arrow" aria-hidden="true">▲</span>
+                <span>
+                    <strong id="nav-target">Saturno</strong>
+                    <small id="nav-distance">—</small>
+                    <small id="nav-science" class="nav-science">—</small>
+                </span>
+            </aside>
         </header>
-
-        <aside id="nav-beacon" class="nav-beacon" aria-live="polite">
-            <span id="nav-arrow" class="nav-arrow" aria-hidden="true">▲</span>
-            <span>
-                <strong id="nav-target">Saturno</strong>
-                <small id="nav-distance">—</small>
-                <small id="nav-science" class="nav-science">—</small>
-            </span>
-        </aside>
 
         <aside id="object-hover" class="object-hover" aria-live="polite" hidden>
             <strong id="object-hover-name">Terra</strong>
@@ -119,15 +124,6 @@
                 <span class="explore-kicker" data-i18n="game.explore.kicker">Ao alcance</span>
                 <strong id="nearby-planet-name">Explorar Sol</strong>
             </button>
-
-            <div class="flight-actions" aria-label="Manobras da nave">
-                <button id="flight-roll-left" data-flight-control type="button" aria-label="Rodar para a esquerda" data-i18n-aria="game.flight.rollLeft"><span aria-hidden="true">↶</span></button>
-                <button id="flight-up" data-flight-control type="button" aria-label="Subir" data-i18n-aria="game.flight.up"><span aria-hidden="true">↑</span></button>
-                <button id="flight-roll-right" data-flight-control type="button" aria-label="Rodar para a direita" data-i18n-aria="game.flight.rollRight"><span aria-hidden="true">↷</span></button>
-                <button id="flight-brake" class="flight-brake" data-flight-control type="button" aria-label="Travar" data-i18n-aria="game.flight.brake"><span data-i18n="game.flight.brake">Travão</span></button>
-                <button id="flight-down" data-flight-control type="button" aria-label="Descer" data-i18n-aria="game.flight.down"><span aria-hidden="true">↓</span></button>
-                <button id="flight-boost" class="flight-boost" data-flight-control type="button" aria-pressed="false" aria-label="Alternar impulso" data-i18n-aria="game.flight.boostToggle"><span data-i18n="game.flight.boost">Boost</span></button>
-            </div>
 
             <div id="flight-look-joystick" class="flight-joystick flight-look-joystick" data-flight-control aria-label="Orientar nave" data-i18n-aria="game.flight.look">
                 <div class="joystick-orbit" aria-hidden="true"></div>
