@@ -7,7 +7,7 @@ As alterações públicas do Sistema Solar de Bolso são mantidas automaticament
 
 ### Bug Fixes
 
-* restore production OIDC deployment ([#29](https://github.com/rmssantos/solar-system-explorer/issues/29)) ([843482f](https://github.com/rmssantos/solar-system-explorer/commit/843482f6b01c6eb2df18a8f336f8a1cbba7b7c9a))
+* restore token-based production deployment with `azure_static_web_apps_api_token` ([#29](https://github.com/rmssantos/solar-system-explorer/issues/29)) ([843482f](https://github.com/rmssantos/solar-system-explorer/commit/843482f6b01c6eb2df18a8f336f8a1cbba7b7c9a))
 
 ## [1.1.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.0.0...v1.1.0) (2026-07-12)
 
