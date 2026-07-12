@@ -16,17 +16,16 @@ export function normalizeJoystick(deltaX, deltaY, radius, deadZone = 0.12) {
 export function createFlightInput({
     stage,
     joystick,
-    joystickKnob,
-    lookJoystick,
-    lookJoystickKnob
+    joystickKnob
 }) {
     const pressedKeys = new Set();
     const joystickIntent = { x: 0, y: 0 };
-    const lookJoystickIntent = { x: 0, y: 0 };
     const lookDelta = { yaw: 0, pitch: 0 };
+    const stagePointerIds = new Set();
     const cleanup = [];
     let enabled = true;
     let lookPointerId = null;
+    let suppressStageLook = false;
     let lookPrevious = { x: 0, y: 0 };
 
     function bindStick(element, knob, intent, { invertY = false } = {}) {
@@ -89,13 +88,31 @@ export function createFlightInput({
     }
 
     const resetMovementStick = bindStick(joystick, joystickKnob, joystickIntent, { invertY: true });
-    const resetLookStick = bindStick(lookJoystick, lookJoystickKnob, lookJoystickIntent);
+
+    function clearLookDelta() {
+        lookDelta.yaw = 0;
+        lookDelta.pitch = 0;
+    }
+
+    function stopLooking() {
+        lookPointerId = null;
+        stage.classList.remove('is-looking');
+    }
 
     function handleLookDown(event) {
-        if (!enabled || event.button !== 0 || event.target.closest('button, dialog, [data-flight-control]')) return;
+        if (!enabled || event.button !== 0 || event.target.closest?.('button, dialog, [data-flight-control]')) return;
+        stagePointerIds.add(event.pointerId);
+        if (stagePointerIds.size > 1) {
+            suppressStageLook = true;
+            clearLookDelta();
+            stopLooking();
+            return;
+        }
+        if (suppressStageLook) return;
         lookPointerId = event.pointerId;
         lookPrevious = { x: event.clientX, y: event.clientY };
-        stage.setPointerCapture(event.pointerId);
+        const captureTarget = typeof event.target.setPointerCapture === 'function' ? event.target : stage;
+        captureTarget.setPointerCapture(event.pointerId);
         stage.classList.add('is-looking');
     }
 
@@ -109,9 +126,14 @@ export function createFlightInput({
     }
 
     function handleLookUp(event) {
-        if (event.pointerId !== lookPointerId) return;
-        lookPointerId = null;
-        stage.classList.remove('is-looking');
+        stagePointerIds.delete(event.pointerId);
+        if (event.pointerId === lookPointerId) stopLooking();
+        if (stagePointerIds.size === 0) suppressStageLook = false;
+    }
+
+    function handleLookCancel(event) {
+        handleLookUp(event);
+        clearLookDelta();
     }
 
     function handleKeyDown(event) {
@@ -157,8 +179,8 @@ export function createFlightInput({
             forward: combinedForward * planarScale,
             strafe: combinedStrafe * planarScale,
             vertical: clamp(vertical, -1, 1),
-            yawDelta: lookDelta.yaw - (lookJoystickIntent.x * 0.032),
-            pitchDelta: lookDelta.pitch - (lookJoystickIntent.y * 0.026),
+            yawDelta: lookDelta.yaw,
+            pitchDelta: lookDelta.pitch,
             roll: clamp(keyboardRoll, -1, 1),
             boost: pressedKeys.has('ShiftLeft') || pressedKeys.has('ShiftRight'),
             brake: pressedKeys.has('KeyX')
@@ -171,9 +193,10 @@ export function createFlightInput({
     function reset() {
         pressedKeys.clear();
         resetMovementStick();
-        resetLookStick();
-        lookPointerId = null;
-        stage.classList.remove('is-looking');
+        stagePointerIds.clear();
+        suppressStageLook = false;
+        clearLookDelta();
+        stopLooking();
     }
 
     function setEnabled(nextEnabled) {
@@ -184,7 +207,7 @@ export function createFlightInput({
     stage.addEventListener('pointerdown', handleLookDown);
     stage.addEventListener('pointermove', handleLookMove);
     stage.addEventListener('pointerup', handleLookUp);
-    stage.addEventListener('pointercancel', handleLookUp);
+    stage.addEventListener('pointercancel', handleLookCancel);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('blur', reset);
@@ -194,7 +217,7 @@ export function createFlightInput({
         stage.removeEventListener('pointerdown', handleLookDown);
         stage.removeEventListener('pointermove', handleLookMove);
         stage.removeEventListener('pointerup', handleLookUp);
-        stage.removeEventListener('pointercancel', handleLookUp);
+        stage.removeEventListener('pointercancel', handleLookCancel);
         window.removeEventListener('keydown', handleKeyDown);
         window.removeEventListener('keyup', handleKeyUp);
         window.removeEventListener('blur', reset);

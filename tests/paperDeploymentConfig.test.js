@@ -8,11 +8,15 @@ const setup = read('../docs/analytics/application-insights-setup.md');
 const queries = read('../docs/analytics/product-queries.kql');
 
 describe('production paper experience deployment', () => {
-    it('builds and publishes the paper distribution with telemetry injected at build time', () => {
-        expect(workflow).toContain('app_build_command: "npm run build:paper"');
-        expect(workflow).toContain('output_location: "dist-paper-preview"');
-        expect(workflow).toContain('VITE_APPLICATIONINSIGHTS_CONNECTION_STRING');
-        expect(workflow).not.toContain('output_location: "dist"');
+    it('builds and publishes telemetry-free PR previews through the pinned SWA CLI', () => {
+        expect(workflow).toContain('name: Build preview');
+        expect(workflow).toContain('run: npm run build:paper');
+        expect(workflow).toContain('@azure/static-web-apps-cli@2.0.9');
+        expect(workflow).toContain('deploy dist-paper-preview');
+        expect(workflow).toContain('--env "${{ github.event.pull_request.number }}"');
+        expect(workflow).toContain("VITE_APPLICATIONINSIGHTS_CONNECTION_STRING: ''");
+        expect(workflow).not.toContain('github_id_token:');
+        expect(workflow).not.toContain('app_build_command:');
     });
 
     it('ships clean routes, privacy headers and bounded external origins', () => {
@@ -24,9 +28,10 @@ describe('production paper experience deployment', () => {
         expect(config.globalHeaders['Permissions-Policy']).toContain('geolocation=()');
     });
 
-    it('documents the exact West Europe resource, opt-in validation and actionable product queries', () => {
-        expect(setup).toContain('solar-system-explorer-insights');
-        expect(setup).toContain('West Europe');
+    it('documents configurable European resources, opt-in validation and actionable product queries', () => {
+        expect(setup).toContain("$resourceGroup = '<resource-group>'");
+        expect(setup).toContain("$location = '<azure-region>'");
+        expect(setup).toContain("$appInsightsName = '<application-insights-resource>'");
         expect(setup).toContain('30 days');
         expect(setup).toContain('VITE_APPLICATIONINSIGHTS_CONNECTION_STRING');
         expect(setup).toContain('Decline');

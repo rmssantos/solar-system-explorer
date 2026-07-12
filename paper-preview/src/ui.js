@@ -39,8 +39,6 @@ export function createPreviewUI({
         nearbyPlanetName: document.querySelector('#nearby-planet-name'),
         joystick: document.querySelector('#flight-joystick'),
         joystickKnob: document.querySelector('#joystick-knob'),
-        lookJoystick: document.querySelector('#flight-look-joystick'),
-        lookJoystickKnob: document.querySelector('#look-joystick-knob'),
         notebookTrigger: document.querySelector('#notebook-trigger'),
         notebook: document.querySelector('#field-notebook'),
         closeNotebook: document.querySelector('#close-notebook'),

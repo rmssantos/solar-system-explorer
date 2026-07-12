@@ -9,6 +9,7 @@
         "build": "vite build",
         "build:paper": "vite build paper-preview --outDir ../dist-paper-preview --emptyOutDir",
         "preview": "vite preview",
+        "preview:paper": "vite preview paper-preview --outDir ../dist-paper-preview",
         "test": "vitest run",
         "lint": "eslint .",
         "typecheck": "tsc -p tsconfig.json",

@@ -1,6 +1,7 @@
 import { closeNotebook, createPreviewState, explorePlanet } from './state.js';
 import { createFlightState, findNearbyPlanet, stepFlight } from './flightSimulation.js';
 import { createFlightInput } from './flightInput.js';
+import { createStageSelectionGesture } from './input/stageSelection.js';
 import { createPaperLearningCatalog } from './learning/learningCatalog.js';
 import {
     answerLearningQuiz,
@@ -359,9 +360,7 @@ paperI18n.apply();
 const flightInput = createFlightInput({
     stage,
     joystick: previewUI.elements.joystick,
-    joystickKnob: previewUI.elements.joystickKnob,
-    lookJoystick: previewUI.elements.lookJoystick,
-    lookJoystickKnob: previewUI.elements.lookJoystickKnob
+    joystickKnob: previewUI.elements.joystickKnob
 });
 
 function interactionRadiusFor(object) {
@@ -411,33 +410,21 @@ function showObjectHover(key, event) {
     objectHover.hidden = false;
 }
 
-let selectionPointer = null;
+const selectionGesture = createStageSelectionGesture();
 stage.addEventListener('pointerdown', (event) => {
     if (event.button !== 0 || previewState.notebook.open || event.target.closest?.('[data-flight-control]')) return;
-    selectionPointer = {
-        id: event.pointerId,
-        x: event.clientX,
-        y: event.clientY,
-        moved: false,
-        threshold: event.pointerType === 'touch' ? 16 : 7
-    };
+    selectionGesture.pointerDown(event);
 });
 stage.addEventListener('pointermove', (event) => {
-    if (selectionPointer?.id === event.pointerId) {
-        selectionPointer.moved ||= Math.hypot(event.clientX - selectionPointer.x, event.clientY - selectionPointer.y) > selectionPointer.threshold;
-        if (selectionPointer.moved) objectHover.hidden = true;
-    }
+    if (selectionGesture.pointerMove(event)) objectHover.hidden = true;
     if (event.buttons === 0) showObjectHover(paperScene.pickWorldObject(event.clientX, event.clientY), event);
 });
 stage.addEventListener('pointerup', (event) => {
-    if (!selectionPointer || selectionPointer.id !== event.pointerId) return;
-    const shouldSelect = !selectionPointer.moved;
-    selectionPointer = null;
-    if (!shouldSelect) return;
+    if (!selectionGesture.pointerUp(event)) return;
     const key = paperScene.pickWorldObject(event.clientX, event.clientY);
     if (key) flyToWorldObject(key);
 });
-stage.addEventListener('pointercancel', () => { selectionPointer = null; });
+stage.addEventListener('pointercancel', (event) => { selectionGesture.pointerCancel(event); });
 stage.addEventListener('pointerleave', (event) => { if (event.buttons === 0) objectHover.hidden = true; });
 autopilotCancel.addEventListener('click', cancelAutopilot);
 

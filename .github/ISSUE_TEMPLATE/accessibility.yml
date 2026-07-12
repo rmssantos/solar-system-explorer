@@ -1,25 +1,25 @@
-name: Reportar acessibilidade
-description: Uma barreira de teclado, leitura, visão, audição ou movimento.
-title: "[Acessibilidade]: "
+name: Report an accessibility issue
+description: A keyboard, screen reader, visual, hearing, or motion barrier.
+title: "[Accessibility]: "
 labels: [accessibility, triage]
 body:
   - type: dropdown
     id: barrier
     attributes:
-      label: Tipo de barreira
-      options: [Teclado, Leitor de ecrã, Contraste ou legibilidade, Movimento ou animação, Zoom ou tamanho, Controlos do jogo, Outro]
+      label: Type of barrier
+      options: [Keyboard, Screen reader, Contrast or readability, Motion or animation, Zoom or text size, Game controls, Other]
     validations: { required: true }
   - type: textarea
     id: impact
     attributes:
-      label: O que não conseguiste fazer?
+      label: What were you unable to do?
     validations: { required: true }
   - type: input
     id: setup
     attributes:
-      label: Tecnologia e dispositivo
-      placeholder: NVDA + Firefox / VoiceOver + Safari / apenas teclado
+      label: Assistive technology and device
+      placeholder: NVDA + Firefox / VoiceOver + Safari / keyboard only
   - type: textarea
     id: suggestion
     attributes:
-      label: O que ajudaria?
+      label: What would help?

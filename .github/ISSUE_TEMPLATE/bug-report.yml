@@ -1,32 +1,32 @@
-name: Reportar um problema
-description: Algo não funciona no jogo, biblioteca ou site.
+name: Report a bug
+description: Something is not working in the game, library, or website.
 title: "[Bug]: "
 labels: [bug, triage]
 body:
   - type: markdown
     attributes:
-      value: Obrigado por ajudares. Não incluas nomes, emails ou outros dados pessoais.
+      value: Thanks for helping. Do not include names, email addresses, or other personal information.
   - type: dropdown
     id: area
     attributes:
-      label: Onde aconteceu?
-      options: [Jogo e voo, Cockpit, Caderno e quizzes, Biblioteca, Homepage, Privacidade e métricas, Outro]
+      label: Where did it happen?
+      options: [Game and flight, Cockpit, Notebook and quizzes, Library, Homepage, Privacy and analytics, Other]
     validations: { required: true }
   - type: textarea
     id: steps
     attributes:
-      label: Como reproduzir
-      description: Indica passos curtos, o que esperavas e o que aconteceu.
-      placeholder: "1. Abri…\n2. Cliquei…\n3. Vi…"
+      label: Steps to reproduce
+      description: Provide short steps, what you expected, and what happened.
+      placeholder: "1. I opened…\n2. I clicked…\n3. I saw…"
     validations: { required: true }
   - type: input
     id: browser
     attributes:
-      label: Browser e dispositivo
+      label: Browser and device
       placeholder: Chrome 128 · Windows 11 / Safari · iPad
     validations: { required: true }
   - type: textarea
     id: evidence
     attributes:
-      label: Imagem ou informação adicional
-      description: Podes arrastar uma captura sem informação pessoal.
+      label: Screenshot or additional information
+      description: You can drag in a screenshot that does not contain personal information.

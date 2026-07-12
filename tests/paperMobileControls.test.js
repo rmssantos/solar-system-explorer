@@ -12,11 +12,12 @@ const EXPERIENCE_HEADER_REGEX = /<header class="experience-header">([\s\S]*?)<\/
 const SHORT_LANDSCAPE_ZOOM_REGEX = /@media \(max-height: 520px\) and \(orientation: landscape\)[\s\S]*?\.zoom-controls\s*\{[^}]*right:\s*50%;[^}]*display:\s*flex;[^}]*transform:\s*translateX\(50%\)/;
 
 describe('Mobile-first paper flight controls', () => {
-    it('provides exactly two labelled touch sticks without redundant manoeuvre buttons', () => {
+    it('provides one labelled movement stick without a redundant look stick or manoeuvre buttons', () => {
         expect(html).toContain('id="flight-joystick"');
-        expect(html).toContain('id="flight-look-joystick"');
-        expect(html).toContain('id="look-joystick-knob"');
-        expect(html.match(/data-flight-control/g)).toHaveLength(2);
+        expect(html).toContain('id="joystick-knob"');
+        expect(html).not.toContain('id="flight-look-joystick"');
+        expect(html).not.toContain('id="look-joystick-knob"');
+        expect(html.match(/data-flight-control/g)).toHaveLength(1);
         expect(html).not.toContain('class="flight-actions"');
         for (const id of [
             'flight-roll-left', 'flight-up', 'flight-roll-right',
@@ -24,19 +25,29 @@ describe('Mobile-first paper flight controls', () => {
         ]) expect(html).not.toContain(`id="${id}"`);
     });
 
-    it('wires only the two touch sticks into the input controller', () => {
-        for (const selector of ['#flight-joystick', '#flight-look-joystick', '#look-joystick-knob']) {
-            expect(ui).toContain(selector);
+    it('wires only the movement stick and leaves look control to stage drag', () => {
+        for (const selector of ['#flight-joystick', '#joystick-knob']) expect(ui).toContain(selector);
+        for (const removedSelector of ['#flight-look-joystick', '#look-joystick-knob']) {
+            expect(ui).not.toContain(removedSelector);
         }
         for (const removedSelector of [
             '#flight-up', '#flight-down', '#flight-boost', '#flight-brake',
             '#flight-roll-left', '#flight-roll-right'
         ]) expect(ui).not.toContain(removedSelector);
-        for (const option of ['lookJoystick:', 'lookJoystickKnob:']) expect(main).toContain(option);
+        for (const option of ['lookJoystick:', 'lookJoystickKnob:']) expect(main).not.toContain(option);
         for (const removedOption of [
             'upButton:', 'downButton:', 'boostButton:', 'brakeButton:',
             'rollLeftButton:', 'rollRightButton:'
         ]) expect(main).not.toContain(removedOption);
+    });
+
+    it('uses the freed lower-right thumb zone for the contextual explore action', () => {
+        expect(css).not.toContain('.flight-look-joystick');
+        expect(css).not.toContain('.joystick-look-knob');
+        expect(css).toMatch(/@media \(any-pointer: coarse\), \(max-width: 720px\)[\s\S]*?\.explore-nearby\s*\{[^}]*right:\s*var\(--touch-edge-gap-right\);[^}]*left:\s*auto;/);
+
+        const placementRule = css.match(/\.joystick-label[\s\S]*?\.explore-nearby\s*\{([^}]*)\}/)?.[1] ?? '';
+        expect(placementRule).not.toMatch(/min-(?:width|height)|padding/);
     });
 
     it('groups primary routes, language, and notebook in one safe top bar', () => {
@@ -46,6 +57,9 @@ describe('Mobile-first paper flight controls', () => {
         expect(topbar).toContain('class="game-library-link"');
         expect(topbar).toContain('class="game-language-toggle"');
         expect(topbar).toContain('id="notebook-trigger"');
+        expect(topbar).toMatch(/id="notebook-trigger"[^>]*data-i18n-aria="game\.notebook"/);
+        expect(css).toMatch(/\.notebook-trigger span\s*\{\s*display:\s*none;/);
+        expect(css).not.toMatch(/\.notebook-trigger span\s*\{[^}]*clip:/);
         expect(css).toContain('padding-top: env(safe-area-inset-top)');
         expect(css).toContain('--touch-target-min: 44px');
     });
@@ -60,13 +74,25 @@ describe('Mobile-first paper flight controls', () => {
         expect(css).toContain('@media (min-width: 721px) and (any-pointer: coarse)');
     });
 
-    it('moves the tool rail away from the look stick on short landscape screens', () => {
+    it('keeps the tool rail out of the lower thumb zone on short landscape screens', () => {
         expect(css).toMatch(SHORT_LANDSCAPE_ZOOM_REGEX);
     });
 
     it('keeps control gestures out of stage selection', () => {
         expect(main).toContain("closest?.('[data-flight-control]')");
-        expect(main).toContain("event.pointerType === 'touch'");
+        expect(main).toContain('createStageSelectionGesture()');
+    });
+
+    it('exposes localized drag, pinch, and keyboard instructions to assistive technology', () => {
+        expect(html).toMatch(/id="paper-stage"[^>]*role="region"[^>]*tabindex="0"[^>]*aria-describedby="flight-control-instructions"/);
+        expect(html).toContain('id="flight-control-instructions"');
+        expect(html).toContain('data-i18n="game.accessibleControls"');
+        expect(html).toMatch(/id="flight-joystick"[^>]*role="group"[^>]*aria-describedby="flight-control-instructions"/);
+        expect(css).toContain('.visually-hidden');
+        const visuallyHiddenRule = css.match(/\.visually-hidden\s*\{([^}]*)\}/)?.[1] ?? '';
+        expect(visuallyHiddenRule).toContain('clip-path: inset(50%)');
+        expect(visuallyHiddenRule).not.toMatch(/(?:^|;)\s*clip\s*:/);
+        expect(i18n).toContain("'game.accessibleControls'");
     });
 
     it('activates for coarse pointers with safe-area-aware thumb zones', () => {
@@ -81,8 +107,11 @@ describe('Mobile-first paper flight controls', () => {
     });
 
     it('ships bilingual touch labels and instructions', () => {
-        for (const key of ['game.flight.move', 'game.flight.look', 'game.touchControls']) {
+        for (const key of ['game.flight.move', 'game.touchControls']) {
             expect(i18n).toContain(`'${key}'`);
         }
+        expect(i18n).not.toContain("'game.flight.look'");
+        expect(i18n).toContain("'game.touchControls': 'Mover à esquerda · arrasta o cenário para olhar'");
+        expect(i18n).toContain("'game.touchControls': 'Move on the left · drag the scene to look'");
     });
 });

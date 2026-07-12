@@ -48,6 +48,7 @@ src/assets/textures/
 /relatorio*.html
 /report-assets/
 /*review*.html
+/paper-preview/public/audio/README.md
 
 # Browser QA output (keep under .local/)
 /.playwright-cli/

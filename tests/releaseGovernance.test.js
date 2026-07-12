@@ -41,6 +41,11 @@ describe('Release governance', () => {
         expect(preview).toContain('cancel-in-progress: true');
         expect(preview).toContain("VITE_APPLICATIONINSIGHTS_CONNECTION_STRING: ''");
         expect(preview).toContain('npm run build:paper');
+        expect(preview).toContain('@azure/static-web-apps-cli@2.0.9');
+        expect(preview).toContain('--env "${{ github.event.pull_request.number }}"');
+        expect(preview).toContain('SWA_CLI_DEPLOYMENT_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03 }}');
+        expect(preview).not.toContain('id-token: write');
+        expect(preview).not.toContain('github_id_token:');
     });
 
     it('creates releases with Release Please v5 and deploys only a release or manual ref', () => {
@@ -101,15 +106,18 @@ describe('Release governance', () => {
         ]) expect(read(entry)).toContain('mountBuildInfo');
     });
 
-    it('documents SemVer, required credentials, release approval, and immutable-tag rollback', () => {
+    it('documents SemVer, current deployment credentials, review, and immutable-tag rollback', () => {
         const guide = read('docs/releases.md');
 
         expect(guide).toContain('fix:');
         expect(guide).toContain('feat:');
         expect(guide).toContain('BREAKING CHANGE');
         expect(guide).toContain('RELEASE_PLEASE_TOKEN');
-        expect(guide).toContain('CodeRabbit');
+        expect(guide).toContain('AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_SMOKE_09DEA4A03');
+        expect(guide).toContain('DeploymentToken');
+        expect(guide).toContain('require green checks before merging');
         expect(guide).toContain('gh workflow run release.yml');
-        expect(guide).toContain('Nunca apagues nem movas uma tag');
+        expect(guide).toContain('Never delete or move an existing release tag');
+        expect(guide).not.toContain('OIDC');
     });
 });

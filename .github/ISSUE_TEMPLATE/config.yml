@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Privacidade e dados pessoais
+  - name: Privacy and personal data
     url: https://green-smoke-09dea4a03.3.azurestaticapps.net/privacidade/
-    about: Lê primeiro a política. Nunca publiques dados pessoais teus ou de uma criança num Issue público.
-  - name: Conversas gerais do projeto
+    about: Read the policy first. Never publish your own or a child's personal data in a public issue.
+  - name: General project discussions
     url: https://github.com/rmssantos/solar-system-explorer/discussions
-    about: Ideias abertas e perguntas que não sejam bugs.
+    about: Open-ended ideas and questions that are not bugs.

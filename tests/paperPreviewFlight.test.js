@@ -226,24 +226,87 @@ describe('Paper flight input', () => {
         expect(normalizeJoystick(30, -40, 50)).toEqual({ x: 0.6, y: -0.8 });
     });
 
-    it('combines simultaneous movement and continuous look sticks', () => {
+    it('combines movement-stick input with direct stage drag-to-look', () => {
         const harness = createInputHarness();
         let input;
         try {
             input = createFlightInput(harness.options);
 
             harness.left.emit('pointerdown', pointerEvent(1, 100, 50, harness.left));
-            harness.look.emit('pointerdown', pointerEvent(2, 50, 100, harness.look));
+            harness.stage.emit('pointerdown', pointerEvent(2, 50, 50, harness.stage));
+            harness.stage.emit('pointermove', pointerEvent(2, 80, 30, harness.stage));
 
             const active = input.sample();
             expect(active.strafe).toBeCloseTo(1, 4);
             expect(active.forward).toBeCloseTo(0, 4);
-            expect(active.yawDelta).toBeCloseTo(0, 4);
-            expect(active.pitchDelta).toBeLessThan(0);
-            expect(input.sample().pitchDelta).toBeLessThan(0);
+            expect(active.yawDelta).toBeCloseTo(-0.096, 4);
+            expect(active.pitchDelta).toBeCloseTo(0.052, 4);
+            expect(input.sample()).toMatchObject({ yawDelta: 0, pitchDelta: 0 });
 
             harness.left.emit('pointerup', pointerEvent(1, 100, 50, harness.left));
-            harness.look.emit('pointerup', pointerEvent(2, 50, 100, harness.look));
+            harness.stage.emit('pointerup', pointerEvent(2, 80, 30, harness.stage));
+        } finally {
+            input?.destroy();
+            harness.restore();
+        }
+    });
+
+    it('suppresses drag-to-look for the whole two-finger pinch gesture', () => {
+        const harness = createInputHarness();
+        let input;
+        try {
+            input = createFlightInput(harness.options);
+
+            harness.stage.emit('pointerdown', pointerEvent(1, 20, 20, harness.stage));
+            harness.stage.emit('pointerdown', pointerEvent(2, 80, 20, harness.stage));
+            harness.stage.emit('pointermove', pointerEvent(1, 10, 20, harness.stage));
+            harness.stage.emit('pointermove', pointerEvent(2, 100, 20, harness.stage));
+
+            expect(input.sample()).toMatchObject({ yawDelta: 0, pitchDelta: 0 });
+
+            harness.stage.emit('pointerup', pointerEvent(1, 10, 20, harness.stage));
+            harness.stage.emit('pointerup', pointerEvent(2, 100, 20, harness.stage));
+            harness.stage.emit('pointerdown', pointerEvent(3, 30, 30, harness.stage));
+            harness.stage.emit('pointermove', pointerEvent(3, 50, 30, harness.stage));
+            expect(input.sample().yawDelta).toBeLessThan(0);
+        } finally {
+            input?.destroy();
+            harness.restore();
+        }
+    });
+
+    it('captures drag on the original canvas so its pinch listener keeps receiving moves', () => {
+        const harness = createInputHarness();
+        const canvas = new FakeControl();
+        let input;
+        try {
+            input = createFlightInput(harness.options);
+
+            harness.stage.emit('pointerdown', pointerEvent(7, 40, 40, canvas));
+
+            expect(canvas.capturedPointers).toEqual([7]);
+            expect(harness.stage.capturedPointers).toEqual([]);
+        } finally {
+            input?.destroy();
+            harness.restore();
+        }
+    });
+
+    it('clears pending drag deltas when input is reset or cancelled', () => {
+        const harness = createInputHarness();
+        let input;
+        try {
+            input = createFlightInput(harness.options);
+
+            harness.stage.emit('pointerdown', pointerEvent(1, 20, 20, harness.stage));
+            harness.stage.emit('pointermove', pointerEvent(1, 50, 40, harness.stage));
+            input.reset();
+            expect(input.sample()).toMatchObject({ yawDelta: 0, pitchDelta: 0 });
+
+            harness.stage.emit('pointerdown', pointerEvent(2, 20, 20, harness.stage));
+            harness.stage.emit('pointermove', pointerEvent(2, 50, 40, harness.stage));
+            harness.stage.emit('pointercancel', pointerEvent(2, 50, 40, harness.stage));
+            expect(input.sample()).toMatchObject({ yawDelta: 0, pitchDelta: 0 });
         } finally {
             input?.destroy();
             harness.restore();
@@ -276,6 +339,7 @@ class FakeControl {
         this.bounds = { left, top, width, height };
         this.listeners = new Map();
         this.attributes = new Map();
+        this.capturedPointers = [];
         this.style = {};
         this.classList = {
             values: new Set(),
@@ -294,13 +358,15 @@ class FakeControl {
     removeEventListener(type) { this.listeners.delete(type); }
     emit(type, event) { this.listeners.get(type)?.(event); }
     getBoundingClientRect() { return this.bounds; }
-    setPointerCapture() {}
+    setPointerCapture(pointerId) { this.capturedPointers.push(pointerId); }
     setAttribute(name, value) { this.attributes.set(name, value); }
+    closest() { return null; }
 }
 
-function pointerEvent(pointerId, clientX, clientY, target) {
+function pointerEvent(pointerId, clientX, clientY, target, pointerType = 'touch') {
     return {
         pointerId,
+        pointerType,
         clientX,
         clientY,
         button: 0,
@@ -320,17 +386,13 @@ function createInputHarness() {
     globalThis.window = fakeWindow;
     const stage = new FakeControl();
     const left = new FakeControl();
-    const look = new FakeControl();
     const leftKnob = new FakeControl();
-    const lookKnob = new FakeControl();
     return {
-        window: fakeWindow, stage, left, look,
+        window: fakeWindow, stage, left,
         options: {
             stage,
             joystick: left,
-            joystickKnob: leftKnob,
-            lookJoystick: look,
-            lookJoystickKnob: lookKnob
+            joystickKnob: leftKnob
         },
         restore() { globalThis.window = previousWindow; }
     };

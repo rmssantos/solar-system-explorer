@@ -1,27 +1,27 @@
-name: Corrigir ciência ou conteúdo
-description: Uma medida, imagem, tradução ou fonte parece incorreta.
-title: "[Ciência]: "
+name: Correct science or content
+description: A measurement, image, translation, or source seems incorrect.
+title: "[Science]: "
 labels: [content, science, triage]
 body:
   - type: input
     id: object
     attributes:
-      label: Objeto ou página
-      placeholder: Deimos · ficha Hoje / Biblioteca
+      label: Object or page
+      placeholder: Deimos · Today card / Library
     validations: { required: true }
   - type: textarea
     id: current
     attributes:
-      label: O que está incorreto ou confuso?
+      label: What is incorrect or unclear?
     validations: { required: true }
   - type: textarea
     id: correction
     attributes:
-      label: Correção sugerida
+      label: Suggested correction
     validations: { required: true }
   - type: input
     id: source
     attributes:
-      label: Fonte científica verificável
-      placeholder: Página da NASA, ESA, JPL ou artigo científico
+      label: Verifiable scientific source
+      placeholder: NASA, ESA, or JPL page, or a scientific paper
     validations: { required: true }

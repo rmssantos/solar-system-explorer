@@ -14,5 +14,16 @@ describe('public GitHub issue intake', () => {
         const config = read('config.yml');
         expect(config).toContain('blank_issues_enabled: false');
         expect(config).toContain('/privacidade/');
+        expect(config).toContain('name: Privacy and personal data');
+        expect(config).toContain('name: General project discussions');
+    });
+
+    it.each([
+        ['bug-report.yml', 'name: Report a bug'],
+        ['feature-request.yml', 'name: Suggest an improvement'],
+        ['science-correction.yml', 'name: Correct science or content'],
+        ['accessibility.yml', 'name: Report an accessibility issue']
+    ])('presents %s in English', (name, heading) => {
+        expect(read(name)).toContain(heading);
     });
 });

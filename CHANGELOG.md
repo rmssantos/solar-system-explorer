@@ -1,6 +1,6 @@
 # Changelog
 
-As alterações públicas do Sistema Solar de Bolso são mantidas automaticamente pelo Release Please a partir de Conventional Commits.
+Public changes to the Paper Solar Explorer are maintained automatically by Release Please from Conventional Commits.
 
 ## [1.1.2](https://github.com/rmssantos/solar-system-explorer/compare/v1.1.1...v1.1.2) (2026-07-12)
 
@@ -34,4 +34,4 @@ As alterações públicas do Sistema Solar de Bolso são mantidas automaticament
 
 ## 1.0.0
 
-- Primeira baseline de produção do Paper Solar Explorer, incluindo voo 360°, missões, aprendizagem, biblioteca e soundscape reativo.
+- First production baseline of the Paper Solar Explorer, including 360-degree flight, missions, learning content, the library, and a reactive soundscape.
