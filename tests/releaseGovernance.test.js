@@ -45,7 +45,7 @@ describe('Release governance', () => {
         expect(workflow).toContain('release_created: ${{ steps.release.outputs.release_created }}');
         expect(workflow).toContain('tag_name: ${{ steps.release.outputs.tag_name }}');
         expect(workflow).toContain('workflow_dispatch:');
-        expect(workflow).toMatch(/ref:\s*\n\s+description:.*\n\s+required: true/);
+        expect(workflow).toMatch(/ref:\s*\r?\n\s+description:[^\r\n]*\r?\n\s+required: true/);
         expect(workflow).toContain("name: production");
         expect(workflow).toContain("needs.release-please.outputs.release_created == 'true'");
         expect(workflow).toContain("github.event_name == 'workflow_dispatch'");
