@@ -1,7 +1,16 @@
 import { defineConfig } from 'vite';
 import { fileURLToPath, URL } from 'node:url';
+import { readFileSync } from 'node:fs';
+
+const packageMetadata = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'));
+const appVersion = globalThis.process?.env.VITE_APP_VERSION || packageMetadata.version;
+const gitSha = globalThis.process?.env.VITE_GIT_SHA || 'local';
 
 export default defineConfig({
+    define: {
+        'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
+        'import.meta.env.VITE_GIT_SHA': JSON.stringify(gitSha)
+    },
     server: {
         headers: { 'Cache-Control': 'no-store' },
         proxy: {
