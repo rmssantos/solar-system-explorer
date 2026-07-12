@@ -2,6 +2,13 @@
 
 As alterações públicas do Sistema Solar de Bolso são mantidas automaticamente pelo Release Please a partir de Conventional Commits.
 
+## [1.1.2](https://github.com/rmssantos/solar-system-explorer/compare/v1.1.1...v1.1.2) (2026-07-12)
+
+
+### Bug Fixes
+
+* deploy releases with Azure SWA CLI ([#31](https://github.com/rmssantos/solar-system-explorer/issues/31)) ([71e01de](https://github.com/rmssantos/solar-system-explorer/commit/71e01ded884fd633eb6f7c2edd2de7ca90a427f8))
+
 ## [1.1.1](https://github.com/rmssantos/solar-system-explorer/compare/v1.1.0...v1.1.1) (2026-07-12)
 
 
