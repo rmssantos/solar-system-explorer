@@ -14,15 +14,18 @@ function json(path) {
 }
 
 describe('Release governance', () => {
-    it('bootstraps the root Node package from the existing 1.0.0 baseline', () => {
+    it('keeps release metadata consistent after the 1.0.0 bootstrap', () => {
         const config = json('release-please-config.json');
         const manifest = json('.release-please-manifest.json');
+        const packageJson = json('package.json');
+        const releaseVersion = manifest['.'];
 
         expect(config['release-type']).toBe('node');
         expect(config['include-component-in-tag']).toBe(false);
         expect(config['bootstrap-sha']).toBe('1fb471d0c270d4b5686da424eb9c34bf522609da');
         expect(config.packages?.['.']?.['package-name']).toBe('solar-system-explorer');
-        expect(manifest).toEqual({ '.': '1.0.0' });
+        expect(releaseVersion).toMatch(/^\d+\.\d+\.\d+$/);
+        expect(packageJson.version).toBe(releaseVersion);
         expect(read('CHANGELOG.md')).toContain('# Changelog');
     });
 
