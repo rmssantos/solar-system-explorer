@@ -145,3 +145,21 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Nuvens/polos elevados da Terra passaram a usar o mapa fibroso creme do runtime; luas geladas/rochosas usam papel creme/cartão.
 - O círculo saliente em Marte tinha duas causas: crater rings geométricos e trânsito de Fobos. Crater rings são agora omitidos quando existe textura; Fobos/Deimos foram reduzidos e afastados.
 - Regra de composição `moonLegibility` preserva o raio orbital mas desloca luas em trânsito para fora da silhueta quando a câmara está próxima. Marte final mostra Fobos separado e “Explorar Marte”, sem erros: `mars-legible.png`.
+
+## 2026-07-12 — Soundscape reativo
+
+- Pedido: acrescentar SFX e som de fundo, estudando os momentos certos, com chave ElevenLabs guardada no `.env` do checkout principal.
+- Direção e plano: `docs/plans/2026-07-12-paper-soundscape-design.md` e `2026-07-12-paper-soundscape-implementation.md`.
+- `.env` e `.env.*` foram adicionados ao `.gitignore`, preservando apenas a possibilidade de um `.env.example`; a chave nunca entra no bundle nem é impressa pelo pipeline.
+- Pipeline ElevenLabs criado em `scripts/generate-paper-audio.mjs`: usa `POST /v1/sound-generation`, `eleven_text_to_sound_v2`, escrita atómica e skip-existing para evitar gastos repetidos.
+- A primeira chamada ElevenLabs falhou antes de gerar áudio com `401 payment_issue` / fatura incompleta. Nenhum MP3 atual é apresentado como output ElevenLabs.
+- Para não deixar a feature partida durante o bloqueio inicial, foram criados nove fallbacks sintetizados e reprodutíveis em `scripts/generate-paper-audio-fallback.mjs`: ambiente 30 s, motor 12 s, fold, piloto start/arrive, quiz correct/wrong, reward e Lumi.
+- Mixer puro e diretor browser implementados em `paper-preview/src/audio/`: áudio começa apenas após gesto, escolha on/off persiste, volumes fazem easing, motor acompanha velocidade/boost, diálogos fazem ducking, tab oculta pausa e falhas de `play()` nunca bloqueiam o jogo.
+- O botão “Som/Sound” vive no stack de ferramentas como disco-rádio de papel, usa `aria-pressed` e labels dinâmicos PT/EN. QA encontrou e corrigiu uma colisão entre o label persistido e `data-i18n-aria`; regressão incluída.
+- Sinais integrados apenas em transições semânticas: abrir/fechar caderno, piloto start/arrive, quiz certo/errado, recompensa e transmissão Lumi. Hover, drag, teclas comuns e zoom não disparam one-shots; boost altera o motor contínuo.
+- `render_game_to_text` expõe enabled/unlocked/visible, volumes, playback rate, last cue e contagem ativa. Browser confirmou `lumi-signal`, `autopilot-start`, `paper-fold`, `reward-chime` e `quiz-wrong` nos fluxos reais.
+- Evidência visual inspecionada: `output/playwright/paper-audio-desktop-active/shot-0.png`, `output/playwright/paper-audio-mobile-active.png` e `output/playwright/paper-audio-mobile-muted-390.png`. O controlo fica legível em desktop e 390×844, com 0 overflow horizontal e 0 erros de consola.
+- Verificação desta iteração: 59 ficheiros / 257 testes passam; lint, typecheck, build paper e `git diff --check` passam. `/`, `/jogo/`, `/biblioteca/` e assets áudio auditados com HTTP 200 e `audio/mpeg`.
+- Após atualização da subscrição, `node scripts/generate-paper-audio.mjs --force` gerou com sucesso os nove MP3 atuais via ElevenLabs. `ffprobe` confirmou 1,2–30 s, ~128–134 kbps e cerca de 923 kB no total; `volumedetect` confirmou sinal não silencioso em todos os clips.
+- Smoke do cliente oficial com os assets ElevenLabs: gesto de voo desbloqueou áudio, nave chegou a 5,109 u/s, ambiente ficou em 0,197, motor em 0,199 e playback rate em 1,140; sem erros de consola. Evidência: `output/playwright/elevenlabs-audio-smoke/shot-0.png` e `state-0.json`.
+- TODO real: fazer audição humana dos nove resultados em colunas e auscultadores, desktop e telemóvel, e ajustar apenas níveis do mixer se algum sinal competir com o ambiente.
