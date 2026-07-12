@@ -54,6 +54,7 @@ Não trabalhar no checkout Desktop por engano. Confirmar sempre `git branch --sh
 - Homepage editorial, jogo e Biblioteca usam rotas limpas.
 - Sistema Solar heliocêntrico completo: Sol, 8 planetas, 14 luas, objetos humanos e pequenos corpos.
 - Voo manual 360°, zoom contínuo e cockpit funcional.
+- Voo touch mobile-first com dois sticks simultâneos: movimento à esquerda, yaw/pitch à direita, boost em toggle e botões dedicados para subir/descer, travar e roll. A UI ativa-se por coarse pointer também em tablets, respeita safe areas e isola gestos de controlo da seleção/autopilot.
 - Piloto de papel: hover identifica objetos; clique curto inicia voo em arco com rasto; drag continua a controlar a câmara; input manual cancela; chegada para a uma distância explorável.
 - Soundscape opcional e persistente: ambiente espacial, motor reativo a velocidade/boost e sinais semânticos para caderno, piloto, quiz, Lumi e recompensas. Autoplay só desbloqueia após gesto; separadores ocultos ficam silenciosos.
 - Os nove mundos primários têm texturas geradas em papel aplicadas aos volumes low-poly; conservam facetas, contorno, iluminação e detalhes de silhueta. A Terra usa ainda papel creme fibroso nas nuvens elevadas.
@@ -85,7 +86,7 @@ As texturas foram geradas a partir do estilo de `paper-expedition-hero.webp`. A 
 5. Para feature: fechar comportamento e critérios, escrever testes do modelo antes da integração visual.
 6. Executar o cliente oficial do web game após alterações significativas.
 7. Inspecionar screenshots e `render_game_to_text`; não aceitar apenas “build verde”.
-8. Validar consola, desktop 1280/1440 e mobile 390×844, PT e EN quando a UI muda.
+8. Validar consola, desktop 1280/1440, phones 360/390/430 e tablets portrait/landscape com coarse pointer, PT e EN quando a UI muda.
 9. Atualizar `progress.md` com decisão, evidência e TODO real.
 10. Antes de declarar conclusão: testes completos, lint, build, rotas HTTP e auditoria requisito a requisito.
 
@@ -102,6 +103,8 @@ node C:\Users\ruben\.codex\skills\develop-web-game\scripts\web_game_playwright_c
 
 - zero erros de consola em homepage, jogo e Biblioteca;
 - zero overflow horizontal em 390×844;
+- dois toques simultâneos movem e orientam a nave; todas as manobras touch voltam a zero ao terminar o gesto ou abrir um diálogo;
+- controlos touch aparecem em tablets por capacidade de ponteiro, têm alvos mínimos de 52 px, respeitam safe areas e nunca ativam autopilot;
 - `W/A/S/D` seguem a orientação visível depois de yaw/pitch/roll;
 - piloto automático apresenta alinhamento frente/velocidade superior a 0,95 e não atravessa o Sol;
 - cada objeto secundário resolve para `/learning/objects/<key>.jpg` e fonte HTTPS própria;
@@ -118,7 +121,7 @@ node C:\Users\ruben\.codex\skills\develop-web-game\scripts\web_game_playwright_c
 2. Enriquecer medições de luas/objetos secundários; alguns valores ainda são descrições genéricas.
 3. Aumentar cobertura de quizzes próprios para além do quiz de identidade gerado.
 4. Rever peso do bundle do jogo e introduzir carregamento progressivo de assets/Three.js se necessário.
-5. Executar auditoria final de acessibilidade, performance e mobile touch antes de integrar a branch.
+5. Medir performance WebGL em tablets físicos de gama média e reduzir detalhe adaptativamente apenas se o frame pacing real o exigir.
 6. Fazer uma audição humana completa dos nove clips ElevenLabs em desktop/telemóvel e afinar níveis apenas se algum sinal competir com o ambiente ou ficar pouco audível.
 
 ## Prompt para iniciar uma nova sessão

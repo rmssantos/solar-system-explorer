@@ -163,3 +163,14 @@ Original prompt: Criar uma app preview separada para explorar uma experiência c
 - Após atualização da subscrição, `node scripts/generate-paper-audio.mjs --force` gerou com sucesso os nove MP3 atuais via ElevenLabs. `ffprobe` confirmou 1,2–30 s, ~128–134 kbps e cerca de 923 kB no total; `volumedetect` confirmou sinal não silencioso em todos os clips.
 - Smoke do cliente oficial com os assets ElevenLabs: gesto de voo desbloqueou áudio, nave chegou a 5,109 u/s, ambiente ficou em 0,197, motor em 0,199 e playback rate em 1,140; sem erros de consola. Evidência: `output/playwright/elevenlabs-audio-smoke/shot-0.png` e `state-0.json`.
 - TODO real: fazer audição humana dos nove resultados em colunas e auscultadores, desktop e telemóvel, e ajustar apenas níveis do mixer se algum sinal competir com o ambiente.
+
+## 2026-07-12 — Voo mobile-first e touch
+
+- Auditoria inicial encontrou a causa principal da navegação impossível: os controlos apareciam apenas abaixo de 720 px, por isso tablets 820×1180 com coarse pointer recebiam apenas instruções de teclado. Em phone, navegação/idioma ocupavam a zona do joystick esquerdo e olhar dependia de drag no mesmo palco usado por seleção/autopilot.
+- Implementado modelo de dois polegares: stick esquerdo contínuo para frente/trás/strafe e stick direito contínuo para yaw/pitch; subir, descer, travão e roll esquerdo/direito são hold controls; boost é um toggle acessível com `aria-pressed`.
+- Todas as superfícies touch consomem eventos antes do palco e têm `data-flight-control`; seleção ignora explicitamente esses alvos e usa tolerância de movimento de 16 px para touch contra 7 px para rato.
+- Layout ativa-se com `(any-pointer: coarse)` ou viewport estreito, usa sticks 112–128 px, botões mínimos 52×52 px, quatro safe-area insets e desloca Início/Biblioteca/idioma para cima do stick esquerdo.
+- TDD: 2 testes de input falharam antes do segundo stick/manobras e 5 testes estruturais falharam antes do markup/CSS/i18n; após implementação, 60 ficheiros / 267 testes passaram.
+- Touch real via CDP em 390 px: dois contactos simultâneos produziram `forward: 1`, yaw `0→-1,98`, movimento `Z 14→12,317` e velocidade `8,971`, sem autopilot; `touchEnd` repôs todos os inputs.
+- Manobras reais verificadas: vertical `+1/-1`, `brake: true`, roll `-1/+1`, boost `false→true→false`; abrir o Diário com boost ativo repôs input e `aria-pressed=false`.
+- Evidência visual inspecionada em 360×800, iPhone 390×664, iPad 834×1194, tablet landscape 1024×768 e desktop 1366×768. Zero overflow horizontal, zero colisões entre superfícies de controlo e zero erros de consola. Screenshots: `output/playwright/mobile-controls/phone-360x800.png`, `iphone-13-portrait.png`, `ipad-pro-11-portrait.png`, `ipad-landscape-1024x768.png` e `desktop-1366x768.png`.

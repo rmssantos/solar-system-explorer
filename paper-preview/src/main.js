@@ -360,9 +360,14 @@ const flightInput = createFlightInput({
     stage,
     joystick: previewUI.elements.joystick,
     joystickKnob: previewUI.elements.joystickKnob,
+    lookJoystick: previewUI.elements.lookJoystick,
+    lookJoystickKnob: previewUI.elements.lookJoystickKnob,
     upButton: previewUI.elements.upButton,
     downButton: previewUI.elements.downButton,
-    boostButton: previewUI.elements.boostButton
+    boostButton: previewUI.elements.boostButton,
+    brakeButton: previewUI.elements.brakeButton,
+    rollLeftButton: previewUI.elements.rollLeftButton,
+    rollRightButton: previewUI.elements.rollRightButton
 });
 
 function interactionRadiusFor(object) {
@@ -414,12 +419,18 @@ function showObjectHover(key, event) {
 
 let selectionPointer = null;
 stage.addEventListener('pointerdown', (event) => {
-    if (event.button !== 0 || previewState.notebook.open) return;
-    selectionPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
+    if (event.button !== 0 || previewState.notebook.open || event.target.closest?.('[data-flight-control]')) return;
+    selectionPointer = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        moved: false,
+        threshold: event.pointerType === 'touch' ? 16 : 7
+    };
 });
 stage.addEventListener('pointermove', (event) => {
     if (selectionPointer?.id === event.pointerId) {
-        selectionPointer.moved ||= Math.hypot(event.clientX - selectionPointer.x, event.clientY - selectionPointer.y) > 7;
+        selectionPointer.moved ||= Math.hypot(event.clientX - selectionPointer.x, event.clientY - selectionPointer.y) > selectionPointer.threshold;
         if (selectionPointer.moved) objectHover.hidden = true;
     }
     if (event.buttons === 0) showObjectHover(paperScene.pickWorldObject(event.clientX, event.clientY), event);

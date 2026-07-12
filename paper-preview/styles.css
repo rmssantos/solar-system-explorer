@@ -381,6 +381,11 @@ button:focus-visible {
     transform: translateX(-50%);
 }
 
+.touch-hint,
+.joystick-label {
+    display: none;
+}
+
 .nav-beacon {
     position: fixed;
     z-index: 12;
@@ -900,7 +905,12 @@ button:focus-visible {
     transform: rotate(-3deg);
 }
 
-@media (max-width: 720px) {
+@media (any-pointer: coarse), (max-width: 720px) {
+    .paper-shell {
+        --touch-stick-size: clamp(112px, 16vw, 128px);
+        --touch-edge-gap: max(14px, env(safe-area-inset-left));
+    }
+
     .experience-header {
         top: max(14px, env(safe-area-inset-top));
         right: 14px;
@@ -936,16 +946,49 @@ button:focus-visible {
         display: none;
     }
 
+    .game-route-nav {
+        top: auto;
+        right: auto;
+        bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 16px);
+        left: max(14px, env(safe-area-inset-left));
+        gap: 5px;
+    }
+
+    .game-home-link,
+    .game-library-link {
+        display: inline-flex;
+        min-height: 52px;
+        align-items: center;
+        padding: 8px 10px;
+        font-size: 0.62rem;
+    }
+
+    .game-language-toggle {
+        top: auto;
+        right: auto;
+        bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 73px);
+        left: max(14px, env(safe-area-inset-left));
+        width: 52px;
+        min-height: 52px;
+    }
+
     .flight-joystick {
         position: absolute;
         bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
-        left: max(14px, env(safe-area-inset-left));
         display: grid;
-        width: 96px;
-        height: 96px;
+        width: var(--touch-stick-size);
+        height: var(--touch-stick-size);
         place-items: center;
         border-radius: 50%;
         touch-action: none;
+    }
+
+    .flight-move-joystick {
+        left: max(14px, env(safe-area-inset-left));
+    }
+
+    .flight-look-joystick {
+        right: max(14px, env(safe-area-inset-right));
     }
 
     .joystick-orbit {
@@ -959,8 +1002,8 @@ button:focus-visible {
 
     .joystick-knob {
         position: relative;
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
         background: var(--notebook-paper);
         border: 3px solid #b79658;
         border-radius: 48% 52% 47% 53%;
@@ -972,8 +1015,31 @@ button:focus-visible {
         transition: none;
     }
 
+    .flight-look-joystick .joystick-orbit {
+        border-style: solid;
+        border-color: rgba(114, 170, 162, 0.72);
+    }
+
+    .joystick-look-knob {
+        background: #b8d9ce;
+        border-color: #4d887e;
+    }
+
+    .joystick-label {
+        position: absolute;
+        top: 50%;
+        display: block;
+        color: rgba(255, 248, 223, 0.82);
+        font-size: 0.54rem;
+        font-weight: 1000;
+        letter-spacing: 0.09em;
+        pointer-events: none;
+        text-transform: uppercase;
+        transform: translateY(39px);
+    }
+
     .explore-nearby {
-        bottom: max(116px, calc(env(safe-area-inset-bottom) + 108px));
+        bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 134px);
         min-width: 180px;
         min-height: 64px;
         padding-inline: 13px;
@@ -982,16 +1048,18 @@ button:focus-visible {
     .flight-actions {
         position: absolute;
         right: max(14px, env(safe-area-inset-right));
-        bottom: max(14px, calc(env(safe-area-inset-bottom) + 8px));
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+        bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 10px);
+        display: grid;
+        grid-template-columns: repeat(3, 52px);
+        gap: 7px;
         pointer-events: auto;
     }
 
     .flight-actions button {
         display: grid;
-        width: 58px;
+        min-width: 52px;
+        width: 52px;
+        min-height: 52px;
         height: 52px;
         place-items: center;
         color: var(--chalk);
@@ -1002,6 +1070,19 @@ button:focus-visible {
         font-size: 1.35rem;
         font-weight: 1000;
         touch-action: none;
+    }
+
+    .flight-actions .flight-brake,
+    .flight-actions .flight-boost {
+        font-size: 0.61rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .flight-actions .flight-brake {
+        color: var(--chalk);
+        background: #9a4f42;
+        border-color: #c8806d;
     }
 
     .flight-actions .flight-boost {
@@ -1016,6 +1097,28 @@ button:focus-visible {
     .flight-actions button.is-active {
         transform: translate(2px, 2px);
         box-shadow: 2px 3px 0 rgba(4, 8, 22, 0.35);
+    }
+
+    .flight-actions .flight-boost[aria-pressed="true"] {
+        color: var(--chalk);
+        background: #b65a43;
+        border-color: #f5b83d;
+        box-shadow: 0 0 0 3px rgba(245, 184, 61, 0.34), 2px 3px 0 rgba(4, 8, 22, 0.35);
+    }
+
+    .touch-hint {
+        position: fixed;
+        z-index: 2;
+        bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 132px);
+        left: 50%;
+        display: block;
+        width: min(290px, calc(100vw - 40px));
+        margin: 0;
+        color: rgba(255, 248, 223, 0.65);
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-align: center;
+        transform: translateX(-50%);
     }
 
     .field-notebook {

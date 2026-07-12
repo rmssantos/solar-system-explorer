@@ -8,7 +8,7 @@ import {
     findNearbyPlanet,
     stepFlight
 } from '../paper-preview/src/flightSimulation.js';
-import { normalizeJoystick } from '../paper-preview/src/flightInput.js';
+import { createFlightInput, normalizeJoystick } from '../paper-preview/src/flightInput.js';
 import { createPreviewState, explorePlanet } from '../paper-preview/src/state.js';
 
 const idleInput = Object.freeze({
@@ -225,4 +225,110 @@ describe('Paper flight input', () => {
         expect(diagonal.x).toBeCloseTo(diagonal.y, 6);
         expect(normalizeJoystick(30, -40, 50)).toEqual({ x: 0.6, y: -0.8 });
     });
+
+    it('combines simultaneous movement and continuous look sticks', () => {
+        const harness = createInputHarness();
+        const input = createFlightInput(harness.options);
+
+        harness.left.emit('pointerdown', pointerEvent(1, 100, 50, harness.left));
+        harness.look.emit('pointerdown', pointerEvent(2, 50, 100, harness.look));
+
+        const active = input.sample();
+        expect(active.strafe).toBeCloseTo(1, 4);
+        expect(active.forward).toBeCloseTo(0, 4);
+        expect(active.yawDelta).toBeCloseTo(0, 4);
+        expect(active.pitchDelta).toBeLessThan(0);
+        expect(input.sample().pitchDelta).toBeLessThan(0);
+
+        harness.left.emit('pointerup', pointerEvent(1, 100, 50, harness.left));
+        harness.look.emit('pointerup', pointerEvent(2, 50, 100, harness.look));
+        input.destroy();
+        harness.restore();
+    });
+
+    it('offers complete touch manoeuvres and clears latched boost on reset', () => {
+        const harness = createInputHarness();
+        const input = createFlightInput(harness.options);
+
+        harness.up.emit('pointerdown', pointerEvent(3, 0, 0, harness.up));
+        harness.rollRight.emit('pointerdown', pointerEvent(4, 0, 0, harness.rollRight));
+        harness.brake.emit('pointerdown', pointerEvent(5, 0, 0, harness.brake));
+        harness.boost.emit('click', pointerEvent(6, 0, 0, harness.boost));
+
+        expect(input.sample()).toMatchObject({ vertical: 1, roll: 1, brake: true, boost: true });
+        expect(harness.boost.attributes.get('aria-pressed')).toBe('true');
+
+        input.reset();
+        expect(input.sample()).toMatchObject({ vertical: 0, roll: 0, brake: false, boost: false });
+        expect(harness.boost.attributes.get('aria-pressed')).toBe('false');
+        input.destroy();
+        harness.restore();
+    });
 });
+
+class FakeControl {
+    constructor({ left = 0, top = 0, width = 100, height = 100 } = {}) {
+        this.bounds = { left, top, width, height };
+        this.listeners = new Map();
+        this.attributes = new Map();
+        this.style = {};
+        this.classList = {
+            values: new Set(),
+            add: (...names) => names.forEach((name) => this.classList.values.add(name)),
+            remove: (...names) => names.forEach((name) => this.classList.values.delete(name))
+        };
+    }
+
+    addEventListener(type, handler) { this.listeners.set(type, handler); }
+    removeEventListener(type) { this.listeners.delete(type); }
+    emit(type, event) { this.listeners.get(type)?.(event); }
+    getBoundingClientRect() { return this.bounds; }
+    setPointerCapture() {}
+    setAttribute(name, value) { this.attributes.set(name, value); }
+}
+
+function pointerEvent(pointerId, clientX, clientY, target) {
+    return {
+        pointerId,
+        clientX,
+        clientY,
+        button: 0,
+        target,
+        preventDefault() {},
+        stopPropagation() {}
+    };
+}
+
+function createInputHarness() {
+    const previousWindow = globalThis.window;
+    const fakeWindow = new FakeControl();
+    globalThis.window = fakeWindow;
+    const stage = new FakeControl();
+    const left = new FakeControl();
+    const look = new FakeControl();
+    const leftKnob = new FakeControl();
+    const lookKnob = new FakeControl();
+    const up = new FakeControl();
+    const down = new FakeControl();
+    const boost = new FakeControl();
+    const brake = new FakeControl();
+    const rollLeft = new FakeControl();
+    const rollRight = new FakeControl();
+    return {
+        stage, left, look, up, down, boost, brake, rollLeft, rollRight,
+        options: {
+            stage,
+            joystick: left,
+            joystickKnob: leftKnob,
+            lookJoystick: look,
+            lookJoystickKnob: lookKnob,
+            upButton: up,
+            downButton: down,
+            boostButton: boost,
+            brakeButton: brake,
+            rollLeftButton: rollLeft,
+            rollRightButton: rollRight
+        },
+        restore() { globalThis.window = previousWindow; }
+    };
+}
