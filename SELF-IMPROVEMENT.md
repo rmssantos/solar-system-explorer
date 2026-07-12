@@ -55,6 +55,7 @@ Não trabalhar no checkout Desktop por engano. Confirmar sempre `git branch --sh
 - Sistema Solar heliocêntrico completo: Sol, 8 planetas, 14 luas, objetos humanos e pequenos corpos.
 - Voo manual 360°, zoom contínuo e cockpit funcional.
 - Piloto de papel: hover identifica objetos; clique curto inicia voo em arco com rasto; drag continua a controlar a câmara; input manual cancela; chegada para a uma distância explorável.
+- Soundscape opcional e persistente: ambiente espacial, motor reativo a velocidade/boost e sinais semânticos para caderno, piloto, quiz, Lumi e recompensas. Autoplay só desbloqueia após gesto; separadores ocultos ficam silenciosos.
 - Os nove mundos primários têm texturas geradas em papel aplicadas aos volumes low-poly; conservam facetas, contorno, iluminação e detalhes de silhueta. A Terra usa ainda papel creme fibroso nas nuvens elevadas.
 - Fotos reais dedicadas para todos os 28 objetos secundários, com atribuições NASA/JPL/Wikimedia e assets locais otimizados.
 - Caderno educativo, quizzes, dados dinâmicos resilientes, seis missões, surpresas, XP, seis níveis e sete prémios.
@@ -68,7 +69,10 @@ Não trabalhar no checkout Desktop por engano. Confirmar sempre `git branch --sh
 - Texturas experimentais: `paper-preview/public/art/textures/`
 - Fotografias principais: `paper-preview/public/learning/`
 - Fotografias de objetos secundários: `paper-preview/public/learning/objects/`
+- Áudio do jogo: `paper-preview/public/audio/`
 - Script reprodutível das fotografias: `node scripts/fetch-object-photos.mjs`
+- Pipeline ElevenLabs: `node scripts/generate-paper-audio.mjs` (requer `.env` ignorado; `--force` substitui assets)
+- Fallback local reprodutível: `node scripts/generate-paper-audio-fallback.mjs`
 
 As texturas foram geradas a partir do estilo de `paper-expedition-hero.webp`. A primeira aprovação está em `output/playwright/texture-pilot/comparison.jpg`; os nove mundos estão auditados em `output/playwright/all-paper-worlds-fixed/comparison.jpg`. Crateras geométricas salientes são usadas apenas como fallback sem textura.
 
@@ -115,6 +119,7 @@ node C:\Users\ruben\.codex\skills\develop-web-game\scripts\web_game_playwright_c
 3. Aumentar cobertura de quizzes próprios para além do quiz de identidade gerado.
 4. Rever peso do bundle do jogo e introduzir carregamento progressivo de assets/Three.js se necessário.
 5. Executar auditoria final de acessibilidade, performance e mobile touch antes de integrar a branch.
+6. Fazer uma audição humana completa dos nove clips ElevenLabs em desktop/telemóvel e afinar níveis apenas se algum sinal competir com o ambiente ou ficar pouco audível.
 
 ## Prompt para iniciar uma nova sessão
 

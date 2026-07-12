@@ -454,6 +454,16 @@ button:focus-visible {
 .zoom-controls #zoom-out,
 .zoom-controls #zoom-in { font-size: 1.25rem; }
 .zoom-controls #orbit-toggle[aria-pressed="false"] { color: #8290a8; opacity: .78; }
+.zoom-controls .sound-toggle { display: flex; align-items: center; justify-content: center; gap: .38rem; overflow: visible; }
+.sound-radio { position: relative; display: inline-block; width: 1rem; height: 1rem; flex: 0 0 auto; background: #f2c657; border: 2px solid #2c2630; border-radius: 50%; box-shadow: inset -.12rem -.12rem 0 rgb(197 105 75 / .38); }
+.sound-radio i { position: absolute; inset: -.25rem; border: 1px solid #8bd0c3; border-left-color: transparent; border-bottom-color: transparent; border-radius: 50%; opacity: .8; transform: rotate(45deg); transition: opacity .18s ease, transform .18s ease; }
+.sound-radio i:nth-child(2) { inset: -.48rem; opacity: .55; }
+.sound-radio i:nth-child(3) { inset: -.7rem; opacity: .3; }
+.sound-toggle:not(.is-unlocked) .sound-radio i { opacity: .14; transform: rotate(45deg) scale(.82); }
+.sound-toggle.is-muted { color: #9aa5b8; opacity: .82; }
+.sound-toggle.is-muted .sound-radio { background: #8290a8; box-shadow: none; }
+.sound-toggle.is-muted .sound-radio i { opacity: 0; }
+.sound-toggle.is-muted .sound-radio::after { content: ''; position: absolute; left: -.2rem; top: .38rem; width: 1.15rem; height: 2px; background: #f2e4bd; transform: rotate(-42deg); }
 .zoom-controls button:focus-visible { outline: 3px solid #76b5c4; }
 .zoom-controls button:hover { color: #2c2630; background: #f1e3b9; }
 
