@@ -469,7 +469,6 @@ function interactionRadiusFor(object) {
 
 function updateAutopilotDisplay() {
     autopilotStatus.hidden = !autoPilotState;
-    paperScene.setAutopilotActive(Boolean(autoPilotState));
     if (!autoPilotState) return;
     const object = getWorldObject(autoPilotState.targetKey);
     autopilotTarget.textContent = translateWorldObject(object, paperI18n.language).name;
