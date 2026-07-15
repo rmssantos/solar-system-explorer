@@ -341,6 +341,10 @@ button:focus-visible {
     display: none;
 }
 
+html[data-flight-input="pointer"] .flight-joystick {
+    display: none;
+}
+
 [hidden] {
     display: none !important;
 }
@@ -943,7 +947,7 @@ button:focus-visible {
 }
 
 @media (any-pointer: coarse), (max-width: 720px) {
-    .paper-shell {
+    html[data-flight-input="touch"] .paper-shell {
         --touch-stick-size: clamp(112px, 16vw, 128px);
         --touch-edge-gap-left: max(14px, env(safe-area-inset-left));
         --touch-edge-gap-right: max(14px, env(safe-area-inset-right));
@@ -976,11 +980,11 @@ button:focus-visible {
         display: none;
     }
 
-    .key-hint {
+    html[data-flight-input="touch"] .key-hint {
         display: none;
     }
 
-    .game-route-nav {
+    html[data-flight-input="touch"] .game-route-nav {
         top: auto;
         right: auto;
         bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 16px);
@@ -997,7 +1001,7 @@ button:focus-visible {
         font-size: 0.62rem;
     }
 
-    .game-language-toggle {
+    html[data-flight-input="touch"] .game-language-toggle {
         top: auto;
         right: auto;
         bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 73px);
@@ -1006,7 +1010,7 @@ button:focus-visible {
         min-height: 52px;
     }
 
-    .flight-joystick {
+    html[data-flight-input="touch"] .flight-joystick {
         position: absolute;
         bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
         display: grid;
@@ -1017,7 +1021,7 @@ button:focus-visible {
         touch-action: none;
     }
 
-    .flight-move-joystick {
+    html[data-flight-input="touch"] .flight-move-joystick {
         left: var(--touch-edge-gap-left);
     }
 
@@ -1058,14 +1062,14 @@ button:focus-visible {
         transform: translateY(39px);
     }
 
-    .explore-nearby {
+    html[data-flight-input="touch"] .explore-nearby {
         right: var(--touch-edge-gap-right);
         bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
         left: auto;
         transform: rotate(.2deg);
     }
 
-    .touch-hint {
+    html[data-flight-input="touch"] .touch-hint {
         position: fixed;
         z-index: 2;
         bottom: calc(max(18px, env(safe-area-inset-bottom)) + var(--touch-stick-size) + 132px);
@@ -1212,7 +1216,7 @@ button:focus-visible {
     .zoom-controls { right: max(.55rem, env(safe-area-inset-right)); top: 47%; gap: .28rem; }
     .zoom-controls button { min-width: var(--touch-target-min); min-height: var(--touch-target-min); padding: .3rem .4rem; }
 
-    .explore-nearby {
+    html[data-flight-input="touch"] .explore-nearby {
         right: var(--touch-edge-gap-right);
         bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
         left: auto;
@@ -1225,7 +1229,7 @@ button:focus-visible {
 
     .explore-kicker { font-size: .5rem; }
     .explore-nearby strong { overflow: hidden; font-size: .93rem; text-overflow: ellipsis; white-space: nowrap; }
-    .touch-hint { display: none; }
+    html[data-flight-input="touch"] .touch-hint { display: none; }
 }
 
 @media (min-width: 721px) and (any-pointer: coarse) {
@@ -1244,7 +1248,7 @@ button:focus-visible {
 
     .nav-beacon { max-width: 150px; padding: .55rem .7rem; }
     .nav-beacon .nav-science { display: block; }
-    .explore-nearby { width: min(220px, calc(100vw - var(--touch-stick-size) - var(--touch-edge-gap-left) - var(--touch-edge-gap-right) - 32px)); }
+    html[data-flight-input="touch"] .explore-nearby { width: min(220px, calc(100vw - var(--touch-stick-size) - var(--touch-edge-gap-left) - var(--touch-edge-gap-right) - 32px)); }
 }
 
 @media (max-height: 520px) and (orientation: landscape) {

@@ -1,6 +1,7 @@
 import { closeNotebook, createPreviewState, explorePlanet } from './state.js';
 import { createFlightState, findNearbyPlanet, stepFlight } from './flightSimulation.js';
 import { createFlightInput } from './flightInput.js';
+import { createFlightInputModeController } from './input/deviceInputMode.js';
 import { createStageSelectionGesture } from './input/stageSelection.js';
 import { createPaperLearningCatalog } from './learning/learningCatalog.js';
 import {
@@ -50,6 +51,7 @@ import { createLocalOrbitHost } from './minigames/localOrbitHost.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
+const flightInputMode = createFlightInputModeController();
 
 const stage = document.querySelector('#paper-stage');
 siteAnalytics.start('game');
@@ -788,6 +790,7 @@ document.addEventListener('fullscreenchange', paperScene.resize);
 window.addEventListener('beforeunload', () => {
     window.removeEventListener('pointerdown', unlockAudio, true);
     window.removeEventListener('keydown', unlockAudio, true);
+    flightInputMode.destroy();
     flightInput.destroy();
     localOrbitHost?.destroy();
     previewUI.destroy();
