@@ -54,11 +54,12 @@ Requires Node.js 22.
 
 ```bash
 npm ci
-npm run dev:paper     # local Paper experience
+npm run dev          # local Paper experience
+npm run dev:archive  # archived legacy experience
 npm test              # Vitest suite
 npm run lint          # ESLint
 npm run typecheck     # TypeScript checkJs validation
-npm run build:paper   # production build in dist-paper-preview/
+npm run build         # primary production build in dist/
 npm run preview:paper
 ```
 
@@ -84,7 +85,7 @@ See [docs/releases.md](docs/releases.md) for the release, rollback, and deployme
 - `paper-preview/public/`: shipped fonts, artwork, sound effects, and static-web-app configuration.
 - `tests/`: unit, integration, UI-contract, privacy, and release-governance tests.
 
-The root-level `src/`, `index.html`, and related assets belong to the older prototype and are not part of the production build.
+The older HTML entry points live under `arquivo/jogo-antigo/`. Some root-level `src/`, `styles/`, and `public/` modules remain shared with the Paper experience and its historical test suite, but they are no longer the default application entry.
 
 ## Legacy ideas under evaluation: not shipped
 
