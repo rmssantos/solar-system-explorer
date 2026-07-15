@@ -37,6 +37,14 @@ import { translateWorldObject } from './i18n/paperObjectTranslations.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
 import { createEphemerisPresentation } from './learning/ephemerisPresentation.js';
 import { createAudioDirector } from './audio/audioDirector.js';
+import {
+    ISS_DELIVERY_CONTRACT_ID,
+    acceptContract,
+    completeContract,
+    createContractState,
+    getContractStatus
+} from './contracts/contractState.js';
+import { createLocalOrbitHost } from './minigames/localOrbitHost.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -57,9 +65,11 @@ const learningCatalogView = new Proxy({}, {
 });
 const savedProgress = loadProgress();
 let previewState = createPreviewState(savedProgress);
+let contractState = createContractState(savedProgress);
 let expeditionProgress = reconcileExpeditionProgress(createExpeditionProgress(savedProgress), {
     ...previewState.learning,
-    completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds
+    completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds,
+    completedContractIds: contractState.completedContractIds
 });
 let surpriseState = createSurpriseState({ seenIds: savedProgress.seenSurpriseIds });
 let trackedMissionIds = new Set(evaluateMissions(previewState.learning, paperI18n.language).completedIds);
@@ -67,7 +77,8 @@ function currentProgressSnapshot() {
     return {
         ...previewState.learning,
         completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds,
-        seenSurpriseIds: surpriseState.seenIds
+        seenSurpriseIds: surpriseState.seenIds,
+        completedContractIds: contractState.completedContractIds
     };
 }
 let progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
@@ -78,6 +89,8 @@ let lastUiSignature = '';
 let nearbyWorldObjectKey = null;
 let currentNavigation = null;
 let autoPilotState = null;
+let localOrbitOpen = false;
+let localOrbitHost = null;
 let lastInput = {
     forward: 0,
     strafe: 0,
@@ -216,6 +229,14 @@ async function hydrateDailySky() {
 function handleExplore() {
     const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
     if (previewState.notebook.open || !nearbyKey) return;
+    if (nearbyKey === 'earth' && getContractStatus(
+        contractState,
+        ISS_DELIVERY_CONTRACT_ID,
+        previewState.learning
+    ) === 'accepted') {
+        startIssDelivery();
+        return;
+    }
     previewState = explorePlanet(previewState, nearbyKey);
     audioDirector.play('paper-fold');
     const object = getWorldObject(nearbyKey);
@@ -278,10 +299,11 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
     expeditionProgress = reconcileExpeditionProgress(expeditionProgress, {
         ...previewState.learning,
         completedMissionIds: missions.completedIds,
-        seenSurpriseIds: surpriseState.seenIds
+        seenSurpriseIds: surpriseState.seenIds,
+        completedContractIds: contractState.completedContractIds
     });
     progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
-    saveProgress({ ...previewState.learning, ...expeditionProgress });
+    saveProgress({ ...previewState.learning, ...expeditionProgress, ...contractState });
     if (feedback) {
         const delta = compareProgress(previousPresentation, progressPresentation);
         previewUI.showProgressFeedback(delta);
@@ -309,6 +331,61 @@ function handleRetryQuiz() {
     syncUI(true);
 }
 
+function handleAcceptContract() {
+    const next = acceptContract(
+        contractState,
+        ISS_DELIVERY_CONTRACT_ID,
+        previewState.learning
+    );
+    if (next === contractState) return false;
+    contractState = next;
+    siteAnalytics.track('contract_event', { contractId: ISS_DELIVERY_CONTRACT_ID, state: 'start' });
+    reconcileAndSaveProgress({ feedback: false });
+    audioDirector.play('paper-fold');
+    syncUI(true);
+    return true;
+}
+
+async function startIssDelivery() {
+    const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
+    const accepted = getContractStatus(
+        contractState,
+        ISS_DELIVERY_CONTRACT_ID,
+        previewState.learning
+    ) === 'accepted';
+    if (!accepted || nearbyKey !== 'earth' || localOrbitOpen || !localOrbitHost) return false;
+    localOrbitOpen = true;
+    autoPilotState = null;
+    updateAutopilotDisplay();
+    flightInput.reset();
+    flightInput.setEnabled(false);
+    objectHover.hidden = true;
+    audioDirector.play('paper-fold');
+    siteAnalytics.track('contract_event', { contractId: ISS_DELIVERY_CONTRACT_ID, state: 'open' });
+    syncUI(true);
+    await localOrbitHost.open({ language: paperI18n.language });
+    return true;
+}
+
+function handleIssDeliveryComplete() {
+    const next = completeContract(contractState, ISS_DELIVERY_CONTRACT_ID);
+    if (next === contractState) return false;
+    contractState = next;
+    siteAnalytics.track('contract_event', { contractId: ISS_DELIVERY_CONTRACT_ID, state: 'complete' });
+    reconcileAndSaveProgress();
+    syncUI(true);
+    return true;
+}
+
+function handleLocalOrbitClose() {
+    if (!localOrbitOpen) return;
+    localOrbitOpen = false;
+    flightInput.setEnabled(true);
+    audioDirector.play('paper-fold');
+    siteAnalytics.track('contract_event', { contractId: ISS_DELIVERY_CONTRACT_ID, state: 'close' });
+    syncUI(true);
+}
+
 const previewUI = createPreviewUI({
     learningCatalog: learningCatalogView,
     onExplore: handleExplore,
@@ -316,6 +393,8 @@ const previewUI = createPreviewUI({
     onSelectSection: handleSelectSection,
     onAnswerQuiz: handleAnswerQuiz,
     onRetryQuiz: handleRetryQuiz,
+    onAcceptContract: handleAcceptContract,
+    onStartContract: startIssDelivery,
     onMissionLogOpen: () => flightInput.setEnabled(false),
     onMissionLogClose: () => flightInput.setEnabled(true),
     onDismissSurprise: handleDismissSurprise,
@@ -362,6 +441,15 @@ const flightInput = createFlightInput({
     joystickKnob: previewUI.elements.joystickKnob,
     lookJoystick: previewUI.elements.lookJoystick,
     lookJoystickKnob: previewUI.elements.lookJoystickKnob
+});
+
+localOrbitHost = createLocalOrbitHost({
+    messages: {
+        get guidance() { return paperI18n.t('game.docking.guidance'); },
+        get retry() { return paperI18n.t('game.docking.assisted'); }
+    },
+    onComplete: handleIssDeliveryComplete,
+    onClose: handleLocalOrbitClose
 });
 
 function interactionRadiusFor(object) {
@@ -452,14 +540,18 @@ function syncUI(force = false) {
         previewState.learning.section,
         previewState.learning.quiz.status,
         previewState.learning.quiz.selectedIndex ?? 'none',
-        previewState.learning.quiz.attempts
+        previewState.learning.quiz.attempts,
+        contractState.acceptedContractIds.join(','),
+        contractState.completedContractIds.join(','),
+        localOrbitOpen
     ].join(':');
     if (!force && signature === lastUiSignature) return;
     previewUI.update(previewState, {
         flightState,
         nearbyObjectKey: nearbyWorldObjectKey,
         missions,
-        expeditionProgress
+        expeditionProgress,
+        contractState
     });
     lastUiSignature = signature;
 }
@@ -504,7 +596,7 @@ function step(seconds) {
         + Math.abs(lastInput.pitchDelta) + Math.abs(lastInput.roll) > 0.01
         || lastInput.boost || lastInput.brake;
     if (autoPilotState && hasManualInput) cancelAutopilot();
-    const dialogOpen = previewState.notebook.open || previewUI.elements.missionLog.open;
+    const dialogOpen = previewState.notebook.open || previewUI.elements.missionLog.open || localOrbitOpen;
     if (!dialogOpen && autoPilotState) {
         const target = paperScene.getWorldObjectPosition(autoPilotState.targetKey);
         if (!target) cancelAutopilot();
@@ -533,7 +625,7 @@ function step(seconds) {
         deltaSeconds: seconds,
         speed: Math.hypot(flightState.velocity.x, flightState.velocity.y, flightState.velocity.z),
         distanceFromOrigin: Math.hypot(flightState.position.x, flightState.position.y, flightState.position.z),
-        dialogOpen: previewState.notebook.open || previewUI.elements.missionLog.open
+        dialogOpen: previewState.notebook.open || previewUI.elements.missionLog.open || localOrbitOpen
     });
     surpriseState = surpriseResult.state;
     if (surpriseResult.event) handleSurprise(surpriseResult.event);
@@ -567,6 +659,7 @@ async function toggleFullscreen() {
 }
 
 function handleKeydown(event) {
+    if (localOrbitOpen) return;
     if (event.code === 'KeyG') {
         event.preventDefault();
         toggleFullscreen().catch(() => {});
@@ -594,7 +687,7 @@ window.render_game_to_text = () => {
     const nearbyPlanet = nearbyKey ? (learningCatalog[nearbyKey] ?? null) : null;
     return JSON.stringify({
         coordinateSystem: '3D paper flight: yaw 0 faces -Z; +X right, +Y up, +Z behind. Movement is camera-relative.',
-        mode: previewState.notebook.open ? 'notebook' : 'free-flight-360',
+        mode: localOrbitOpen ? 'local-orbit-iss' : (previewState.notebook.open ? 'notebook' : 'free-flight-360'),
         ship: {
             position: roundVector(flightState.position),
             velocity: roundVector(flightState.velocity),
@@ -627,6 +720,7 @@ window.render_game_to_text = () => {
             discoveredKeys: [...previewState.learning.discoveredKeys]
         },
         progression: { ...expeditionProgress, presentation: progressPresentation },
+        contract: { ...contractState, localOrbitOpen },
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
         autopilot: autoPilotState ? { ...autoPilotState } : null,
         audio: audioDirector.getState(),
@@ -642,12 +736,15 @@ window.advanceTime = (milliseconds) => {
 };
 
 window.__paperPreview = {
-    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, scene: paperScene.getState() }),
+    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, localOrbitOpen }, scene: paperScene.getState() }),
     explore: handleExplore,
     closeNotebook: handleCloseNotebook,
     selectSection: handleSelectSection,
     answerQuiz: handleAnswerQuiz,
     retryQuiz: handleRetryQuiz,
+    acceptIssDelivery: handleAcceptContract,
+    startIssDelivery,
+    completeIssDelivery: handleIssDeliveryComplete,
     triggerSurprise: (id) => {
         const event = getSurprise(id);
         if (!event) return false;
@@ -696,6 +793,7 @@ window.addEventListener('beforeunload', () => {
     window.removeEventListener('pointerdown', unlockAudio, true);
     window.removeEventListener('keydown', unlockAudio, true);
     flightInput.destroy();
+    localOrbitHost?.destroy();
     previewUI.destroy();
     audioDirector.destroy();
     paperScene.destroy();

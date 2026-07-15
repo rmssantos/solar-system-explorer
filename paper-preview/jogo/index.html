@@ -225,6 +225,20 @@
             </nav>
             <section class="passport-panel" data-passport-panel="missions">
                 <p class="mission-log-intro" data-i18n="game.passport.missionCopy">Podes completar descobertas fora de ordem. O diário guarda tudo neste dispositivo.</p>
+                <article id="iss-contract-card" class="contract-card" hidden>
+                    <span class="contract-icon" aria-hidden="true">✉</span>
+                    <div class="contract-copy">
+                        <header><small data-i18n="game.contract.kicker">Agência de Correio Interplanetário</small><span id="iss-contract-status"></span></header>
+                        <h2 data-i18n="game.contract.iss.title">Correio para a ISS</h2>
+                        <p data-i18n="game.contract.iss.summary">Entrega uma cápsula de experiências científicas à Estação Espacial Internacional.</p>
+                        <dl>
+                            <div><dt data-i18n="game.contract.cargo">Carga</dt><dd data-i18n="game.contract.iss.cargo">Cápsula de experiências</dd></div>
+                            <div><dt data-i18n="game.contract.destination">Destino</dt><dd data-i18n="game.contract.iss.destination">Órbita baixa da Terra</dd></div>
+                            <div><dt data-i18n="game.contract.reward">Recompensa</dt><dd>+140 XP</dd></div>
+                        </dl>
+                    </div>
+                    <button id="iss-contract-action" type="button" data-contract-action="accept" data-i18n="game.contract.iss.accept">Aceitar encomenda</button>
+                </article>
                 <figure id="apod-card" class="apod-card" hidden>
                     <img id="apod-image" alt="Imagem astronómica do dia" width="640" height="360">
                     <figcaption><strong id="apod-title">Céu de hoje</strong><span id="apod-date"></span></figcaption>

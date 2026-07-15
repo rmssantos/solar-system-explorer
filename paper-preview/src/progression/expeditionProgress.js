@@ -2,7 +2,8 @@ export const EVENT_XP = Object.freeze({
     discovery: 20,
     quiz: 35,
     surprise: 15,
-    mission: 100
+    mission: 100,
+    contract: 140
 });
 
 const LEVELS = Object.freeze([
@@ -93,6 +94,7 @@ export function reconcileExpeditionProgress(progress, snapshot = {}) {
     for (const id of unique(snapshot.discoveredKeys)) next = awardExpeditionEvent(next, { type: 'discovery', id });
     for (const id of unique(snapshot.completedQuizIds)) next = awardExpeditionEvent(next, { type: 'quiz', id });
     for (const id of unique(snapshot.completedMissionIds)) next = awardExpeditionEvent(next, { type: 'mission', id });
+    for (const id of unique(snapshot.completedContractIds)) next = awardExpeditionEvent(next, { type: 'contract', id });
     for (const id of unique(snapshot.seenSurpriseIds)) next = awardExpeditionEvent(next, { type: 'surprise', id });
     return createExpeditionProgress({
         ...next,

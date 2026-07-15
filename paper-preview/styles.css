@@ -1355,6 +1355,31 @@ button:focus-visible {
 .docking-control:active, .docking-control.is-active { transform: translate(1px, 2px); box-shadow: 1px 1px 0 #d5634d; }
 .docking-stabilize { color: #302c34; background: var(--sun-pulp); border-color: #98743a; font-size: .68rem; }
 
+.contract-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    margin: 0 0 18px;
+    padding: 16px;
+    background: #f7e8b9;
+    border: 3px solid #9d7942;
+    border-left: 9px dotted #a95343;
+    border-radius: 5px 12px 7px 10px;
+    box-shadow: 5px 7px 0 rgb(80 57 31 / .16);
+    transform: rotate(.15deg);
+}
+.contract-card[hidden] { display: none; }
+.contract-icon { width: 52px; aspect-ratio: 1; display: grid; place-content: center; color: #f7e8b9; background: #4f8177; border: 3px solid #315b55; border-radius: 48% 52% 45% 55%; font-size: 1.55rem; }
+.contract-copy header { display: flex; gap: 8px; justify-content: space-between; color: #8d493d; font-size: .62rem; font-weight: 1000; letter-spacing: .07em; text-transform: uppercase; }
+.contract-copy h2 { margin: 3px 0 4px; font-family: 'Paper Fredoka', sans-serif; font-size: 1.35rem; }
+.contract-copy p { margin: 0 0 9px; color: #655743; font-size: .78rem; line-height: 1.4; }
+.contract-copy dl { display: flex; flex-wrap: wrap; gap: 7px 16px; margin: 0; }
+.contract-copy dl > div { display: flex; gap: 5px; font-size: .65rem; }
+.contract-copy dt { color: #806137; font-weight: 1000; }.contract-copy dd { margin: 0; }
+#iss-contract-action { min-width: 150px; min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
+#iss-contract-action:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }
+
 @media (max-width: 700px) {
     .local-orbit-mission { width: calc(100% - 12px); max-height: calc(100% - 12px); }
     .local-orbit-sheet { grid-template-columns: 1fr; max-height: calc(100vh - 12px); padding: 16px; }
@@ -1365,6 +1390,8 @@ button:focus-visible {
     .docking-instruments strong { font-size: .85rem; }
     .docking-guidance { grid-column: 1; }
     .docking-controls { grid-column: 1; grid-row: auto; width: min(100%, 390px); justify-self: center; }
+    .contract-card { grid-template-columns: auto 1fr; }
+    #iss-contract-action { grid-column: 1 / -1; width: 100%; }
 }
 
 @media (max-height: 560px) and (orientation: landscape) {

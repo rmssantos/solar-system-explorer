@@ -68,6 +68,12 @@ describe('bounded analytics event vocabulary', () => {
             name: 'quiz_result',
             properties: { quizId: 'mars-0', correct: false, attemptBucket: '2' }
         });
+        expect(sanitizeAnalyticsEvent('contract_event', {
+            contractId: 'iss-delivery', state: 'complete', cargoName: 'private note'
+        })).toEqual({
+            name: 'contract_event',
+            properties: { contractId: 'iss-delivery', state: 'complete' }
+        });
     });
 
     it('bounds stable identifiers and rejects invalid required fields', () => {

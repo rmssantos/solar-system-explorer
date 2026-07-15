@@ -23,6 +23,7 @@ const SCHEMAS = Object.freeze({
     source_open: { objectKey: 'id', provider: 'provider', surface: 'surface' },
     quiz_result: { quizId: 'id', correct: 'boolean', attemptBucket: 'attemptBucket' },
     mission_event: { missionId: 'id', state: 'state' },
+    contract_event: { contractId: 'id', state: 'state' },
     autopilot_event: { objectKey: 'id', state: 'state' },
     language_change: { language: 'language', surface: 'surface' },
     privacy_choice: { choice: 'choice', surface: 'surface' },
