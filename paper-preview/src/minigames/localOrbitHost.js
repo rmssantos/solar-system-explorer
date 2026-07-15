@@ -26,6 +26,22 @@ function setSafetyClass(element, safe) {
     element.classList.toggle('is-warning', !safe);
 }
 
+/**
+ * @param {{
+ *   root?: Document,
+ *   elements?: ReturnType<typeof queryElements>,
+ *   gameFactory?: (options: {
+ *     parent: HTMLElement,
+ *     language: string,
+ *     onReady: () => void,
+ *     onTelemetry: (telemetry: { distance: number, relativeSpeed: number, alignmentDegrees: number, corridorSafe: boolean, speedSafe: boolean, alignmentSafe: boolean }) => void,
+ *     onEvent: (event: string) => void
+ *   }) => Promise<{ destroy?: () => void, setAction?: (action: string, active: boolean) => unknown }>,
+ *   messages?: { retry?: string, guidance?: string },
+ *   onComplete?: () => void,
+ *   onClose?: () => void
+ * }} options
+ */
 export function createLocalOrbitHost({
     root = globalThis.document,
     elements = queryElements(root),
@@ -136,4 +152,3 @@ export function createLocalOrbitHost({
 
     return Object.freeze({ open, close, destroy, updateTelemetry });
 }
-
