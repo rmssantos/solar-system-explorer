@@ -5,6 +5,7 @@ const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const game = read('../paper-preview/src/main.js');
 const ui = read('../paper-preview/src/ui.js');
 const html = read('../paper-preview/jogo/index.html');
+const i18n = read('../paper-preview/src/i18n/paperI18n.js');
 
 describe('ISS delivery integration contract', () => {
     it('presents the delivery in the captain log with one contextual action', () => {
@@ -13,6 +14,18 @@ describe('ISS delivery integration contract', () => {
         expect(ui).toContain('getContractStatus(');
         expect(ui).toContain('onAcceptContract');
         expect(ui).toContain('onStartContract');
+    });
+
+    it('keeps the locked delivery visible and explains how to find the minigame', () => {
+        expect(html).toMatch(/id="iss-contract-card" class="contract-card"(?![^>]*\shidden)/);
+        expect(html).toMatch(/id="iss-contract-action"[^>]*data-contract-action="locked"[^>]*disabled/);
+        expect(html).toContain('data-i18n="game.contract.iss.unlock"');
+        expect(i18n).toContain("'game.contract.locked': 'Por descobrir'");
+        expect(i18n).toContain("'game.contract.iss.unlock': 'Descobre a Terra'");
+        expect(i18n).toContain("'game.contract.locked': 'Undiscovered'");
+        expect(i18n).toContain("'game.contract.iss.unlock': 'Discover Earth'");
+        expect(ui).toContain("status === 'locked'");
+        expect(ui).not.toContain("elements.issContractCard.hidden = status === 'locked'");
     });
 
     it('owns contract state and the local orbit host in the main application', () => {

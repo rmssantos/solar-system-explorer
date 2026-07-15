@@ -409,12 +409,15 @@ export function createPreviewUI({
 
     function renderContract(state, destinationNearby, contractState) {
         const status = getContractStatus(contractState, ISS_DELIVERY_CONTRACT_ID, state.learning);
-        elements.issContractCard.hidden = status === 'locked';
-        if (status === 'locked') return status;
+        elements.issContractCard.hidden = false;
         elements.issContractStatus.textContent = paperI18n.t(`game.contract.${status}`);
         elements.issContractCard.dataset.status = status;
         elements.issContractAction.disabled = false;
-        if (status === 'available') {
+        if (status === 'locked') {
+            elements.issContractAction.dataset.contractAction = 'locked';
+            elements.issContractAction.textContent = paperI18n.t('game.contract.iss.unlock');
+            elements.issContractAction.disabled = true;
+        } else if (status === 'available') {
             elements.issContractAction.dataset.contractAction = 'accept';
             elements.issContractAction.textContent = paperI18n.t('game.contract.iss.accept');
         } else if (status === 'accepted' && destinationNearby) {

@@ -1375,6 +1375,8 @@ html[data-flight-input="pointer"] .flight-joystick {
     transform: rotate(.15deg);
 }
 .contract-card[hidden] { display: none; }
+.contract-card[data-status="locked"] { border-color: #9b8c6e; border-left-color: #8f846e; }
+.contract-card[data-status="locked"] .contract-icon { filter: grayscale(.75); opacity: .72; }
 .contract-icon { width: 52px; aspect-ratio: 1; display: grid; place-content: center; color: #f7e8b9; background: #4f8177; border: 3px solid #315b55; border-radius: 48% 52% 45% 55%; font-size: 1.55rem; }
 .contract-copy header { display: flex; gap: 8px; justify-content: space-between; color: #8d493d; font-size: .62rem; font-weight: 1000; letter-spacing: .07em; text-transform: uppercase; }
 .contract-copy h2 { margin: 3px 0 4px; font-family: 'Paper Fredoka', sans-serif; font-size: 1.35rem; }
