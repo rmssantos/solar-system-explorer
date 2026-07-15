@@ -80,7 +80,16 @@ export const PAPER_TRANSLATIONS = Object.freeze({
         'game.level': 'Nível {level} · {title}', 'game.rank.kicker': 'Patente de explorador',
         'game.progress.saved': 'Progresso registado', 'game.progress.keep': 'Continua a explorar.', 'game.progress.levelUp': 'Nova patente', 'game.progress.award': 'Novo prémio',
         'game.autopilot.hover': 'Clica para ativar o piloto de papel', 'game.autopilot.kicker': 'Piloto de papel', 'game.autopilot.cancel': 'Cancelar',
-        'game.distance.diorama': '{value} u no diorama', 'game.distance.solar': '{value} UA ao Sol'
+        'game.distance.diorama': '{value} u no diorama', 'game.distance.solar': '{value} UA ao Sol',
+        'game.contract.iss.title': 'Correio para a ISS', 'game.contract.iss.accept': 'Aceitar encomenda', 'game.contract.iss.start': 'Entrar em órbita baixa',
+        'game.docking.kicker': 'Encomenda orbital · ISS', 'game.docking.scale': 'Vista orbital ampliada — tamanhos e distâncias adaptados para o desafio.',
+        'game.docking.playfield': 'Aproximação à Estação Espacial Internacional', 'game.docking.telemetry': 'Telemetria de acoplagem', 'game.docking.controls': 'Propulsores da nave',
+        'game.docking.loading': 'A abrir a folha orbital…', 'game.docking.loadError': 'Não foi possível montar esta órbita.', 'game.docking.retry': 'Tentar novamente',
+        'game.docking.guidance': 'Entra devagar no corredor amarelo e alinha o nariz da nave com a porta da ISS.', 'game.docking.stabilize': 'Estabilizar',
+        'game.docking.distance': 'Distância', 'game.docking.speed': 'Velocidade relativa', 'game.docking.alignment': 'Alinhamento',
+        'game.docking.forward': 'Avançar', 'game.docking.reverse': 'Recuar', 'game.docking.up': 'Subir', 'game.docking.down': 'Descer',
+        'game.docking.rotateLeft': 'Rodar para a esquerda', 'game.docking.rotateRight': 'Rodar para a direita', 'game.docking.leave': 'Regressar ao diorama',
+        'game.docking.success': 'Encomenda entregue!', 'game.docking.science': 'A ISS recebe regularmente experiências, alimentos e equipamento através de naves de carga.', 'game.docking.return': 'Regressar à expedição'
     }),
     en: Object.freeze({
         'shared.language': 'Language', 'shared.switchTo': 'Switch to Português', 'shared.skip': 'Skip to content',
@@ -161,7 +170,16 @@ export const PAPER_TRANSLATIONS = Object.freeze({
         'game.level': 'Level {level} · {title}', 'game.rank.kicker': 'Explorer rank',
         'game.progress.saved': 'Progress recorded', 'game.progress.keep': 'Keep exploring.', 'game.progress.levelUp': 'New rank', 'game.progress.award': 'New award',
         'game.autopilot.hover': 'Click to start the paper pilot', 'game.autopilot.kicker': 'Paper pilot', 'game.autopilot.cancel': 'Cancel',
-        'game.distance.diorama': '{value} u in the diorama', 'game.distance.solar': '{value} AU from the Sun'
+        'game.distance.diorama': '{value} u in the diorama', 'game.distance.solar': '{value} AU from the Sun',
+        'game.contract.iss.title': 'Mail for the ISS', 'game.contract.iss.accept': 'Accept delivery', 'game.contract.iss.start': 'Enter low Earth orbit',
+        'game.docking.kicker': 'Orbital delivery · ISS', 'game.docking.scale': 'Magnified orbital view — sizes and distances are adapted for the challenge.',
+        'game.docking.playfield': 'Approach to the International Space Station', 'game.docking.telemetry': 'Docking telemetry', 'game.docking.controls': 'Ship thrusters',
+        'game.docking.loading': 'Opening the orbital sheet…', 'game.docking.loadError': 'This orbit could not be assembled.', 'game.docking.retry': 'Try again',
+        'game.docking.guidance': 'Enter the yellow corridor slowly and align the ship nose with the ISS docking port.', 'game.docking.stabilize': 'Stabilize',
+        'game.docking.distance': 'Distance', 'game.docking.speed': 'Relative speed', 'game.docking.alignment': 'Alignment',
+        'game.docking.forward': 'Forward', 'game.docking.reverse': 'Reverse', 'game.docking.up': 'Up', 'game.docking.down': 'Down',
+        'game.docking.rotateLeft': 'Rotate left', 'game.docking.rotateRight': 'Rotate right', 'game.docking.leave': 'Return to diorama',
+        'game.docking.success': 'Delivery complete!', 'game.docking.science': 'The ISS regularly receives experiments, food and equipment aboard cargo spacecraft.', 'game.docking.return': 'Return to the expedition'
     })
 });
 
