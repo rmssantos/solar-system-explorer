@@ -345,6 +345,64 @@ html[data-flight-input="pointer"] .flight-joystick {
     display: none;
 }
 
+html[data-flight-input="touch"] .paper-shell {
+    --touch-stick-size: clamp(112px, 16vw, 128px);
+    --touch-edge-gap-left: max(14px, env(safe-area-inset-left));
+    --touch-edge-gap-right: max(14px, env(safe-area-inset-right));
+}
+
+html[data-flight-input="touch"] .flight-joystick {
+    position: absolute;
+    bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
+    display: grid;
+    width: var(--touch-stick-size);
+    height: var(--touch-stick-size);
+    place-items: center;
+    border-radius: 50%;
+    touch-action: none;
+}
+
+html[data-flight-input="touch"] .flight-move-joystick {
+    left: var(--touch-edge-gap-left);
+}
+
+html[data-flight-input="touch"] .joystick-orbit {
+    position: absolute;
+    inset: 4px;
+    background: rgba(35, 52, 95, 0.82);
+    border: 3px dashed rgba(243, 230, 190, 0.52);
+    border-radius: 50%;
+    box-shadow: 5px 7px 0 rgba(4, 8, 22, 0.35);
+}
+
+html[data-flight-input="touch"] .joystick-knob {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    background: var(--notebook-paper);
+    border: 3px solid #b79658;
+    border-radius: 48% 52% 47% 53%;
+    box-shadow: 2px 4px 0 rgba(4, 8, 22, 0.35);
+    transition: transform 90ms ease-out;
+}
+
+html[data-flight-input="touch"] .flight-joystick.is-active .joystick-knob {
+    transition: none;
+}
+
+html[data-flight-input="touch"] .joystick-label {
+    position: absolute;
+    top: 50%;
+    display: block;
+    color: rgba(255, 248, 223, 0.82);
+    font-size: 0.54rem;
+    font-weight: 1000;
+    letter-spacing: 0.09em;
+    pointer-events: none;
+    text-transform: uppercase;
+    transform: translateY(39px);
+}
+
 [hidden] {
     display: none !important;
 }

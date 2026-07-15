@@ -62,6 +62,8 @@ describe('adaptive Paper flight input mode', () => {
 
         expect(css).toContain('html[data-flight-input="touch"] .flight-joystick');
         expect(css).toContain('html[data-flight-input="pointer"] .flight-joystick');
+        expect(css.indexOf('html[data-flight-input="touch"] .flight-joystick'))
+            .toBeLessThan(css.indexOf('@media'));
         expect(main).toContain('createFlightInputModeController');
     });
 });
