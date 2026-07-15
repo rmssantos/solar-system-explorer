@@ -29,10 +29,11 @@ describe('semantic product analytics integration', () => {
         expect(analyticsCalls).not.toMatch(/query\s*:/);
     });
 
-    it('tracks game learning, missions and autopilot state transitions', () => {
+    it('tracks game learning, missions, contracts and autopilot state transitions', () => {
         expect(game).toContain("siteAnalytics.track('object_open'");
         expect(game).toContain("siteAnalytics.track('quiz_result'");
         expect(game).toContain("siteAnalytics.track('mission_event'");
+        expect(game).toContain("siteAnalytics.track('contract_event'");
         expect(game.match(/siteAnalytics\.track\('autopilot_event'/g)).toHaveLength(3);
         expect(game).not.toMatch(/siteAnalytics\.track\([\s\S]{0,160}?(position|velocity|coordinates)\s*:/);
     });

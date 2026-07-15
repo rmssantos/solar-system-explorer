@@ -24,6 +24,16 @@ describe('paper expedition progression', () => {
         expect(progress.awardedEventIds).toHaveLength(4);
     });
 
+    it('awards an orbital delivery contract only once', () => {
+        const snapshot = { completedContractIds: ['iss-delivery', 'iss-delivery'] };
+        const first = reconcileExpeditionProgress(createExpeditionProgress(), snapshot);
+        const second = reconcileExpeditionProgress(first, snapshot);
+
+        expect(first.xp).toBe(EVENT_XP.contract);
+        expect(first.awardedEventIds).toEqual(['contract:iss-delivery']);
+        expect(second).toEqual(first);
+    });
+
     it('calculates calm, finite explorer levels and progress to the next one', () => {
         expect(getExplorerLevel(0)).toMatchObject({ level: 1, title: 'Cadete de Papel', progress: 0 });
         expect(getExplorerLevel(125)).toMatchObject({ level: 2, title: 'Cartógrafo Lunar' });

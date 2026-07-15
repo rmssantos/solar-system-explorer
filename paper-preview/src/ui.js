@@ -8,6 +8,7 @@ import { bindBackdropDismiss } from './ui/dialogDismiss.js';
 import { createMediaViewer } from './ui/mediaViewer.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
 import { providerFamily } from './analytics/eventCatalog.js';
+import { ISS_DELIVERY_CONTRACT_ID, getContractStatus } from './contracts/contractState.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -25,6 +26,8 @@ export function createPreviewUI({
     onSelectSection,
     onAnswerQuiz,
     onRetryQuiz,
+    onAcceptContract,
+    onStartContract,
     onMissionLogOpen,
     onMissionLogClose,
     onDismissSurprise,
@@ -121,6 +124,9 @@ export function createPreviewUI({
         , rewardToastMessage: document.querySelector('#reward-toast-message')
         , languageToggle: document.querySelector('[data-language-toggle]')
         , mediaViewer: document.querySelector('#media-viewer')
+        , issContractCard: document.querySelector('#iss-contract-card')
+        , issContractStatus: document.querySelector('#iss-contract-status')
+        , issContractAction: document.querySelector('#iss-contract-action')
     };
 
     let lumiTimer = null;
@@ -193,6 +199,13 @@ export function createPreviewUI({
         [elements.tabs[0].parentElement, 'click', handleTabClick],
         [elements.quizOptions, 'click', handleQuizClick],
         [elements.quizRetry, 'click', onRetryQuiz]
+        , [elements.issContractAction, 'click', () => {
+            if (elements.issContractAction.dataset.contractAction === 'accept') onAcceptContract();
+            else if (elements.issContractAction.dataset.contractAction === 'start') {
+                closeMissionLog();
+                onStartContract();
+            }
+        }]
         , [elements.objective, 'click', () => openMissionLog('missions')]
         , [elements.rankChip, 'click', () => openMissionLog('awards')]
         , [elements.closeMissionLog, 'click', closeMissionLog]
@@ -394,7 +407,32 @@ export function createPreviewUI({
         }));
     }
 
-    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null } = {}) {
+    function renderContract(state, destinationNearby, contractState) {
+        const status = getContractStatus(contractState, ISS_DELIVERY_CONTRACT_ID, state.learning);
+        elements.issContractCard.hidden = status === 'locked';
+        if (status === 'locked') return status;
+        elements.issContractStatus.textContent = paperI18n.t(`game.contract.${status}`);
+        elements.issContractCard.dataset.status = status;
+        elements.issContractAction.disabled = false;
+        if (status === 'available') {
+            elements.issContractAction.dataset.contractAction = 'accept';
+            elements.issContractAction.textContent = paperI18n.t('game.contract.iss.accept');
+        } else if (status === 'accepted' && destinationNearby) {
+            elements.issContractAction.dataset.contractAction = 'start';
+            elements.issContractAction.textContent = paperI18n.t('game.contract.iss.start');
+        } else if (status === 'accepted') {
+            elements.issContractAction.dataset.contractAction = 'travel';
+            elements.issContractAction.textContent = paperI18n.t('game.contract.travel');
+            elements.issContractAction.disabled = true;
+        } else {
+            elements.issContractAction.dataset.contractAction = 'complete';
+            elements.issContractAction.textContent = paperI18n.t('game.contract.complete');
+            elements.issContractAction.disabled = true;
+        }
+        return status;
+    }
+
+    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractDestinationNearby = false } = {}) {
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
             ? chooseNearbyObject(flightState.nearbyPlanetKey, nearbyObjectKey)
@@ -405,7 +443,12 @@ export function createPreviewUI({
         elements.explore.hidden = !nearbyPlanet || state.notebook.open;
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
-        if (nearbyPlanet) elements.nearbyPlanetName.textContent = paperI18n.t('game.explore', { name: nearbyPlanet.name });
+        const contractStatus = renderContract(state, contractDestinationNearby, contractState);
+        if (nearbyPlanet) {
+            elements.nearbyPlanetName.textContent = contractDestinationNearby && contractStatus === 'accepted'
+                ? paperI18n.t('game.contract.iss.start')
+                : paperI18n.t('game.explore', { name: nearbyPlanet.name });
+        }
         const activeMission = missions?.active;
         elements.objective.classList.toggle('is-complete', !activeMission);
         elements.objectiveText.textContent = activeMission
@@ -542,5 +585,5 @@ export function createPreviewUI({
         }
     }
 
-    return { update, updateNavigation, updateCockpitTelemetry, updateAudioState, setApod, showSurprise, showProgressFeedback, markReady, destroy, elements };
+    return { update, updateNavigation, updateCockpitTelemetry, updateAudioState, setApod, showSurprise, showProgressFeedback, closeMissionLog, markReady, destroy, elements };
 }

@@ -220,6 +220,20 @@
             </nav>
             <section class="passport-panel" data-passport-panel="missions">
                 <p class="mission-log-intro" data-i18n="game.passport.missionCopy">Podes completar descobertas fora de ordem. O diário guarda tudo neste dispositivo.</p>
+                <article id="iss-contract-card" class="contract-card" hidden>
+                    <span class="contract-icon" aria-hidden="true">✉</span>
+                    <div class="contract-copy">
+                        <header><small data-i18n="game.contract.kicker">Agência de Correio Interplanetário</small><span id="iss-contract-status"></span></header>
+                        <h2 data-i18n="game.contract.iss.title">Correio para a ISS</h2>
+                        <p data-i18n="game.contract.iss.summary">Entrega uma cápsula de experiências científicas à Estação Espacial Internacional.</p>
+                        <dl>
+                            <div><dt data-i18n="game.contract.cargo">Carga</dt><dd data-i18n="game.contract.iss.cargo">Cápsula de experiências</dd></div>
+                            <div><dt data-i18n="game.contract.destination">Destino</dt><dd data-i18n="game.contract.iss.destination">Órbita baixa da Terra</dd></div>
+                            <div><dt data-i18n="game.contract.reward">Recompensa</dt><dd>+140 XP</dd></div>
+                        </dl>
+                    </div>
+                    <button id="iss-contract-action" type="button" data-contract-action="accept" data-i18n="game.contract.iss.accept">Aceitar encomenda</button>
+                </article>
                 <figure id="apod-card" class="apod-card" hidden>
                     <img id="apod-image" alt="Imagem astronómica do dia" width="640" height="360">
                     <figcaption><strong id="apod-title">Céu de hoje</strong><span id="apod-date"></span></figcaption>
@@ -233,6 +247,54 @@
             <section class="passport-panel" data-passport-panel="awards" hidden>
                 <p class="mission-log-intro" data-i18n="game.passport.awardsCopy">Medalhas por curiosidade; troféus por viagens extraordinárias.</p>
                 <div id="awards-grid" class="awards-grid"></div>
+            </section>
+        </article>
+    </dialog>
+
+    <dialog id="local-orbit-mission" class="local-orbit-mission" aria-labelledby="local-orbit-title">
+        <article class="local-orbit-sheet">
+            <header class="local-orbit-heading">
+                <div>
+                    <p class="local-orbit-kicker" data-i18n="game.docking.kicker">Encomenda orbital · ISS</p>
+                    <h1 id="local-orbit-title" data-i18n="game.contract.iss.title">Correio para a ISS</h1>
+                    <p class="local-orbit-scale" data-i18n="game.docking.scale">Vista orbital ampliada — tamanhos e distâncias adaptados para o desafio.</p>
+                </div>
+                <button id="local-orbit-close" class="local-orbit-close" type="button" data-i18n-aria="game.docking.leave" aria-label="Regressar ao diorama">×</button>
+            </header>
+
+            <section class="local-orbit-playfield" aria-label="Aproximação à Estação Espacial Internacional" data-i18n-aria="game.docking.playfield">
+                <div id="local-orbit-stage" class="local-orbit-stage"></div>
+                <div id="local-orbit-loading" class="local-orbit-message" role="status" data-i18n="game.docking.loading">A abrir a folha orbital…</div>
+                <div id="local-orbit-error" class="local-orbit-message is-error" role="alert" hidden>
+                    <strong data-i18n="game.docking.loadError">Não foi possível montar esta órbita.</strong>
+                    <button id="local-orbit-load-retry" type="button" data-i18n="game.docking.retry">Tentar novamente</button>
+                </div>
+                <div id="local-orbit-result" class="local-orbit-result" role="status" hidden>
+                    <span aria-hidden="true">✓</span>
+                    <strong data-i18n="game.docking.success">Encomenda entregue!</strong>
+                    <p data-i18n="game.docking.science">A ISS recebe regularmente experiências, alimentos e equipamento através de naves de carga.</p>
+                    <button id="local-orbit-finish" type="button" data-i18n="game.docking.return">Regressar à expedição</button>
+                </div>
+            </section>
+
+            <section class="docking-instruments" aria-label="Telemetria de acoplagem" data-i18n-aria="game.docking.telemetry">
+                <div><small data-i18n="game.docking.distance">Distância</small><strong id="docking-distance">—</strong></div>
+                <div><small data-i18n="game.docking.speed">Velocidade relativa</small><strong id="docking-speed">—</strong></div>
+                <div><small data-i18n="game.docking.alignment">Alinhamento</small><strong id="docking-alignment">—</strong></div>
+            </section>
+
+            <p id="docking-guidance" class="docking-guidance" aria-live="polite" data-i18n="game.docking.guidance">Entra devagar no corredor amarelo e alinha o nariz da nave com a porta da ISS.</p>
+
+            <section class="docking-controls" aria-label="Propulsores da nave" data-i18n-aria="game.docking.controls">
+                <button class="docking-control" data-docking-action="rotate-left" type="button" data-i18n-aria="game.docking.rotateLeft" aria-label="Rodar para a esquerda">↶</button>
+                <button class="docking-control" data-docking-action="up" type="button" data-i18n-aria="game.docking.up" aria-label="Subir">↑</button>
+                <button class="docking-control" data-docking-action="rotate-right" type="button" data-i18n-aria="game.docking.rotateRight" aria-label="Rodar para a direita">↷</button>
+                <button class="docking-control" data-docking-action="reverse" type="button" data-i18n-aria="game.docking.reverse" aria-label="Recuar">←</button>
+                <button class="docking-control docking-stabilize" data-docking-action="stabilize" type="button" data-i18n="game.docking.stabilize">Estabilizar</button>
+                <button class="docking-control" data-docking-action="forward" type="button" data-i18n-aria="game.docking.forward" aria-label="Avançar">→</button>
+                <span aria-hidden="true"></span>
+                <button class="docking-control" data-docking-action="down" type="button" data-i18n-aria="game.docking.down" aria-label="Descer">↓</button>
+                <span aria-hidden="true"></span>
             </section>
         </article>
     </dialog>

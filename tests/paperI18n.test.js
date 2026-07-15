@@ -10,7 +10,10 @@ describe('Paper Solar Explorer PT/EN i18n', () => {
         const required = [
             'home.hero.title', 'home.steps.fly', 'home.steps.discover', 'home.steps.learn', 'home.steps.collect',
             'game.objective.kicker', 'game.notebook', 'game.tabs.discover', 'game.passport.missions',
-            'game.collection.locked', 'game.quiz.correct', 'game.lumi.kicker'
+            'game.collection.locked', 'game.quiz.correct', 'game.lumi.kicker',
+            'game.contract.iss.title', 'game.contract.iss.accept', 'game.contract.iss.start',
+            'game.docking.scale', 'game.docking.guidance', 'game.docking.stabilize',
+            'game.docking.success', 'game.docking.retry', 'game.docking.loadError'
         ];
         for (const language of ['pt', 'en']) {
             for (const key of required) expect(PAPER_TRANSLATIONS[language][key], `${language}:${key}`).toBeTruthy();

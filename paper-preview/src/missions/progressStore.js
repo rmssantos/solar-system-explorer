@@ -8,10 +8,15 @@ export function loadProgress(storage = globalThis.localStorage) {
             completedQuizIds: Array.isArray(value.completedQuizIds) ? value.completedQuizIds : [],
             xp: Number.isFinite(value.xp) ? value.xp : 0,
             awardedEventIds: Array.isArray(value.awardedEventIds) ? value.awardedEventIds : [],
-            seenSurpriseIds: Array.isArray(value.seenSurpriseIds) ? value.seenSurpriseIds : []
+            seenSurpriseIds: Array.isArray(value.seenSurpriseIds) ? value.seenSurpriseIds : [],
+            acceptedContractIds: Array.isArray(value.acceptedContractIds) ? value.acceptedContractIds : [],
+            completedContractIds: Array.isArray(value.completedContractIds) ? value.completedContractIds : []
         };
     } catch {
-        return { discoveredKeys: [], completedQuizIds: [], xp: 0, awardedEventIds: [], seenSurpriseIds: [] };
+        return {
+            discoveredKeys: [], completedQuizIds: [], xp: 0, awardedEventIds: [], seenSurpriseIds: [],
+            acceptedContractIds: [], completedContractIds: []
+        };
     }
 }
 
@@ -22,7 +27,9 @@ export function saveProgress(progress, storage = globalThis.localStorage) {
             completedQuizIds: [...new Set(progress.completedQuizIds ?? [])],
             xp: Number.isFinite(progress.xp) ? progress.xp : 0,
             awardedEventIds: [...new Set(progress.awardedEventIds ?? [])],
-            seenSurpriseIds: [...new Set(progress.seenSurpriseIds ?? [])]
+            seenSurpriseIds: [...new Set(progress.seenSurpriseIds ?? [])],
+            acceptedContractIds: [...new Set(progress.acceptedContractIds ?? [])],
+            completedContractIds: [...new Set(progress.completedContractIds ?? [])]
         }));
         return true;
     } catch {

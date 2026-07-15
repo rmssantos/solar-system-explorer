@@ -37,6 +37,7 @@
     },
     "dependencies": {
         "@microsoft/applicationinsights-web": "^3.4.3",
+        "phaser": "^3.90.0",
         "satellite.js": "^6.0.2",
         "three": "^0.184.0"
     }
