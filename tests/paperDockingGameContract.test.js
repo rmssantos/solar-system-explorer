@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
+    DOCKING_LAYOUT,
     createDockingInputState,
+    mapDockingPosition,
     readDockingInput,
     setDockingAction
 } from '../paper-preview/src/minigames/createDockingGame.js';
@@ -46,5 +48,12 @@ describe('Phaser Canvas docking adapter', () => {
         expect(source).toMatch(/game\.destroy\(true\)/);
         expect(source).toContain('resizeObserver.disconnect()');
     });
-});
 
+    it('keeps the full ISS on canvas while aligning the ship nose with its port', () => {
+        expect(DOCKING_LAYOUT.issX + DOCKING_LAYOUT.issHalfWidth)
+            .toBeLessThanOrEqual(DOCKING_LAYOUT.width - DOCKING_LAYOUT.edgeMargin);
+        const contact = mapDockingPosition({ x: DOCKING_LAYOUT.simulationContactX, y: 0 });
+        expect(contact.x + DOCKING_LAYOUT.shipNoseOffset)
+            .toBeCloseTo(DOCKING_LAYOUT.issX + DOCKING_LAYOUT.portOffsetX, 5);
+    });
+});

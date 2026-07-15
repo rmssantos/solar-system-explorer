@@ -41,3 +41,8 @@ export function completeContract(state, contractId) {
     });
 }
 
+export function isContractDestinationNearby(contractId, { planetKey = null, orbitingParentKey = null } = {}) {
+    const contract = getContract(contractId);
+    if (!contract) return false;
+    return planetKey === contract.destinationKey || orbitingParentKey === contract.destinationKey;
+}

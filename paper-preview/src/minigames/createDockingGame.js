@@ -1,8 +1,25 @@
-import { createDockingState, getDockingTelemetry, stepDocking } from './dockingSimulation.js';
+import {
+    DOCKING_LIMITS,
+    createDockingState,
+    getDockingTelemetry,
+    stepDocking
+} from './dockingSimulation.js';
 
 const DOCKING_ACTIONS = Object.freeze([
     'forward', 'reverse', 'up', 'down', 'rotate-left', 'rotate-right', 'stabilize'
 ]);
+
+export const DOCKING_LAYOUT = Object.freeze({
+    width: 960,
+    edgeMargin: 8,
+    issX: 824,
+    issHalfWidth: 128,
+    portOffsetX: -70,
+    shipNoseOffset: 34,
+    shipStartX: 110,
+    simulationMinX: DOCKING_LIMITS.minX,
+    simulationContactX: DOCKING_LIMITS.contactX
+});
 
 export function createDockingInputState() {
     return Object.fromEntries(DOCKING_ACTIONS.map((action) => [action, false]));
@@ -53,20 +70,21 @@ function drawBackdrop(scene) {
 
 function drawApproachCorridor(scene) {
     const corridor = scene.add.graphics();
+    const portX = DOCKING_LAYOUT.issX + DOCKING_LAYOUT.portOffsetX;
     corridor.fillStyle(0xf4c85f, 0.08);
-    corridor.fillRect(600, 238, 248, 64);
+    corridor.fillRect(535, 238, portX - 535, 64);
     corridor.lineStyle(3, 0xf4c85f, 0.7);
-    for (let x = 600; x < 842; x += 28) {
-        corridor.lineBetween(x, 238, Math.min(x + 16, 842), 238);
-        corridor.lineBetween(x, 302, Math.min(x + 16, 842), 302);
+    for (let x = 535; x < portX; x += 28) {
+        corridor.lineBetween(x, 238, Math.min(x + 16, portX), 238);
+        corridor.lineBetween(x, 302, Math.min(x + 16, portX), 302);
     }
     corridor.lineStyle(1, 0xf4c85f, 0.3);
-    corridor.lineBetween(600, 270, 848, 270);
+    corridor.lineBetween(535, 270, portX, 270);
     return corridor;
 }
 
 function createIss(scene) {
-    const station = scene.add.container(858, 270);
+    const station = scene.add.container(DOCKING_LAYOUT.issX, 270);
     const shadow = scene.add.graphics();
     shadow.fillStyle(0x071021, 0.45);
     shadow.fillRoundedRect(-62, -31, 122, 62, 7);
@@ -129,10 +147,13 @@ function createCourier(scene) {
     return ship;
 }
 
-function mapShipPosition(state) {
+export function mapDockingPosition(position) {
+    const contactShipX = DOCKING_LAYOUT.issX + DOCKING_LAYOUT.portOffsetX - DOCKING_LAYOUT.shipNoseOffset;
+    const progress = (position.x - DOCKING_LAYOUT.simulationMinX)
+        / (DOCKING_LAYOUT.simulationContactX - DOCKING_LAYOUT.simulationMinX);
     return {
-        x: 110 + ((state.position.x + 9) / 9) * 670,
-        y: 270 - state.position.y * 45
+        x: DOCKING_LAYOUT.shipStartX + progress * (contactShipX - DOCKING_LAYOUT.shipStartX),
+        y: 270 - position.y * 45
     };
 }
 
@@ -178,7 +199,7 @@ export async function createDockingGame({
                 forwardArrow: 'RIGHT', reverseArrow: 'LEFT',
                 rotateLeft: 'Q', rotateRight: 'E', stabilize: 'SPACE'
             }) ?? {};
-            const start = mapShipPosition(this.simulation);
+            const start = mapDockingPosition(this.simulation.position);
             this.ship.setPosition(start.x, start.y);
             this.ship.setRotation(this.simulation.angle);
             onTelemetry(getDockingTelemetry(this.simulation));
@@ -199,7 +220,7 @@ export async function createDockingGame({
                 stabilize: pointerInput.stabilize || keyDown(this.keys.stabilize)
             };
             this.simulation = stepDocking(this.simulation, input, deltaMilliseconds / 1000);
-            const position = mapShipPosition(this.simulation);
+            const position = mapDockingPosition(this.simulation.position);
             this.ship.setPosition(position.x, position.y);
             this.ship.setRotation(this.simulation.angle);
             this.ship.exhaust.setVisible(input.horizontal > 0 && this.simulation.phase !== 'docked');

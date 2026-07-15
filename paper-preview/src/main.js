@@ -42,7 +42,8 @@ import {
     acceptContract,
     completeContract,
     createContractState,
-    getContractStatus
+    getContractStatus,
+    isContractDestinationNearby
 } from './contracts/contractState.js';
 import { createLocalOrbitHost } from './minigames/localOrbitHost.js';
 
@@ -113,6 +114,14 @@ const NASA_SEARCH_TERMS = Object.freeze({
     jwst: 'James Webb Space Telescope', 'voyager-1': 'Voyager spacecraft',
     'tesla-roadster': 'SpaceX Roadster Starman', halley: 'Halley comet', '67p': 'comet 67P'
 });
+
+function isIssDestinationNearby() {
+    const orbitingObject = nearbyWorldObjectKey ? getWorldObject(nearbyWorldObjectKey) : null;
+    return isContractDestinationNearby(ISS_DELIVERY_CONTRACT_ID, {
+        planetKey: flightState.nearbyPlanetKey,
+        orbitingParentKey: orbitingObject?.parentKey ?? null
+    });
+}
 
 function strongestStatus(envelopes) {
     if (envelopes.some((envelope) => envelope.status === 'live')) return 'live';
@@ -229,7 +238,7 @@ async function hydrateDailySky() {
 function handleExplore() {
     const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
     if (previewState.notebook.open || !nearbyKey) return;
-    if (nearbyKey === 'earth' && getContractStatus(
+    if (isIssDestinationNearby() && getContractStatus(
         contractState,
         ISS_DELIVERY_CONTRACT_ID,
         previewState.learning
@@ -347,13 +356,12 @@ function handleAcceptContract() {
 }
 
 async function startIssDelivery() {
-    const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
     const accepted = getContractStatus(
         contractState,
         ISS_DELIVERY_CONTRACT_ID,
         previewState.learning
     ) === 'accepted';
-    if (!accepted || nearbyKey !== 'earth' || localOrbitOpen || !localOrbitHost) return false;
+    if (!accepted || !isIssDestinationNearby() || localOrbitOpen || !localOrbitHost) return false;
     localOrbitOpen = true;
     autoPilotState = null;
     updateAutopilotDisplay();
@@ -551,7 +559,8 @@ function syncUI(force = false) {
         nearbyObjectKey: nearbyWorldObjectKey,
         missions,
         expeditionProgress,
-        contractState
+        contractState,
+        contractDestinationNearby: isIssDestinationNearby()
     });
     lastUiSignature = signature;
 }

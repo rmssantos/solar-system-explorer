@@ -409,7 +409,7 @@ export function createPreviewUI({
         }));
     }
 
-    function renderContract(state, nearbyKey, contractState) {
+    function renderContract(state, destinationNearby, contractState) {
         const status = getContractStatus(contractState, ISS_DELIVERY_CONTRACT_ID, state.learning);
         elements.issContractCard.hidden = status === 'locked';
         if (status === 'locked') return status;
@@ -419,7 +419,7 @@ export function createPreviewUI({
         if (status === 'available') {
             elements.issContractAction.dataset.contractAction = 'accept';
             elements.issContractAction.textContent = paperI18n.t('game.contract.iss.accept');
-        } else if (status === 'accepted' && nearbyKey === 'earth') {
+        } else if (status === 'accepted' && destinationNearby) {
             elements.issContractAction.dataset.contractAction = 'start';
             elements.issContractAction.textContent = paperI18n.t('game.contract.iss.start');
         } else if (status === 'accepted') {
@@ -434,7 +434,7 @@ export function createPreviewUI({
         return status;
     }
 
-    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null } = {}) {
+    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractDestinationNearby = false } = {}) {
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
             ? chooseNearbyObject(flightState.nearbyPlanetKey, nearbyObjectKey)
@@ -445,9 +445,9 @@ export function createPreviewUI({
         elements.explore.hidden = !nearbyPlanet || state.notebook.open;
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
-        const contractStatus = renderContract(state, nearbyKey, contractState);
+        const contractStatus = renderContract(state, contractDestinationNearby, contractState);
         if (nearbyPlanet) {
-            elements.nearbyPlanetName.textContent = nearbyKey === 'earth' && contractStatus === 'accepted'
+            elements.nearbyPlanetName.textContent = contractDestinationNearby && contractStatus === 'accepted'
                 ? paperI18n.t('game.contract.iss.start')
                 : paperI18n.t('game.explore', { name: nearbyPlanet.name });
         }

@@ -1383,7 +1383,7 @@ button:focus-visible {
 @media (max-width: 700px) {
     .local-orbit-mission { width: calc(100% - 12px); max-height: calc(100% - 12px); }
     .local-orbit-sheet { grid-template-columns: 1fr; max-height: calc(100vh - 12px); padding: 16px; }
-    .local-orbit-playfield { min-height: min(48vh, 390px); }
+    .local-orbit-playfield { min-height: min(40vh, 330px); }
     .docking-instruments { grid-template-columns: repeat(3, 1fr); }
     .docking-instruments > div { padding: 8px; }
     .docking-instruments small { font-size: .52rem; }

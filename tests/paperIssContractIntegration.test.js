@@ -21,6 +21,7 @@ describe('ISS delivery integration contract', () => {
         expect(game).toContain('acceptContract(');
         expect(game).toContain('completeContract(');
         expect(game).toContain('completedContractIds');
+        expect(game).toContain('isContractDestinationNearby(');
     });
 
     it('treats the local orbit as a modal input boundary', () => {
@@ -35,4 +36,3 @@ describe('ISS delivery integration contract', () => {
         expect(game).toContain('startIssDelivery');
     });
 });
-

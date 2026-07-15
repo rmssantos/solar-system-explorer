@@ -4,7 +4,8 @@ import {
     acceptContract,
     completeContract,
     createContractState,
-    getContractStatus
+    getContractStatus,
+    isContractDestinationNearby
 } from '../paper-preview/src/contracts/contractState.js';
 import { CONTRACT_CATALOG } from '../paper-preview/src/contracts/contractCatalog.js';
 
@@ -51,5 +52,16 @@ describe('paper expedition contracts', () => {
         expect(contract.copy.pt.title).toMatch(/ISS/);
         expect(contract.copy.en.title).toMatch(/ISS/);
     });
-});
 
+    it('treats the Earth system as the contract destination even beside an orbiting satellite', () => {
+        expect(isContractDestinationNearby(ISS_DELIVERY_CONTRACT_ID, {
+            planetKey: 'earth', orbitingParentKey: 'earth'
+        })).toBe(true);
+        expect(isContractDestinationNearby(ISS_DELIVERY_CONTRACT_ID, {
+            planetKey: null, orbitingParentKey: 'earth'
+        })).toBe(true);
+        expect(isContractDestinationNearby(ISS_DELIVERY_CONTRACT_ID, {
+            planetKey: 'mars', orbitingParentKey: 'mars'
+        })).toBe(false);
+    });
+});

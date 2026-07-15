@@ -28,7 +28,7 @@ describe('paper local-orbit mission surface', () => {
         expect(css).toMatch(/\.local-orbit-mission\s*\{/);
         expect(css).toMatch(/\.docking-control\s*\{[^}]*min-(?:width|height):\s*44px/s);
         expect(css).toMatch(/@media\s*\(max-width:\s*700px\)/);
+        expect(css).toMatch(/\.local-orbit-playfield\s*\{\s*min-height:\s*min\(40vh,\s*330px\)/);
         expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
     });
 });
-
