@@ -34,6 +34,21 @@ describe('paper expedition progression', () => {
         expect(second).toEqual(first);
     });
 
+    it('awards a collected agency report once without rewarding uncollected results', () => {
+        const first = reconcileExpeditionProgress(createExpeditionProgress(), {
+            collectedAgencyReportIds: ['report:solar:1', 'report:solar:1']
+        });
+        const second = reconcileExpeditionProgress(first, {
+            collectedAgencyReportIds: ['report:solar:1']
+        });
+
+        expect(EVENT_XP.operation).toBeGreaterThan(0);
+        expect(first.xp).toBe(EVENT_XP.operation);
+        expect(first.awardedEventIds).toEqual(['operation:report:solar:1']);
+        expect(second).toEqual(first);
+        expect(reconcileExpeditionProgress(createExpeditionProgress(), { collectedAgencyReportIds: [] }).xp).toBe(0);
+    });
+
     it('calculates calm, finite explorer levels and progress to the next one', () => {
         expect(getExplorerLevel(0)).toMatchObject({ level: 1, title: 'Cadete de Papel', progress: 0 });
         expect(getExplorerLevel(125)).toMatchObject({ level: 2, title: 'Cartógrafo Lunar' });

@@ -49,6 +49,14 @@ import {
 } from './contracts/contractState.js';
 import { CONTRACT_CATALOG, getContract } from './contracts/contractCatalog.js';
 import { createLocalOrbitHost } from './minigames/localOrbitHost.js';
+import { createAgencyUi } from './agency/agencyUi.js';
+import { createLivingOperations } from './agency/operationDirector.js';
+import {
+    collectAgencyReport,
+    createAgencyState,
+    launchAgencyMission,
+    reconcileAgencyState
+} from './agency/agencyState.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -71,10 +79,20 @@ const learningCatalogView = new Proxy({}, {
 const savedProgress = loadProgress();
 let previewState = createPreviewState(savedProgress);
 let contractState = createContractState(savedProgress);
+let agencyState = reconcileAgencyState(createAgencyState({
+    agencyActiveMissions: savedProgress.agencyActiveMissions,
+    activeMissions: savedProgress.agencyActiveMissions,
+    agencyReports: savedProgress.agencyReports,
+    reports: savedProgress.agencyReports
+}), Date.now());
+let livingOperations = createLivingOperations();
+let agencyNowMs = Date.now();
+let agencyUi = null;
 let expeditionProgress = reconcileExpeditionProgress(createExpeditionProgress(savedProgress), {
     ...previewState.learning,
     completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds,
-    completedContractIds: contractState.completedContractIds
+    completedContractIds: contractState.completedContractIds,
+    collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id)
 });
 let surpriseState = createSurpriseState({ seenIds: savedProgress.seenSurpriseIds });
 let trackedMissionIds = new Set(evaluateMissions(previewState.learning, paperI18n.language).completedIds);
@@ -83,7 +101,8 @@ function currentProgressSnapshot() {
         ...previewState.learning,
         completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds,
         seenSurpriseIds: surpriseState.seenIds,
-        completedContractIds: contractState.completedContractIds
+        completedContractIds: contractState.completedContractIds,
+        collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id)
     };
 }
 let progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
@@ -97,6 +116,7 @@ let autoPilotState = null;
 let localOrbitOpen = false;
 let localOrbitHost = null;
 let activeOrbitContractId = null;
+let agencyUiElapsed = 0;
 let lastInput = {
     forward: 0,
     strafe: 0,
@@ -119,6 +139,26 @@ const NASA_SEARCH_TERMS = Object.freeze({
     jwst: 'James Webb Space Telescope', 'voyager-1': 'Voyager spacecraft',
     'tesla-roadster': 'SpaceX Roadster Starman', halley: 'Halley comet', '67p': 'comet 67P'
 });
+
+function isoDateOffset(date, days) {
+    return new Date(date.getTime() + (days * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
+}
+
+async function hydrateLivingOperations() {
+    const now = new Date();
+    const date = now.toISOString().slice(0, 10);
+    const [solar, neo, planet] = await Promise.all([
+        spaceData.getSpaceWeather(isoDateOffset(now, -7), date, []),
+        spaceData.getNearEarthObjects(date, isoDateOffset(now, 6), []),
+        spaceData.getPlanetVector('mars', '499', date, {
+            epoch: date,
+            positionKm: { x: 225_000_000, y: 0, z: 0 },
+            distanceKm: 225_000_000
+        })
+    ]);
+    livingOperations = createLivingOperations({ date, solar, neo, planet });
+    agencyUi?.update({ operations: livingOperations, agencyState, nowMs: agencyNowMs });
+}
 
 function isOrbitalContractDestinationNearby(contractId) {
     const orbitingObject = nearbyWorldObjectKey ? getWorldObject(nearbyWorldObjectKey) : null;
@@ -320,15 +360,60 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
         ...previewState.learning,
         completedMissionIds: missions.completedIds,
         seenSurpriseIds: surpriseState.seenIds,
-        completedContractIds: contractState.completedContractIds
+        completedContractIds: contractState.completedContractIds,
+        collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id)
     });
     progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
-    saveProgress({ ...previewState.learning, ...expeditionProgress, ...contractState });
+    saveProgress({
+        ...previewState.learning,
+        ...expeditionProgress,
+        ...contractState,
+        agencyActiveMissions: agencyState.activeMissions,
+        agencyReports: agencyState.reports
+    });
     if (feedback) {
         const delta = compareProgress(previousPresentation, progressPresentation);
         previewUI.showProgressFeedback(delta);
         if (delta.xpGained || delta.leveledUp || delta.newAwards?.length) audioDirector.play('reward-chime');
     }
+}
+
+function syncAgencyState(nowMs = agencyNowMs, { persist = true, render = false } = {}) {
+    const activeCount = agencyState.activeMissions.length;
+    const reportCount = agencyState.reports.length;
+    agencyState = reconcileAgencyState(agencyState, nowMs);
+    const agencyChanged = activeCount !== agencyState.activeMissions.length
+        || reportCount !== agencyState.reports.length;
+    if (persist && agencyChanged) {
+        reconcileAndSaveProgress({ feedback: false });
+    }
+    if (render || agencyChanged) agencyUi?.update({ operations: livingOperations, agencyState, nowMs });
+    else agencyUi?.tick(nowMs);
+}
+
+function launchAgencyOperation(configuration) {
+    const operation = livingOperations.find((candidate) => candidate.id === configuration.operationId);
+    const result = launchAgencyMission(agencyState, { ...configuration, operation, nowMs: agencyNowMs });
+    if (result.error) return false;
+    agencyState = result.state;
+    siteAnalytics.track('agency_event', { family: operation.kind, state: 'launch' });
+    audioDirector.play('paper-engine');
+    reconcileAndSaveProgress({ feedback: false });
+    syncAgencyState(agencyNowMs, { persist: false, render: true });
+    return true;
+}
+
+function collectAgencyOperationReport(reportId) {
+    const current = agencyState.reports.find((report) => report.id === reportId);
+    const result = collectAgencyReport(agencyState, reportId, agencyNowMs);
+    if (result.error) return false;
+    agencyState = result.state;
+    siteAnalytics.track('agency_event', { family: current?.kind ?? 'unknown', state: 'collect' });
+    reconcileAndSaveProgress();
+    audioDirector.play('reward-chime');
+    syncAgencyState(agencyNowMs, { persist: false, render: true });
+    syncUI(true);
+    return true;
 }
 
 function handleSurprise(event) {
@@ -432,6 +517,16 @@ const previewUI = createPreviewUI({
 });
 previewUI.updateAudioState(audioDirector.getState());
 
+agencyUi = createAgencyUi({
+    i18n: paperI18n,
+    onOpen: () => flightInput.setEnabled(false),
+    onClose: () => flightInput.setEnabled(true),
+    onLaunch: launchAgencyOperation,
+    onCollect: collectAgencyOperationReport,
+    onOpenCampaign: () => previewUI.openMissionLog('missions')
+});
+agencyUi.update({ operations: livingOperations, agencyState, nowMs: agencyNowMs });
+
 function unlockAudio() {
     audioDirector.unlock();
     previewUI.updateAudioState(audioDirector.getState());
@@ -496,7 +591,7 @@ function cancelAutopilot() {
 function flyToWorldObject(key) {
     const object = getWorldObject(key);
     const target = paperScene.getWorldObjectPosition(key);
-    if (!object || !target || previewState.notebook.open || previewUI.elements.missionLog.open) return false;
+    if (!object || !target || previewState.notebook.open || previewUI.elements.missionLog.open || agencyUi?.elements.dialog.open) return false;
     flightInput.reset();
     autoPilotState = createAutopilot(key, flightState.position, target, interactionRadiusFor(object));
     audioDirector.play('autopilot-start');
@@ -507,7 +602,7 @@ function flyToWorldObject(key) {
 }
 
 function showObjectHover(key, event) {
-    if (!key || autoPilotState || previewState.notebook.open || previewUI.elements.missionLog.open) {
+    if (!key || autoPilotState || previewState.notebook.open || previewUI.elements.missionLog.open || agencyUi?.elements.dialog.open) {
         objectHover.hidden = true;
         return;
     }
@@ -597,6 +692,12 @@ function updateMissionNavigation() {
 }
 
 function step(seconds) {
+    agencyNowMs = deterministicMode ? agencyNowMs + (seconds * 1000) : Date.now();
+    agencyUiElapsed += seconds;
+    if (agencyUiElapsed >= 1) {
+        syncAgencyState(agencyNowMs);
+        agencyUiElapsed = 0;
+    }
     lastInput = {
         ...flightInput.sample(),
         movementBasis: paperScene.getNavigationBasis()
@@ -606,7 +707,7 @@ function step(seconds) {
         + Math.abs(lastInput.pitchDelta) + Math.abs(lastInput.roll) > 0.01
         || lastInput.boost || lastInput.brake;
     if (autoPilotState && hasManualInput) cancelAutopilot();
-    const dialogOpen = previewState.notebook.open || previewUI.elements.missionLog.open || localOrbitOpen;
+    const dialogOpen = previewState.notebook.open || previewUI.elements.missionLog.open || agencyUi?.elements.dialog.open || localOrbitOpen;
     if (!dialogOpen && autoPilotState) {
         const target = paperScene.getWorldObjectPosition(autoPilotState.targetKey);
         if (!target) cancelAutopilot();
@@ -634,7 +735,7 @@ function step(seconds) {
         deltaSeconds: seconds,
         speed: Math.hypot(flightState.velocity.x, flightState.velocity.y, flightState.velocity.z),
         distanceFromOrigin: Math.hypot(flightState.position.x, flightState.position.y, flightState.position.z),
-        dialogOpen: previewState.notebook.open || previewUI.elements.missionLog.open || localOrbitOpen
+        dialogOpen: previewState.notebook.open || previewUI.elements.missionLog.open || agencyUi?.elements.dialog.open || localOrbitOpen
     });
     surpriseState = surpriseResult.state;
     if (surpriseResult.event) handleSurprise(surpriseResult.event);
@@ -696,7 +797,11 @@ window.render_game_to_text = () => {
     const nearbyPlanet = nearbyKey ? (learningCatalog[nearbyKey] ?? null) : null;
     return JSON.stringify({
         coordinateSystem: '3D paper flight: yaw 0 faces -Z; +X right, +Y up, +Z behind. Movement is camera-relative.',
-        mode: localOrbitOpen ? `local-orbit-${activeOrbitContractId}` : (previewState.notebook.open ? 'notebook' : 'free-flight-360'),
+        mode: localOrbitOpen
+            ? `local-orbit-${activeOrbitContractId}`
+            : agencyUi?.elements.dialog.open
+                ? 'space-agency'
+                : (previewState.notebook.open ? 'notebook' : 'free-flight-360'),
         ship: {
             position: roundVector(flightState.position),
             velocity: roundVector(flightState.velocity),
@@ -730,6 +835,23 @@ window.render_game_to_text = () => {
         },
         progression: { ...expeditionProgress, presentation: progressPresentation },
         contract: { ...contractState, localOrbitOpen, activeOrbitContractId },
+        agency: {
+            open: Boolean(agencyUi?.elements.dialog.open),
+            operationIds: livingOperations.map((operation) => operation.id),
+            activeMissions: agencyState.activeMissions.map((mission) => ({
+                id: mission.id,
+                operationId: mission.operationId,
+                endsAt: mission.endsAt,
+                instrumentId: mission.instrumentId,
+                routeProfileId: mission.routeProfileId
+            })),
+            reports: agencyState.reports.map((report) => ({
+                id: report.id,
+                operationId: report.operationId,
+                quality: report.quality,
+                collected: report.collected
+            }))
+        },
         orbitalMission: localOrbitHost?.getState() ?? null,
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
         autopilot: autoPilotState ? { ...autoPilotState } : null,
@@ -741,6 +863,8 @@ window.render_game_to_text = () => {
 window.advanceTime = (milliseconds) => {
     deterministicMode = true;
     if (localOrbitOpen) {
+        agencyNowMs += Math.max(0, milliseconds);
+        syncAgencyState(agencyNowMs);
         localOrbitHost?.advanceTime(milliseconds);
         paperScene.render();
         return;
@@ -751,7 +875,7 @@ window.advanceTime = (milliseconds) => {
 };
 
 window.__paperPreview = {
-    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, localOrbitOpen, activeOrbitContractId }, scene: paperScene.getState() }),
+    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, localOrbitOpen, activeOrbitContractId }, agency: { ...agencyState, operations: livingOperations }, scene: paperScene.getState() }),
     explore: handleExplore,
     closeNotebook: handleCloseNotebook,
     selectSection: handleSelectSection,
@@ -763,6 +887,15 @@ window.__paperPreview = {
     acceptIssDelivery: () => handleAcceptContract(ISS_DELIVERY_CONTRACT_ID),
     startIssDelivery: () => startOrbitalContract(ISS_DELIVERY_CONTRACT_ID),
     completeIssDelivery: handleOrbitalContractComplete,
+    openAgency: () => agencyUi.open(),
+    launchAgencyOperation,
+    collectAgencyOperationReport,
+    advanceAgencyTime: (milliseconds) => {
+        deterministicMode = true;
+        agencyNowMs += Math.max(0, Number(milliseconds) || 0);
+        syncAgencyState(agencyNowMs);
+        return agencyState;
+    },
     triggerSurprise: (id) => {
         const event = getSurprise(id);
         if (!event) return false;
@@ -813,6 +946,7 @@ window.addEventListener('beforeunload', () => {
     flightInputMode.destroy();
     flightInput.destroy();
     localOrbitHost?.destroy();
+    agencyUi?.destroy();
     previewUI.destroy();
     audioDirector.destroy();
     paperScene.destroy();
@@ -821,6 +955,8 @@ window.addEventListener('beforeunload', () => {
 paperScene.update(0);
 paperScene.setFlightSnapshot(flightState, 0.1);
 syncUI(true);
+syncAgencyState(agencyNowMs);
+reconcileAndSaveProgress({ feedback: false });
 updateMissionNavigation();
 previewUI.updateCockpitTelemetry(
     createCockpitTelemetry(flightState, currentNavigation, paperScene.getState().cameraMode),
@@ -830,4 +966,5 @@ previewUI.markReady();
 paperScene.render();
 hydrateTrackedObjects().catch(() => {});
 hydrateDailySky().catch(() => {});
+hydrateLivingOperations().catch(() => {});
 window.requestAnimationFrame(frame);

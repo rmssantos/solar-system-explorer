@@ -10,12 +10,14 @@ export function loadProgress(storage = globalThis.localStorage) {
             awardedEventIds: Array.isArray(value.awardedEventIds) ? value.awardedEventIds : [],
             seenSurpriseIds: Array.isArray(value.seenSurpriseIds) ? value.seenSurpriseIds : [],
             acceptedContractIds: Array.isArray(value.acceptedContractIds) ? value.acceptedContractIds : [],
-            completedContractIds: Array.isArray(value.completedContractIds) ? value.completedContractIds : []
+            completedContractIds: Array.isArray(value.completedContractIds) ? value.completedContractIds : [],
+            agencyActiveMissions: Array.isArray(value.agencyActiveMissions) ? value.agencyActiveMissions : [],
+            agencyReports: Array.isArray(value.agencyReports) ? value.agencyReports : []
         };
     } catch {
         return {
             discoveredKeys: [], completedQuizIds: [], xp: 0, awardedEventIds: [], seenSurpriseIds: [],
-            acceptedContractIds: [], completedContractIds: []
+            acceptedContractIds: [], completedContractIds: [], agencyActiveMissions: [], agencyReports: []
         };
     }
 }
@@ -29,7 +31,13 @@ export function saveProgress(progress, storage = globalThis.localStorage) {
             awardedEventIds: [...new Set(progress.awardedEventIds ?? [])],
             seenSurpriseIds: [...new Set(progress.seenSurpriseIds ?? [])],
             acceptedContractIds: [...new Set(progress.acceptedContractIds ?? [])],
-            completedContractIds: [...new Set(progress.completedContractIds ?? [])]
+            completedContractIds: [...new Set(progress.completedContractIds ?? [])],
+            agencyActiveMissions: Array.isArray(progress.agencyActiveMissions)
+                ? progress.agencyActiveMissions.filter((value) => value && typeof value === 'object')
+                : [],
+            agencyReports: Array.isArray(progress.agencyReports)
+                ? progress.agencyReports.filter((value) => value && typeof value === 'object')
+                : []
         }));
         return true;
     } catch {

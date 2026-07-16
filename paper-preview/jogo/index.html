@@ -20,7 +20,7 @@
             <div class="game-topbar-tools">
                 <button id="mission-center-trigger" class="mission-center-trigger" type="button" aria-haspopup="dialog">
                     <span class="mission-center-rocket" aria-hidden="true">▲</span>
-                    <span data-i18n="game.missionCenter.open">Missões</span>
+                    <span data-i18n="game.agency.open">Agência</span>
                     <b id="mission-center-count" hidden>0</b>
                 </button>
                 <button class="game-language-toggle" type="button" data-language-toggle aria-label="Mudar para English">EN</button>
@@ -203,6 +203,55 @@
     </dialog>
 
     <dialog id="media-viewer" class="media-viewer" aria-labelledby="media-viewer-caption"><article><button class="media-viewer-close" type="button" data-media-close data-i18n-aria="media.close" aria-label="Fechar imagem">×</button><img data-media-image alt=""><footer><p id="media-viewer-caption" data-media-caption></p><a data-media-source href="#" target="_blank" rel="noreferrer"></a></footer></article></dialog>
+
+    <dialog id="space-agency" class="space-agency" aria-labelledby="agency-title">
+        <article class="agency-desk">
+            <header class="agency-heading">
+                <div>
+                    <p class="agency-kicker" data-i18n="game.agency.kicker">Base orbital · mesa 01</p>
+                    <h1 id="agency-title" data-i18n="game.agency.title">Agência Espacial de Papel</h1>
+                    <p data-i18n="game.agency.copy">Planeia sondas, acompanha o Sistema Solar real e transforma sinais em descobertas.</p>
+                </div>
+                <div class="agency-heading-actions">
+                    <strong id="agency-capacity">0/3 sondas</strong>
+                    <button id="agency-close" class="agency-close" type="button" data-agency-action="close" data-i18n-aria="game.agency.close" aria-label="Fechar Agência">×</button>
+                </div>
+            </header>
+            <nav class="agency-tabs" role="tablist" data-i18n-aria="game.agency.navigation" aria-label="Áreas da Agência">
+                <button id="agency-tab-dispatch" type="button" role="tab" data-agency-section="dispatch" aria-controls="agency-panel-dispatch" aria-selected="true" data-i18n="game.agency.dispatch">Despacho</button>
+                <button id="agency-tab-live" type="button" role="tab" data-agency-section="live" aria-controls="agency-panel-live" aria-selected="false" data-i18n="game.agency.live">Sistema Vivo</button>
+                <button id="agency-tab-probes" type="button" role="tab" data-agency-section="probes" aria-controls="agency-panel-probes" aria-selected="false" data-i18n="game.agency.probes">Sondas</button>
+                <button id="agency-tab-reports" type="button" role="tab" data-agency-section="reports" aria-controls="agency-panel-reports" aria-selected="false" data-i18n="game.agency.reports">Relatórios</button>
+            </nav>
+            <div class="agency-workbench">
+                <section id="agency-panel-dispatch" class="agency-panel" role="tabpanel" aria-labelledby="agency-tab-dispatch" data-agency-panel="dispatch">
+                    <div class="agency-panel-heading"><div><p data-i18n="game.agency.dispatchKicker">Operações de hoje</p><h2 data-i18n="game.agency.dispatchTitle">Escolhe uma pergunta para investigar</h2></div><button type="button" class="agency-secondary-action" data-agency-action="campaign" data-i18n="game.agency.campaign">Contratos orbitais</button></div>
+                    <div id="agency-operation-list" class="agency-operation-list" aria-live="polite"></div>
+                </section>
+                <section id="agency-panel-live" class="agency-panel" role="tabpanel" aria-labelledby="agency-tab-live" data-agency-panel="live" hidden>
+                    <div class="agency-panel-heading"><div><p data-i18n="game.agency.liveKicker">Observatório ligado</p><h2 data-i18n="game.agency.liveTitle">O que está a acontecer agora</h2></div></div>
+                    <div id="agency-live-list" class="agency-live-list"></div>
+                </section>
+                <section id="agency-panel-probes" class="agency-panel" role="tabpanel" aria-labelledby="agency-tab-probes" data-agency-panel="probes" hidden>
+                    <div class="agency-panel-heading"><div><p data-i18n="game.agency.probesKicker">Trajetórias perfuradas</p><h2 data-i18n="game.agency.probesTitle">Sondas em missão</h2></div></div>
+                    <div class="agency-trajectory-map" aria-hidden="true"><i></i><i></i><i></i><span>✦</span></div>
+                    <div id="agency-probe-list" class="agency-probe-list" aria-live="polite"></div>
+                </section>
+                <section id="agency-panel-reports" class="agency-panel" role="tabpanel" aria-labelledby="agency-tab-reports" data-agency-panel="reports" hidden>
+                    <div class="agency-panel-heading"><div><p data-i18n="game.agency.reportsKicker">Arquivo científico</p><h2 data-i18n="game.agency.reportsTitle">Descobertas enviadas para casa</h2></div></div>
+                    <div id="agency-report-list" class="agency-report-list" aria-live="polite"></div>
+                </section>
+            </div>
+            <section id="agency-setup-sheet" class="agency-setup-sheet" aria-labelledby="agency-setup-title" hidden>
+                <div class="agency-setup-copy"><p data-i18n="game.agency.prepare">Preparar sonda</p><h2 id="agency-setup-title">Operação</h2><span id="agency-setup-summary"></span></div>
+                <fieldset><legend data-i18n="game.agency.instrument">Instrumento científico</legend><div id="agency-instrument-choices" class="agency-choice-grid"></div></fieldset>
+                <fieldset><legend data-i18n="game.agency.power">Perfil de energia</legend><div id="agency-power-choices" class="agency-choice-grid"></div></fieldset>
+                <fieldset><legend data-i18n="game.agency.route">Trajetória</legend><div id="agency-route-choices" class="agency-choice-grid"></div></fieldset>
+                <div class="agency-setup-actions"><button type="button" class="agency-secondary-action" data-agency-action="cancel" data-i18n="game.agency.cancel">Cancelar</button><button type="button" class="agency-primary-action" data-agency-action="launch" data-i18n="game.agency.launch">Lançar sonda</button></div>
+            </section>
+            <p id="agency-announcer" class="visually-hidden" aria-live="polite"></p>
+        </article>
+    </dialog>
 
     <dialog id="mission-log" class="mission-log" aria-labelledby="mission-log-title">
         <article>
