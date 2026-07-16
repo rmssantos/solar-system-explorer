@@ -20,8 +20,12 @@
             <div class="game-topbar-tools">
                 <button id="mission-center-trigger" class="mission-center-trigger" type="button" aria-haspopup="dialog">
                     <span class="mission-center-rocket" aria-hidden="true">▲</span>
-                    <span data-i18n="game.agency.open">Agência</span>
+                    <span data-i18n="game.missionCenter.open">Missões</span>
                     <b id="mission-center-count" hidden>0</b>
+                </button>
+                <button id="space-agency-trigger" class="mission-center-trigger agency-trigger" type="button" aria-haspopup="dialog">
+                    <span class="agency-trigger-mark" aria-hidden="true">✦</span>
+                    <span data-i18n="game.agency.open">Agência</span>
                 </button>
                 <button class="game-language-toggle" type="button" data-language-toggle aria-label="Mudar para English">EN</button>
                 <button id="notebook-trigger" class="notebook-trigger" type="button" aria-haspopup="dialog" aria-label="Caderno" data-i18n-aria="game.notebook">
@@ -248,6 +252,30 @@
                 <fieldset><legend data-i18n="game.agency.power">Perfil de energia</legend><div id="agency-power-choices" class="agency-choice-grid"></div></fieldset>
                 <fieldset><legend data-i18n="game.agency.route">Trajetória</legend><div id="agency-route-choices" class="agency-choice-grid"></div></fieldset>
                 <div class="agency-setup-actions"><button type="button" class="agency-secondary-action" data-agency-action="cancel" data-i18n="game.agency.cancel">Cancelar</button><button type="button" class="agency-primary-action" data-agency-action="launch" data-i18n="game.agency.launch">Lançar sonda</button></div>
+            </section>
+            <section id="agency-science-console" class="agency-science-console" aria-labelledby="agency-science-title" hidden>
+                <header class="agency-science-heading">
+                    <div><p data-i18n="game.agency.science.kicker">Ligação direta · sonda</p><h2 id="agency-science-title">Consola científica</h2></div>
+                    <button id="agency-science-close" class="agency-science-close" type="button" data-i18n-aria="game.agency.science.close" aria-label="Fechar consola">×</button>
+                </header>
+                <div class="agency-science-screen">
+                    <canvas id="agency-science-canvas" width="960" height="520" tabindex="0" role="img" aria-describedby="agency-science-instructions"></canvas>
+                    <div class="agency-science-telemetry" aria-hidden="true"><span>LIVE</span><i></i><i></i><i></i></div>
+                </div>
+                <div class="agency-science-dashboard">
+                    <div class="agency-science-readout">
+                        <p id="agency-science-instructions"></p>
+                        <strong id="agency-science-status" aria-live="polite"></strong>
+                        <progress id="agency-science-progress" max="100" value="0"></progress>
+                    </div>
+                    <div id="agency-science-tuning-group" class="agency-science-tuning" hidden>
+                        <label for="agency-science-tuning" data-i18n="game.agency.science.tuning">Frequência</label>
+                        <input id="agency-science-tuning" type="range" min="0" max="100" value="50" inputmode="numeric">
+                        <output id="agency-science-signal">0%</output>
+                    </div>
+                    <button id="agency-science-capture" class="agency-science-capture" type="button" data-i18n="game.agency.science.capture">Capturar leitura</button>
+                </div>
+                <p id="agency-science-announcer" class="visually-hidden" aria-live="assertive"></p>
             </section>
             <p id="agency-announcer" class="visually-hidden" aria-live="polite"></p>
         </article>

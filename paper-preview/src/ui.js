@@ -213,6 +213,7 @@ export function createPreviewUI({
             }
         }]
         , [elements.objective, 'click', () => openMissionLog('missions')]
+        , [elements.missionCenterTrigger, 'click', () => openMissionLog('missions')]
         , [elements.rankChip, 'click', () => openMissionLog('awards')]
         , [elements.closeMissionLog, 'click', closeMissionLog]
         , [elements.missionLog, 'cancel', () => onMissionLogClose()]
@@ -505,8 +506,8 @@ export function createPreviewUI({
         elements.missionCenterCount.hidden = actionableCount === 0;
         elements.missionCenterTrigger.classList.toggle('has-actions', actionableCount > 0);
         elements.missionCenterTrigger.setAttribute('aria-label', actionableCount > 0
-            ? `${paperI18n.t('game.agency.open')} · ${actionableCount}`
-            : paperI18n.t('game.agency.open'));
+            ? `${paperI18n.t('game.missionCenter.open')} · ${actionableCount}`
+            : paperI18n.t('game.missionCenter.open'));
         return startable;
     }
 

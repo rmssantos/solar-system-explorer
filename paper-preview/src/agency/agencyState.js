@@ -132,15 +132,17 @@ export function launchAgencyMission(state, configuration = {}) {
     return Object.freeze({ state: next, mission, error: null });
 }
 
-function reportQuality(mission) {
+function reportQuality(mission, scienceScore = null) {
     const power = getAgencyCatalogItem(POWER_PROFILE_CATALOG, mission.powerProfileId);
     const route = getAgencyCatalogItem(ROUTE_PROFILE_CATALOG, mission.routeProfileId);
     const instrumentBonus = mission.instrumentId === mission.recommendedInstrumentId ? 25 : 0;
     const powerBonus = mission.powerProfileId === mission.recommendedPowerProfileId ? 10 : Math.min(5, power?.qualityBonus ?? 0);
-    return Math.max(50, Math.min(100, 55 + instrumentBonus + powerBonus + (route?.qualityBonus ?? 0)));
+    const configurationQuality = Math.max(50, Math.min(100, 55 + instrumentBonus + powerBonus + (route?.qualityBonus ?? 0)));
+    if (!Number.isFinite(scienceScore)) return configurationQuality;
+    return Math.max(50, Math.min(100, Math.round(configurationQuality * .65 + scienceScore * .35)));
 }
 
-function createReport(mission) {
+function createReport(mission, { scienceScore = null, completedAt = mission.endsAt } = {}) {
     return freezeReport({
         id: `report:${mission.id}`,
         missionId: mission.id,
@@ -150,15 +152,34 @@ function createReport(mission) {
         instrumentId: mission.instrumentId,
         powerProfileId: mission.powerProfileId,
         routeProfileId: mission.routeProfileId,
-        quality: reportQuality(mission),
+        quality: reportQuality(mission, scienceScore),
+        scienceScore: Number.isFinite(scienceScore) ? Math.round(scienceScore) : null,
         facts: mission.facts,
         sourceStatus: mission.source?.status ?? 'fallback',
         sourceName: mission.source?.name ?? '',
         sourceUrl: mission.source?.url ?? '',
-        completedAt: mission.endsAt,
+        completedAt,
         collected: false,
         collectedAt: null
     });
+}
+
+export function completeAgencyMissionWithScience(state, missionId, scienceScore, nowMs = Date.now()) {
+    if (!Number.isFinite(scienceScore) || scienceScore < 0 || scienceScore > 100) {
+        return Object.freeze({ state, report: null, error: 'invalid-score' });
+    }
+    const base = createAgencyState(state);
+    const mission = base.activeMissions.find((candidate) => candidate.id === missionId);
+    if (!mission) return Object.freeze({ state, report: null, error: 'not-found' });
+    const report = createReport(mission, {
+        scienceScore: Math.round(scienceScore),
+        completedAt: finiteTimestamp(nowMs)
+    });
+    const next = createAgencyState({
+        activeMissions: base.activeMissions.filter((candidate) => candidate.id !== missionId),
+        reports: [...base.reports.filter((candidate) => candidate.missionId !== missionId), report]
+    });
+    return Object.freeze({ state: next, report, error: null });
 }
 
 export function reconcileAgencyState(state, nowMs = Date.now()) {

@@ -10,6 +10,7 @@ import { safeAgencySourceUrl } from '../paper-preview/src/agency/agencyUi.js';
 
 const html = readFileSync(new URL('../paper-preview/jogo/index.html', import.meta.url), 'utf8');
 const controller = readFileSync(new URL('../paper-preview/src/agency/agencyUi.js', import.meta.url), 'utf8');
+const scienceController = readFileSync(new URL('../paper-preview/src/agency/scienceConsole.js', import.meta.url), 'utf8');
 
 const requiredKeys = [
     'game.agency.open', 'game.agency.title', 'game.agency.dispatch', 'game.agency.live',
@@ -19,7 +20,12 @@ const requiredKeys = [
     'game.agency.source.live', 'game.agency.source.cached', 'game.agency.source.fallback',
     'game.agency.instrument.camera', 'game.agency.instrument.magnetometer', 'game.agency.instrument.radio',
     'game.agency.power.survey', 'game.agency.power.balanced', 'game.agency.power.focused',
-    'game.agency.route.fast', 'game.agency.route.stable'
+    'game.agency.route.fast', 'game.agency.route.stable',
+    'game.agency.science.open', 'game.agency.science.close', 'game.agency.science.capture',
+    'game.agency.science.launching', 'game.agency.science.solar.instructions',
+    'game.agency.science.neo.instructions', 'game.agency.science.mars.instructions',
+    'game.agency.science.tuning', 'game.agency.science.lock', 'game.agency.science.complete',
+    'game.agency.science.reportScore'
 ];
 
 describe('space agency UI contract', () => {
@@ -51,6 +57,22 @@ describe('space agency UI contract', () => {
         expect(html.match(/aria-labelledby="agency-tab-[a-z]+"/g)).toHaveLength(4);
     });
 
+    it('provides an animated, accessible probe console that works without pointer input', () => {
+        expect(html).toContain('id="agency-science-console"');
+        expect(html).toContain('id="agency-science-canvas"');
+        expect(html).toContain('id="agency-science-capture"');
+        expect(html).toContain('id="agency-science-tuning"');
+        expect(html).toContain('aria-describedby="agency-science-instructions"');
+        expect(scienceController).toContain("addEventListener('keydown'");
+        expect(scienceController).toContain("addEventListener('pointermove'");
+        expect(scienceController).toContain('advanceScienceSimulation');
+        expect(scienceController).toContain('requestAnimationFrame');
+        expect(scienceController).toContain('function drawLaunch');
+        expect(scienceController).toContain('function drawSolar');
+        expect(scienceController).toContain('function drawNeo');
+        expect(scienceController).toContain('function drawMars');
+    });
+
     it('keeps every agency label bilingual', () => {
         for (const key of requiredKeys) {
             expect(PAPER_TRANSLATIONS.pt[key], `missing PT ${key}`).toBeTruthy();
@@ -58,9 +80,9 @@ describe('space agency UI contract', () => {
         }
     });
 
-    it('binds explicit open, close, configure, launch, collect and campaign actions', () => {
+    it('binds explicit open, close, configure, launch, track, collect and campaign actions', () => {
         expect(controller).toContain("elements.trigger.addEventListener('click', open)");
-        for (const action of ['close', 'configure', 'launch', 'collect', 'campaign']) {
+        for (const action of ['close', 'configure', 'launch', 'track', 'collect', 'campaign']) {
             expect(controller).toContain(`'${action}'`);
         }
         expect(controller).toContain('data-agency-action');

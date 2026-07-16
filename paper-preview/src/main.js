@@ -53,6 +53,7 @@ import { createAgencyUi } from './agency/agencyUi.js';
 import { createLivingOperations } from './agency/operationDirector.js';
 import {
     collectAgencyReport,
+    completeAgencyMissionWithScience,
     createAgencyState,
     launchAgencyMission,
     reconcileAgencyState
@@ -400,6 +401,18 @@ function launchAgencyOperation(configuration) {
     audioDirector.play('paper-engine');
     reconcileAndSaveProgress({ feedback: false });
     syncAgencyState(agencyNowMs, { persist: false, render: true });
+    return result.mission;
+}
+
+function completeAgencyScienceOperation({ missionId, score }) {
+    const current = agencyState.activeMissions.find((mission) => mission.id === missionId);
+    const result = completeAgencyMissionWithScience(agencyState, missionId, score, agencyNowMs);
+    if (result.error) return false;
+    agencyState = result.state;
+    siteAnalytics.track('agency_event', { family: current?.kind ?? 'unknown', state: 'science-complete' });
+    audioDirector.play('reward-chime');
+    reconcileAndSaveProgress({ feedback: false });
+    syncAgencyState(agencyNowMs, { persist: false, render: true });
     return true;
 }
 
@@ -522,6 +535,7 @@ agencyUi = createAgencyUi({
     onOpen: () => flightInput.setEnabled(false),
     onClose: () => flightInput.setEnabled(true),
     onLaunch: launchAgencyOperation,
+    onScienceComplete: completeAgencyScienceOperation,
     onCollect: collectAgencyOperationReport,
     onOpenCampaign: () => previewUI.openMissionLog('missions')
 });
@@ -849,8 +863,10 @@ window.render_game_to_text = () => {
                 id: report.id,
                 operationId: report.operationId,
                 quality: report.quality,
-                collected: report.collected
-            }))
+                collected: report.collected,
+                scienceScore: report.scienceScore
+            })),
+            science: agencyUi?.getScienceState() ?? null
         },
         orbitalMission: localOrbitHost?.getState() ?? null,
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
@@ -862,6 +878,7 @@ window.render_game_to_text = () => {
 
 window.advanceTime = (milliseconds) => {
     deterministicMode = true;
+    agencyUi?.advanceTime(milliseconds);
     if (localOrbitOpen) {
         agencyNowMs += Math.max(0, milliseconds);
         syncAgencyState(agencyNowMs);

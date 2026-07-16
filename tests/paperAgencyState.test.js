@@ -7,6 +7,7 @@ import {
 } from '../paper-preview/src/agency/agencyCatalog.js';
 import {
     collectAgencyReport,
+    completeAgencyMissionWithScience,
     createAgencyState,
     getAgencyCapacity,
     launchAgencyMission,
@@ -140,6 +141,48 @@ describe('paper agency state', () => {
         expect(report.quality).toBeGreaterThanOrEqual(50);
         expect(report.quality).toBeLessThan(100);
         expect(report.facts).toEqual({ flareClass: 'M2.4' });
+    });
+
+    it('completes a probe immediately after scientific play and grades the report with its score', () => {
+        const launched = launchAgencyMission(createAgencyState(), {
+            operation,
+            instrumentId: 'magnetometer',
+            powerProfileId: 'focused',
+            routeProfileId: 'stable',
+            nowMs: 1_000
+        }).state;
+
+        const result = completeAgencyMissionWithScience(launched, launched.activeMissions[0].id, 72, 9_000);
+
+        expect(result.error).toBeNull();
+        expect(result.state.activeMissions).toHaveLength(0);
+        expect(result.report).toMatchObject({
+            completedAt: 9_000,
+            scienceScore: 72,
+            quality: 90,
+            collected: false
+        });
+        expect(completeAgencyMissionWithScience(result.state, launched.activeMissions[0].id, 100, 10_000).error).toBe('not-found');
+    });
+
+    it('rejects invalid scientific scores without removing the active probe', () => {
+        const launched = launchAgencyMission(createAgencyState(), {
+            operation,
+            instrumentId: 'camera', powerProfileId: 'survey', routeProfileId: 'fast', nowMs: 0
+        }).state;
+
+        const result = completeAgencyMissionWithScience(launched, launched.activeMissions[0].id, Number.NaN, 100);
+        expect(result).toMatchObject({ state: launched, report: null, error: 'invalid-score' });
+    });
+
+    it('keeps every played report scientifically useful even after a weak attempt', () => {
+        const launched = launchAgencyMission(createAgencyState(), {
+            operation,
+            instrumentId: 'camera', powerProfileId: 'survey', routeProfileId: 'fast', nowMs: 0
+        }).state;
+
+        const result = completeAgencyMissionWithScience(launched, launched.activeMissions[0].id, 0, 100);
+        expect(result.report.quality).toBe(50);
     });
 
     it('collects a report once and leaves repeated collection idempotent', () => {

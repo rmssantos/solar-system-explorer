@@ -6,6 +6,7 @@ import {
 import { getLocalizedOperation } from './operationDirector.js';
 import { presentAgencyState } from './agencyPresentation.js';
 import { bindBackdropDismiss } from '../ui/dialogDismiss.js';
+import { createScienceConsole } from './scienceConsole.js';
 
 function element(document, tag, className, text = '') {
     const node = document.createElement(tag);
@@ -35,12 +36,13 @@ export function createAgencyUi(options) {
     onOpen = () => {},
     onClose = () => {},
     onLaunch = () => false,
+    onScienceComplete = () => false,
     onCollect = () => false,
     onOpenCampaign = () => {}
     } = options;
     /** @type {any} */
     const elements = {
-        trigger: document.querySelector('#mission-center-trigger'),
+        trigger: document.querySelector('#space-agency-trigger'),
         dialog: document.querySelector('#space-agency'),
         desk: document.querySelector('#space-agency > article'),
         close: document.querySelector('#agency-close'),
@@ -64,6 +66,25 @@ export function createAgencyUi(options) {
     let nowMs = Date.now();
     let selectedOperationId = null;
     let choices = { instrumentId: null, powerProfileId: null, routeProfileId: 'stable' };
+    const scienceConsole = createScienceConsole({
+        document,
+        i18n,
+        onComplete: (result) => {
+            const completed = onScienceComplete(result);
+            if (completed) {
+                selectSection('reports');
+                elements.announcer.textContent = i18n.t('game.agency.science.complete', { score: result.score });
+            }
+            return completed;
+        },
+        onClose: (missionId) => {
+            const trackButton = missionId
+                ? [...elements.probes.querySelectorAll('[data-agency-action="track"]')]
+                    .find((button) => button.dataset.missionId === missionId)
+                : null;
+            (trackButton ?? elements.tabs.find((candidate) => candidate.dataset.agencySection === 'probes'))?.focus({ preventScroll: true });
+        }
+    });
 
     function selectSection(section) {
         elements.tabs.forEach((tab) => {
@@ -82,6 +103,7 @@ export function createAgencyUi(options) {
     }
 
     function close() {
+        scienceConsole.close();
         elements.setup.hidden = true;
         if (elements.dialog.open) elements.dialog.close();
         onClose();
@@ -208,14 +230,29 @@ export function createAgencyUi(options) {
         progress.value = mission.progressPercent;
         progress.setAttribute('aria-label', `${mission.title}: ${mission.progressPercent}%`);
         const meta = element(document, 'p', 'agency-probe-meta', `${i18n.t(`game.agency.instrument.${mission.instrumentId}`)} · ${i18n.t(`game.agency.route.${mission.routeProfileId}`)}`);
-        card.append(heading, progress, meta);
+        const track = element(document, 'button', 'agency-primary-action agency-track-action', i18n.t('game.agency.science.open'));
+        track.type = 'button';
+        track.dataset.agencyAction = 'track';
+        track.dataset.missionId = mission.id;
+        card.append(heading, progress, meta, track);
         return card;
+    }
+
+    function openScienceConsole(missionId) {
+        const mission = agencyState.activeMissions.find((candidate) => candidate.id === missionId);
+        if (!mission) return;
+        const operation = operations.find((candidate) => candidate.id === mission.operationId);
+        const localized = operation ? getLocalizedOperation(operation, i18n.language) : null;
+        scienceConsole.open(mission, localized);
     }
 
     function reportCard(report) {
         const card = element(document, 'article', `agency-report-card${report.collected ? ' is-collected' : ''}`);
         const quality = element(document, 'span', 'agency-report-quality', `${report.quality}%`);
         card.append(quality, element(document, 'h3', '', report.title), element(document, 'p', '', report.summary));
+        if (Number.isFinite(report.scienceScore)) {
+            card.append(element(document, 'small', 'agency-report-performance', i18n.t('game.agency.science.reportScore', { score: report.scienceScore })));
+        }
         const source = element(document, 'a', 'agency-source-link', report.sourceName || i18n.t(sourceKey(report.sourceStatus)));
         source.href = safeAgencySourceUrl(report.sourceUrl);
         source.target = '_blank';
@@ -232,6 +269,7 @@ export function createAgencyUi(options) {
     }
 
     function render() {
+        elements.announcer.textContent = '';
         const view = presentAgencyState(agencyState, operations, i18n.language, nowMs);
         elements.operations.replaceChildren(...operations.map(operationCard));
         elements.live.replaceChildren(...operations.map(liveCard));
@@ -287,13 +325,17 @@ export function createAgencyUi(options) {
         else if (action.dataset.agencyAction === 'launch') {
             const launched = onLaunch({ operationId: selectedOperationId, ...choices });
             if (launched) {
+                const launchedMission = launched.mission ?? launched;
                 elements.setup.hidden = true;
                 selectedOperationId = null;
                 selectSection('probes');
                 const probeTab = elements.tabs.find((candidate) => candidate.dataset.agencySection === 'probes');
                 probeTab?.focus();
                 elements.announcer.textContent = i18n.t('game.agency.launched');
+                openScienceConsole(launchedMission.id);
             }
+        } else if (action.dataset.agencyAction === 'track') {
+            openScienceConsole(action.dataset.missionId);
         } else if (action.dataset.agencyAction === 'collect') {
             if (onCollect(action.dataset.reportId)) elements.announcer.textContent = i18n.t('game.agency.collected');
         } else if (action.dataset.agencyAction === 'campaign') {
@@ -337,8 +379,11 @@ export function createAgencyUi(options) {
         close,
         update,
         tick,
+        advanceTime: scienceConsole.advanceTime,
+        getScienceState: scienceConsole.getState,
         selectSection,
         destroy() {
+            scienceConsole.destroy();
             elements.trigger.removeEventListener('click', open);
             elements.dialog.removeEventListener('click', handleAction);
             elements.dialog.removeEventListener('keydown', handleTabKeydown);
