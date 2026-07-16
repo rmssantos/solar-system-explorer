@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
     DOCKING_LAYOUT,
+    createDockingLayout,
     createDockingInputState,
     mapDockingPosition,
     readDockingKeyboardInput,
@@ -74,5 +75,14 @@ describe('Phaser Canvas docking adapter', () => {
         const contact = mapDockingPosition({ x: DOCKING_LAYOUT.simulationContactX, y: 0 });
         expect(contact.x + DOCKING_LAYOUT.shipNoseOffset)
             .toBeCloseTo(DOCKING_LAYOUT.issX + DOCKING_LAYOUT.portOffsetX, 5);
+    });
+
+    it('uses a vertical approach map in portrait instead of shrinking the landscape scene', () => {
+        const portrait = createDockingLayout(390, 700);
+        expect(portrait.orientation).toBe('portrait');
+        const start = mapDockingPosition({ x: portrait.simulationMinX, y: 0 }, portrait);
+        const contact = mapDockingPosition({ x: portrait.simulationContactX, y: 0 }, portrait);
+        expect(start.y).toBeGreaterThan(contact.y);
+        expect(contact.y - portrait.shipNoseOffset).toBeCloseTo(portrait.portY, 5);
     });
 });

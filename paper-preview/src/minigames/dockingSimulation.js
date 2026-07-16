@@ -74,7 +74,7 @@ export function getDockingTelemetry(state) {
     });
 }
 
-export function stepDocking(state, input = {}, deltaSeconds = 0) {
+export function stepDocking(state, input = {}, deltaSeconds = 0, profile = {}) {
     const base = createDockingState(state);
     if (base.phase === 'docked') return base;
 
@@ -86,6 +86,9 @@ export function stepDocking(state, input = {}, deltaSeconds = 0) {
 
     let velocityX = base.velocity.x + horizontal * TRANSLATION_ACCELERATION * delta;
     let velocityY = base.velocity.y + vertical * TRANSLATION_ACCELERATION * delta;
+    const driftAcceleration = finite(profile.driftAcceleration, 0);
+    const driftFrequency = finite(profile.driftFrequency, 0);
+    velocityY += Math.sin((base.elapsedSeconds + delta) * driftFrequency) * driftAcceleration * delta;
     let angularVelocity = base.angularVelocity + rotation * ROTATION_ACCELERATION * delta;
     const damping = Math.exp(-dampingRate * delta);
     velocityX *= damping;

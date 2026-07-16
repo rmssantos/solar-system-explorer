@@ -1,3 +1,5 @@
+import { getOrbitalMissionProfile } from './orbitalMissionProfiles.js';
+
 function queryElements(root) {
     return {
         dialog: root.querySelector('#local-orbit-mission'),
@@ -9,6 +11,11 @@ function queryElements(root) {
         distance: root.querySelector('#docking-distance'),
         speed: root.querySelector('#docking-speed'),
         alignment: root.querySelector('#docking-alignment'),
+        kicker: root.querySelector('.local-orbit-kicker'),
+        title: root.querySelector('#local-orbit-title'),
+        playfield: root.querySelector('.local-orbit-playfield'),
+        resultTitle: root.querySelector('#local-orbit-result strong'),
+        resultScience: root.querySelector('#local-orbit-result p'),
         close: root.querySelector('#local-orbit-close'),
         finish: root.querySelector('#local-orbit-finish'),
         retry: root.querySelector('#local-orbit-load-retry'),
@@ -33,6 +40,7 @@ function setSafetyClass(element, safe) {
  *   gameFactory?: (options: {
  *     parent: HTMLElement,
  *     language: string,
+ *     profile: ReturnType<typeof getOrbitalMissionProfile>,
  *     onReady: () => void,
  *     onTelemetry: (telemetry: { distance: number, relativeSpeed: number, alignmentDegrees: number, corridorSafe: boolean, speedSafe: boolean, alignmentSafe: boolean }) => void,
  *     onEvent: (event: string) => void
@@ -72,7 +80,7 @@ export function createLocalOrbitHost({
 
     function handleGameEvent(event) {
         if (event === 'unsafe-contact') {
-            elements.guidance.textContent = messages.retry ?? elements.guidance.textContent;
+            elements.guidance.textContent = openOptions.profile?.retry ?? messages.retry ?? elements.guidance.textContent;
             return;
         }
         if (event !== 'docked' || completed) return;
@@ -93,7 +101,8 @@ export function createLocalOrbitHost({
                 language: openOptions.language ?? 'pt',
                 onReady: () => { if (generation === loadGeneration) elements.loading.hidden = true; },
                 onTelemetry: updateTelemetry,
-                onEvent: handleGameEvent
+                onEvent: handleGameEvent,
+                profile: openOptions.profile
             });
             if (generation !== loadGeneration) {
                 created?.destroy?.();
@@ -109,11 +118,17 @@ export function createLocalOrbitHost({
     }
 
     async function open(options = {}) {
-        openOptions = options;
+        const profile = getOrbitalMissionProfile(options.missionId, options.language);
+        openOptions = { ...options, profile };
         completed = false;
         elements.result.hidden = true;
         elements.error.hidden = true;
-        if (messages.guidance) elements.guidance.textContent = messages.guidance;
+        elements.kicker.textContent = profile.kicker;
+        elements.title.textContent = profile.title;
+        elements.resultTitle.textContent = profile.success;
+        elements.resultScience.textContent = profile.science;
+        elements.playfield.setAttribute?.('aria-label', profile.playfield);
+        elements.guidance.textContent = profile.guidance ?? messages.guidance ?? elements.guidance.textContent;
         if (!elements.dialog.open) elements.dialog.showModal();
         await startGame();
     }

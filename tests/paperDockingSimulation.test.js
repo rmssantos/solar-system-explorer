@@ -5,6 +5,7 @@ import {
     getDockingTelemetry,
     stepDocking
 } from '../paper-preview/src/minigames/dockingSimulation.js';
+import { getOrbitalMissionProfile } from '../paper-preview/src/minigames/orbitalMissionProfiles.js';
 
 describe('ISS docking simulation', () => {
     it('starts on a calm approach with serializable state', () => {
@@ -105,6 +106,22 @@ describe('ISS docking simulation', () => {
             speedSafe: true,
             alignmentSafe: true
         });
+    });
+
+    it('adds deterministic orbital drift only to the Hubble approach', () => {
+        const state = createDockingState({
+            elapsedSeconds: 1,
+            position: { x: -7, y: 0 },
+            velocity: { x: 0, y: 0 },
+            angle: 0,
+            angularVelocity: 0
+        });
+        const iss = stepDocking(state, {}, 0.05, getOrbitalMissionProfile('iss-docking'));
+        const hubble = stepDocking(state, {}, 0.05, getOrbitalMissionProfile('hubble-service'));
+
+        expect(iss.velocity.y).toBe(0);
+        expect(hubble.velocity.y).not.toBe(0);
+        expect(stepDocking(state, {}, 0.05, getOrbitalMissionProfile('hubble-service'))).toEqual(hubble);
     });
 });
 

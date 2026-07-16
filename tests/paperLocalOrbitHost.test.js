@@ -25,6 +25,7 @@ function createElements() {
     return {
         dialog: fakeElement(), stage: fakeElement(), loading: fakeElement(), error: fakeElement(), result: fakeElement(),
         guidance: fakeElement(), distance: fakeElement(), speed: fakeElement(), alignment: fakeElement(),
+        kicker: fakeElement(), title: fakeElement(), playfield: fakeElement(), resultTitle: fakeElement(), resultScience: fakeElement(),
         close: fakeElement(), finish: fakeElement(), retry: fakeElement(),
         controls: ['forward', 'reverse', 'up', 'down', 'rotate-left', 'rotate-right', 'stabilize']
             .map((action) => fakeElement({ dockingAction: action }))
@@ -46,6 +47,21 @@ describe('local orbit host', () => {
         expect(options.parent).toBe(elements.stage);
         expect(elements.loading.hidden).toBe(true);
         expect(elements.error.hidden).toBe(true);
+    });
+
+    it('applies the selected mission profile to copy and game creation', async () => {
+        const elements = createElements();
+        let options = null;
+        const host = createLocalOrbitHost({
+            elements,
+            gameFactory: async (value) => { options = value; value.onReady(); return { destroy() {}, setAction() {} }; }
+        });
+
+        await host.open({ missionId: 'hubble-service', language: 'en' });
+
+        expect(options.profile).toMatchObject({ id: 'hubble-service', target: 'hubble' });
+        expect(elements.title.textContent).toBe('Hubble maintenance');
+        expect(elements.resultTitle.textContent).toMatch(/Hubble/);
     });
 
     it('renders telemetry and its safe or warning state', async () => {
