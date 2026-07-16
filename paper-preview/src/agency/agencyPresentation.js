@@ -1,4 +1,5 @@
 import { getAgencyCapacity } from './agencyState.js';
+import { getAgencyMastery, getOperationHistory } from './agencyJourney.js';
 import { getLocalizedOperation } from './operationDirector.js';
 
 export function formatAgencyDuration(milliseconds, language = 'pt') {
@@ -46,9 +47,27 @@ export function presentAgencyState(state, operations = [], language = 'pt', nowM
         const localized = getLocalizedOperation(operationForRecord(report, operations), language);
         return Object.freeze({ ...report, title: localized.title, summary: localized.summary });
     });
+    const discoveries = [...new Set(reports.map((report) => report.operationId))].map((operationId) => {
+        const attempts = reports.filter((report) => report.operationId === operationId);
+        const history = getOperationHistory(attempts, operationId);
+        const pendingReport = attempts
+            .filter((report) => !report.collected)
+            .reduce((latest, report) => !latest || (report.completedAt ?? 0) > (latest.completedAt ?? 0) ? report : latest, null);
+        return Object.freeze({
+            operationId,
+            attempts: history.attempts,
+            bestQuality: history.bestQuality,
+            bestScienceScore: history.bestScienceScore,
+            bestReport: history.bestReport,
+            pendingReport,
+            mastery: getAgencyMastery(history)
+        });
+    });
     return Object.freeze({
         capacity: getAgencyCapacity(state),
         activeMissions: Object.freeze(activeMissions),
-        reports: Object.freeze(reports)
+        reports: Object.freeze(reports),
+        discoveries: Object.freeze(discoveries),
+        discoveryProgress: Object.freeze({ discovered: discoveries.length, total: operations.length })
     });
 }

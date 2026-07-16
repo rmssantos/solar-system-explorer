@@ -1921,6 +1921,7 @@ html[data-flight-input="touch"] .joystick-label {
     letter-spacing: .06em;
     text-transform: uppercase;
 }
+.agency-operation-card > .agency-mastery { display: inline-block; margin-left: 6px; color: #765532; font-size: .61rem; font-weight: 1000; }
 
 [data-source-status="cached"] .agency-source-stamp,
 .agency-data-status.is-cached { color: #302b32; background: var(--sun-pulp); border-color: #997137; }
@@ -1993,6 +1994,8 @@ html[data-flight-input="touch"] .joystick-label {
 .agency-report-quality { float: right; display: grid; width: 44px; aspect-ratio: 1; place-items: center; color: #f7edcc; background: #315d62; border: 3px solid #24464a; border-radius: 50% 45% 53% 47%; font: 900 .67rem/1 'Paper Fredoka', sans-serif; }
 .agency-report-card.is-collected { background: #e4e8bd; border-color: #668258; }
 .agency-report-card .agency-source-link { display: inline-block; margin-bottom: 12px; }
+.agency-report-meta { display: flex; min-height: 24px; flex-wrap: wrap; gap: 5px 8px; align-items: center; color: #765532; font-size: .6rem; font-weight: 900; }
+.agency-report-best { display: block; margin: 0 0 8px; color: #315d62; font-size: .58rem; font-weight: 1000; letter-spacing: .08em; text-transform: uppercase; }
 .agency-report-performance { display: block; margin: -5px 0 10px; color: #9a4f42; font-size: .63rem; font-weight: 1000; letter-spacing: .04em; text-transform: uppercase; }
 .agency-collected-stamp { margin-left: 8px; transform: rotate(-1deg); }
 .agency-empty-state { grid-column: 1 / -1; color: #6b5e4c; font-weight: 800; text-align: center; }
@@ -2082,6 +2085,9 @@ html[data-flight-input="touch"] .joystick-label {
 .agency-science-telemetry i:nth-child(3) { height: 20px; animation-delay: -.25s; }
 .agency-science-telemetry i:nth-child(4) { height: 9px; animation-delay: -.5s; }
 @keyframes agency-signal { to { opacity: .35; transform: scaleY(.55); } }
+.agency-science-coach { position: absolute; z-index: 4; top: 22px; right: 24px; max-width: min(330px, 55%); padding: 9px 12px; color: #2b2f3a; background: rgb(255 240 196 / .94); border: 3px solid #8f7044; border-radius: 7px 12px 6px 10px; box-shadow: 4px 5px 0 rgb(5 9 26 / .35); font: 850 .7rem/1.3 'Field Nunito', sans-serif; pointer-events: none; }
+.agency-science-coach[data-feedback="find-pulse"], .agency-science-coach[data-feedback="hold-focus"], .agency-science-coach[data-feedback="find-signal"] { border-color: #d85d4a; transform: rotate(-.4deg); }
+.agency-science-coach[data-feedback="pulse-captured"], .agency-science-coach[data-feedback="focus-ready"], .agency-science-coach[data-feedback="photo-captured"], .agency-science-coach[data-feedback="hold-signal"] { background: #dce6b6; border-color: #668258; }
 
 .agency-science-dashboard { display: grid; grid-template-columns: minmax(0, 1fr) minmax(190px, .55fr) minmax(170px, .45fr); gap: 12px; align-items: center; padding: 14px 16px; color: #2b2f3a; background: #ead8a8; border-top: 4px solid #8f7044; }
 .agency-science-readout { min-width: 0; }
@@ -2093,6 +2099,41 @@ html[data-flight-input="touch"] .joystick-label {
 .agency-science-tuning input { grid-column: 1 / -1; width: 100%; min-height: 28px; accent-color: #d85d4a; touch-action: pan-x; }
 .agency-science-tuning output { grid-column: 2; grid-row: 1; color: #315d62; font-weight: 1000; }
 .agency-science-capture { min-height: 52px; padding: 9px 14px; color: #fff5d8; background: #a95343; border: 3px solid #79382f; border-radius: 7px 12px 6px 10px; box-shadow: 3px 4px 0 #315d62; cursor: pointer; font-size: .75rem; font-weight: 1000; }
+.agency-science-result {
+    position: relative;
+    z-index: 8;
+    display: grid;
+    grid-row: 2 / 4;
+    grid-template-columns: minmax(190px, .75fr) minmax(260px, 1.25fr) minmax(190px, .75fr);
+    gap: clamp(18px, 3vw, 38px);
+    align-items: center;
+    padding: clamp(24px, 5vw, 64px);
+    overflow: auto;
+    color: #332e31;
+    background-color: #f7e8b7;
+    background-image: linear-gradient(rgb(247 232 183 / .8), rgb(247 232 183 / .8)), url('/art/textures/paper-craft-surface.webp');
+    background-size: auto, 420px auto;
+    animation: agency-discovery-arrive .6s cubic-bezier(.18, .88, .22, 1.15) both;
+}
+.agency-science-result[hidden] { display: none; }
+.agency-science-result::after { position: absolute; inset: 14px; content: ''; border: 3px dashed rgb(143 112 68 / .55); border-radius: 9px 16px 8px 14px; pointer-events: none; }
+.agency-discovery-orbit { position: relative; display: grid; width: min(100%, 230px); aspect-ratio: 1; place-items: center; justify-self: center; border: 5px solid #315d62; border-radius: 50% 46% 52% 48%; box-shadow: 8px 10px 0 rgb(49 93 98 / .18); transform: rotate(-2deg); }
+.agency-discovery-orbit::before { display: grid; width: 58%; aspect-ratio: 1; content: '☀'; place-items: center; color: #744830; background: #f5b83d; border: 4px solid #b36a3e; border-radius: 47% 53% 45% 55%; font: 900 clamp(2.5rem, 7vw, 5rem)/1 'Paper Fredoka', sans-serif; }
+.agency-discovery-orbit i { position: absolute; width: 118%; height: 42%; border: 3px dashed #d5634d; border-radius: 50%; transform: rotate(-18deg); }
+.agency-discovery-orbit span { position: absolute; top: 5%; right: 6%; color: #4388b8; font-size: clamp(1.4rem, 4vw, 2.4rem); }
+.agency-science-result[data-discovery-kind="solar-weather"] .agency-discovery-orbit { border-color: #b36a3e; }
+.agency-science-result[data-discovery-kind="near-earth-object"] .agency-discovery-orbit::before { content: '◆'; color: #665947; background: #b5a078; border-color: #746247; transform: rotate(13deg); }
+.agency-science-result[data-discovery-kind="planetary-map"] .agency-discovery-orbit::before { content: '≋'; color: #fff0c4; background: #d5634d; border-color: #873d34; }
+.agency-discovery-copy { position: relative; z-index: 1; min-width: 0; }
+.agency-discovery-copy > p:first-child { margin: 0 0 6px; color: #9a4f42; font-size: .66rem; font-weight: 1000; letter-spacing: .13em; text-transform: uppercase; }
+.agency-discovery-copy h2 { margin: 0 0 12px; font: 850 clamp(1.8rem, 4.7vw, 3.5rem)/.95 'Paper Fredoka', sans-serif; }
+.agency-discovery-copy > p:not(:first-child) { max-width: 46ch; color: #675947; font-size: clamp(.78rem, 1.6vw, 1rem); font-weight: 750; line-height: 1.5; }
+.agency-discovery-score { display: flex; width: fit-content; gap: 12px; align-items: center; margin-top: 18px; padding: 8px 11px; background: #dce6b6; border: 3px solid #668258; border-radius: 7px 11px 6px 10px; transform: rotate(-.5deg); }
+.agency-discovery-score span { font-size: .63rem; font-weight: 1000; text-transform: uppercase; }
+.agency-discovery-score strong { color: #315d62; font: 900 1.3rem/1 'Paper Fredoka', sans-serif; }
+.agency-discovery-reward { display: block; margin-top: 12px; color: #765532; font-size: .7rem; }
+.agency-discovery-actions { position: relative; z-index: 1; display: grid; gap: 10px; }
+@keyframes agency-discovery-arrive { from { opacity: 0; transform: translateY(24px) rotate(.5deg) scale(.96); } to { opacity: 1; transform: none; } }
 .agency-track-action { margin-top: 13px; }
 
 .space-agency button:focus-visible,
@@ -2159,11 +2200,19 @@ html[data-flight-input="touch"] .joystick-label {
     .agency-science-screen::after { inset: 6px; }
     #agency-science-canvas { min-height: 180px; }
     .agency-science-telemetry { top: 16px; left: 17px; }
+    .agency-science-coach { top: 13px; right: 13px; max-width: 66%; padding: 6px 8px; border-width: 2px; font-size: .58rem; }
     .agency-science-dashboard { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 9px 10px; }
     .agency-science-readout { grid-column: 1 / -1; }
     .agency-science-readout p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
     .agency-science-tuning { min-width: 150px; }
     .agency-science-capture { min-width: 132px; min-height: 48px; padding-inline: 9px; }
+    .agency-science-result { grid-template-columns: 1fr; align-content: start; gap: 14px; padding: 22px 18px 28px; }
+    .agency-discovery-orbit { width: 112px; }
+    .agency-discovery-copy { text-align: center; }
+    .agency-discovery-copy h2 { margin-bottom: 7px; font-size: clamp(1.45rem, 8vw, 2.1rem); }
+    .agency-discovery-copy > p:not(:first-child) { margin-inline: auto; font-size: .72rem; }
+    .agency-discovery-score { margin: 11px auto 0; }
+    .agency-discovery-actions { width: min(330px, 100%); margin-inline: auto; }
 }
 
 @media (max-width: 380px) {
@@ -2226,17 +2275,26 @@ html[data-flight-input="touch"] .joystick-label {
     .agency-science-close { width: 44px; min-width: 44px; min-height: 44px; }
     .agency-science-screen { grid-column: 1; grid-row: 1 / -1; padding: 5px; }
     .agency-science-screen::after { inset: 5px; }
+    .agency-science-coach { top: 10px; right: 10px; max-width: 58%; }
     #agency-science-canvas { min-height: 0; }
     .agency-science-dashboard { grid-column: 2; grid-row: 2; grid-template-columns: 1fr; align-content: center; padding: 8px 10px; border-top: 0; border-left: 3px solid #8f7044; }
     .agency-science-readout { grid-column: 1; }
     .agency-science-readout p { display: -webkit-box; overflow: hidden; font-size: .62rem; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
     .agency-science-readout strong { white-space: normal; }
     .agency-science-capture { min-height: 44px; }
+    .agency-science-result { grid-column: 1 / -1; grid-row: 1 / -1; grid-template-columns: 128px minmax(0, 1fr) minmax(180px, .55fr); gap: 12px; padding: 14px 18px; }
+    .agency-discovery-orbit { width: 108px; }
+    .agency-discovery-copy h2 { font-size: 1.45rem; }
+    .agency-discovery-copy > p:not(:first-child) { margin-block: 5px; font-size: .67rem; }
+    .agency-discovery-score { margin-top: 7px; padding: 5px 8px; }
+    .agency-discovery-reward { margin-top: 5px; font-size: .58rem; }
+    .agency-discovery-actions { gap: 6px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .agency-operation-card,
     .agency-live-card,
     .agency-route li.is-current { transform: none !important; }
-    .agency-science-telemetry i { animation: none !important; }
+    .agency-science-telemetry i,
+    .agency-science-result { animation: none !important; }
 }

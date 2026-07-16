@@ -34,6 +34,11 @@ describe('space agency application integration', () => {
             main.indexOf('function handleSurprise')
         );
         expect(collectHandler).toContain('syncUI(true)');
+        const completeHandler = main.slice(
+            main.indexOf('function completeAgencyScienceOperation'),
+            main.indexOf('function collectAgencyOperationReport')
+        );
+        expect(completeHandler).toContain('return result.report');
     });
 
     it('exposes concise agency state to deterministic browser QA', () => {

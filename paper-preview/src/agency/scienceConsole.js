@@ -313,6 +313,11 @@ export function drawNeo(context, state, width, height, art = {}) {
     context.moveTo(aimX, aimY - 48); context.lineTo(aimX, aimY - 18);
     context.moveTo(aimX, aimY + 18); context.lineTo(aimX, aimY + 48);
     context.stroke();
+    context.strokeStyle = state.focusProgress >= .75 ? '#b9d798' : '#f5b83d';
+    context.lineWidth = 7;
+    context.beginPath();
+    context.arc(aimX, aimY, 42, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * state.focusProgress);
+    context.stroke();
 }
 
 export function drawMars(context, state, width, height, art = {}) {
@@ -348,13 +353,21 @@ export function drawCaptureFlash(context, width, height, effects) {
 
 /** @param {any} options */
 export function createScienceConsole(options) {
-    const { document = globalThis.document, i18n, onComplete = () => false, onClose = () => {} } = options;
+    const {
+        document = globalThis.document,
+        i18n,
+        onComplete = () => false,
+        onClose = () => {},
+        onPhaseChange = () => {},
+        onResultAction = () => {}
+    } = options;
     const view = document.defaultView ?? globalThis;
     const elements = {
         root: document.querySelector('#agency-science-console'),
         title: document.querySelector('#agency-science-title'),
         close: document.querySelector('#agency-science-close'),
         canvas: document.querySelector('#agency-science-canvas'),
+        coach: document.querySelector('#agency-science-coach'),
         instructions: document.querySelector('#agency-science-instructions'),
         status: document.querySelector('#agency-science-status'),
         progress: document.querySelector('#agency-science-progress'),
@@ -362,6 +375,11 @@ export function createScienceConsole(options) {
         tuningGroup: document.querySelector('#agency-science-tuning-group'),
         tuning: document.querySelector('#agency-science-tuning'),
         signal: document.querySelector('#agency-science-signal'),
+        result: document.querySelector('#agency-science-result'),
+        resultTitle: document.querySelector('#agency-discovery-title'),
+        resultExplanation: document.querySelector('#agency-discovery-explanation'),
+        resultScore: document.querySelector('#agency-discovery-score'),
+        resultActions: [...document.querySelectorAll('[data-science-result-action]')],
         announcer: document.querySelector('#agency-science-announcer')
     };
     const context = elements.canvas.getContext('2d');
@@ -372,6 +390,7 @@ export function createScienceConsole(options) {
     let lastFrameTime = null;
     let completionSent = false;
     let deterministic = false;
+    let completedReport = null;
     const effects = { captureFlash: 0 };
     const art = createPaperArtAtlas(view, () => draw());
 
@@ -379,6 +398,12 @@ export function createScienceConsole(options) {
         if (state?.kind === 'near-earth-object') return 'game.agency.science.neo.instructions';
         if (state?.kind === 'planetary-map') return 'game.agency.science.mars.instructions';
         return 'game.agency.science.solar.instructions';
+    }
+
+    function coachText() {
+        if (!state) return '';
+        const feedbackKey = state.feedback || (state.phase === 'launch' ? 'launch' : 'ready');
+        return i18n.t(`game.agency.science.feedback.${feedbackKey}`);
     }
 
     function statusText() {
@@ -428,6 +453,8 @@ export function createScienceConsole(options) {
         if (!state) return;
         elements.title.textContent = operationTitle || i18n.t('game.agency.science.title');
         elements.instructions.textContent = i18n.t(instructionKey());
+        elements.coach.textContent = coachText();
+        elements.coach.dataset.feedback = state.feedback || '';
         elements.status.textContent = statusText();
         elements.progress.value = progressValue();
         elements.progress.setAttribute('aria-label', statusText());
@@ -445,12 +472,28 @@ export function createScienceConsole(options) {
         if (!state?.completed || completionSent || !mission) return;
         completionSent = true;
         elements.announcer.textContent = statusText();
-        onComplete({ missionId: mission.id, score: state.score });
+        const completion = onComplete({ missionId: mission.id, score: state.score });
+        completedReport = completion?.report ?? completion;
+        if (completedReport) showDiscoveryResult(completedReport);
+    }
+
+    function showDiscoveryResult(report) {
+        const kindKey = state?.kind ?? 'solar-weather';
+        elements.result.dataset.discoveryKind = kindKey;
+        elements.resultTitle.textContent = i18n.t(`game.agency.discovery.${kindKey}.title`);
+        elements.resultExplanation.textContent = i18n.t(`game.agency.discovery.${kindKey}.copy`);
+        elements.resultScore.textContent = `${Math.round(report?.quality ?? state?.score ?? 0)}%`;
+        elements.root.querySelector('.agency-science-screen').hidden = true;
+        elements.root.querySelector('.agency-science-dashboard').hidden = true;
+        elements.result.hidden = false;
+        elements.resultActions.find((button) => button.dataset.scienceResultAction === 'archive')?.focus({ preventScroll: true });
     }
 
     function step(milliseconds) {
         if (!state || elements.root.hidden) return;
+        const previousPhase = state.phase;
         state = advanceScienceSimulation(state, milliseconds);
+        if (previousPhase === 'launch' && state.phase === 'science') onPhaseChange('investigate');
         effects.captureFlash = Math.max(0, effects.captureFlash - milliseconds / 520);
         render();
         notifyCompletion();
@@ -471,13 +514,22 @@ export function createScienceConsole(options) {
         frameId = view.requestAnimationFrame(frame);
     }
 
-    function open(nextMission, operation) {
+    function open(nextMission, operation, journey = {}) {
         mission = nextMission;
         operationTitle = operation?.title ?? '';
-        state = createScienceSimulation({ kind: nextMission.kind, seed: nextMission.id });
+        state = createScienceSimulation({
+            kind: nextMission.kind,
+            seed: nextMission.id,
+            tutorial: Boolean(journey.tutorial),
+            attempt: journey.attempt
+        });
         effects.captureFlash = 0;
         completionSent = false;
+        completedReport = null;
         elements.announcer.textContent = '';
+        elements.root.querySelector('.agency-science-screen').hidden = false;
+        elements.root.querySelector('.agency-science-dashboard').hidden = false;
+        elements.result.hidden = true;
         elements.root.hidden = false;
         render();
         startLoop();
@@ -548,11 +600,17 @@ export function createScienceConsole(options) {
         render();
     }
 
+    function handleResultAction(event) {
+        const action = event.currentTarget.dataset.scienceResultAction;
+        onResultAction(action, { mission, report: completedReport, score: state?.score ?? 0 });
+    }
+
     elements.close.addEventListener('click', close);
     elements.capture.addEventListener('click', capture);
     elements.tuning.addEventListener('input', handleTuning);
     elements.root.addEventListener('keydown', handleKeydown);
     elements.canvas.addEventListener('pointermove', setAimFromPointer);
+    elements.resultActions.forEach((button) => button.addEventListener('click', handleResultAction));
     const unsubscribe = i18n.subscribe(render);
 
     return Object.freeze({
@@ -571,7 +629,9 @@ export function createScienceConsole(options) {
                 samples: state.samples, score: state.score, launchProgress: state.launchProgress,
                 scan: state.scan,
                 aim: state.aim, tuning: state.tuning, signalStrength: state.signalStrength,
-                lockProgress: state.lockProgress, target: getScienceTarget(state)
+                lockProgress: state.lockProgress, focusProgress: state.focusProgress,
+                tutorial: state.tutorial, mistakes: state.mistakes, feedback: state.feedback,
+                target: getScienceTarget(state)
             };
         },
         destroy() {
@@ -581,6 +641,7 @@ export function createScienceConsole(options) {
             elements.tuning.removeEventListener('input', handleTuning);
             elements.root.removeEventListener('keydown', handleKeydown);
             elements.canvas.removeEventListener('pointermove', setAimFromPointer);
+            elements.resultActions.forEach((button) => button.removeEventListener('click', handleResultAction));
             unsubscribe();
         }
     });

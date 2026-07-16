@@ -218,7 +218,7 @@
                     <p data-i18n="game.agency.copy">Planeia sondas, acompanha o Sistema Solar real e transforma sinais em descobertas.</p>
                 </div>
                 <div class="agency-heading-actions">
-                    <strong id="agency-capacity">0/3 sondas</strong>
+                    <strong id="agency-capacity">0/3 aventuras descobertas</strong>
                     <button id="agency-close" class="agency-close" type="button" data-agency-action="close" data-i18n-aria="game.agency.close" aria-label="Fechar Agência">×</button>
                 </div>
             </header>
@@ -266,6 +266,7 @@
                 <div class="agency-science-screen">
                     <canvas id="agency-science-canvas" width="960" height="520" tabindex="0" role="img" aria-describedby="agency-science-instructions"></canvas>
                     <div class="agency-science-telemetry" aria-hidden="true"><span>LIVE</span><i></i><i></i><i></i></div>
+                    <div id="agency-science-coach" class="agency-science-coach" role="status" aria-live="polite"></div>
                 </div>
                 <div class="agency-science-dashboard">
                     <div class="agency-science-readout">
@@ -280,6 +281,21 @@
                     </div>
                     <button id="agency-science-capture" class="agency-science-capture" type="button" data-i18n="game.agency.science.capture">Capturar leitura</button>
                 </div>
+                <section id="agency-science-result" class="agency-science-result" role="status" aria-live="polite" hidden>
+                    <div class="agency-discovery-orbit" aria-hidden="true"><i></i><i></i><span>✦</span></div>
+                    <div class="agency-discovery-copy">
+                        <p data-i18n="game.agency.discovery.kicker">Descoberta confirmada!</p>
+                        <h2 id="agency-discovery-title">Encontraste uma pista</h2>
+                        <p id="agency-discovery-explanation"></p>
+                        <div class="agency-discovery-score"><span data-i18n="game.agency.discovery.quality">Qualidade da missão</span><strong id="agency-discovery-score">100%</strong></div>
+                        <strong class="agency-discovery-reward" data-i18n="game.agency.discovery.reward">Novo selo pronto para o álbum</strong>
+                    </div>
+                    <div class="agency-discovery-actions">
+                        <button type="button" class="agency-secondary-action" data-science-result-action="replay" data-i18n="game.agency.discovery.replay">Tentar novamente</button>
+                        <button type="button" class="agency-primary-action" data-science-result-action="archive" data-i18n="game.agency.discovery.archive">Guardar descoberta</button>
+                        <button type="button" class="agency-secondary-action" data-science-result-action="another" data-i18n="game.agency.discovery.another">Escolher outra aventura</button>
+                    </div>
+                </section>
                 <p id="agency-science-announcer" class="visually-hidden" aria-live="assertive"></p>
             </section>
             <p id="agency-announcer" class="visually-hidden" aria-live="polite"></p>

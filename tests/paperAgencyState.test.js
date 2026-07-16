@@ -165,6 +165,21 @@ describe('paper agency state', () => {
         expect(completeAgencyMissionWithScience(result.state, launched.activeMissions[0].id, 100, 10_000).error).toBe('not-found');
     });
 
+    it('allows an immediate replay after completion and keeps both attempts', () => {
+        const firstLaunch = launchAgencyMission(createAgencyState(), {
+            operation, instrumentId: 'magnetometer', powerProfileId: 'focused', routeProfileId: 'stable', nowMs: 1_000
+        }).state;
+        const first = completeAgencyMissionWithScience(firstLaunch, firstLaunch.activeMissions[0].id, 62, 2_000);
+        const secondLaunch = launchAgencyMission(first.state, {
+            operation, instrumentId: 'magnetometer', powerProfileId: 'focused', routeProfileId: 'stable', nowMs: 3_000
+        });
+        const second = completeAgencyMissionWithScience(secondLaunch.state, secondLaunch.mission.id, 94, 4_000);
+
+        expect(second.error).toBeNull();
+        expect(second.state.reports).toHaveLength(2);
+        expect(second.state.reports.map((report) => report.scienceScore)).toEqual([62, 94]);
+    });
+
     it('rejects invalid scientific scores without removing the active probe', () => {
         const launched = launchAgencyMission(createAgencyState(), {
             operation,

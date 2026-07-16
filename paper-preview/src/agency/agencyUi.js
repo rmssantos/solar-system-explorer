@@ -88,6 +88,13 @@ export function createAgencyUi(options) {
             }
             return completed;
         },
+        onPhaseChange: (phase) => {
+            if (phase === 'investigate') {
+                currentJourney = advanceAgencyJourney(currentJourney, 'investigate');
+                renderRoute();
+            }
+        },
+        onResultAction: handleScienceResultAction,
         onClose: () => elements.equipStart?.focus({ preventScroll: true })
     });
 
@@ -294,23 +301,38 @@ export function createAgencyUi(options) {
         briefingButton?.focus();
     }
 
-    function reportCard(report) {
-        const card = element(document, 'article', `agency-report-card${report.collected ? ' is-collected' : ''}`);
-        const quality = element(document, 'span', 'agency-report-quality', `${report.quality}%`);
-        card.append(quality, element(document, 'h3', '', report.title), element(document, 'p', '', report.summary));
-        if (Number.isFinite(report.scienceScore)) {
-            card.append(element(document, 'small', 'agency-report-performance', i18n.t('game.agency.science.reportScore', { score: report.scienceScore })));
+    function discoveryCard(discovery) {
+        const report = discovery.bestReport;
+        const card = element(document, 'article', `agency-report-card${discovery.pendingReport ? '' : ' is-collected'}`);
+        const quality = element(document, 'span', 'agency-report-quality', `${discovery.bestQuality}%`);
+        const metadata = element(document, 'div', 'agency-report-meta');
+        metadata.append(
+            element(document, 'span', `agency-mastery agency-mastery-${discovery.mastery.id}`, i18n.t(`game.agency.mastery.${discovery.mastery.id}`)),
+            element(document, 'span', '', i18n.t(
+                discovery.attempts === 1 ? 'game.agency.album.attempt' : 'game.agency.album.attempts',
+                { count: discovery.attempts }
+            ))
+        );
+        card.append(
+            quality,
+            metadata,
+            element(document, 'h3', '', report.title),
+            element(document, 'p', '', report.summary),
+            element(document, 'small', 'agency-report-best', i18n.t('game.agency.album.best'))
+        );
+        if (Number.isFinite(discovery.bestScienceScore)) {
+            card.append(element(document, 'small', 'agency-report-performance', i18n.t('game.agency.science.reportScore', { score: discovery.bestScienceScore })));
         }
         const source = element(document, 'a', 'agency-source-link', i18n.t('game.agency.source.more', { source: report.sourceName || i18n.t(sourceKey(report.sourceStatus)) }));
         source.href = safeAgencySourceUrl(report.sourceUrl);
         source.target = '_blank';
         source.rel = 'noreferrer';
         card.append(source);
-        if (!report.collected) {
-            const collect = element(document, 'button', 'agency-primary-action', i18n.t('game.agency.collect'));
+        if (discovery.pendingReport) {
+            const collect = element(document, 'button', 'agency-primary-action', i18n.t('game.agency.album.saveReward'));
             collect.type = 'button';
             collect.dataset.agencyAction = 'collect';
-            collect.dataset.reportId = report.id;
+            collect.dataset.reportId = discovery.pendingReport.id;
             card.append(collect);
         } else card.append(element(document, 'strong', 'agency-collected-stamp', i18n.t('game.agency.collected')));
         return card;
@@ -320,10 +342,13 @@ export function createAgencyUi(options) {
         elements.announcer.textContent = '';
         const view = presentAgencyState(agencyState, operations, i18n.language, nowMs);
         elements.operations.replaceChildren(...operations.map(operationCard));
-        elements.reports.replaceChildren(...(view.reports.length
-            ? view.reports.map(reportCard)
+        elements.reports.replaceChildren(...(view.discoveries.length
+            ? view.discoveries.map(discoveryCard)
             : [element(document, 'p', 'agency-empty-state', i18n.t('game.agency.emptyReports'))]));
-        elements.capacity.textContent = i18n.t('game.agency.capacity', { used: view.capacity.used, total: view.capacity.total });
+        elements.capacity.textContent = i18n.t('game.agency.progress', {
+            done: view.discoveryProgress.discovered,
+            total: view.discoveryProgress.total
+        });
         if (!elements.setup.hidden && selectedOperationId) renderSetup();
         if (!elements.briefing.hidden && selectedOperationId) renderBriefing();
         renderRoute();
@@ -344,7 +369,31 @@ export function createAgencyUi(options) {
     function openScienceConsole(mission) {
         const operation = operations.find((candidate) => candidate.id === mission.operationId);
         const localized = operation ? getLocalizedOperation(operation, i18n.language) : null;
-        scienceConsole.open(mission, localized);
+        scienceConsole.open(mission, localized, {
+            tutorial: currentJourney?.tutorial,
+            attempt: currentJourney?.attempt
+        });
+    }
+
+    function handleScienceResultAction(action, result) {
+        if (action === 'replay') {
+            const launched = onLaunch({ operationId: selectedOperationId, ...choices });
+            if (!launched) return;
+            const launchedMission = launched.mission ?? launched;
+            currentJourney = createAgencyJourney({ operationId: selectedOperationId, reports: agencyState.reports });
+            currentJourney = advanceAgencyJourney(advanceAgencyJourney(currentJourney, 'equip'), 'travel');
+            renderRoute();
+            openScienceConsole(launchedMission);
+        } else if (action === 'archive') {
+            if (result.report?.id && !result.report.collected) onCollect(result.report.id);
+            scienceConsole.close();
+            currentJourney = null;
+            render();
+            showScreen('album');
+        } else if (action === 'another') {
+            scienceConsole.close();
+            openBoard();
+        }
     }
 
     function handleAction(event) {

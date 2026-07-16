@@ -40,4 +40,18 @@ describe('paper agency visual direction', () => {
         expect(consoleSource).toContain("'/art/textures/paper-mars-surface.webp'");
         expect(consoleSource).toContain("'/art/textures/paper-rocky-surface.webp'");
     });
+
+    it('turns mission completion into a responsive paper discovery reveal', () => {
+        expect(css).toMatch(/\.agency-science-result\s*\{[^}]*display:\s*grid/s);
+        expect(css).toContain('@keyframes agency-discovery-arrive');
+        expect(css).toContain('[data-discovery-kind="solar-weather"]');
+        expect(css).toContain('[data-discovery-kind="near-earth-object"]');
+        expect(css).toContain('[data-discovery-kind="planetary-map"]');
+        expect(css).toMatch(/@media \(max-width: 640px\)[\s\S]*?\.agency-science-result\s*\{/s);
+        expect(css).toMatch(/prefers-reduced-motion:[^)]+\)[\s\S]*?\.agency-science-result/s);
+    });
+
+    it('visually separates data provenance from the child-facing mastery badge', () => {
+        expect(css).toMatch(/\.agency-operation-card\s*>\s*\.agency-mastery\s*\{[^}]*margin-left:\s*6px/s);
+    });
 });

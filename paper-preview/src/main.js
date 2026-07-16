@@ -413,7 +413,7 @@ function completeAgencyScienceOperation({ missionId, score }) {
     audioDirector.play('reward-chime');
     reconcileAndSaveProgress({ feedback: false });
     syncAgencyState(agencyNowMs, { persist: false, render: true });
-    return true;
+    return result.report;
 }
 
 function collectAgencyOperationReport(reportId) {

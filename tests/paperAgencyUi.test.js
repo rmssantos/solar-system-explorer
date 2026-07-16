@@ -27,7 +27,14 @@ const requiredKeys = [
     'game.agency.science.launching', 'game.agency.science.solar.instructions',
     'game.agency.science.neo.instructions', 'game.agency.science.mars.instructions',
     'game.agency.science.tuning', 'game.agency.science.lock', 'game.agency.science.complete',
-    'game.agency.science.reportScore'
+    'game.agency.science.reportScore',
+    'game.agency.discovery.kicker', 'game.agency.discovery.quality', 'game.agency.discovery.reward',
+    'game.agency.discovery.replay', 'game.agency.discovery.archive', 'game.agency.discovery.another',
+    'game.agency.discovery.solar-weather.title', 'game.agency.discovery.solar-weather.copy',
+    'game.agency.discovery.near-earth-object.title', 'game.agency.discovery.near-earth-object.copy',
+    'game.agency.discovery.planetary-map.title', 'game.agency.discovery.planetary-map.copy',
+    'game.agency.album.attempt', 'game.agency.album.attempts', 'game.agency.album.best',
+    'game.agency.album.saveReward', 'game.agency.progress'
 ];
 
 describe('space agency UI contract', () => {
@@ -60,6 +67,11 @@ describe('space agency UI contract', () => {
         expect(html).toContain('id="agency-science-canvas"');
         expect(html).toContain('id="agency-science-capture"');
         expect(html).toContain('id="agency-science-tuning"');
+        expect(html).toContain('id="agency-science-coach"');
+        expect(html).toContain('id="agency-science-result"');
+        expect(html).toContain('data-science-result-action="replay"');
+        expect(html).toContain('data-science-result-action="archive"');
+        expect(html).toContain('data-science-result-action="another"');
         expect(html).toContain('aria-describedby="agency-science-instructions"');
         expect(scienceController).toContain("addEventListener('keydown'");
         expect(scienceController).toContain("addEventListener('pointermove'");
@@ -69,6 +81,16 @@ describe('space agency UI contract', () => {
         expect(scienceController).toContain('function drawSolar');
         expect(scienceController).toContain('function drawNeo');
         expect(scienceController).toContain('function drawMars');
+        expect(scienceController).toContain('function coachText()');
+        expect(scienceController).toContain('onPhaseChange');
+        expect(scienceController).toContain('focusProgress');
+        expect(scienceController).toContain('function showDiscoveryResult');
+        expect(scienceController).toContain('onResultAction');
+        expect(controller).toContain('tutorial: currentJourney?.tutorial');
+        expect(controller).toContain('attempt: currentJourney?.attempt');
+        expect(controller).toContain("action === 'replay'");
+        expect(controller).toContain("action === 'archive'");
+        expect(controller).toContain("action === 'another'");
     });
 
     it('keeps every agency label bilingual', () => {
@@ -104,6 +126,15 @@ describe('space agency UI contract', () => {
         expect(controller).toContain('agency-choice-consequence');
         expect(controller).toContain('agency-choice-recommended');
         expect(controller).toContain('isRecommendedChoice');
+    });
+
+    it('renders one album card per adventure with its best score and pending reward', () => {
+        expect(controller).toContain('function discoveryCard(discovery)');
+        expect(controller).toContain('view.discoveries.map(discoveryCard)');
+        expect(controller).toContain('discovery.pendingReport.id');
+        expect(controller).toContain("discovery.attempts === 1 ? 'game.agency.album.attempt'");
+        expect(controller).toContain("i18n.t('game.agency.album.saveReward')");
+        expect(controller).toContain("i18n.t('game.agency.progress'");
     });
 
     it('returns focus to a meaningful control when setup closes or launches', () => {
@@ -145,5 +176,26 @@ describe('agency presentation', () => {
         expect(view.capacity).toEqual({ used: 1, total: 3, available: 2 });
         expect(view.activeMissions[0]).toMatchObject({ title: 'M2.4 solar watch', remainingLabel: '1 min', progressPercent: 40 });
         expect(view.reports[0]).toMatchObject({ title: 'M2.4 solar watch', quality: 100, collected: false });
+    });
+
+    it('groups repeated missions into one discovery with attempts, best result and pending reward', () => {
+        const reports = [
+            { id: 'report:1', operationId: operation.id, kind: operation.kind, quality: 61, scienceScore: 61, completedAt: 100, collected: true },
+            { id: 'report:2', operationId: operation.id, kind: operation.kind, quality: 94, scienceScore: 94, completedAt: 200, collected: true },
+            { id: 'report:3', operationId: operation.id, kind: operation.kind, quality: 82, scienceScore: 82, completedAt: 300, collected: false }
+        ];
+
+        const view = presentAgencyState({ activeMissions: [], reports }, [operation], 'en', 400);
+
+        expect(view.discoveries).toHaveLength(1);
+        expect(view.discoveries[0]).toMatchObject({
+            operationId: operation.id,
+            attempts: 3,
+            bestQuality: 94,
+            mastery: { id: 'specialist' },
+            bestReport: { id: 'report:2' },
+            pendingReport: { id: 'report:3' }
+        });
+        expect(view.discoveryProgress).toEqual({ discovered: 1, total: 1 });
     });
 });
