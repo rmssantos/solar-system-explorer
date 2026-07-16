@@ -2080,6 +2080,7 @@ html[data-flight-input="touch"] .joystick-label {
 .agency-science-screen::after { position: absolute; z-index: 2; inset: clamp(8px, 1.5vw, 16px); content: ''; border: 2px solid rgb(159 213 231 / .3); border-radius: 8px; pointer-events: none; }
 .agency-science-canvas,
 #agency-science-canvas { display: block; width: 100%; height: 100%; min-height: 220px; touch-action: none; background: #101936; border: 3px solid #080f25; border-radius: 8px; }
+.agency-science-canvas.is-capture-ready { cursor: pointer; }
 .agency-science-telemetry { position: absolute; z-index: 3; top: 24px; left: 28px; display: flex; gap: 5px; align-items: center; color: #fff5d8; font: 900 .55rem/1 monospace; letter-spacing: .08em; pointer-events: none; }
 .agency-science-telemetry i { width: 5px; height: 14px; background: #6b985b; animation: agency-signal 1.1s ease-in-out infinite alternate; }
 .agency-science-telemetry i:nth-child(3) { height: 20px; animation-delay: -.25s; }

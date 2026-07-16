@@ -54,4 +54,8 @@ describe('paper agency visual direction', () => {
     it('visually separates data provenance from the child-facing mastery badge', () => {
         expect(css).toMatch(/\.agency-operation-card\s*>\s*\.agency-mastery\s*\{[^}]*margin-left:\s*6px/s);
     });
+
+    it('shows that the focused asteroid is clickable', () => {
+        expect(css).toMatch(/\.agency-science-canvas\.is-capture-ready[^}]*cursor:\s*pointer/s);
+    });
 });

@@ -24,6 +24,7 @@ const requiredKeys = [
     'game.agency.power.survey', 'game.agency.power.balanced', 'game.agency.power.focused',
     'game.agency.route.fast', 'game.agency.route.stable',
     'game.agency.science.open', 'game.agency.science.close', 'game.agency.science.capture',
+    'game.agency.science.capture.solar', 'game.agency.science.capture.neo',
     'game.agency.science.launching', 'game.agency.science.solar.instructions',
     'game.agency.science.neo.instructions', 'game.agency.science.mars.instructions',
     'game.agency.science.tuning', 'game.agency.science.lock', 'game.agency.science.complete',
@@ -65,6 +66,7 @@ describe('space agency UI contract', () => {
     it('provides an animated, accessible probe console that works without pointer input', () => {
         expect(html).toContain('id="agency-science-console"');
         expect(html).toContain('id="agency-science-canvas"');
+        expect(html).toContain('id="agency-science-canvas" class="agency-science-canvas"');
         expect(html).toContain('id="agency-science-capture"');
         expect(html).toContain('id="agency-science-tuning"');
         expect(html).toContain('id="agency-science-coach"');
@@ -75,6 +77,13 @@ describe('space agency UI contract', () => {
         expect(html).toContain('aria-describedby="agency-science-instructions"');
         expect(scienceController).toContain("addEventListener('keydown'");
         expect(scienceController).toContain("addEventListener('pointermove'");
+        expect(scienceController).toContain("addEventListener('pointerup', handleCanvasPointerUp)");
+        expect(scienceController).toContain("addEventListener('click', handleCanvasClick)");
+        expect(scienceController).toContain('function handleCanvasClick()');
+        expect(scienceController).toContain('function handleCanvasPointerUp(event)');
+        expect(scienceController).toContain('let suppressNextCanvasClick = false');
+        expect(scienceController).toContain('if (suppressNextCanvasClick)');
+        expect(scienceController).toContain('suppressNextCanvasClick = true');
         expect(scienceController).toContain('advanceScienceSimulation');
         expect(scienceController).toContain('requestAnimationFrame');
         expect(scienceController).toContain('function drawLaunch');
@@ -91,6 +100,25 @@ describe('space agency UI contract', () => {
         expect(controller).toContain("action === 'replay'");
         expect(controller).toContain("action === 'archive'");
         expect(controller).toContain("action === 'another'");
+    });
+
+    it('explains the exact pointer, keyboard and radio controls in both languages', () => {
+        expect(PAPER_TRANSLATIONS.pt['game.agency.science.neo.instructions']).toContain('clica');
+        expect(PAPER_TRANSLATIONS.pt['game.agency.science.neo.instructions']).toContain('toca');
+        expect(PAPER_TRANSLATIONS.pt['game.agency.science.neo.instructions']).toContain('arrasta o dedo');
+        expect(PAPER_TRANSLATIONS.pt['game.agency.science.neo.instructions']).toContain('Espaço');
+        expect(PAPER_TRANSLATIONS.en['game.agency.science.neo.instructions']).toContain('click');
+        expect(PAPER_TRANSLATIONS.en['game.agency.science.neo.instructions']).toContain('tap');
+        expect(PAPER_TRANSLATIONS.en['game.agency.science.neo.instructions']).toContain('drag your finger');
+        expect(PAPER_TRANSLATIONS.en['game.agency.science.neo.instructions']).toContain('Space');
+        expect(PAPER_TRANSLATIONS.pt['game.agency.science.mars.instructions']).toContain('Arrasta a barra');
+        expect(PAPER_TRANSLATIONS.en['game.agency.science.mars.instructions']).toContain('Drag the slider');
+        expect(PAPER_TRANSLATIONS.pt['game.agency.science.tuning']).toContain('Arrasta');
+        expect(PAPER_TRANSLATIONS.en['game.agency.science.tuning']).toContain('Drag');
+        expect(PAPER_TRANSLATIONS.pt['game.agency.science.capture.neo']).toBe('Tirar fotografia');
+        expect(PAPER_TRANSLATIONS.en['game.agency.science.capture.neo']).toBe('Take photograph');
+        expect(scienceController).toContain('function captureKey()');
+        expect(scienceController).toContain("elements.canvas.classList.toggle('is-capture-ready'");
     });
 
     it('keeps every agency label bilingual', () => {

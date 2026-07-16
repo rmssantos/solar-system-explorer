@@ -391,6 +391,7 @@ export function createScienceConsole(options) {
     let completionSent = false;
     let deterministic = false;
     let completedReport = null;
+    let suppressNextCanvasClick = false;
     const effects = { captureFlash: 0 };
     const art = createPaperArtAtlas(view, () => draw());
 
@@ -398,6 +399,12 @@ export function createScienceConsole(options) {
         if (state?.kind === 'near-earth-object') return 'game.agency.science.neo.instructions';
         if (state?.kind === 'planetary-map') return 'game.agency.science.mars.instructions';
         return 'game.agency.science.solar.instructions';
+    }
+
+    function captureKey() {
+        return state?.kind === 'near-earth-object'
+            ? 'game.agency.science.capture.neo'
+            : 'game.agency.science.capture.solar';
     }
 
     function coachText() {
@@ -461,7 +468,10 @@ export function createScienceConsole(options) {
         const isScience = state.phase === 'science';
         elements.capture.hidden = !isScience || state.kind === 'planetary-map';
         elements.capture.disabled = state.completed;
-        elements.capture.textContent = i18n.t('game.agency.science.capture');
+        elements.capture.textContent = i18n.t(captureKey());
+        elements.canvas.classList.toggle('is-capture-ready', isScience
+            && state.kind === 'near-earth-object'
+            && state.focusProgress >= .75);
         elements.tuningGroup.hidden = !(isScience && state.kind === 'planetary-map');
         elements.tuning.value = String(Math.round(state.tuning * 100));
         elements.signal.value = `${Math.round(state.signalStrength * 100)}%`;
@@ -526,6 +536,7 @@ export function createScienceConsole(options) {
         effects.captureFlash = 0;
         completionSent = false;
         completedReport = null;
+        suppressNextCanvasClick = false;
         elements.announcer.textContent = '';
         elements.root.querySelector('.agency-science-screen').hidden = false;
         elements.root.querySelector('.agency-science-dashboard').hidden = false;
@@ -566,6 +577,24 @@ export function createScienceConsole(options) {
         });
         draw();
         event.preventDefault();
+    }
+
+    function handleCanvasClick() {
+        if (suppressNextCanvasClick) {
+            suppressNextCanvasClick = false;
+            return;
+        }
+        if (state?.kind === 'near-earth-object' && state.phase === 'science') capture();
+    }
+
+    function handleCanvasPointerUp(event) {
+        if (!['touch', 'pen'].includes(event.pointerType)) return;
+        if (state?.kind === 'near-earth-object' && state.phase === 'science' && state.focusProgress >= .75) {
+            suppressNextCanvasClick = true;
+            capture();
+            event.preventDefault();
+            view.setTimeout(() => { suppressNextCanvasClick = false; }, 0);
+        }
     }
 
     function handleKeydown(event) {
@@ -610,6 +639,8 @@ export function createScienceConsole(options) {
     elements.tuning.addEventListener('input', handleTuning);
     elements.root.addEventListener('keydown', handleKeydown);
     elements.canvas.addEventListener('pointermove', setAimFromPointer);
+    elements.canvas.addEventListener('pointerup', handleCanvasPointerUp);
+    elements.canvas.addEventListener('click', handleCanvasClick);
     elements.resultActions.forEach((button) => button.addEventListener('click', handleResultAction));
     const unsubscribe = i18n.subscribe(render);
 
@@ -641,6 +672,8 @@ export function createScienceConsole(options) {
             elements.tuning.removeEventListener('input', handleTuning);
             elements.root.removeEventListener('keydown', handleKeydown);
             elements.canvas.removeEventListener('pointermove', setAimFromPointer);
+            elements.canvas.removeEventListener('pointerup', handleCanvasPointerUp);
+            elements.canvas.removeEventListener('click', handleCanvasClick);
             elements.resultActions.forEach((button) => button.removeEventListener('click', handleResultAction));
             unsubscribe();
         }
