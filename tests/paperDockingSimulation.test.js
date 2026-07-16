@@ -124,4 +124,3 @@ describe('ISS docking simulation', () => {
         expect(stepDocking(state, {}, 0.05, getOrbitalMissionProfile('hubble-service'))).toEqual(hubble);
     });
 });
-

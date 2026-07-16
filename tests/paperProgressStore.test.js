@@ -47,4 +47,3 @@ describe('paper progress store contract migration', () => {
         });
     });
 });
-

@@ -2,6 +2,13 @@
 
 Public changes to the Paper Solar Explorer are maintained automatically by Release Please from Conventional Commits.
 
+## [1.2.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.1.3...v1.2.0) (2026-07-16)
+
+
+### Features
+
+* complete Paper orbital mission campaign ([#41](https://github.com/rmssantos/solar-system-explorer/issues/41)) ([bd9fbe7](https://github.com/rmssantos/solar-system-explorer/commit/bd9fbe7c5bd22e80c406eac86b82990ffdc88953))
+
 ## [1.1.3](https://github.com/rmssantos/solar-system-explorer/compare/v1.1.2...v1.1.3) (2026-07-12)
 
 

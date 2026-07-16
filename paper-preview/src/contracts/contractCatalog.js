@@ -139,4 +139,3 @@ export const CONTRACT_CATALOG = Object.freeze([
 export function getContract(id) {
     return CONTRACT_CATALOG.find((item) => item.id === id) ?? null;
 }
-
