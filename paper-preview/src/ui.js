@@ -124,6 +124,10 @@ export function createPreviewUI({
         , rewardToastTitle: document.querySelector('#reward-toast-title')
         , rewardToastMessage: document.querySelector('#reward-toast-message')
         , languageToggle: document.querySelector('[data-language-toggle]')
+        , missionCenterTrigger: document.querySelector('#mission-center-trigger')
+        , missionCenterCount: document.querySelector('#mission-center-count')
+        , missionRoute: document.querySelector('#mission-route')
+        , missionDispatchProgress: document.querySelector('#mission-dispatch-progress')
         , mediaViewer: document.querySelector('#media-viewer')
         , contractList: document.querySelector('#contract-list')
     };
@@ -209,6 +213,7 @@ export function createPreviewUI({
             }
         }]
         , [elements.objective, 'click', () => openMissionLog('missions')]
+        , [elements.missionCenterTrigger, 'click', () => openMissionLog('missions')]
         , [elements.rankChip, 'click', () => openMissionLog('awards')]
         , [elements.closeMissionLog, 'click', closeMissionLog]
         , [elements.missionLog, 'cancel', () => onMissionLogClose()]
@@ -412,9 +417,10 @@ export function createPreviewUI({
     function renderContracts(state, destinationNearby, contractState) {
         let startable = null;
         const language = paperI18n.language === 'en' ? 'en' : 'pt';
-        const cards = CONTRACT_CATALOG.map((contract) => {
+        const statuses = CONTRACT_CATALOG.map((contract) => getContractStatus(contractState, contract.id, state.learning));
+        const cards = CONTRACT_CATALOG.map((contract, index) => {
             const copy = contract.copy[language];
-            const status = getContractStatus(contractState, contract.id, state.learning);
+            const status = statuses[index];
             const card = document.createElement('article');
             card.className = 'contract-card';
             card.dataset.status = status;
@@ -477,6 +483,27 @@ export function createPreviewUI({
             return card;
         });
         elements.contractList.replaceChildren(...cards);
+        const routeStops = CONTRACT_CATALOG.map((contract, index) => {
+            const stop = document.createElement('span');
+            stop.className = 'mission-route-stop';
+            stop.dataset.status = statuses[index];
+            const stamp = document.createElement('i');
+            stamp.textContent = statuses[index] === 'completed' ? '✓' : String(index + 1);
+            const title = document.createElement('small');
+            title.textContent = contract.copy[language].title;
+            stop.append(stamp, title);
+            return stop;
+        });
+        elements.missionRoute.replaceChildren(...routeStops);
+        const completedCount = statuses.filter((status) => status === 'completed').length;
+        const actionableCount = statuses.filter((status) => status === 'available' || status === 'accepted').length;
+        elements.missionDispatchProgress.textContent = `${completedCount}/${CONTRACT_CATALOG.length}`;
+        elements.missionCenterCount.textContent = String(actionableCount);
+        elements.missionCenterCount.hidden = actionableCount === 0;
+        elements.missionCenterTrigger.classList.toggle('has-actions', actionableCount > 0);
+        elements.missionCenterTrigger.setAttribute('aria-label', actionableCount > 0
+            ? `${paperI18n.t('game.missionCenter.open')} · ${actionableCount}`
+            : paperI18n.t('game.missionCenter.open'));
         return startable;
     }
 

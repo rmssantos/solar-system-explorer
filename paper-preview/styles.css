@@ -113,6 +113,30 @@ button:focus-visible {
 
 .game-language-toggle { width: var(--touch-target-min); min-width: var(--touch-target-min); min-height: var(--touch-target-min); aspect-ratio: 1; color: var(--chalk); background: rgba(16, 25, 54, .82); border: 1px solid rgba(255, 248, 223, .42); border-radius: 50%; font-size: .68rem; font-weight: 1000; cursor: pointer; backdrop-filter: blur(8px); }
 .game-language-toggle:hover, .game-language-toggle:focus-visible { color: var(--graphite); background: var(--sun-pulp); outline: 3px solid var(--chalk); outline-offset: 2px; }
+.mission-center-trigger {
+    position: relative;
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: .38rem;
+    padding: .42rem .62rem;
+    color: var(--graphite);
+    background: var(--sun-pulp);
+    border: 2px solid #8d6730;
+    border-radius: .45rem .72rem .42rem .65rem;
+    box-shadow: 3px 4px 0 var(--coral-pencil);
+    cursor: pointer;
+    font-size: .68rem;
+    font-weight: 1000;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    transform: rotate(-.4deg);
+}
+.mission-center-trigger:hover, .mission-center-trigger:focus-visible { background: #ffd267; transform: translateY(-1px) rotate(-.4deg); }
+.mission-center-rocket { display: inline-grid; width: 1.2rem; aspect-ratio: 1; place-items: center; color: var(--coral-pencil); transform: rotate(45deg); }
+.mission-center-trigger b { position: absolute; top: -.48rem; right: -.42rem; display: grid; min-width: 1.35rem; min-height: 1.35rem; place-items: center; padding: .12rem; color: var(--chalk); background: #9e4438; border: 2px solid var(--chalk); border-radius: 50%; font-size: .58rem; }
+.mission-center-trigger.has-actions { animation: mission-ticket-ready 2.4s ease-in-out infinite; }
+@keyframes mission-ticket-ready { 50% { box-shadow: 3px 4px 0 var(--coral-pencil), 0 0 0 6px rgb(244 200 95 / .16); } }
 
 .game-home-link:focus-visible,
 .game-library-link:focus-visible {
@@ -632,6 +656,12 @@ html[data-flight-input="touch"] .joystick-label {
 .passport-tabs button[aria-selected="true"] { color: #f3e6bd; background: #9a4f42; border-color: #753d36; }
 .passport-tabs button:focus-visible { outline: 3px solid #172643; outline-offset: 2px; }
 .passport-panel[hidden] { display: none; }
+.mission-dispatch { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .8rem; margin: 0 0 1rem; padding: 1rem; overflow: hidden; color: #f3e6bd; background: #172643; border: 3px solid #352c31; border-radius: .75rem 1.15rem .7rem .95rem; box-shadow: 5px 7px 0 #c16b50; }
+.mission-dispatch::after { content: ''; position: absolute; right: -1.8rem; bottom: -2.2rem; width: 7rem; aspect-ratio: 1; border: 2px dashed rgb(244 200 95 / .35); border-radius: 50%; }
+.mission-dispatch-copy { position: relative; z-index: 1; }.mission-dispatch-copy p { margin: 0; color: #f4c85f; font-size: .58rem; font-weight: 1000; letter-spacing: .12em; text-transform: uppercase; }.mission-dispatch-copy h2 { margin: .18rem 0 .25rem; font-family: 'Paper Fredoka', sans-serif; font-size: 1.45rem; }.mission-dispatch-copy span { display: block; max-width: 38rem; color: #c9d2df; font-size: .72rem; line-height: 1.35; }
+.mission-dispatch > strong { position: relative; z-index: 1; align-self: start; padding: .35rem .5rem; color: #302c34; background: #f4c85f; border-radius: .35rem .52rem .32rem .46rem; font: 1000 .72rem/1 'Field Nunito', sans-serif; transform: rotate(2deg); }
+.mission-route { position: relative; z-index: 1; grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; padding-top: .65rem; border-top: 1px dashed rgb(243 230 189 / .32); }
+.mission-route-stop { display: grid; grid-template-columns: 1.8rem minmax(0, 1fr); gap: .42rem; align-items: center; min-width: 0; color: #9eabc0; }.mission-route-stop i { display: grid; width: 1.75rem; aspect-ratio: 1; place-items: center; color: #f3e6bd; background: #53627b; border: 2px solid #8290a8; border-radius: 50% 45% 52% 48%; font: normal 1000 .65rem/1 'Field Nunito', sans-serif; }.mission-route-stop small { overflow: hidden; font-size: .62rem; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }.mission-route-stop[data-status="available"] i, .mission-route-stop[data-status="accepted"] i { color: #302c34; background: #f4c85f; border-color: #c58d30; }.mission-route-stop[data-status="completed"] i { background: #4f8177; border-color: #315b55; }
 .mission-list { display: grid; gap: .7rem; margin: 0; padding: 0; list-style: none; }
 .mission-list li {
     display: grid;
@@ -687,6 +717,7 @@ html[data-flight-input="touch"] .joystick-label {
     .zoom-controls #zoom-cockpit,
     .zoom-controls #orbit-toggle { font-size: .62rem; }
     .mission-log > article { padding: 1.15rem; }
+    .mission-dispatch { padding: .82rem; }.mission-dispatch-copy h2 { font-size: 1.2rem; }.mission-route { grid-template-columns: 1fr; }
     .passport-heading { display: grid; padding-right: 2.8rem; }
     .passport-rank { min-width: min(100%, 15rem); }
     .collection-grid,
@@ -1215,6 +1246,8 @@ html[data-flight-input="touch"] .joystick-label {
         min-height: var(--touch-target-min);
     }
 
+    .mission-center-trigger { min-height: var(--touch-target-min); padding: .35rem .5rem; font-size: .56rem; }
+
     .experience-header {
         top: max(62px, calc(env(safe-area-inset-top) + 58px));
         right: max(12px, env(safe-area-inset-right));
@@ -1338,6 +1371,7 @@ html[data-flight-input="touch"] .joystick-label {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .mission-center-trigger { animation: none !important; }
     *,
     *::before,
     *::after {

@@ -18,6 +18,11 @@
                 <a class="game-library-link" href="/biblioteca/" data-i18n="game.library">Biblioteca</a>
             </nav>
             <div class="game-topbar-tools">
+                <button id="mission-center-trigger" class="mission-center-trigger" type="button" aria-haspopup="dialog">
+                    <span class="mission-center-rocket" aria-hidden="true">▲</span>
+                    <span data-i18n="game.missionCenter.open">Missões</span>
+                    <b id="mission-center-count" hidden>0</b>
+                </button>
                 <button class="game-language-toggle" type="button" data-language-toggle aria-label="Mudar para English">EN</button>
                 <button id="notebook-trigger" class="notebook-trigger" type="button" aria-haspopup="dialog" aria-label="Caderno" data-i18n-aria="game.notebook">
                     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 3.5h11.5A2.5 2.5 0 0 1 19 6v14.5H7.5A2.5 2.5 0 0 1 5 18V3.5Zm2 2v12.4c.16-.04.33-.05.5-.05H17V6a.5.5 0 0 0-.5-.5H7Z"/></svg>
@@ -219,6 +224,15 @@
                 <button type="button" role="tab" data-passport-section="awards" aria-selected="false" data-i18n="game.passport.awards">Prémios</button>
             </nav>
             <section class="passport-panel" data-passport-panel="missions">
+                <div class="mission-dispatch">
+                    <div class="mission-dispatch-copy">
+                        <p data-i18n="game.missionCenter.kicker">Despacho orbital</p>
+                        <h2 data-i18n="game.missionCenter.title">Centro de Missões</h2>
+                        <span data-i18n="game.missionCenter.copy">Escolhe uma rota, prepara a carga e ganha novos selos de explorador.</span>
+                    </div>
+                    <strong id="mission-dispatch-progress">0/2</strong>
+                    <div id="mission-route" class="mission-route" aria-label="Rota da campanha"></div>
+                </div>
                 <p class="mission-log-intro" data-i18n="game.passport.missionCopy">Podes completar descobertas fora de ordem. O diário guarda tudo neste dispositivo.</p>
                 <div id="contract-list" class="contract-list" aria-live="polite"></div>
                 <figure id="apod-card" class="apod-card" hidden>
