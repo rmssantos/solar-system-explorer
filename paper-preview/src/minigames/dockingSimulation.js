@@ -136,4 +136,3 @@ export function stepDocking(state, input = {}, deltaSeconds = 0, profile = {}) {
         angularVelocity: 0
     });
 }
-
