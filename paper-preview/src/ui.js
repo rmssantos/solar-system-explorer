@@ -8,7 +8,8 @@ import { bindBackdropDismiss } from './ui/dialogDismiss.js';
 import { createMediaViewer } from './ui/mediaViewer.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
 import { providerFamily } from './productVocabulary.js';
-import { ISS_DELIVERY_CONTRACT_ID, getContractStatus } from './contracts/contractState.js';
+import { CONTRACT_CATALOG } from './contracts/contractCatalog.js';
+import { getContractStatus } from './contracts/contractState.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -124,9 +125,7 @@ export function createPreviewUI({
         , rewardToastMessage: document.querySelector('#reward-toast-message')
         , languageToggle: document.querySelector('[data-language-toggle]')
         , mediaViewer: document.querySelector('#media-viewer')
-        , issContractCard: document.querySelector('#iss-contract-card')
-        , issContractStatus: document.querySelector('#iss-contract-status')
-        , issContractAction: document.querySelector('#iss-contract-action')
+        , contractList: document.querySelector('#contract-list')
     };
 
     let lumiTimer = null;
@@ -199,11 +198,14 @@ export function createPreviewUI({
         [elements.tabs[0].parentElement, 'click', handleTabClick],
         [elements.quizOptions, 'click', handleQuizClick],
         [elements.quizRetry, 'click', onRetryQuiz]
-        , [elements.issContractAction, 'click', () => {
-            if (elements.issContractAction.dataset.contractAction === 'accept') onAcceptContract();
-            else if (elements.issContractAction.dataset.contractAction === 'start') {
+        , [elements.contractList, 'click', (event) => {
+            const action = event.target.closest('[data-contract-id]');
+            if (!action) return;
+            const contractId = action.dataset.contractId;
+            if (action.dataset.contractAction === 'accept') onAcceptContract(contractId);
+            else if (action.dataset.contractAction === 'start') {
                 closeMissionLog();
-                onStartContract();
+                onStartContract(contractId);
             }
         }]
         , [elements.objective, 'click', () => openMissionLog('missions')]
@@ -407,32 +409,75 @@ export function createPreviewUI({
         }));
     }
 
-    function renderContract(state, destinationNearby, contractState) {
-        const status = getContractStatus(contractState, ISS_DELIVERY_CONTRACT_ID, state.learning);
-        elements.issContractCard.hidden = false;
-        elements.issContractStatus.textContent = paperI18n.t(`game.contract.${status}`);
-        elements.issContractCard.dataset.status = status;
-        elements.issContractAction.disabled = false;
-        if (status === 'locked') {
-            elements.issContractAction.dataset.contractAction = 'locked';
-            elements.issContractAction.textContent = paperI18n.t('game.contract.iss.unlock');
-            elements.issContractAction.disabled = true;
-        } else if (status === 'available') {
-            elements.issContractAction.dataset.contractAction = 'accept';
-            elements.issContractAction.textContent = paperI18n.t('game.contract.iss.accept');
-        } else if (status === 'accepted' && destinationNearby) {
-            elements.issContractAction.dataset.contractAction = 'start';
-            elements.issContractAction.textContent = paperI18n.t('game.contract.iss.start');
-        } else if (status === 'accepted') {
-            elements.issContractAction.dataset.contractAction = 'travel';
-            elements.issContractAction.textContent = paperI18n.t('game.contract.travel');
-            elements.issContractAction.disabled = true;
-        } else {
-            elements.issContractAction.dataset.contractAction = 'complete';
-            elements.issContractAction.textContent = paperI18n.t('game.contract.complete');
-            elements.issContractAction.disabled = true;
-        }
-        return status;
+    function renderContracts(state, destinationNearby, contractState) {
+        let startable = null;
+        const language = paperI18n.language === 'en' ? 'en' : 'pt';
+        const cards = CONTRACT_CATALOG.map((contract) => {
+            const copy = contract.copy[language];
+            const status = getContractStatus(contractState, contract.id, state.learning);
+            const card = document.createElement('article');
+            card.className = 'contract-card';
+            card.dataset.status = status;
+
+            const icon = document.createElement('span');
+            icon.className = 'contract-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            icon.textContent = contract.activity === 'iss-docking' ? '✉' : '⌁';
+
+            const body = document.createElement('div');
+            body.className = 'contract-copy';
+            const header = document.createElement('header');
+            const kicker = document.createElement('small');
+            kicker.textContent = paperI18n.t('game.contract.kicker');
+            const statusLabel = document.createElement('span');
+            statusLabel.textContent = paperI18n.t(`game.contract.${status}`);
+            header.append(kicker, statusLabel);
+            const title = document.createElement('h2');
+            title.textContent = copy.title;
+            const summary = document.createElement('p');
+            summary.textContent = copy.summary;
+            const details = document.createElement('dl');
+            for (const [label, value] of [
+                [paperI18n.t('game.contract.cargo'), copy.cargo],
+                [paperI18n.t('game.contract.destination'), copy.destination],
+                [paperI18n.t('game.contract.reward'), '+140 XP']
+            ]) {
+                const row = document.createElement('div');
+                const term = document.createElement('dt');
+                const description = document.createElement('dd');
+                term.textContent = label;
+                description.textContent = value;
+                row.append(term, description);
+                details.append(row);
+            }
+            body.append(header, title, summary, details);
+
+            const action = document.createElement('button');
+            action.type = 'button';
+            action.setAttribute('data-contract-id', contract.id);
+            action.disabled = status === 'locked' || status === 'completed' || (status === 'accepted' && !destinationNearby);
+            if (status === 'locked') {
+                action.dataset.contractAction = 'locked';
+                action.textContent = copy.unlock;
+            } else if (status === 'available') {
+                action.dataset.contractAction = 'accept';
+                action.textContent = copy.accept;
+            } else if (status === 'accepted' && destinationNearby) {
+                action.dataset.contractAction = 'start';
+                action.textContent = copy.start;
+                startable = contract;
+            } else if (status === 'accepted') {
+                action.dataset.contractAction = 'travel';
+                action.textContent = paperI18n.t('game.contract.travel');
+            } else {
+                action.dataset.contractAction = 'complete';
+                action.textContent = paperI18n.t('game.contract.complete');
+            }
+            card.append(icon, body, action);
+            return card;
+        });
+        elements.contractList.replaceChildren(...cards);
+        return startable;
     }
 
     function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractDestinationNearby = false } = {}) {
@@ -446,10 +491,10 @@ export function createPreviewUI({
         elements.explore.hidden = !nearbyPlanet || state.notebook.open;
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
-        const contractStatus = renderContract(state, contractDestinationNearby, contractState);
+        const startableContract = renderContracts(state, contractDestinationNearby, contractState);
         if (nearbyPlanet) {
-            elements.nearbyPlanetName.textContent = contractDestinationNearby && contractStatus === 'accepted'
-                ? paperI18n.t('game.contract.iss.start')
+            elements.nearbyPlanetName.textContent = startableContract
+                ? startableContract.copy[paperI18n.language === 'en' ? 'en' : 'pt'].start
                 : paperI18n.t('game.explore', { name: nearbyPlanet.name });
         }
         const activeMission = missions?.active;

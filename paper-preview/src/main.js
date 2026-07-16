@@ -47,6 +47,7 @@ import {
     getContractStatus,
     isContractDestinationNearby
 } from './contracts/contractState.js';
+import { CONTRACT_CATALOG, getContract } from './contracts/contractCatalog.js';
 import { createLocalOrbitHost } from './minigames/localOrbitHost.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
@@ -95,6 +96,7 @@ let currentNavigation = null;
 let autoPilotState = null;
 let localOrbitOpen = false;
 let localOrbitHost = null;
+let activeOrbitContractId = null;
 let lastInput = {
     forward: 0,
     strafe: 0,
@@ -118,12 +120,20 @@ const NASA_SEARCH_TERMS = Object.freeze({
     'tesla-roadster': 'SpaceX Roadster Starman', halley: 'Halley comet', '67p': 'comet 67P'
 });
 
-function isIssDestinationNearby() {
+function isOrbitalContractDestinationNearby(contractId) {
     const orbitingObject = nearbyWorldObjectKey ? getWorldObject(nearbyWorldObjectKey) : null;
-    return isContractDestinationNearby(ISS_DELIVERY_CONTRACT_ID, {
+    return isContractDestinationNearby(contractId, {
         planetKey: flightState.nearbyPlanetKey,
         orbitingParentKey: orbitingObject?.parentKey ?? null
     });
+}
+
+function startableOrbitalContractId() {
+    return CONTRACT_CATALOG.find((contract) => getContractStatus(
+        contractState,
+        contract.id,
+        previewState.learning
+    ) === 'accepted' && isOrbitalContractDestinationNearby(contract.id))?.id ?? null;
 }
 
 function strongestStatus(envelopes) {
@@ -241,12 +251,9 @@ async function hydrateDailySky() {
 function handleExplore() {
     const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
     if (previewState.notebook.open || !nearbyKey) return;
-    if (isIssDestinationNearby() && getContractStatus(
-        contractState,
-        ISS_DELIVERY_CONTRACT_ID,
-        previewState.learning
-    ) === 'accepted') {
-        startIssDelivery();
+    const startableContractId = startableOrbitalContractId();
+    if (startableContractId) {
+        startOrbitalContract(startableContractId);
         return;
     }
     previewState = explorePlanet(previewState, nearbyKey);
@@ -343,46 +350,49 @@ function handleRetryQuiz() {
     syncUI(true);
 }
 
-function handleAcceptContract() {
+function handleAcceptContract(contractId) {
     const next = acceptContract(
         contractState,
-        ISS_DELIVERY_CONTRACT_ID,
+        contractId,
         previewState.learning
     );
     if (next === contractState) return false;
     contractState = next;
-    siteAnalytics.track('contract_event', { contractId: ISS_DELIVERY_CONTRACT_ID, state: 'start' });
+    siteAnalytics.track('contract_event', { contractId, state: 'start' });
     reconcileAndSaveProgress({ feedback: false });
     audioDirector.play('paper-fold');
     syncUI(true);
     return true;
 }
 
-async function startIssDelivery() {
+async function startOrbitalContract(contractId) {
+    const contract = getContract(contractId);
     const accepted = getContractStatus(
         contractState,
-        ISS_DELIVERY_CONTRACT_ID,
+        contractId,
         previewState.learning
     ) === 'accepted';
-    if (!accepted || !isIssDestinationNearby() || localOrbitOpen || !localOrbitHost) return false;
+    if (!contract || !accepted || !isOrbitalContractDestinationNearby(contractId) || localOrbitOpen || !localOrbitHost) return false;
     localOrbitOpen = true;
+    activeOrbitContractId = contractId;
     autoPilotState = null;
     updateAutopilotDisplay();
     flightInput.reset();
     flightInput.setEnabled(false);
     objectHover.hidden = true;
     audioDirector.play('paper-fold');
-    siteAnalytics.track('contract_event', { contractId: ISS_DELIVERY_CONTRACT_ID, state: 'open' });
+    siteAnalytics.track('contract_event', { contractId, state: 'open' });
     syncUI(true);
-    await localOrbitHost.open({ language: paperI18n.language });
+    await localOrbitHost.open({ language: paperI18n.language, missionId: contract.activity, contract });
     return true;
 }
 
-function handleIssDeliveryComplete() {
-    const next = completeContract(contractState, ISS_DELIVERY_CONTRACT_ID);
+function handleOrbitalContractComplete() {
+    if (!activeOrbitContractId) return false;
+    const next = completeContract(contractState, activeOrbitContractId);
     if (next === contractState) return false;
     contractState = next;
-    siteAnalytics.track('contract_event', { contractId: ISS_DELIVERY_CONTRACT_ID, state: 'complete' });
+    siteAnalytics.track('contract_event', { contractId: activeOrbitContractId, state: 'complete' });
     reconcileAndSaveProgress();
     syncUI(true);
     return true;
@@ -393,7 +403,8 @@ function handleLocalOrbitClose() {
     localOrbitOpen = false;
     flightInput.setEnabled(true);
     audioDirector.play('paper-fold');
-    siteAnalytics.track('contract_event', { contractId: ISS_DELIVERY_CONTRACT_ID, state: 'close' });
+    if (activeOrbitContractId) siteAnalytics.track('contract_event', { contractId: activeOrbitContractId, state: 'close' });
+    activeOrbitContractId = null;
     syncUI(true);
 }
 
@@ -405,7 +416,7 @@ const previewUI = createPreviewUI({
     onAnswerQuiz: handleAnswerQuiz,
     onRetryQuiz: handleRetryQuiz,
     onAcceptContract: handleAcceptContract,
-    onStartContract: startIssDelivery,
+    onStartContract: startOrbitalContract,
     onMissionLogOpen: () => flightInput.setEnabled(false),
     onMissionLogClose: () => flightInput.setEnabled(true),
     onDismissSurprise: handleDismissSurprise,
@@ -457,7 +468,7 @@ localOrbitHost = createLocalOrbitHost({
         get guidance() { return paperI18n.t('game.docking.guidance'); },
         get retry() { return paperI18n.t('game.docking.assisted'); }
     },
-    onComplete: handleIssDeliveryComplete,
+    onComplete: handleOrbitalContractComplete,
     onClose: handleLocalOrbitClose
 });
 
@@ -548,7 +559,7 @@ function syncUI(force = false) {
         missions,
         expeditionProgress,
         contractState,
-        contractDestinationNearby: isIssDestinationNearby()
+        contractDestinationNearby: CONTRACT_CATALOG.some((contract) => isOrbitalContractDestinationNearby(contract.id))
     });
     lastUiSignature = signature;
 }
@@ -683,7 +694,7 @@ window.render_game_to_text = () => {
     const nearbyPlanet = nearbyKey ? (learningCatalog[nearbyKey] ?? null) : null;
     return JSON.stringify({
         coordinateSystem: '3D paper flight: yaw 0 faces -Z; +X right, +Y up, +Z behind. Movement is camera-relative.',
-        mode: localOrbitOpen ? 'local-orbit-iss' : (previewState.notebook.open ? 'notebook' : 'free-flight-360'),
+        mode: localOrbitOpen ? `local-orbit-${activeOrbitContractId}` : (previewState.notebook.open ? 'notebook' : 'free-flight-360'),
         ship: {
             position: roundVector(flightState.position),
             velocity: roundVector(flightState.velocity),
@@ -716,7 +727,7 @@ window.render_game_to_text = () => {
             discoveredKeys: [...previewState.learning.discoveredKeys]
         },
         progression: { ...expeditionProgress, presentation: progressPresentation },
-        contract: { ...contractState, localOrbitOpen },
+        contract: { ...contractState, localOrbitOpen, activeOrbitContractId },
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
         autopilot: autoPilotState ? { ...autoPilotState } : null,
         audio: audioDirector.getState(),
@@ -732,15 +743,18 @@ window.advanceTime = (milliseconds) => {
 };
 
 window.__paperPreview = {
-    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, localOrbitOpen }, scene: paperScene.getState() }),
+    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, localOrbitOpen, activeOrbitContractId }, scene: paperScene.getState() }),
     explore: handleExplore,
     closeNotebook: handleCloseNotebook,
     selectSection: handleSelectSection,
     answerQuiz: handleAnswerQuiz,
     retryQuiz: handleRetryQuiz,
-    acceptIssDelivery: handleAcceptContract,
-    startIssDelivery,
-    completeIssDelivery: handleIssDeliveryComplete,
+    acceptContract: handleAcceptContract,
+    startOrbitalContract,
+    completeOrbitalContract: handleOrbitalContractComplete,
+    acceptIssDelivery: () => handleAcceptContract(ISS_DELIVERY_CONTRACT_ID),
+    startIssDelivery: () => startOrbitalContract(ISS_DELIVERY_CONTRACT_ID),
+    completeIssDelivery: handleOrbitalContractComplete,
     triggerSurprise: (id) => {
         const event = getSurprise(id);
         if (!event) return false;

@@ -6,26 +6,27 @@ const game = read('../paper-preview/src/main.js');
 const ui = read('../paper-preview/src/ui.js');
 const html = read('../paper-preview/jogo/index.html');
 const i18n = read('../paper-preview/src/i18n/paperI18n.js');
+const catalog = read('../paper-preview/src/contracts/contractCatalog.js');
 
 describe('ISS delivery integration contract', () => {
     it('presents the delivery in the captain log with one contextual action', () => {
-        expect(html).toContain('id="iss-contract-card"');
-        expect(html).toContain('id="iss-contract-action"');
+        expect(html).toContain('id="contract-list"');
+        expect(ui).toContain('CONTRACT_CATALOG.map');
         expect(ui).toContain('getContractStatus(');
         expect(ui).toContain('onAcceptContract');
         expect(ui).toContain('onStartContract');
     });
 
     it('keeps the locked delivery visible and explains how to find the minigame', () => {
-        expect(html).toMatch(/id="iss-contract-card" class="contract-card"(?![^>]*\shidden)/);
-        expect(html).toMatch(/id="iss-contract-action"[^>]*data-contract-action="locked"[^>]*disabled/);
-        expect(html).toContain('data-i18n="game.contract.iss.unlock"');
+        expect(ui).toContain("card.className = 'contract-card'");
+        expect(ui).toContain("action.dataset.contractAction = 'locked'");
+        expect(ui).toMatch(/action\.disabled\s*=\s*status === 'locked'/);
+        expect(catalog).toContain("unlock: 'Descobre a Terra'");
+        expect(catalog).toContain("unlock: 'Discover Earth'");
         expect(i18n).toContain("'game.contract.locked': 'Por descobrir'");
-        expect(i18n).toContain("'game.contract.iss.unlock': 'Descobre a Terra'");
         expect(i18n).toContain("'game.contract.locked': 'Undiscovered'");
-        expect(i18n).toContain("'game.contract.iss.unlock': 'Discover Earth'");
         expect(ui).toContain("status === 'locked'");
-        expect(ui).not.toContain("elements.issContractCard.hidden = status === 'locked'");
+        expect(ui).not.toContain('issContractCard');
     });
 
     it('owns contract state and the local orbit host in the main application', () => {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    HUBBLE_MAINTENANCE_CONTRACT_ID,
     ISS_DELIVERY_CONTRACT_ID,
     acceptContract,
     completeContract,
@@ -51,6 +52,27 @@ describe('paper expedition contracts', () => {
         });
         expect(contract.copy.pt.title).toMatch(/ISS/);
         expect(contract.copy.en.title).toMatch(/ISS/);
+    });
+
+    it('unlocks Hubble maintenance only after the ISS delivery is complete', () => {
+        const initial = createContractState();
+        expect(getContractStatus(initial, HUBBLE_MAINTENANCE_CONTRACT_ID, {
+            discoveredKeys: ['earth']
+        })).toBe('locked');
+
+        const afterIss = createContractState({ completedContractIds: [ISS_DELIVERY_CONTRACT_ID] });
+        expect(getContractStatus(afterIss, HUBBLE_MAINTENANCE_CONTRACT_ID, {
+            discoveredKeys: ['earth']
+        })).toBe('available');
+
+        const contract = CONTRACT_CATALOG.find((item) => item.id === HUBBLE_MAINTENANCE_CONTRACT_ID);
+        expect(contract).toMatchObject({
+            destinationKey: 'earth',
+            activity: 'hubble-service',
+            unlockContracts: [ISS_DELIVERY_CONTRACT_ID]
+        });
+        expect(contract.copy.pt.title).toMatch(/Hubble/);
+        expect(contract.copy.en.title).toMatch(/Hubble/);
     });
 
     it('treats the Earth system as the contract destination even beside an orbiting satellite', () => {

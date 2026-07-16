@@ -1,6 +1,7 @@
 import { getContract } from './contractCatalog.js';
 
 export const ISS_DELIVERY_CONTRACT_ID = 'iss-delivery';
+export const HUBBLE_MAINTENANCE_CONTRACT_ID = 'hubble-maintenance';
 
 function unique(values = []) {
     return [...new Set(values.filter((value) => typeof value === 'string' && value.length > 0))];
@@ -20,7 +21,9 @@ export function getContractStatus(state, contractId, snapshot = {}) {
     if (base.completedContractIds.includes(contractId)) return 'completed';
     if (base.acceptedContractIds.includes(contractId)) return 'accepted';
     const discoveries = new Set(snapshot.discoveredKeys ?? []);
-    return contract.unlockDiscoveries.every((key) => discoveries.has(key)) ? 'available' : 'locked';
+    const discoveriesReady = contract.unlockDiscoveries.every((key) => discoveries.has(key));
+    const contractsReady = contract.unlockContracts.every((id) => base.completedContractIds.includes(id));
+    return discoveriesReady && contractsReady ? 'available' : 'locked';
 }
 
 export function acceptContract(state, contractId, snapshot = {}) {
