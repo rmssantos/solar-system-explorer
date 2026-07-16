@@ -6,7 +6,7 @@ import {
     readAnalyticsConsent,
     writeAnalyticsConsent
 } from '../paper-preview/src/analytics/consent.js';
-import { sanitizeAnalyticsEvent, sanitizePageView } from '../paper-preview/src/analytics/eventCatalog.js';
+import { sanitizeAnalyticsEvent, sanitizePageView } from '../paper-preview/src/productVocabulary.js';
 
 function memoryStorage(initial = {}) {
     const values = new Map(Object.entries(initial));
@@ -67,6 +67,12 @@ describe('bounded analytics event vocabulary', () => {
         })).toEqual({
             name: 'quiz_result',
             properties: { quizId: 'mars-0', correct: false, attemptBucket: '2' }
+        });
+        expect(sanitizeAnalyticsEvent('contract_event', {
+            contractId: 'iss-delivery', state: 'complete', cargoName: 'private note'
+        })).toEqual({
+            name: 'contract_event',
+            properties: { contractId: 'iss-delivery', state: 'complete' }
         });
     });
 

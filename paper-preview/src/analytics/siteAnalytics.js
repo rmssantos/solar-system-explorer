@@ -1,5 +1,5 @@
 import { paperI18n } from '../i18n/paperI18n.js';
-import { createApplicationInsightsAnalytics } from './applicationInsights.js';
+import { readAnalyticsConsent, writeAnalyticsConsent } from './consent.js';
 
 function connectionString() {
     try {
@@ -9,10 +9,78 @@ function connectionString() {
     }
 }
 
+const defaultAdapterLoader = () => import('./applicationInsights.js');
+
+export function createDeferredAnalytics({
+    connectionString: configuredConnectionString = connectionString(),
+    storage = globalThis.localStorage,
+    loadAdapter = defaultAdapterLoader,
+    now = () => new Date()
+} = {}) {
+    let consent = readAnalyticsConsent(storage, now());
+    let adapter = null;
+    let loading = null;
+    let unavailable = false;
+
+    async function ensureAdapter() {
+        if (adapter || unavailable || !configuredConnectionString) return adapter;
+        if (loading) return loading;
+        loading = loadAdapter()
+            .then(({ createApplicationInsightsAnalytics }) => {
+                adapter = createApplicationInsightsAnalytics({
+                    connectionString: configuredConnectionString,
+                    storage,
+                    now
+                });
+                return adapter.start().then(() => adapter);
+            })
+            .catch(() => {
+                unavailable = true;
+                return null;
+            })
+            .finally(() => { loading = null; });
+        return loading;
+    }
+
+    async function start() {
+        if (consent === 'granted') await ensureAdapter();
+        return consent;
+    }
+
+    async function grant() {
+        consent = writeAnalyticsConsent(storage, 'granted', now());
+        await ensureAdapter();
+        return consent;
+    }
+
+    async function deny() {
+        consent = writeAnalyticsConsent(storage, 'denied', now());
+        if (adapter) await adapter.deny();
+        return consent;
+    }
+
+    async function revoke() {
+        consent = writeAnalyticsConsent(storage, 'denied', now());
+        if (adapter) await adapter.revoke();
+        adapter = null;
+        return consent;
+    }
+
+    return Object.freeze({
+        get consent() { return consent; },
+        start,
+        grant,
+        deny,
+        revoke,
+        track: (name, properties) => adapter?.track(name, properties) ?? false,
+        trackPageView: (route, language) => adapter?.trackPageView(route, language) ?? false
+    });
+}
+
 export function createSiteAnalytics({
     document = globalThis.document,
     i18n = paperI18n,
-    analytics = createApplicationInsightsAnalytics({ connectionString: connectionString() })
+    analytics = createDeferredAnalytics()
 } = {}) {
     let surface = 'home';
     let card = null;

@@ -7,7 +7,9 @@ import { paperI18n } from './i18n/paperI18n.js';
 import { bindBackdropDismiss } from './ui/dialogDismiss.js';
 import { createMediaViewer } from './ui/mediaViewer.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
-import { providerFamily } from './analytics/eventCatalog.js';
+import { providerFamily } from './productVocabulary.js';
+import { CONTRACT_CATALOG } from './contracts/contractCatalog.js';
+import { getContractStatus } from './contracts/contractState.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -25,6 +27,8 @@ export function createPreviewUI({
     onSelectSection,
     onAnswerQuiz,
     onRetryQuiz,
+    onAcceptContract,
+    onStartContract,
     onMissionLogOpen,
     onMissionLogClose,
     onDismissSurprise,
@@ -120,7 +124,12 @@ export function createPreviewUI({
         , rewardToastTitle: document.querySelector('#reward-toast-title')
         , rewardToastMessage: document.querySelector('#reward-toast-message')
         , languageToggle: document.querySelector('[data-language-toggle]')
+        , missionCenterTrigger: document.querySelector('#mission-center-trigger')
+        , missionCenterCount: document.querySelector('#mission-center-count')
+        , missionRoute: document.querySelector('#mission-route')
+        , missionDispatchProgress: document.querySelector('#mission-dispatch-progress')
         , mediaViewer: document.querySelector('#media-viewer')
+        , contractList: document.querySelector('#contract-list')
     };
 
     let lumiTimer = null;
@@ -193,7 +202,18 @@ export function createPreviewUI({
         [elements.tabs[0].parentElement, 'click', handleTabClick],
         [elements.quizOptions, 'click', handleQuizClick],
         [elements.quizRetry, 'click', onRetryQuiz]
+        , [elements.contractList, 'click', (event) => {
+            const action = event.target.closest('[data-contract-id]');
+            if (!action) return;
+            const contractId = action.dataset.contractId;
+            if (action.dataset.contractAction === 'accept') onAcceptContract(contractId);
+            else if (action.dataset.contractAction === 'start') {
+                closeMissionLog();
+                onStartContract(contractId);
+            }
+        }]
         , [elements.objective, 'click', () => openMissionLog('missions')]
+        , [elements.missionCenterTrigger, 'click', () => openMissionLog('missions')]
         , [elements.rankChip, 'click', () => openMissionLog('awards')]
         , [elements.closeMissionLog, 'click', closeMissionLog]
         , [elements.missionLog, 'cancel', () => onMissionLogClose()]
@@ -394,7 +414,104 @@ export function createPreviewUI({
         }));
     }
 
-    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null } = {}) {
+    function renderContracts(state, nearbyContractIds, contractState) {
+        let startable = null;
+        const language = paperI18n.language === 'en' ? 'en' : 'pt';
+        const statuses = CONTRACT_CATALOG.map((contract) => getContractStatus(contractState, contract.id, state.learning));
+        const cards = CONTRACT_CATALOG.map((contract, index) => {
+            const copy = contract.copy[language];
+            const status = statuses[index];
+            const destinationNearby = nearbyContractIds.includes(contract.id);
+            const card = document.createElement('article');
+            card.className = 'contract-card';
+            card.dataset.status = status;
+
+            const art = document.createElement('img');
+            art.className = 'contract-art';
+            art.src = contract.art;
+            art.alt = '';
+            art.width = 176;
+            art.height = 132;
+            art.loading = 'lazy';
+
+            const body = document.createElement('div');
+            body.className = 'contract-copy';
+            const header = document.createElement('header');
+            const kicker = document.createElement('small');
+            kicker.textContent = paperI18n.t('game.contract.kicker');
+            const statusLabel = document.createElement('span');
+            statusLabel.textContent = paperI18n.t(`game.contract.${status}`);
+            header.append(kicker, statusLabel);
+            const title = document.createElement('h2');
+            title.textContent = copy.title;
+            const summary = document.createElement('p');
+            summary.textContent = copy.summary;
+            const details = document.createElement('dl');
+            for (const [label, value] of [
+                [paperI18n.t('game.contract.cargo'), copy.cargo],
+                [paperI18n.t('game.contract.destination'), copy.destination],
+                [paperI18n.t('game.contract.reward'), '+140 XP']
+            ]) {
+                const row = document.createElement('div');
+                const term = document.createElement('dt');
+                const description = document.createElement('dd');
+                term.textContent = label;
+                description.textContent = value;
+                row.append(term, description);
+                details.append(row);
+            }
+            body.append(header, title, summary, details);
+
+            const action = document.createElement('button');
+            action.type = 'button';
+            action.setAttribute('data-contract-id', contract.id);
+            action.disabled = status === 'locked' || status === 'completed' || (status === 'accepted' && !destinationNearby);
+            if (status === 'locked') {
+                action.dataset.contractAction = 'locked';
+                action.textContent = copy.unlock;
+            } else if (status === 'available') {
+                action.dataset.contractAction = 'accept';
+                action.textContent = copy.accept;
+            } else if (status === 'accepted' && destinationNearby) {
+                action.dataset.contractAction = 'start';
+                action.textContent = copy.start;
+                startable = contract;
+            } else if (status === 'accepted') {
+                action.dataset.contractAction = 'travel';
+                action.textContent = copy.travel ?? paperI18n.t('game.contract.travel');
+            } else {
+                action.dataset.contractAction = 'complete';
+                action.textContent = paperI18n.t('game.contract.complete');
+            }
+            card.append(art, body, action);
+            return card;
+        });
+        elements.contractList.replaceChildren(...cards);
+        const routeStops = CONTRACT_CATALOG.map((contract, index) => {
+            const stop = document.createElement('span');
+            stop.className = 'mission-route-stop';
+            stop.dataset.status = statuses[index];
+            const stamp = document.createElement('i');
+            stamp.textContent = statuses[index] === 'completed' ? '✓' : String(index + 1);
+            const title = document.createElement('small');
+            title.textContent = contract.copy[language].title;
+            stop.append(stamp, title);
+            return stop;
+        });
+        elements.missionRoute.replaceChildren(...routeStops);
+        const completedCount = statuses.filter((status) => status === 'completed').length;
+        const actionableCount = statuses.filter((status) => status === 'available' || status === 'accepted').length;
+        elements.missionDispatchProgress.textContent = `${completedCount}/${CONTRACT_CATALOG.length}`;
+        elements.missionCenterCount.textContent = String(actionableCount);
+        elements.missionCenterCount.hidden = actionableCount === 0;
+        elements.missionCenterTrigger.classList.toggle('has-actions', actionableCount > 0);
+        elements.missionCenterTrigger.setAttribute('aria-label', actionableCount > 0
+            ? `${paperI18n.t('game.missionCenter.open')} · ${actionableCount}`
+            : paperI18n.t('game.missionCenter.open'));
+        return startable;
+    }
+
+    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, nearbyContractIds = [] } = {}) {
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
             ? chooseNearbyObject(flightState.nearbyPlanetKey, nearbyObjectKey)
@@ -405,7 +522,12 @@ export function createPreviewUI({
         elements.explore.hidden = !nearbyPlanet || state.notebook.open;
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
-        if (nearbyPlanet) elements.nearbyPlanetName.textContent = paperI18n.t('game.explore', { name: nearbyPlanet.name });
+        const startableContract = renderContracts(state, nearbyContractIds, contractState);
+        if (nearbyPlanet) {
+            elements.nearbyPlanetName.textContent = startableContract
+                ? startableContract.copy[paperI18n.language === 'en' ? 'en' : 'pt'].start
+                : paperI18n.t('game.explore', { name: nearbyPlanet.name });
+        }
         const activeMission = missions?.active;
         elements.objective.classList.toggle('is-complete', !activeMission);
         elements.objectiveText.textContent = activeMission
@@ -542,5 +664,5 @@ export function createPreviewUI({
         }
     }
 
-    return { update, updateNavigation, updateCockpitTelemetry, updateAudioState, setApod, showSurprise, showProgressFeedback, markReady, destroy, elements };
+    return { update, updateNavigation, updateCockpitTelemetry, updateAudioState, setApod, showSurprise, showProgressFeedback, closeMissionLog, markReady, destroy, elements };
 }

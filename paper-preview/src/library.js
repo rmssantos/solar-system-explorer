@@ -12,7 +12,7 @@ import { presentProgress } from './progression/progressPresentation.js';
 import { getAwardArt } from './progression/awardArt.js';
 import { bindBackdropDismiss } from './ui/dialogDismiss.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
-import { providerFamily, resultCountBucket } from './analytics/eventCatalog.js';
+import { providerFamily, resultCountBucket } from './productVocabulary.js';
 import { mountBuildInfo } from './buildInfo.js';
 import { createMediaViewer } from './ui/mediaViewer.js';
 

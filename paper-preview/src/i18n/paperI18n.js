@@ -61,6 +61,7 @@ export const PAPER_TRANSLATIONS = Object.freeze({
         'library.measure.radius': 'Raio', 'library.measure.distance': 'Distância ao Sol', 'library.measure.day': 'Dia', 'library.measure.year': 'Ano', 'library.measure.temperature': 'Temperatura', 'library.measure.moons': 'Luas',
         'library.award.unlocked': 'Conquistado', 'library.award.locked': 'Por conquistar', 'library.footer': 'Um arquivo vivo para regressar ao espaço com novas perguntas.',
         'game.home': '← Início', 'game.library': 'Biblioteca', 'game.loading': 'A montar o diorama…', 'game.stage': 'Diorama interativo do Sistema Solar em papel', 'game.accessibleControls': 'No ecrã tátil, usa o joystick inferior esquerdo para mover, arrasta o cenário com um dedo para olhar e usa dois dedos para zoom. Com teclado, usa W, A, S, D ou as setas para mover, Espaço e Control para subir e descer.', 'game.objective.kicker': 'Missão de bolso', 'game.notebook': 'Caderno',
+        'game.missionCenter.open': 'Missões', 'game.missionCenter.kicker': 'Despacho orbital', 'game.missionCenter.title': 'Centro de Missões', 'game.missionCenter.copy': 'Escolhe uma rota, prepara a carga e ganha novos selos de explorador.',
         'game.zoom.label': 'Ferramentas de voo', 'game.zoom.out': 'Afastar câmara', 'game.zoom.in': 'Aproximar câmara', 'game.cockpit': 'Cockpit', 'game.orbits': 'Órbitas',
         'game.audio.sound': 'Som', 'game.audio.mute': 'Desligar som', 'game.audio.enable': 'Ligar som',
         'game.cockpit.speed': 'Velocidade', 'game.cockpit.radar': 'Radar de missão', 'game.cockpit.attitude': 'Atitude', 'game.flight.boost': 'Boost',
@@ -80,7 +81,20 @@ export const PAPER_TRANSLATIONS = Object.freeze({
         'game.level': 'Nível {level} · {title}', 'game.rank.kicker': 'Patente de explorador',
         'game.progress.saved': 'Progresso registado', 'game.progress.keep': 'Continua a explorar.', 'game.progress.levelUp': 'Nova patente', 'game.progress.award': 'Novo prémio',
         'game.autopilot.hover': 'Clica para ativar o piloto de papel', 'game.autopilot.kicker': 'Piloto de papel', 'game.autopilot.cancel': 'Cancelar',
-        'game.distance.diorama': '{value} u no diorama', 'game.distance.solar': '{value} UA ao Sol'
+        'game.distance.diorama': '{value} u no diorama', 'game.distance.solar': '{value} UA ao Sol',
+        'game.contract.iss.title': 'Correio para a ISS', 'game.contract.iss.accept': 'Aceitar encomenda', 'game.contract.iss.start': 'Entrar em órbita baixa',
+        'game.contract.kicker': 'Agência de Correio Interplanetário', 'game.contract.iss.summary': 'Entrega uma cápsula de experiências científicas à Estação Espacial Internacional.',
+        'game.contract.cargo': 'Carga', 'game.contract.destination': 'Destino', 'game.contract.reward': 'Recompensa', 'game.contract.iss.cargo': 'Cápsula de experiências', 'game.contract.iss.destination': 'Órbita baixa da Terra',
+        'game.contract.locked': 'Por descobrir', 'game.contract.available': 'Nova encomenda', 'game.contract.accepted': 'Em trânsito', 'game.contract.completed': 'Entregue', 'game.contract.travel': 'Voa até à Terra', 'game.contract.complete': 'Encomenda concluída', 'game.contract.iss.unlock': 'Descobre a Terra',
+        'game.docking.kicker': 'Encomenda orbital · ISS', 'game.docking.scale': 'Vista orbital ampliada — tamanhos e distâncias adaptados para o desafio.',
+        'game.docking.playfield': 'Aproximação à Estação Espacial Internacional', 'game.docking.telemetry': 'Telemetria de acoplagem', 'game.docking.controls': 'Propulsores da nave',
+        'game.docking.loading': 'A abrir a folha orbital…', 'game.docking.loadError': 'Não foi possível montar esta órbita.', 'game.docking.retry': 'Tentar novamente',
+        'game.docking.guidance': 'Entra devagar no corredor amarelo e alinha o nariz da nave com a porta da ISS.', 'game.docking.keys': 'Teclado: WASD ou setas · Q/E roda · Espaço estabiliza', 'game.docking.stabilize': 'Estabilizar',
+        'game.docking.assisted': 'A Lumi afastou a nave em segurança. Reduz a velocidade, estabiliza e tenta novamente.',
+        'game.docking.distance': 'Distância', 'game.docking.speed': 'Velocidade relativa', 'game.docking.alignment': 'Alinhamento',
+        'game.docking.forward': 'Avançar', 'game.docking.reverse': 'Recuar', 'game.docking.up': 'Subir', 'game.docking.down': 'Descer',
+        'game.docking.rotateLeft': 'Rodar para a esquerda', 'game.docking.rotateRight': 'Rodar para a direita', 'game.docking.leave': 'Regressar ao diorama',
+        'game.docking.success': 'Encomenda entregue!', 'game.docking.science': 'A ISS recebe regularmente experiências, alimentos e equipamento através de naves de carga.', 'game.docking.return': 'Regressar à expedição'
     }),
     en: Object.freeze({
         'shared.language': 'Language', 'shared.switchTo': 'Switch to Português', 'shared.skip': 'Skip to content',
@@ -142,6 +156,7 @@ export const PAPER_TRANSLATIONS = Object.freeze({
         'library.measure.radius': 'Radius', 'library.measure.distance': 'Distance from Sun', 'library.measure.day': 'Day', 'library.measure.year': 'Year', 'library.measure.temperature': 'Temperature', 'library.measure.moons': 'Moons',
         'library.award.unlocked': 'Earned', 'library.award.locked': 'Not earned', 'library.footer': 'A living archive for returning to space with new questions.',
         'game.home': '← Home', 'game.library': 'Library', 'game.loading': 'Assembling the diorama…', 'game.stage': 'Interactive paper Solar System diorama', 'game.accessibleControls': 'On a touch screen, use the lower-left joystick to move, drag the scene with one finger to look, and pinch with two fingers to zoom. With a keyboard, use W, A, S, D or the arrow keys to move, and Space or Control to climb or descend.', 'game.objective.kicker': 'Pocket mission', 'game.notebook': 'Notebook',
+        'game.missionCenter.open': 'Missions', 'game.missionCenter.kicker': 'Orbital dispatch', 'game.missionCenter.title': 'Mission Control', 'game.missionCenter.copy': 'Choose a route, prepare the cargo and earn new explorer stamps.',
         'game.zoom.label': 'Flight tools', 'game.zoom.out': 'Move camera away', 'game.zoom.in': 'Move camera closer', 'game.cockpit': 'Cockpit', 'game.orbits': 'Orbits',
         'game.audio.sound': 'Sound', 'game.audio.mute': 'Mute sound', 'game.audio.enable': 'Enable sound',
         'game.cockpit.speed': 'Speed', 'game.cockpit.radar': 'Mission radar', 'game.cockpit.attitude': 'Attitude', 'game.flight.boost': 'Boost',
@@ -161,7 +176,20 @@ export const PAPER_TRANSLATIONS = Object.freeze({
         'game.level': 'Level {level} · {title}', 'game.rank.kicker': 'Explorer rank',
         'game.progress.saved': 'Progress recorded', 'game.progress.keep': 'Keep exploring.', 'game.progress.levelUp': 'New rank', 'game.progress.award': 'New award',
         'game.autopilot.hover': 'Click to start the paper pilot', 'game.autopilot.kicker': 'Paper pilot', 'game.autopilot.cancel': 'Cancel',
-        'game.distance.diorama': '{value} u in the diorama', 'game.distance.solar': '{value} AU from the Sun'
+        'game.distance.diorama': '{value} u in the diorama', 'game.distance.solar': '{value} AU from the Sun',
+        'game.contract.iss.title': 'Mail for the ISS', 'game.contract.iss.accept': 'Accept delivery', 'game.contract.iss.start': 'Enter low Earth orbit',
+        'game.contract.kicker': 'Interplanetary Mail Agency', 'game.contract.iss.summary': 'Deliver a capsule of science experiments to the International Space Station.',
+        'game.contract.cargo': 'Cargo', 'game.contract.destination': 'Destination', 'game.contract.reward': 'Reward', 'game.contract.iss.cargo': 'Experiment capsule', 'game.contract.iss.destination': 'Low Earth orbit',
+        'game.contract.locked': 'Undiscovered', 'game.contract.available': 'New delivery', 'game.contract.accepted': 'In transit', 'game.contract.completed': 'Delivered', 'game.contract.travel': 'Fly to Earth', 'game.contract.complete': 'Delivery complete', 'game.contract.iss.unlock': 'Discover Earth',
+        'game.docking.kicker': 'Orbital delivery · ISS', 'game.docking.scale': 'Magnified orbital view — sizes and distances are adapted for the challenge.',
+        'game.docking.playfield': 'Approach to the International Space Station', 'game.docking.telemetry': 'Docking telemetry', 'game.docking.controls': 'Ship thrusters',
+        'game.docking.loading': 'Opening the orbital sheet…', 'game.docking.loadError': 'This orbit could not be assembled.', 'game.docking.retry': 'Try again',
+        'game.docking.guidance': 'Enter the yellow corridor slowly and align the ship nose with the ISS docking port.', 'game.docking.keys': 'Keyboard: WASD or arrows · Q/E rotate · Space stabilizes', 'game.docking.stabilize': 'Stabilize',
+        'game.docking.assisted': 'Lumi moved the ship safely away. Reduce speed, stabilize and try again.',
+        'game.docking.distance': 'Distance', 'game.docking.speed': 'Relative speed', 'game.docking.alignment': 'Alignment',
+        'game.docking.forward': 'Forward', 'game.docking.reverse': 'Reverse', 'game.docking.up': 'Up', 'game.docking.down': 'Down',
+        'game.docking.rotateLeft': 'Rotate left', 'game.docking.rotateRight': 'Rotate right', 'game.docking.leave': 'Return to diorama',
+        'game.docking.success': 'Delivery complete!', 'game.docking.science': 'The ISS regularly receives experiments, food and equipment aboard cargo spacecraft.', 'game.docking.return': 'Return to the expedition'
     })
 });
 

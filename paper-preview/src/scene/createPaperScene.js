@@ -248,23 +248,6 @@ function createSurpriseEffect() {
     return root;
 }
 
-function createAutopilotTrail() {
-    const trail = new THREE.Group();
-    trail.name = 'paper-autopilot-trail';
-    trail.visible = false;
-    const colors = ['#f4c85f', '#ef765c', '#79bca8', '#f5e8bb'];
-    for (let index = 0; index < 10; index += 1) {
-        const shard = new THREE.Mesh(
-            new THREE.TetrahedronGeometry(0.075 + (index % 3) * 0.025, 0),
-            new THREE.MeshBasicMaterial({ color: colors[index % colors.length], transparent: true, opacity: 0.86 })
-        );
-        shard.userData.phase = index * 1.73;
-        shard.position.z = 1.45 + index * 0.38;
-        trail.add(shard);
-    }
-    return trail;
-}
-
 export function createPaperScene(stage) {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#101936');
@@ -351,8 +334,6 @@ export function createPaperScene(stage) {
     scene.add(rocket);
     const surpriseEffect = createSurpriseEffect();
     scene.add(surpriseEffect);
-    const autopilotTrail = createAutopilotTrail();
-    scene.add(autopilotTrail);
 
     const runtime = {
         elapsed: 0,
@@ -435,8 +416,6 @@ export function createPaperScene(stage) {
         runtime.shipPosition.set(flightState.position.x, flightState.position.y, flightState.position.z);
         rocket.position.copy(runtime.shipPosition);
         rocket.quaternion.copy(runtime.flightQuaternion);
-        autopilotTrail.position.copy(runtime.shipPosition);
-        autopilotTrail.quaternion.copy(runtime.flightQuaternion);
 
         const speed = Math.hypot(flightState.velocity.x, flightState.velocity.y, flightState.velocity.z);
         updatePaperShipThrust(rocket, speed, runtime.elapsed);
@@ -477,15 +456,6 @@ export function createPaperScene(stage) {
             planet.scale.lerp(new THREE.Vector3(selectedScale, selectedScale, selectedScale), Math.min(1, delta * 4));
         });
         worldObjects.update(runtime.elapsed, runtime.primarySnapshot);
-        if (autopilotTrail.visible) {
-            autopilotTrail.children.forEach((shard, index) => {
-                const wave = runtime.elapsed * 7 + shard.userData.phase;
-                shard.position.x = Math.sin(wave) * (0.22 + index * 0.025);
-                shard.position.y = Math.cos(wave * 0.83) * (0.16 + index * 0.018);
-                shard.rotation.x += delta * (1.8 + index * 0.07);
-                shard.rotation.y += delta * (2.3 + index * 0.05);
-            });
-        }
         if (runtime.surpriseRemaining > 0) {
             runtime.surpriseRemaining = Math.max(0, runtime.surpriseRemaining - delta);
             surpriseEffect.position.addScaledVector(runtime.surpriseVelocity, delta);
@@ -603,10 +573,6 @@ export function createPaperScene(stage) {
         return null;
     }
 
-    function setAutopilotActive(active) {
-        autopilotTrail.visible = Boolean(active);
-    }
-
     function toggleOrbits(force) {
         orbitPaths.visible = typeof force === 'boolean' ? force : !orbitPaths.visible;
         return orbitPaths.visible;
@@ -683,7 +649,6 @@ export function createPaperScene(stage) {
         findNearbyWorldObject: worldObjects.findNearby,
         getWorldObjectPosition,
         pickWorldObject,
-        setAutopilotActive,
         update,
         render,
         resize,

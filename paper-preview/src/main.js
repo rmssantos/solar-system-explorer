@@ -1,6 +1,7 @@
 import { closeNotebook, createPreviewState, explorePlanet } from './state.js';
 import { createFlightState, findNearbyPlanet, stepFlight } from './flightSimulation.js';
 import { createFlightInput } from './flightInput.js';
+import { createFlightInputModeController } from './input/deviceInputMode.js';
 import { createStageSelectionGesture } from './input/stageSelection.js';
 import { createPaperLearningCatalog } from './learning/learningCatalog.js';
 import {
@@ -38,9 +39,20 @@ import { translateWorldObject } from './i18n/paperObjectTranslations.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
 import { createEphemerisPresentation } from './learning/ephemerisPresentation.js';
 import { createAudioDirector } from './audio/audioDirector.js';
+import {
+    ISS_DELIVERY_CONTRACT_ID,
+    acceptContract,
+    completeContract,
+    createContractState,
+    getContractStatus,
+    isContractDestinationNearby
+} from './contracts/contractState.js';
+import { CONTRACT_CATALOG, getContract } from './contracts/contractCatalog.js';
+import { createLocalOrbitHost } from './minigames/localOrbitHost.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
+const flightInputMode = createFlightInputModeController();
 
 const stage = document.querySelector('#paper-stage');
 siteAnalytics.start('game');
@@ -58,9 +70,11 @@ const learningCatalogView = new Proxy({}, {
 });
 const savedProgress = loadProgress();
 let previewState = createPreviewState(savedProgress);
+let contractState = createContractState(savedProgress);
 let expeditionProgress = reconcileExpeditionProgress(createExpeditionProgress(savedProgress), {
     ...previewState.learning,
-    completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds
+    completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds,
+    completedContractIds: contractState.completedContractIds
 });
 let surpriseState = createSurpriseState({ seenIds: savedProgress.seenSurpriseIds });
 let trackedMissionIds = new Set(evaluateMissions(previewState.learning, paperI18n.language).completedIds);
@@ -68,7 +82,8 @@ function currentProgressSnapshot() {
     return {
         ...previewState.learning,
         completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds,
-        seenSurpriseIds: surpriseState.seenIds
+        seenSurpriseIds: surpriseState.seenIds,
+        completedContractIds: contractState.completedContractIds
     };
 }
 let progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
@@ -79,6 +94,9 @@ let lastUiSignature = '';
 let nearbyWorldObjectKey = null;
 let currentNavigation = null;
 let autoPilotState = null;
+let localOrbitOpen = false;
+let localOrbitHost = null;
+let activeOrbitContractId = null;
 let lastInput = {
     forward: 0,
     strafe: 0,
@@ -101,6 +119,23 @@ const NASA_SEARCH_TERMS = Object.freeze({
     jwst: 'James Webb Space Telescope', 'voyager-1': 'Voyager spacecraft',
     'tesla-roadster': 'SpaceX Roadster Starman', halley: 'Halley comet', '67p': 'comet 67P'
 });
+
+function isOrbitalContractDestinationNearby(contractId) {
+    const orbitingObject = nearbyWorldObjectKey ? getWorldObject(nearbyWorldObjectKey) : null;
+    return isContractDestinationNearby(contractId, {
+        planetKey: flightState.nearbyPlanetKey,
+        objectKey: nearbyWorldObjectKey,
+        orbitingParentKey: orbitingObject?.parentKey ?? null
+    });
+}
+
+function startableOrbitalContractId() {
+    return CONTRACT_CATALOG.find((contract) => getContractStatus(
+        contractState,
+        contract.id,
+        previewState.learning
+    ) === 'accepted' && isOrbitalContractDestinationNearby(contract.id))?.id ?? null;
+}
 
 function strongestStatus(envelopes) {
     if (envelopes.some((envelope) => envelope.status === 'live')) return 'live';
@@ -217,6 +252,11 @@ async function hydrateDailySky() {
 function handleExplore() {
     const nearbyKey = chooseNearbyObject(flightState.nearbyPlanetKey, nearbyWorldObjectKey);
     if (previewState.notebook.open || !nearbyKey) return;
+    const startableContractId = startableOrbitalContractId();
+    if (startableContractId) {
+        startOrbitalContract(startableContractId);
+        return;
+    }
     previewState = explorePlanet(previewState, nearbyKey);
     audioDirector.play('paper-fold');
     const object = getWorldObject(nearbyKey);
@@ -279,10 +319,11 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
     expeditionProgress = reconcileExpeditionProgress(expeditionProgress, {
         ...previewState.learning,
         completedMissionIds: missions.completedIds,
-        seenSurpriseIds: surpriseState.seenIds
+        seenSurpriseIds: surpriseState.seenIds,
+        completedContractIds: contractState.completedContractIds
     });
     progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
-    saveProgress({ ...previewState.learning, ...expeditionProgress });
+    saveProgress({ ...previewState.learning, ...expeditionProgress, ...contractState });
     if (feedback) {
         const delta = compareProgress(previousPresentation, progressPresentation);
         previewUI.showProgressFeedback(delta);
@@ -310,6 +351,64 @@ function handleRetryQuiz() {
     syncUI(true);
 }
 
+function handleAcceptContract(contractId) {
+    const next = acceptContract(
+        contractState,
+        contractId,
+        previewState.learning
+    );
+    if (next === contractState) return false;
+    contractState = next;
+    siteAnalytics.track('contract_event', { contractId, state: 'start' });
+    reconcileAndSaveProgress({ feedback: false });
+    audioDirector.play('paper-fold');
+    syncUI(true);
+    return true;
+}
+
+async function startOrbitalContract(contractId) {
+    const contract = getContract(contractId);
+    const accepted = getContractStatus(
+        contractState,
+        contractId,
+        previewState.learning
+    ) === 'accepted';
+    if (!contract || !accepted || !isOrbitalContractDestinationNearby(contractId) || localOrbitOpen || !localOrbitHost) return false;
+    localOrbitOpen = true;
+    activeOrbitContractId = contractId;
+    autoPilotState = null;
+    updateAutopilotDisplay();
+    flightInput.reset();
+    flightInput.setEnabled(false);
+    objectHover.hidden = true;
+    audioDirector.play('paper-fold');
+    siteAnalytics.track('contract_event', { contractId, state: 'open' });
+    syncUI(true);
+    await localOrbitHost.open({ language: paperI18n.language, missionId: contract.activity, contract });
+    return true;
+}
+
+function handleOrbitalContractComplete() {
+    if (!activeOrbitContractId) return false;
+    const next = completeContract(contractState, activeOrbitContractId);
+    if (next === contractState) return false;
+    contractState = next;
+    siteAnalytics.track('contract_event', { contractId: activeOrbitContractId, state: 'complete' });
+    reconcileAndSaveProgress();
+    syncUI(true);
+    return true;
+}
+
+function handleLocalOrbitClose() {
+    if (!localOrbitOpen) return;
+    localOrbitOpen = false;
+    flightInput.setEnabled(true);
+    audioDirector.play('paper-fold');
+    if (activeOrbitContractId) siteAnalytics.track('contract_event', { contractId: activeOrbitContractId, state: 'close' });
+    activeOrbitContractId = null;
+    syncUI(true);
+}
+
 const previewUI = createPreviewUI({
     learningCatalog: learningCatalogView,
     onExplore: handleExplore,
@@ -317,6 +416,8 @@ const previewUI = createPreviewUI({
     onSelectSection: handleSelectSection,
     onAnswerQuiz: handleAnswerQuiz,
     onRetryQuiz: handleRetryQuiz,
+    onAcceptContract: handleAcceptContract,
+    onStartContract: startOrbitalContract,
     onMissionLogOpen: () => flightInput.setEnabled(false),
     onMissionLogClose: () => flightInput.setEnabled(true),
     onDismissSurprise: handleDismissSurprise,
@@ -363,6 +464,15 @@ const flightInput = createFlightInput({
     joystickKnob: previewUI.elements.joystickKnob
 });
 
+localOrbitHost = createLocalOrbitHost({
+    messages: {
+        get guidance() { return paperI18n.t('game.docking.guidance'); },
+        get retry() { return paperI18n.t('game.docking.assisted'); }
+    },
+    onComplete: handleOrbitalContractComplete,
+    onClose: handleLocalOrbitClose
+});
+
 function interactionRadiusFor(object) {
     if (object.interactionRadius) return object.interactionRadius;
     if (object.type === 'moon') return Math.max(2.2, object.scale * 3.5);
@@ -371,7 +481,6 @@ function interactionRadiusFor(object) {
 
 function updateAutopilotDisplay() {
     autopilotStatus.hidden = !autoPilotState;
-    paperScene.setAutopilotActive(Boolean(autoPilotState));
     if (!autoPilotState) return;
     const object = getWorldObject(autoPilotState.targetKey);
     autopilotTarget.textContent = translateWorldObject(object, paperI18n.language).name;
@@ -439,14 +548,20 @@ function syncUI(force = false) {
         previewState.learning.section,
         previewState.learning.quiz.status,
         previewState.learning.quiz.selectedIndex ?? 'none',
-        previewState.learning.quiz.attempts
+        previewState.learning.quiz.attempts,
+        contractState.acceptedContractIds.join(','),
+        contractState.completedContractIds.join(','),
+        localOrbitOpen
     ].join(':');
     if (!force && signature === lastUiSignature) return;
     previewUI.update(previewState, {
         flightState,
         nearbyObjectKey: nearbyWorldObjectKey,
         missions,
-        expeditionProgress
+        expeditionProgress,
+        contractState,
+        nearbyContractIds: CONTRACT_CATALOG.filter((contract) => isOrbitalContractDestinationNearby(contract.id))
+            .map((contract) => contract.id)
     });
     lastUiSignature = signature;
 }
@@ -491,7 +606,7 @@ function step(seconds) {
         + Math.abs(lastInput.pitchDelta) + Math.abs(lastInput.roll) > 0.01
         || lastInput.boost || lastInput.brake;
     if (autoPilotState && hasManualInput) cancelAutopilot();
-    const dialogOpen = previewState.notebook.open || previewUI.elements.missionLog.open;
+    const dialogOpen = previewState.notebook.open || previewUI.elements.missionLog.open || localOrbitOpen;
     if (!dialogOpen && autoPilotState) {
         const target = paperScene.getWorldObjectPosition(autoPilotState.targetKey);
         if (!target) cancelAutopilot();
@@ -507,7 +622,6 @@ function step(seconds) {
             if (result.arrived) {
                 audioDirector.play('autopilot-arrive');
                 siteAnalytics.track('autopilot_event', { objectKey: autopilotTargetKey, state: 'arrive' });
-                paperScene.triggerSurprise('star');
             }
         }
     } else if (!dialogOpen) {
@@ -520,7 +634,7 @@ function step(seconds) {
         deltaSeconds: seconds,
         speed: Math.hypot(flightState.velocity.x, flightState.velocity.y, flightState.velocity.z),
         distanceFromOrigin: Math.hypot(flightState.position.x, flightState.position.y, flightState.position.z),
-        dialogOpen: previewState.notebook.open || previewUI.elements.missionLog.open
+        dialogOpen: previewState.notebook.open || previewUI.elements.missionLog.open || localOrbitOpen
     });
     surpriseState = surpriseResult.state;
     if (surpriseResult.event) handleSurprise(surpriseResult.event);
@@ -554,6 +668,7 @@ async function toggleFullscreen() {
 }
 
 function handleKeydown(event) {
+    if (localOrbitOpen) return;
     if (event.code === 'KeyG') {
         event.preventDefault();
         toggleFullscreen().catch(() => {});
@@ -581,7 +696,7 @@ window.render_game_to_text = () => {
     const nearbyPlanet = nearbyKey ? (learningCatalog[nearbyKey] ?? null) : null;
     return JSON.stringify({
         coordinateSystem: '3D paper flight: yaw 0 faces -Z; +X right, +Y up, +Z behind. Movement is camera-relative.',
-        mode: previewState.notebook.open ? 'notebook' : 'free-flight-360',
+        mode: localOrbitOpen ? `local-orbit-${activeOrbitContractId}` : (previewState.notebook.open ? 'notebook' : 'free-flight-360'),
         ship: {
             position: roundVector(flightState.position),
             velocity: roundVector(flightState.velocity),
@@ -614,6 +729,8 @@ window.render_game_to_text = () => {
             discoveredKeys: [...previewState.learning.discoveredKeys]
         },
         progression: { ...expeditionProgress, presentation: progressPresentation },
+        contract: { ...contractState, localOrbitOpen, activeOrbitContractId },
+        orbitalMission: localOrbitHost?.getState() ?? null,
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
         autopilot: autoPilotState ? { ...autoPilotState } : null,
         audio: audioDirector.getState(),
@@ -623,18 +740,29 @@ window.render_game_to_text = () => {
 
 window.advanceTime = (milliseconds) => {
     deterministicMode = true;
+    if (localOrbitOpen) {
+        localOrbitHost?.advanceTime(milliseconds);
+        paperScene.render();
+        return;
+    }
     const steps = Math.max(1, Math.round(milliseconds / (1000 / 60)));
     for (let index = 0; index < steps; index += 1) step(1 / 60);
     paperScene.render();
 };
 
 window.__paperPreview = {
-    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, scene: paperScene.getState() }),
+    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, localOrbitOpen, activeOrbitContractId }, scene: paperScene.getState() }),
     explore: handleExplore,
     closeNotebook: handleCloseNotebook,
     selectSection: handleSelectSection,
     answerQuiz: handleAnswerQuiz,
     retryQuiz: handleRetryQuiz,
+    acceptContract: handleAcceptContract,
+    startOrbitalContract,
+    completeOrbitalContract: handleOrbitalContractComplete,
+    acceptIssDelivery: () => handleAcceptContract(ISS_DELIVERY_CONTRACT_ID),
+    startIssDelivery: () => startOrbitalContract(ISS_DELIVERY_CONTRACT_ID),
+    completeIssDelivery: handleOrbitalContractComplete,
     triggerSurprise: (id) => {
         const event = getSurprise(id);
         if (!event) return false;
@@ -682,7 +810,9 @@ document.addEventListener('fullscreenchange', paperScene.resize);
 window.addEventListener('beforeunload', () => {
     window.removeEventListener('pointerdown', unlockAudio, true);
     window.removeEventListener('keydown', unlockAudio, true);
+    flightInputMode.destroy();
     flightInput.destroy();
+    localOrbitHost?.destroy();
     previewUI.destroy();
     audioDirector.destroy();
     paperScene.destroy();
