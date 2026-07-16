@@ -611,7 +611,7 @@ html[data-flight-input="touch"] .joystick-label {
     border: 0;
 }
 .mission-log::backdrop { background: rgb(7 11 25 / .72); backdrop-filter: blur(6px); }
-.mission-log article {
+.mission-log > article {
     position: relative;
     padding: clamp(1.4rem, 4vw, 2.5rem);
     background: #f1e3b9;
@@ -686,7 +686,7 @@ html[data-flight-input="touch"] .joystick-label {
     .zoom-controls button { min-width: 2rem; min-height: 2rem; padding: .25rem .4rem; }
     .zoom-controls #zoom-cockpit,
     .zoom-controls #orbit-toggle { font-size: .62rem; }
-    .mission-log article { padding: 1.15rem; }
+    .mission-log > article { padding: 1.15rem; }
     .passport-heading { display: grid; padding-right: 2.8rem; }
     .passport-rank { min-width: min(100%, 15rem); }
     .collection-grid,

@@ -56,10 +56,12 @@ export function setDockingAction(state, action, active) {
     return true;
 }
 
-export function readDockingInput(state) {
+export function readDockingInput(state, orientation = 'landscape') {
+    const longitudinal = Number(Boolean(state.forward)) - Number(Boolean(state.reverse));
+    const lateral = Number(Boolean(state.up)) - Number(Boolean(state.down));
     return {
-        horizontal: Number(Boolean(state.forward)) - Number(Boolean(state.reverse)),
-        vertical: Number(Boolean(state.up)) - Number(Boolean(state.down)),
+        horizontal: orientation === 'portrait' ? lateral : longitudinal,
+        vertical: orientation === 'portrait' ? longitudinal : lateral,
         rotation: Number(Boolean(state['rotate-right'])) - Number(Boolean(state['rotate-left'])),
         stabilize: Boolean(state.stabilize)
     };
@@ -261,12 +263,14 @@ function keyDown(key) {
     return Boolean(key?.isDown);
 }
 
-export function readDockingKeyboardInput(keys = {}) {
+export function readDockingKeyboardInput(keys = {}, orientation = 'landscape') {
+    const horizontalKeys = Number(keyDown(keys.d) || keyDown(keys.arrowRight))
+        - Number(keyDown(keys.a) || keyDown(keys.arrowLeft));
+    const verticalKeys = Number(keyDown(keys.w) || keyDown(keys.arrowUp))
+        - Number(keyDown(keys.s) || keyDown(keys.arrowDown));
     return {
-        horizontal: Number(keyDown(keys.d) || keyDown(keys.arrowRight))
-            - Number(keyDown(keys.a) || keyDown(keys.arrowLeft)),
-        vertical: Number(keyDown(keys.w) || keyDown(keys.arrowUp))
-            - Number(keyDown(keys.s) || keyDown(keys.arrowDown)),
+        horizontal: orientation === 'portrait' ? verticalKeys : horizontalKeys,
+        vertical: orientation === 'portrait' ? horizontalKeys : verticalKeys,
         rotation: Number(keyDown(keys.rotateRight)) - Number(keyDown(keys.rotateLeft)),
         stabilize: keyDown(keys.stabilize)
     };
@@ -326,8 +330,8 @@ export async function createDockingGame({
         }
 
         update(_time, deltaMilliseconds) {
-            const pointerInput = readDockingInput(actions);
-            const keyboardInput = readDockingKeyboardInput(this.keys);
+            const pointerInput = readDockingInput(actions, layout.orientation);
+            const keyboardInput = readDockingKeyboardInput(this.keys, layout.orientation);
             const input = {
                 horizontal: Math.max(-1, Math.min(1, pointerInput.horizontal
                     + keyboardInput.horizontal)),

@@ -32,6 +32,24 @@ describe('Phaser Canvas docking adapter', () => {
         expect(readDockingInput(state).horizontal).toBe(-1);
     });
 
+    it('maps portrait arrows to their visual screen direction', () => {
+        const state = createDockingInputState();
+        setDockingAction(state, 'up', true);
+        expect(readDockingInput(state, 'portrait')).toMatchObject({ horizontal: 1, vertical: 0 });
+
+        setDockingAction(state, 'up', false);
+        setDockingAction(state, 'forward', true);
+        expect(readDockingInput(state, 'portrait')).toMatchObject({ horizontal: 0, vertical: 1 });
+
+        setDockingAction(state, 'forward', false);
+        setDockingAction(state, 'reverse', true);
+        expect(readDockingInput(state, 'portrait')).toMatchObject({ horizontal: 0, vertical: -1 });
+
+        setDockingAction(state, 'reverse', false);
+        setDockingAction(state, 'down', true);
+        expect(readDockingInput(state, 'portrait')).toMatchObject({ horizontal: -1, vertical: 0 });
+    });
+
     it('ignores unknown actions without changing the input map', () => {
         const state = createDockingInputState();
         expect(setDockingAction(state, 'fire-laser', true)).toBe(false);
@@ -48,6 +66,16 @@ describe('Phaser Canvas docking adapter', () => {
         expect(readDockingKeyboardInput(held('w'))).toMatchObject({ vertical: 1 });
         expect(readDockingKeyboardInput(held('arrowDown'))).toMatchObject({ vertical: -1 });
         expect(readDockingKeyboardInput(held('s'))).toMatchObject({ vertical: -1 });
+    });
+
+    it('maps portrait keyboard directions to their visual screen direction', () => {
+        const held = (...names) => Object.fromEntries(names.map((name) => [name, { isDown: true }]));
+        expect(readDockingKeyboardInput(held('arrowUp'), 'portrait')).toMatchObject({ horizontal: 1, vertical: 0 });
+        expect(readDockingKeyboardInput(held('w'), 'portrait')).toMatchObject({ horizontal: 1, vertical: 0 });
+        expect(readDockingKeyboardInput(held('arrowRight'), 'portrait')).toMatchObject({ horizontal: 0, vertical: 1 });
+        expect(readDockingKeyboardInput(held('d'), 'portrait')).toMatchObject({ horizontal: 0, vertical: 1 });
+        expect(readDockingKeyboardInput(held('arrowDown'), 'portrait')).toMatchObject({ horizontal: -1, vertical: 0 });
+        expect(readDockingKeyboardInput(held('arrowLeft'), 'portrait')).toMatchObject({ horizontal: 0, vertical: -1 });
     });
 
     it('keeps keyboard rotation and stabilization available', () => {

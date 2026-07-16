@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 const html = readFileSync(new URL('../paper-preview/jogo/index.html', import.meta.url), 'utf8');
 const ui = readFileSync(new URL('../paper-preview/src/ui.js', import.meta.url), 'utf8');
+const css = readFileSync(new URL('../paper-preview/styles.css', import.meta.url), 'utf8');
 
 describe('paper expedition passport UI', () => {
     it('provides missions, collection and awards without covering the flight view', () => {
@@ -32,5 +33,10 @@ describe('paper expedition passport UI', () => {
     it('resets the passport scroll position whenever a HUD chip opens it', () => {
         expect(ui).toContain("missionLogBody: document.querySelector('#mission-log > article')");
         expect(ui).toContain('elements.missionLogBody.scrollTop = 0');
+    });
+
+    it('keeps mission cards inside the outer passport scroll container', () => {
+        expect(css).toMatch(/\.mission-log\s*>\s*article\s*\{[^}]*overflow:\s*auto/s);
+        expect(css).not.toMatch(/\.mission-log\s+article\s*\{[^}]*overflow:\s*auto/s);
     });
 });
