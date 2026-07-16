@@ -236,6 +236,10 @@ function createCourier(scene) {
     return ship;
 }
 
+/**
+ * @param {{ x: number, y: number }} position
+ * @param {ReturnType<typeof createDockingLayout>} [layout]
+ */
 export function mapDockingPosition(position, layout = DOCKING_LAYOUT) {
     const progress = (position.x - layout.simulationMinX)
         / (layout.simulationContactX - layout.simulationMinX);
