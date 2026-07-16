@@ -1,7 +1,7 @@
 const DEFAULT_SOURCES = Object.freeze({
-    solar: Object.freeze({ status: 'fallback', name: 'NASA DONKI · included briefing', url: 'https://ccmc.gsfc.nasa.gov/tools/DONKI/' }),
-    neo: Object.freeze({ status: 'fallback', name: 'NASA/JPL CNEOS · included briefing', url: 'https://cneos.jpl.nasa.gov/' }),
-    planet: Object.freeze({ status: 'fallback', name: 'NASA/JPL Horizons · included briefing', url: 'https://ssd.jpl.nasa.gov/horizons/' })
+    solar: Object.freeze({ status: 'fallback', name: 'NASA DONKI', url: 'https://ccmc.gsfc.nasa.gov/tools/DONKI/' }),
+    neo: Object.freeze({ status: 'fallback', name: 'NASA/JPL CNEOS', url: 'https://cneos.jpl.nasa.gov/' }),
+    planet: Object.freeze({ status: 'fallback', name: 'NASA/JPL Horizons', url: 'https://ssd.jpl.nasa.gov/horizons/' })
 });
 
 function sourceFrom(result, fallback) {
@@ -37,9 +37,20 @@ function fallbackNeo(date) {
     };
 }
 
-export function createLivingOperations({ date, solar, neo, planet } = {}) {
+function mostRecentSolarSignal(values, fallback) {
+    if (!Array.isArray(values) || values.length === 0) return fallback;
+    return values.reduce((latest, candidate) => {
+        const latestTime = Date.parse(latest?.peakTime ?? latest?.beginTime ?? '') || 0;
+        const candidateTime = Date.parse(candidate?.peakTime ?? candidate?.beginTime ?? '') || 0;
+        return candidateTime > latestTime ? candidate : latest;
+    });
+}
+
+/** @param {any} input */
+export function createLivingOperations(input = {}) {
+    const { date, solar, neo, planet } = input;
     const day = /^\d{4}-\d{2}-\d{2}$/.test(date ?? '') ? date : new Date().toISOString().slice(0, 10);
-    const flare = solar?.data?.[0] ?? fallbackSolar(day);
+    const flare = mostRecentSolarSignal(solar?.data, fallbackSolar(day));
     const nearObject = neo?.data?.[0] ?? fallbackNeo(day);
     const planetDistanceKm = Number.isFinite(planet?.data?.distanceKm) ? planet.data.distanceKm : 225_000_000;
 
@@ -128,4 +139,3 @@ export function getLocalizedOperation(operationValue, language = 'pt') {
             : planetCopy(operationValue, languageKey);
     return Object.freeze({ ...operationValue, ...copy });
 }
-

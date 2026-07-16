@@ -117,6 +117,21 @@ describe('daily operation director', () => {
         expect(first[2]).toMatchObject({ targetKey: 'mars', recommendedInstrumentId: 'radio', source: { status: 'fallback' } });
     });
 
+    it('uses the most recent solar signal from the observation window', () => {
+        const operations = createLivingOperations({
+            ...inputs,
+            solar: {
+                ...inputs.solar,
+                data: [
+                    { id: 'OLD', classType: 'C1.0', peakTime: '2026-07-14T10:00Z' },
+                    { id: 'NEW', classType: 'M4.2', peakTime: '2026-07-16T10:00Z' }
+                ]
+            }
+        });
+
+        expect(operations[0]).toMatchObject({ id: expect.stringContaining('NEW'), facts: { flareClass: 'M4.2' } });
+    });
+
     it('provides purposeful Portuguese and English copy for dynamic operations', () => {
         const operation = createLivingOperations(inputs)[0];
         expect(getLocalizedOperation(operation, 'pt')).toMatchObject({ title: 'Vigília solar M2.4', action: 'Preparar sonda' });
@@ -128,5 +143,6 @@ describe('daily operation director', () => {
         expect(operations).toHaveLength(3);
         expect(operations.every((item) => item.source.status === 'fallback')).toBe(true);
         expect(operations.every((item) => Object.keys(item.facts).length > 0)).toBe(true);
+        expect(operations.every((item) => !item.source.name.includes('included'))).toBe(true);
     });
 });

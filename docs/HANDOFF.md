@@ -7,9 +7,21 @@ Atualizado em 16 de julho de 2026. Este documento é o ponto de partida recomend
 - A aplicação principal é a versão Paper em `paper-preview/`.
 - `npm run dev` e `npm run dev:paper` arrancam esta versão.
 - A experiência antiga está preservada em `arquivo/jogo-antigo/` e pode ser aberta com `npm run dev:archive`.
-- O jogo principal está em `/jogo/`; o Centro de Missões abre pelo botão amarelo **Missões** no topo.
+- O jogo principal está em `/jogo/`; a nova **Agência** abre pelo botão amarelo no topo e dá acesso à campanha orbital em **Contratos orbitais**.
 - O progresso é local ao dispositivo, em `paperSolarExplorer:progress:v1` no `localStorage`.
-- A interface e as missões têm texto em português e inglês.
+- A interface, as operações e os relatórios têm texto em português e inglês.
+
+## Agência Espacial de Papel e Sistema Vivo
+
+A Agência acrescenta um ciclo científico persistente à exploração livre:
+
+1. O **Despacho** apresenta três operações diárias: clima solar, aproximação de um objeto próximo da Terra e ligação rádio a Marte.
+2. O jogador escolhe **instrumento**, **perfil de energia** e **trajetória**, com recomendações científicas próprias de cada operação.
+3. A sonda continua em viagem mesmo que o site seja fechado; até três operações podem decorrer em paralelo.
+4. Quando chega, produz um relatório com qualidade calculada pela configuração escolhida.
+5. Recolher o relatório arquiva a descoberta, atribui **90 XP** uma única vez e atualiza imediatamente a patente.
+
+O separador **Sistema Vivo** mostra os sinais que originaram cada operação. Os dados vêm de NASA DONKI, NeoWs e JPL Horizons, com cache local e um conjunto completo de fallbacks quando a rede ou um fornecedor falha. O estado exposto a analytics é deliberadamente amplo (`family` e `state`), sem identificadores, timestamps, respostas ou movimentos.
 
 ## Campanha orbital implementada
 
@@ -27,6 +39,9 @@ Os desbloqueios dependem das descobertas do destino e da conclusão do contrato 
 | Área | Ficheiros principais | Responsabilidade |
 | --- | --- | --- |
 | Catálogo e progressão | `paper-preview/src/contracts/contractCatalog.js`, `contractState.js` | Contratos, pré-requisitos, estado e proximidade do destino |
+| Domínio da Agência | `paper-preview/src/agency/agencyCatalog.js`, `agencyState.js` | Instrumentos, energia, rotas, limite de capacidade, sondas e relatórios imutáveis |
+| Operações vivas | `paper-preview/src/agency/operationDirector.js`, `paper-preview/src/data/spaceDataService.js` | Direção diária, NASA DONKI, NeoWs, Horizons, cache e fallback |
+| UI da Agência | `paper-preview/src/agency/agencyUi.js`, `agencyPresentation.js` | Despacho, setup, cronómetros incrementais, Sistema Vivo, sondas e arquivo |
 | Integração da aplicação | `paper-preview/src/main.js`, `paper-preview/src/ui.js` | Aceitar/iniciar/concluir, persistência e renderização do Centro de Missões |
 | Perfis das missões | `paper-preview/src/minigames/orbitalMissionProfiles.js` | Texto, métricas, controlos, evento de conclusão e tipo de gameplay |
 | Router e host | `createOrbitalMissionGame.js`, `localOrbitHost.js` | Lazy loading do jogo correto e adaptação do modal, HUD e controlos |
@@ -49,6 +64,10 @@ As simulações são imutáveis e determinísticas. A renderização Phaser fica
 
 Também foram incluídos nesta linha de trabalho:
 
+- Agência fullscreen com quatro áreas, setup de sonda e arquivo científico responsivo em desktop, tablet, telefone e paisagem curta.
+- Três fornecedores científicos reais com cache/fallback, cópia dinâmica PT/EN e links para a fonte original.
+- Sondas e relatórios persistentes, conclusão offline, recolha idempotente e integração com o XP já existente.
+- Atualização incremental dos cronómetros para não reconstruir botões durante uma interação.
 - Application Insights opcional e tolerante a bloqueadores; o vocabulário obrigatório saiu do caminho `/analytics/`.
 - Deteção separada de rato e touch, evitando joystick em desktop e em máquinas híbridas quando o rato está ativo.
 - Remoção do marcador/cometa que aparecia ao clicar em objetos.
@@ -66,10 +85,13 @@ npm run typecheck
 npm run build:paper
 ```
 
-Resultado: **82 ficheiros de teste, 394 testes aprovados**, lint e TypeScript sem erros, build de produção concluído.
+Resultado final desta feature: **87 ficheiros de teste, 431 testes aprovados**, lint e TypeScript sem erros e build de produção concluído.
 
 O playtest no browser cobriu:
 
+- Ciclo Agência completo: configurar, lançar, esperar, receber, recolher, ganhar XP e confirmar persistência após reload.
+- Dados reais/cache dos três fornecedores e fallback coberto por testes automatizados.
+- Agência em `390 × 844`, `820 × 1180`, desktop e paisagem curta `844 × 390`, em PT e EN.
 - Centro de Missões em desktop e mobile.
 - Scroll com o ponteiro sobre os cartões.
 - Lua e Marte em `390 × 844`.
@@ -89,6 +111,8 @@ Avisos atuais do build, não bloqueantes:
 - Em mobile, o tabuleiro deve ocupar o viewport e os controlos devem respeitar `env(safe-area-inset-*)`.
 - A Lua é um objeto com `parentKey: earth`; a proximidade de contratos precisa comparar planeta, objeto próximo e objeto-pai.
 - Não guardar respostas de quiz, posições ou movimentos em analytics. O consentimento continua opcional.
+- Não remover os fallbacks da Agência nem bloquear o Despacho à espera da rede; cada operação deve existir sempre.
+- Não reconstruir a árvore interativa da Agência a cada frame/segundo. Os cronómetros atualizam os nós existentes e só há render completo quando o estado muda.
 - Os contratos concluídos são persistidos, mas o estado intermédio da simulação reinicia ao fechar um minijogo.
 
 ## Próximos passos sugeridos
@@ -122,6 +146,6 @@ npm test
 npm run dev
 ```
 
-Abrir `http://localhost:5173/jogo/` e começar pelo botão **Missões**.
+Abrir `http://localhost:5173/jogo/` e começar pelo botão **Agência**.
 
 Antes de alterar uma mecânica, adicionar primeiro um teste à respetiva simulação. Para problemas visuais, testar pelo menos desktop, `390 × 844` e `844 × 390`, capturando o Canvas e o HUD DOM em conjunto.

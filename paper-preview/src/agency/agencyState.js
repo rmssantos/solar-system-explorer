@@ -26,12 +26,40 @@ function freezeReport(value) {
     });
 }
 
+function isStoredMission(value) {
+    return value
+        && typeof value.id === 'string'
+        && typeof value.operationId === 'string'
+        && typeof value.kind === 'string'
+        && typeof value.targetKey === 'string'
+        && Number.isFinite(value.startedAt)
+        && Number.isFinite(value.endsAt)
+        && value.endsAt >= value.startedAt
+        && Boolean(getAgencyCatalogItem(INSTRUMENT_CATALOG, value.instrumentId))
+        && Boolean(getAgencyCatalogItem(POWER_PROFILE_CATALOG, value.powerProfileId))
+        && Boolean(getAgencyCatalogItem(ROUTE_PROFILE_CATALOG, value.routeProfileId));
+}
+
+function isStoredReport(value) {
+    return value
+        && typeof value.id === 'string'
+        && typeof value.missionId === 'string'
+        && typeof value.operationId === 'string'
+        && typeof value.kind === 'string'
+        && typeof value.targetKey === 'string'
+        && Number.isFinite(value.completedAt)
+        && Number.isFinite(value.quality)
+        && value.quality >= 0
+        && value.quality <= 100
+        && typeof value.collected === 'boolean';
+}
+
 export function createAgencyState(value = {}) {
     const activeMissions = Array.isArray(value.activeMissions)
-        ? value.activeMissions.filter((mission) => mission && typeof mission.id === 'string').map(freezeMission)
+        ? value.activeMissions.filter(isStoredMission).map(freezeMission)
         : [];
     const reports = Array.isArray(value.reports)
-        ? value.reports.filter((report) => report && typeof report.id === 'string').map(freezeReport)
+        ? value.reports.filter(isStoredReport).map(freezeReport)
         : [];
     return Object.freeze({
         activeMissions: Object.freeze(activeMissions),
@@ -61,13 +89,15 @@ function invalidConfiguration(operation, instrumentId, powerProfileId, routeProf
         || !getAgencyCatalogItem(ROUTE_PROFILE_CATALOG, routeProfileId);
 }
 
-export function launchAgencyMission(state, {
-    operation,
-    instrumentId,
-    powerProfileId,
-    routeProfileId,
-    nowMs = Date.now()
-} = {}) {
+/** @param {any} state @param {any} configuration */
+export function launchAgencyMission(state, configuration = {}) {
+    const {
+        operation,
+        instrumentId,
+        powerProfileId,
+        routeProfileId,
+        nowMs = Date.now()
+    } = configuration;
     const base = createAgencyState(state);
     if (invalidConfiguration(operation, instrumentId, powerProfileId, routeProfileId)) {
         return Object.freeze({ state, mission: null, error: 'invalid-configuration' });
@@ -159,4 +189,3 @@ export function collectAgencyReport(state, reportId, nowMs = Date.now()) {
     });
     return Object.freeze({ state: next, report, error: null });
 }
-

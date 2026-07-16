@@ -22,4 +22,3 @@ export const ROUTE_PROFILE_CATALOG = Object.freeze([
 export function getAgencyCatalogItem(catalog, id) {
     return catalog.find((item) => item.id === id) ?? null;
 }
-

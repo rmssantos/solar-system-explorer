@@ -34,10 +34,14 @@ describe('paper agency catalog', () => {
 
 describe('paper agency state', () => {
     it('normalizes missing and malformed legacy progress', () => {
-        expect(createAgencyState({ activeMissions: 'bad', reports: null })).toEqual({
+        expect(createAgencyState({
+            activeMissions: [{ id: 'partial-mission' }, null],
+            reports: [{ id: 'partial-report' }, null]
+        })).toEqual({
             activeMissions: [],
             reports: []
         });
+        expect(createAgencyState({ activeMissions: 'bad', reports: null })).toEqual({ activeMissions: [], reports: [] });
     });
 
     it('launches a configured mission with timestamps that survive closing the site', () => {

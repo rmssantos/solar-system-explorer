@@ -11,6 +11,8 @@ A mobile-first, bilingual 3D paper-diorama journey through the Solar System, des
 - **Paper pilot autopilot:** tap a world to travel towards it, or fly the ship yourself.
 - **Chase and cockpit cameras**, orbital-path controls, radar, flight telemetry, and fullscreen mode.
 - **Pocket missions and progression** with XP, explorer ranks, awards, discoveries, and device-local saves.
+- **Paper Space Agency:** configure and launch persistent science probes, follow their journeys, and archive reports for XP.
+- **Living Solar System:** daily operations driven by NASA solar-weather, near-Earth-object, and planetary-position data, with cache and resilient offline fallbacks.
 - **Field notebook and quizzes** with measurements, scientific references, NASA imagery, and live-data fallbacks.
 - **Solar System Library** for browsing planets, moons, dwarf planets, comets, asteroids, and human-made objects.
 - **Reactive soundscape** for flight, autopilot, discoveries, quizzes, and rewards.
@@ -81,6 +83,7 @@ See [docs/releases.md](docs/releases.md) for the release, rollback, and deployme
 - `paper-preview/src/flightInput.js` / `flightSimulation.js`: input and deterministic flight model.
 - `paper-preview/src/scene/`: Three.js paper world, ship, cameras, and rendering.
 - `paper-preview/src/missions/` / `progression/`: missions, ranks, discoveries, and awards.
+- `paper-preview/src/agency/`: live-operation direction, probe configuration, persistence, reports, and presentation.
 - `paper-preview/src/learning/` / `data/`: learning content and scientific data adapters.
 - `paper-preview/public/`: shipped fonts, artwork, sound effects, and static-web-app configuration.
 - `tests/`: unit, integration, UI-contract, privacy, and release-governance tests.
