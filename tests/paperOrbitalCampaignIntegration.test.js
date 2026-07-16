@@ -25,7 +25,11 @@ describe('orbital campaign integration', () => {
 
     it('includes the active orbital simulation in deterministic browser state', () => {
         expect(game).toContain('orbitalMission: localOrbitHost?.getState()');
-        expect(game).toMatch(/if \(localOrbitOpen\)[\s\S]{0,100}localOrbitHost\?\.advanceTime\(milliseconds\)/);
+        const advanceTimeBlock = game.slice(
+            game.indexOf('window.advanceTime'),
+            game.indexOf('window.__paperPreview')
+        );
+        expect(advanceTimeBlock).toMatch(/if \(localOrbitOpen\) \{[\s\S]*?localOrbitHost\?\.advanceTime\(milliseconds\)/);
     });
 
     it('passes destination proximity per contract instead of one global boolean', () => {
