@@ -1,5 +1,5 @@
 import { readAnalyticsConsent, writeAnalyticsConsent } from './consent.js';
-import { sanitizeAnalyticsEvent, sanitizePageView } from './eventCatalog.js';
+import { sanitizeAnalyticsEvent, sanitizePageView } from '../productVocabulary.js';
 
 const defaultSdkLoader = () => import('@microsoft/applicationinsights-web');
 

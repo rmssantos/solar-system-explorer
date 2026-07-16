@@ -6,7 +6,7 @@ import {
     readAnalyticsConsent,
     writeAnalyticsConsent
 } from '../paper-preview/src/analytics/consent.js';
-import { sanitizeAnalyticsEvent, sanitizePageView } from '../paper-preview/src/analytics/eventCatalog.js';
+import { sanitizeAnalyticsEvent, sanitizePageView } from '../paper-preview/src/productVocabulary.js';
 
 function memoryStorage(initial = {}) {
     const values = new Map(Object.entries(initial));

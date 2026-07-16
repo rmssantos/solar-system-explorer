@@ -7,7 +7,7 @@ import { paperI18n } from './i18n/paperI18n.js';
 import { bindBackdropDismiss } from './ui/dialogDismiss.js';
 import { createMediaViewer } from './ui/mediaViewer.js';
 import { siteAnalytics } from './analytics/siteAnalytics.js';
-import { providerFamily } from './analytics/eventCatalog.js';
+import { providerFamily } from './productVocabulary.js';
 import { ISS_DELIVERY_CONTRACT_ID, getContractStatus } from './contracts/contractState.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
