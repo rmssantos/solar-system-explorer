@@ -1420,12 +1420,13 @@ html[data-flight-input="touch"] .joystick-label {
 .docking-control:active, .docking-control.is-active { transform: translate(1px, 2px); box-shadow: 1px 1px 0 #d5634d; }
 .docking-stabilize { color: #302c34; background: var(--sun-pulp); border-color: #98743a; font-size: .68rem; }
 
+.contract-list { display: grid; gap: 14px; margin-bottom: 18px; }
 .contract-card {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 14px;
     align-items: center;
-    margin: 0 0 18px;
+    margin: 0;
     padding: 16px;
     background: #f7e8b9;
     border: 3px solid #9d7942;
@@ -1444,10 +1445,10 @@ html[data-flight-input="touch"] .joystick-label {
 .contract-copy dl { display: flex; flex-wrap: wrap; gap: 7px 16px; margin: 0; }
 .contract-copy dl > div { display: flex; gap: 5px; font-size: .65rem; }
 .contract-copy dt { color: #806137; font-weight: 1000; }.contract-copy dd { margin: 0; }
-#iss-contract-action { min-width: 150px; min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
-#iss-contract-action:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }
+.contract-card > button { min-width: 150px; min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
+.contract-card > button:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }
 
-@media (max-width: 700px) {
+@media (max-width: 700px), (pointer: coarse) and (max-width: 1100px) {
     .local-orbit-mission {
         inset: 0;
         width: 100dvw;
@@ -1457,122 +1458,120 @@ html[data-flight-input="touch"] .joystick-label {
         overflow: hidden;
     }
     .local-orbit-sheet {
+        position: relative;
+        display: block;
         width: 100%;
         height: 100dvh;
         max-height: none;
-        grid-template-columns: 1fr;
-        grid-template-rows: auto minmax(0, 1fr) auto auto auto;
-        gap: 6px;
-        padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+        padding: 0;
         overflow: hidden;
-        border-width: 3px;
-        border-radius: 8px 11px 7px 10px;
+        background: #13294a;
+        border: 0;
+        border-radius: 0;
         box-shadow: none;
         transform: none;
     }
-    .local-orbit-heading { grid-row: 1; gap: 8px; align-items: center; }
-    .local-orbit-heading h1 { font-size: clamp(1.22rem, 7vw, 1.75rem); white-space: nowrap; }
-    .local-orbit-kicker { margin-bottom: 1px; font-size: .48rem; }
+    .local-orbit-heading {
+        position: absolute;
+        z-index: 4;
+        top: max(8px, env(safe-area-inset-top));
+        right: max(8px, env(safe-area-inset-right));
+        left: max(8px, env(safe-area-inset-left));
+        display: flex;
+        gap: 8px;
+        align-items: start;
+        pointer-events: none;
+    }
+    .local-orbit-heading > div { max-width: calc(100% - 58px); padding: 6px 10px 7px; background: rgb(246 231 186 / .92); border: 2px solid #b8965d; border-radius: 7px 10px 6px 9px; box-shadow: 3px 4px 0 rgb(5 9 26 / .28); }
+    .local-orbit-heading h1 { overflow: hidden; font-size: clamp(1.02rem, 5.6vw, 1.42rem); text-overflow: ellipsis; white-space: nowrap; }
+    .local-orbit-kicker { margin-bottom: 1px; font-size: .42rem; }
     .local-orbit-scale { display: none; }
-    .local-orbit-close { width: 44px; min-height: 44px; font-size: 1.1rem; }
+    .local-orbit-close { width: 48px; min-height: 48px; font-size: 1.1rem; pointer-events: auto; }
     .local-orbit-playfield {
-        grid-row: 2;
+        position: absolute;
+        inset: 0;
         width: 100%;
-        height: auto;
+        height: 100%;
         min-height: 0;
-        aspect-ratio: 16 / 9;
-        align-self: center;
-        border-width: 3px;
-        box-shadow: 3px 4px 0 rgb(70 50 30 / .2);
+        aspect-ratio: auto;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
     }
-    .local-orbit-message, .local-orbit-result { gap: 5px; padding: 8px; }
-    .local-orbit-result { grid-template-columns: auto minmax(0, 1fr); align-items: center; text-align: left; }
-    .local-orbit-result > span { grid-row: 1 / span 2; width: 40px; font-size: 1.25rem; }
-    .local-orbit-result strong { font-size: 1.05rem; }
+    .local-orbit-message, .local-orbit-result { z-index: 5; gap: 8px; padding: max(72px, env(safe-area-inset-top)) 18px max(96px, env(safe-area-inset-bottom)); }
+    .local-orbit-result > span { width: 54px; font-size: 1.45rem; }
+    .local-orbit-result strong { font-size: 1.18rem; }
     .local-orbit-result p { display: none; }
-    .local-orbit-result button { grid-column: 1 / -1; min-height: 44px; padding: 5px 10px; }
-    .docking-instruments { grid-row: 3; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
-    .docking-instruments > div { min-width: 0; min-height: 42px; align-content: center; gap: 1px; padding: 4px 5px; box-shadow: 2px 2px 0 rgb(88 64 35 / .1); }
-    .docking-instruments small { overflow: hidden; font-size: .42rem; letter-spacing: .035em; text-overflow: ellipsis; white-space: nowrap; }
-    .docking-instruments strong { font-size: .78rem; white-space: nowrap; }
-    .docking-guidance {
-        grid-row: 4;
-        grid-column: 1;
-        display: -webkit-box;
-        margin: 0;
-        padding: 5px 8px;
-        overflow: hidden;
-        font-size: .66rem;
-        line-height: 1.18;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-    }
-    .docking-controls {
-        grid-row: 5;
-        grid-column: 1;
-        width: 100%;
-        max-width: 390px;
+    .local-orbit-result button { min-height: 48px; padding: 7px 12px; }
+    .docking-instruments {
+        position: absolute;
+        z-index: 4;
+        top: max(72px, calc(env(safe-area-inset-top) + 64px));
+        right: max(8px, env(safe-area-inset-right));
+        left: max(8px, env(safe-area-inset-left));
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 5px;
-        align-self: end;
-        justify-self: center;
+        pointer-events: none;
     }
-    .docking-control { min-height: 44px; padding: 5px; }
+    .docking-instruments > div { min-width: 0; min-height: 44px; align-content: center; gap: 1px; padding: 4px 6px; background: rgb(255 249 222 / .9); box-shadow: 2px 3px 0 rgb(5 9 26 / .24); }
+    .docking-instruments small { overflow: hidden; font-size: .43rem; letter-spacing: .025em; text-overflow: ellipsis; white-space: nowrap; }
+    .docking-instruments strong { font-size: .8rem; white-space: nowrap; }
+    .docking-guidance { display: none; }
+    .docking-controls {
+        position: absolute;
+        z-index: 4;
+        right: max(8px, env(safe-area-inset-right));
+        bottom: max(8px, env(safe-area-inset-bottom));
+        left: 50%;
+        width: min(420px, calc(100% - max(16px, env(safe-area-inset-left)) - max(16px, env(safe-area-inset-right))));
+        max-width: none;
+        gap: 7px;
+        padding: 8px;
+        background: rgb(242 228 186 / .92);
+        border: 3px solid #b8965d;
+        border-radius: 12px 8px 14px 9px;
+        box-shadow: 5px 7px 0 rgb(5 9 26 / .32);
+        transform: translateX(-50%);
+        backdrop-filter: blur(5px);
+    }
+    .docking-control { min-height: clamp(56px, 9dvh, 66px); padding: 7px; font-size: 1.25rem; }
+    .docking-stabilize { font-size: clamp(.62rem, 2.6vw, .78rem); }
+    .local-orbit-sheet:has(.local-orbit-result:not([hidden])) .docking-controls { display: none; }
     .contract-card { grid-template-columns: auto 1fr; }
-    #iss-contract-action { grid-column: 1 / -1; width: 100%; }
+    .contract-card > button { grid-column: 1 / -1; width: 100%; }
 }
 
 @media (hover: none) and (pointer: coarse) {
     .docking-keyboard-hint { display: none; }
 }
 
-@media (max-height: 560px) and (orientation: landscape) {
-    .local-orbit-mission {
-        inset: 0;
-        width: 100dvw;
-        height: 100dvh;
-        max-height: none;
-        margin: 0;
-        overflow: hidden;
+@media (max-height: 560px) and (orientation: landscape) and (max-width: 1100px) {
+    .local-orbit-heading { right: max(8px, env(safe-area-inset-right)); }
+    .local-orbit-heading > div { max-width: calc(68% - 58px); padding: 4px 8px 5px; }
+    .local-orbit-heading h1 { font-size: clamp(.94rem, 3vw, 1.2rem); }
+    .local-orbit-kicker { font-size: .36rem; }
+    .docking-instruments {
+        top: max(66px, calc(env(safe-area-inset-top) + 58px));
+        right: calc(min(230px, 32vw) + max(18px, env(safe-area-inset-right)));
+        gap: 4px;
     }
-    .local-orbit-sheet {
-        width: 100%;
-        height: 100dvh;
-        max-height: none;
-        grid-template-columns: minmax(0, 1fr) minmax(190px, 30vw);
-        grid-template-rows: auto minmax(0, 1fr) auto;
-        gap: 6px 8px;
-        padding: max(7px, env(safe-area-inset-top)) max(9px, env(safe-area-inset-right)) max(7px, env(safe-area-inset-bottom)) max(9px, env(safe-area-inset-left));
-        overflow: hidden;
-        border-width: 3px;
-        border-radius: 8px 11px 7px 10px;
-        box-shadow: none;
+    .docking-instruments > div { min-height: 40px; padding: 3px 4px; }
+    .docking-instruments small { font-size: .34rem; letter-spacing: 0; }
+    .docking-instruments strong { font-size: .68rem; }
+    .docking-controls {
+        right: max(8px, env(safe-area-inset-right));
+        bottom: max(8px, env(safe-area-inset-bottom));
+        left: auto;
+        width: min(230px, 32vw);
+        gap: 5px;
+        padding: 6px;
         transform: none;
     }
-    .local-orbit-heading { grid-row: 1; gap: 8px; align-items: center; }
-    .local-orbit-heading h1 { font-size: 1.35rem; white-space: nowrap; }
-    .local-orbit-kicker { margin-bottom: 1px; font-size: .43rem; }
-    .local-orbit-scale { display: none; }
-    .local-orbit-close { width: 44px; min-height: 44px; font-size: 1.1rem; }
-    .local-orbit-playfield {
-        grid-row: 2 / span 2;
-        grid-column: 1;
-        width: 100%;
-        height: 100%;
-        min-height: 0;
-        aspect-ratio: auto;
-        border-width: 3px;
-        box-shadow: 3px 4px 0 rgb(70 50 30 / .2);
-    }
-    .docking-instruments { grid-row: 2; grid-column: 2; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; }
-    .docking-instruments > div { min-width: 0; min-height: 42px; align-content: center; gap: 1px; padding: 3px 4px; }
-    .docking-instruments small { overflow: hidden; font-size: .35rem; letter-spacing: 0; text-overflow: ellipsis; white-space: nowrap; }
-    .docking-instruments strong { font-size: .68rem; white-space: nowrap; }
-    .docking-controls { grid-row: 3; grid-column: 2; width: 100%; gap: 4px; align-self: end; }
-    .docking-control { min-height: 42px; padding: 4px; }
-    .docking-stabilize { font-size: .54rem; }
-    .local-orbit-message, .local-orbit-result { gap: 4px; padding: 7px; }
-    .local-orbit-result > span { width: 38px; }
+    .docking-control { min-height: clamp(48px, 14dvh, 56px); padding: 4px; font-size: 1.05rem; }
+    .docking-stabilize { font-size: clamp(.48rem, 1.35vw, .62rem); }
+    .local-orbit-message, .local-orbit-result { padding: 60px calc(min(230px, 32vw) + 24px) 16px 16px; }
+    .local-orbit-result > span { width: 44px; }
     .local-orbit-result strong { font-size: 1rem; }
-    .local-orbit-result p { display: none; }
     .docking-guidance, .docking-keyboard-hint { display: none; }
 }

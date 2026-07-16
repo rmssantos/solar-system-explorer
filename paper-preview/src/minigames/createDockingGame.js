@@ -25,20 +25,25 @@ export const DOCKING_LAYOUT = Object.freeze({
 });
 
 export function createDockingLayout(width = 960, height = 540) {
-    if (height <= width * 1.08) return DOCKING_LAYOUT;
-    return Object.freeze({
-        orientation: 'portrait',
-        width: 540,
-        height: 960,
-        edgeMargin: 8,
-        targetX: 270,
-        targetY: 145,
-        portY: 222,
-        shipNoseOffset: 34,
-        shipStartY: 790,
-        simulationMinX: DOCKING_LIMITS.minX,
-        simulationContactX: DOCKING_LIMITS.contactX
-    });
+    if (height > width * 1.08) {
+        return Object.freeze({
+            orientation: 'portrait',
+            width: 540,
+            height: 960,
+            edgeMargin: 8,
+            targetX: 270,
+            targetY: 320,
+            portY: 397,
+            shipNoseOffset: 34,
+            shipStartY: 610,
+            simulationMinX: DOCKING_LIMITS.minX,
+            simulationContactX: DOCKING_LIMITS.contactX
+        });
+    }
+    if (height <= 560 && width <= 1100) {
+        return Object.freeze({ ...DOCKING_LAYOUT, compact: true, issX: 500, shipStartX: 70 });
+    }
+    return DOCKING_LAYOUT;
 }
 
 export function createDockingInputState() {
@@ -115,22 +120,23 @@ function drawApproachCorridor(scene, layout) {
         corridor.lineBetween(layout.targetX, layout.portY, layout.targetX, endY);
         return corridor;
     }
-    const portX = DOCKING_LAYOUT.issX + DOCKING_LAYOUT.portOffsetX;
+    const portX = layout.issX + layout.portOffsetX;
+    const corridorStartX = Math.max(layout.shipStartX + 170, portX - 220);
     corridor.fillStyle(0xf4c85f, 0.08);
-    corridor.fillRect(535, 238, portX - 535, 64);
+    corridor.fillRect(corridorStartX, 238, portX - corridorStartX, 64);
     corridor.lineStyle(3, 0xf4c85f, 0.7);
-    for (let x = 535; x < portX; x += 28) {
+    for (let x = corridorStartX; x < portX; x += 28) {
         corridor.lineBetween(x, 238, Math.min(x + 16, portX), 238);
         corridor.lineBetween(x, 302, Math.min(x + 16, portX), 302);
     }
     corridor.lineStyle(1, 0xf4c85f, 0.3);
-    corridor.lineBetween(535, 270, portX, 270);
+    corridor.lineBetween(corridorStartX, 270, portX, 270);
     return corridor;
 }
 
 function createIss(scene, layout) {
     const station = scene.add.container(
-        layout.orientation === 'portrait' ? layout.targetX : DOCKING_LAYOUT.issX,
+        layout.orientation === 'portrait' ? layout.targetX : layout.issX,
         layout.orientation === 'portrait' ? layout.targetY : 270
     );
     const shadow = scene.add.graphics();
@@ -165,7 +171,7 @@ function createIss(scene, layout) {
 
 function createHubble(scene, layout) {
     const telescope = scene.add.container(
-        layout.orientation === 'portrait' ? layout.targetX : DOCKING_LAYOUT.issX,
+        layout.orientation === 'portrait' ? layout.targetX : layout.issX,
         layout.orientation === 'portrait' ? layout.targetY : 270
     );
     const shadow = scene.add.graphics();
@@ -240,9 +246,9 @@ export function mapDockingPosition(position, layout = DOCKING_LAYOUT) {
             y: layout.shipStartY - progress * (layout.shipStartY - contactShipY)
         };
     }
-    const contactShipX = DOCKING_LAYOUT.issX + DOCKING_LAYOUT.portOffsetX - DOCKING_LAYOUT.shipNoseOffset;
+    const contactShipX = layout.issX + layout.portOffsetX - layout.shipNoseOffset;
     return {
-        x: DOCKING_LAYOUT.shipStartX + progress * (contactShipX - DOCKING_LAYOUT.shipStartX),
+        x: layout.shipStartX + progress * (contactShipX - layout.shipStartX),
         y: 270 - position.y * 45
     };
 }

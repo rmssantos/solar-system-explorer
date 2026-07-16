@@ -29,24 +29,36 @@ describe('paper local-orbit mission surface', () => {
     it('uses a responsive paper surface with safe touch targets and reduced motion', () => {
         expect(css).toMatch(/\.local-orbit-mission\s*\{/);
         expect(css).toMatch(/\.docking-control\s*\{[^}]*min-(?:width|height):\s*44px/s);
-        expect(css).toMatch(/@media\s*\(max-width:\s*700px\)/);
-        expect(css).toContain('aspect-ratio: 16 / 9');
+        expect(css).toMatch(/@media\s*\(max-width:\s*700px\),\s*\(pointer:\s*coarse\)\s*and\s*\(max-width:\s*1100px\)/);
         expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
     });
 
     it('uses a viewport-sized, non-scrolling game board on phones', () => {
-        expect(css).toMatch(/@media\s*\(max-width:\s*700px\)[\s\S]*?\.local-orbit-mission\s*\{[^}]*width:\s*100dvw[^}]*height:\s*100dvh[^}]*max-height:\s*none/s);
-        expect(css).toMatch(/@media\s*\(max-width:\s*700px\)[\s\S]*?\.local-orbit-sheet\s*\{[^}]*height:\s*100dvh[^}]*overflow:\s*hidden/s);
-        expect(css).toMatch(/@media\s*\(max-width:\s*700px\)[\s\S]*?\.local-orbit-playfield\s*\{[^}]*min-height:\s*0[^}]*aspect-ratio:\s*16\s*\/\s*9/s);
-        expect(css).toMatch(/@media\s*\(max-width:\s*700px\)[\s\S]*?\.local-orbit-result p\s*\{[^}]*display:\s*none/s);
+        expect(css).toMatch(/\.local-orbit-mission\s*\{[^}]*width:\s*100dvw[^}]*height:\s*100dvh[^}]*max-height:\s*none/s);
+        expect(css).toMatch(/\.local-orbit-sheet\s*\{[^}]*position:\s*relative[^}]*height:\s*100dvh[^}]*overflow:\s*hidden/s);
+        expect(css).toMatch(/\.local-orbit-playfield\s*\{[^}]*position:\s*absolute[^}]*inset:\s*0[^}]*height:\s*100%[^}]*aspect-ratio:\s*auto/s);
+        expect(css).toMatch(/\.local-orbit-result p\s*\{[^}]*display:\s*none/s);
+    });
+
+    it('gives touch players large controls over the fullscreen playfield', () => {
+        expect(css).toMatch(/\.local-orbit-heading\s*\{[^}]*position:\s*absolute[^}]*z-index:\s*4/s);
+        expect(css).toMatch(/\.docking-instruments\s*\{[^}]*position:\s*absolute[^}]*z-index:\s*4/s);
+        expect(css).toMatch(/\.docking-controls\s*\{[^}]*position:\s*absolute[^}]*z-index:\s*4/s);
+        expect(css).toMatch(/\.docking-control\s*\{[^}]*min-height:\s*clamp\(56px,/s);
+        expect(css).toContain('.local-orbit-sheet:has(.local-orbit-result:not([hidden])) .docking-controls');
     });
 
     it('keeps the reward toast away from an active docking game', () => {
         expect(css).toContain('body:has(.local-orbit-mission[open]) .reward-toast');
     });
 
+    it('stacks catalog-driven contract cards and styles their contextual action', () => {
+        expect(css).toMatch(/\.contract-list\s*\{[^}]*display:\s*grid/s);
+        expect(css).toMatch(/\.contract-card\s*>\s*button\s*\{[^}]*min-height:\s*46px/s);
+    });
+
     it('places landscape playfield, telemetry and controls inside the same viewport grid', () => {
-        expect(css).toMatch(/@media\s*\(max-height:\s*560px\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*?\.local-orbit-playfield\s*\{[^}]*grid-row:\s*2\s*\/\s*span\s*2/s);
-        expect(css).toMatch(/@media\s*\(max-height:\s*560px\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*?\.docking-controls\s*\{[^}]*grid-row:\s*3/s);
+        expect(css).toMatch(/@media\s*\(max-height:\s*560px\)\s*and\s*\(orientation:\s*landscape\)\s*and\s*\(max-width:\s*1100px\)/);
+        expect(css).toMatch(/\.docking-controls\s*\{[^}]*right:\s*max\(/s);
     });
 });
