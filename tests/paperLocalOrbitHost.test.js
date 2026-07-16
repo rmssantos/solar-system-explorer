@@ -4,6 +4,7 @@ import { createLocalOrbitHost } from '../paper-preview/src/minigames/localOrbitH
 function fakeElement(dataset = {}) {
     const listeners = new Map();
     const classes = new Set();
+    const attributes = new Map();
     return {
         dataset,
         hidden: false,
@@ -14,6 +15,8 @@ function fakeElement(dataset = {}) {
         emit(type, event = {}) { listeners.get(type)?.({ preventDefault() {}, pointerId: 1, ...event }); },
         showModal() { this.open = true; },
         close() { this.open = false; },
+        setAttribute(name, value) { attributes.set(name, String(value)); },
+        getAttribute(name) { return attributes.get(name) ?? null; },
         classList: {
             toggle(name, force) { if (force) classes.add(name); else classes.delete(name); },
             contains(name) { return classes.has(name); }
@@ -25,6 +28,7 @@ function createElements() {
     return {
         dialog: fakeElement(), stage: fakeElement(), loading: fakeElement(), error: fakeElement(), result: fakeElement(),
         guidance: fakeElement(), distance: fakeElement(), speed: fakeElement(), alignment: fakeElement(),
+        metricLabels: [fakeElement(), fakeElement(), fakeElement()],
         kicker: fakeElement(), title: fakeElement(), playfield: fakeElement(), resultTitle: fakeElement(), resultScience: fakeElement(),
         close: fakeElement(), finish: fakeElement(), retry: fakeElement(),
         controls: ['forward', 'reverse', 'up', 'down', 'rotate-left', 'rotate-right', 'stabilize']
@@ -106,6 +110,47 @@ describe('local orbit host', () => {
         elements.controls[0].emit('pointerup');
 
         expect(actions).toEqual([['forward', true], ['forward', false]]);
+    });
+
+    it('adapts controls and telemetry to the lunar sweep', async () => {
+        const elements = createElements();
+        let gameOptions;
+        const host = createLocalOrbitHost({
+            elements,
+            gameFactory: async (options) => { gameOptions = options; options.onReady(); return { destroy() {}, setAction() {} }; }
+        });
+
+        await host.open({ missionId: 'lunar-sweep', language: 'pt' });
+        gameOptions.onTelemetry({
+            collected: 2, total: 4, shield: 2, signalStrength: 0.75,
+            primarySafe: true, secondarySafe: true, tertiarySafe: true
+        });
+
+        expect(gameOptions.profile.gameplay).toBe('sweep');
+        expect(elements.controls.find((item) => item.dataset.dockingAction === 'rotate-left').hidden).toBe(true);
+        expect(elements.controls.find((item) => item.dataset.dockingAction === 'stabilize').textContent).toBe('Travar');
+        expect(elements.metricLabels.map((item) => item.textContent)).toEqual(['Transmissores', 'Escudo', 'Sinal']);
+        expect([elements.distance.textContent, elements.speed.textContent, elements.alignment.textContent])
+            .toEqual(['2/4', '2/3', '75%']);
+    });
+
+    it('uses mission-specific feedback and completion events', async () => {
+        const elements = createElements();
+        let gameOptions;
+        let completions = 0;
+        const host = createLocalOrbitHost({
+            elements,
+            onComplete: () => { completions += 1; },
+            gameFactory: async (options) => { gameOptions = options; options.onReady(); return { destroy() {}, setAction() {} }; }
+        });
+
+        await host.open({ missionId: 'lunar-sweep', language: 'en' });
+        gameOptions.onEvent('debris-hit');
+        expect(elements.guidance.textContent).toMatch(/shield/i);
+        gameOptions.onEvent('docked');
+        expect(completions).toBe(0);
+        gameOptions.onEvent('sweep-complete');
+        expect(completions).toBe(1);
     });
 
     it('shows assisted feedback and completes only once', async () => {

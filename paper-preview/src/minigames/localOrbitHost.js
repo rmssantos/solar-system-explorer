@@ -11,6 +11,8 @@ function queryElements(root) {
         distance: root.querySelector('#docking-distance'),
         speed: root.querySelector('#docking-speed'),
         alignment: root.querySelector('#docking-alignment'),
+        metricLabels: [...root.querySelectorAll('.docking-instruments small')],
+        keyboardHint: root.querySelector('.docking-keyboard-hint'),
         kicker: root.querySelector('.local-orbit-kicker'),
         title: root.querySelector('#local-orbit-title'),
         playfield: root.querySelector('.local-orbit-playfield'),
@@ -24,13 +26,24 @@ function queryElements(root) {
 }
 
 async function defaultGameFactory(options) {
-    const { createDockingGame } = await import('./createDockingGame.js');
-    return createDockingGame(options);
+    const { createOrbitalMissionGame } = await import('./createOrbitalMissionGame.js');
+    return createOrbitalMissionGame(options);
 }
 
 function setSafetyClass(element, safe) {
     element.classList.toggle('is-safe', safe);
     element.classList.toggle('is-warning', !safe);
+}
+
+function formatMetric(metric, telemetry) {
+    const value = Number(telemetry[metric.field] ?? 0);
+    if (metric.format === 'distance') return `${value.toFixed(1)} m`;
+    if (metric.format === 'speed') return `${value.toFixed(2)} m/s`;
+    if (metric.format === 'degrees') return `${value.toFixed(1)}°`;
+    if (metric.format === 'collection') return `${Math.round(value)}/${Math.round(telemetry.total ?? 0)}`;
+    if (metric.format === 'shield') return `${Math.round(value)}/3`;
+    if (metric.format === 'percent') return `${Math.round(value * 100)}%`;
+    return String(value);
 }
 
 /**
@@ -77,20 +90,20 @@ export function createLocalOrbitHost({
 
     function updateTelemetry(telemetry) {
         latestTelemetry = { ...telemetry };
-        elements.distance.textContent = `${telemetry.distance.toFixed(1)} m`;
-        elements.speed.textContent = `${telemetry.relativeSpeed.toFixed(2)} m/s`;
-        elements.alignment.textContent = `${telemetry.alignmentDegrees.toFixed(1)}°`;
-        setSafetyClass(elements.distance, telemetry.corridorSafe);
-        setSafetyClass(elements.speed, telemetry.speedSafe);
-        setSafetyClass(elements.alignment, telemetry.alignmentSafe);
+        const values = [elements.distance, elements.speed, elements.alignment];
+        const metrics = openOptions.profile?.metrics ?? [];
+        metrics.forEach((metric, index) => {
+            values[index].textContent = formatMetric(metric, telemetry);
+            setSafetyClass(values[index], Boolean(telemetry[metric.safeField]));
+        });
     }
 
     function handleGameEvent(event) {
-        if (event === 'unsafe-contact') {
+        if (openOptions.profile?.retryEvents.includes(event)) {
             elements.guidance.textContent = openOptions.profile?.retry ?? messages.retry ?? elements.guidance.textContent;
             return;
         }
-        if (event !== 'docked' || completed) return;
+        if (event !== openOptions.profile?.completionEvent || completed) return;
         completed = true;
         elements.result.hidden = false;
         onComplete();
@@ -137,6 +150,18 @@ export function createLocalOrbitHost({
         elements.resultScience.textContent = profile.science;
         elements.playfield.setAttribute?.('aria-label', profile.playfield);
         elements.guidance.textContent = profile.guidance ?? messages.guidance ?? elements.guidance.textContent;
+        elements.keyboardHint && (elements.keyboardHint.textContent = profile.keyboardHint);
+        profile.metrics.forEach((metric, index) => {
+            if (elements.metricLabels?.[index]) elements.metricLabels[index].textContent = metric.label;
+        });
+        const visibleControls = new Set(profile.controls);
+        for (const control of elements.controls) {
+            control.hidden = !visibleControls.has(control.dataset.dockingAction);
+            if (control.dataset.dockingAction === 'stabilize') {
+                control.textContent = profile.centerControl;
+                control.setAttribute?.('aria-label', profile.centerControl);
+            }
+        }
         if (!elements.dialog.open) elements.dialog.showModal();
         await startGame();
     }
