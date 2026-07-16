@@ -30,7 +30,23 @@ describe('paper local-orbit mission surface', () => {
         expect(css).toMatch(/\.local-orbit-mission\s*\{/);
         expect(css).toMatch(/\.docking-control\s*\{[^}]*min-(?:width|height):\s*44px/s);
         expect(css).toMatch(/@media\s*\(max-width:\s*700px\)/);
-        expect(css).toMatch(/\.local-orbit-playfield\s*\{\s*min-height:\s*min\(40vh,\s*330px\)/);
+        expect(css).toContain('aspect-ratio: 16 / 9');
         expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
+    });
+
+    it('uses a viewport-sized, non-scrolling game board on phones', () => {
+        expect(css).toMatch(/@media\s*\(max-width:\s*700px\)[\s\S]*?\.local-orbit-mission\s*\{[^}]*width:\s*100dvw[^}]*height:\s*100dvh[^}]*max-height:\s*none/s);
+        expect(css).toMatch(/@media\s*\(max-width:\s*700px\)[\s\S]*?\.local-orbit-sheet\s*\{[^}]*height:\s*100dvh[^}]*overflow:\s*hidden/s);
+        expect(css).toMatch(/@media\s*\(max-width:\s*700px\)[\s\S]*?\.local-orbit-playfield\s*\{[^}]*min-height:\s*0[^}]*aspect-ratio:\s*16\s*\/\s*9/s);
+        expect(css).toMatch(/@media\s*\(max-width:\s*700px\)[\s\S]*?\.local-orbit-result p\s*\{[^}]*display:\s*none/s);
+    });
+
+    it('keeps the reward toast away from an active docking game', () => {
+        expect(css).toContain('body:has(.local-orbit-mission[open]) .reward-toast');
+    });
+
+    it('places landscape playfield, telemetry and controls inside the same viewport grid', () => {
+        expect(css).toMatch(/@media\s*\(max-height:\s*560px\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*?\.local-orbit-playfield\s*\{[^}]*grid-row:\s*2\s*\/\s*span\s*2/s);
+        expect(css).toMatch(/@media\s*\(max-height:\s*560px\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*?\.docking-controls\s*\{[^}]*grid-row:\s*3/s);
     });
 });
