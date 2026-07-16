@@ -27,4 +27,16 @@ describe('orbital campaign integration', () => {
         expect(game).toContain('orbitalMission: localOrbitHost?.getState()');
         expect(game).toMatch(/if \(localOrbitOpen\)[\s\S]{0,100}localOrbitHost\?\.advanceTime\(milliseconds\)/);
     });
+
+    it('passes destination proximity per contract instead of one global boolean', () => {
+        expect(game).toContain('nearbyContractIds: CONTRACT_CATALOG.filter');
+        expect(ui).toContain('nearbyContractIds.includes(contract.id)');
+        expect(ui).not.toContain('destinationNearby, contractState');
+    });
+
+    it('renders mission artwork as accessible decorative postcards', () => {
+        expect(ui).toContain("art.className = 'contract-art'");
+        expect(ui).toContain('art.src = contract.art');
+        expect(ui).toContain("art.alt = ''");
+    });
 });

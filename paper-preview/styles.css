@@ -1457,7 +1457,7 @@ html[data-flight-input="touch"] .joystick-label {
 .contract-list { display: grid; gap: 14px; margin-bottom: 18px; }
 .contract-card {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: 176px minmax(0, 1fr) auto;
     gap: 14px;
     align-items: center;
     margin: 0;
@@ -1471,8 +1471,16 @@ html[data-flight-input="touch"] .joystick-label {
 }
 .contract-card[hidden] { display: none; }
 .contract-card[data-status="locked"] { border-color: #9b8c6e; border-left-color: #8f846e; }
-.contract-card[data-status="locked"] .contract-icon { filter: grayscale(.75); opacity: .72; }
-.contract-icon { width: 52px; aspect-ratio: 1; display: grid; place-content: center; color: #f7e8b9; background: #4f8177; border: 3px solid #315b55; border-radius: 48% 52% 45% 55%; font-size: 1.55rem; }
+.contract-card[data-status="locked"] .contract-art { filter: grayscale(.75) sepia(.18); opacity: .66; }
+.contract-art {
+    width: 176px;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border: 4px solid #fff1cb;
+    border-radius: 4px 9px 5px 8px;
+    box-shadow: 2px 3px 0 #6f5033;
+    transform: rotate(-1.2deg);
+}
 .contract-copy header { display: flex; gap: 8px; justify-content: space-between; color: #8d493d; font-size: .62rem; font-weight: 1000; letter-spacing: .07em; text-transform: uppercase; }
 .contract-copy h2 { margin: 3px 0 4px; font-family: 'Paper Fredoka', sans-serif; font-size: 1.35rem; }
 .contract-copy p { margin: 0 0 9px; color: #655743; font-size: .78rem; line-height: 1.4; }
@@ -1572,7 +1580,8 @@ html[data-flight-input="touch"] .joystick-label {
     .docking-control { min-height: clamp(56px, 9dvh, 66px); padding: 7px; font-size: 1.25rem; }
     .docking-stabilize { font-size: clamp(.62rem, 2.6vw, .78rem); }
     .local-orbit-sheet:has(.local-orbit-result:not([hidden])) .docking-controls { display: none; }
-    .contract-card { grid-template-columns: auto 1fr; }
+    .contract-card { grid-template-columns: minmax(104px, 34%) 1fr; gap: 10px; padding: 12px; }
+    .contract-art { width: 100%; align-self: start; }
     .contract-card > button { grid-column: 1 / -1; width: 100%; }
 }
 

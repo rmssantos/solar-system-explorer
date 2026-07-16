@@ -559,7 +559,8 @@ function syncUI(force = false) {
         missions,
         expeditionProgress,
         contractState,
-        contractDestinationNearby: CONTRACT_CATALOG.some((contract) => isOrbitalContractDestinationNearby(contract.id))
+        nearbyContractIds: CONTRACT_CATALOG.filter((contract) => isOrbitalContractDestinationNearby(contract.id))
+            .map((contract) => contract.id)
     });
     lastUiSignature = signature;
 }

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
     HUBBLE_MAINTENANCE_CONTRACT_ID,
     ISS_DELIVERY_CONTRACT_ID,
+    LUNAR_SWEEP_CONTRACT_ID,
+    MARS_RELAY_CONTRACT_ID,
     acceptContract,
     completeContract,
     createContractState,
@@ -85,5 +87,50 @@ describe('paper expedition contracts', () => {
         expect(isContractDestinationNearby(ISS_DELIVERY_CONTRACT_ID, {
             planetKey: 'mars', orbitingParentKey: 'mars'
         })).toBe(false);
+    });
+
+    it('unlocks a lunar sweep after Hubble and requires discovery of the Moon', () => {
+        const afterHubble = createContractState({ completedContractIds: [
+            ISS_DELIVERY_CONTRACT_ID, HUBBLE_MAINTENANCE_CONTRACT_ID
+        ] });
+        expect(getContractStatus(afterHubble, LUNAR_SWEEP_CONTRACT_ID, {
+            discoveredKeys: ['earth']
+        })).toBe('locked');
+        expect(getContractStatus(afterHubble, LUNAR_SWEEP_CONTRACT_ID, {
+            discoveredKeys: ['earth', 'moon']
+        })).toBe('available');
+        expect(CONTRACT_CATALOG.find((item) => item.id === LUNAR_SWEEP_CONTRACT_ID)).toMatchObject({
+            destinationKey: 'moon', activity: 'lunar-sweep',
+            unlockContracts: [HUBBLE_MAINTENANCE_CONTRACT_ID]
+        });
+    });
+
+    it('unlocks the Mars relay only after the lunar sweep and Mars discovery', () => {
+        const afterMoon = createContractState({ completedContractIds: [
+            ISS_DELIVERY_CONTRACT_ID, HUBBLE_MAINTENANCE_CONTRACT_ID, LUNAR_SWEEP_CONTRACT_ID
+        ] });
+        expect(getContractStatus(afterMoon, MARS_RELAY_CONTRACT_ID, {
+            discoveredKeys: ['earth', 'moon']
+        })).toBe('locked');
+        expect(getContractStatus(afterMoon, MARS_RELAY_CONTRACT_ID, {
+            discoveredKeys: ['earth', 'moon', 'mars']
+        })).toBe('available');
+        expect(CONTRACT_CATALOG.find((item) => item.id === MARS_RELAY_CONTRACT_ID)).toMatchObject({
+            destinationKey: 'mars', activity: 'mars-relay',
+            unlockContracts: [LUNAR_SWEEP_CONTRACT_ID]
+        });
+    });
+
+    it('keeps destination proximity specific to each contract', () => {
+        expect(isContractDestinationNearby(LUNAR_SWEEP_CONTRACT_ID, { planetKey: 'moon' })).toBe(true);
+        expect(isContractDestinationNearby(LUNAR_SWEEP_CONTRACT_ID, { planetKey: 'mars' })).toBe(false);
+        expect(isContractDestinationNearby(MARS_RELAY_CONTRACT_ID, { planetKey: 'mars' })).toBe(true);
+        expect(isContractDestinationNearby(MARS_RELAY_CONTRACT_ID, { orbitingParentKey: 'mars' })).toBe(true);
+        expect(isContractDestinationNearby(MARS_RELAY_CONTRACT_ID, { planetKey: 'earth' })).toBe(false);
+    });
+
+    it('provides one paper-art postcard for every campaign contract', () => {
+        expect(CONTRACT_CATALOG).toHaveLength(4);
+        for (const item of CONTRACT_CATALOG) expect(item.art).toMatch(/^\/art\/missions\/mission-.+\.webp$/);
     });
 });

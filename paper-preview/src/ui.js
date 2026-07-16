@@ -414,21 +414,25 @@ export function createPreviewUI({
         }));
     }
 
-    function renderContracts(state, destinationNearby, contractState) {
+    function renderContracts(state, nearbyContractIds, contractState) {
         let startable = null;
         const language = paperI18n.language === 'en' ? 'en' : 'pt';
         const statuses = CONTRACT_CATALOG.map((contract) => getContractStatus(contractState, contract.id, state.learning));
         const cards = CONTRACT_CATALOG.map((contract, index) => {
             const copy = contract.copy[language];
             const status = statuses[index];
+            const destinationNearby = nearbyContractIds.includes(contract.id);
             const card = document.createElement('article');
             card.className = 'contract-card';
             card.dataset.status = status;
 
-            const icon = document.createElement('span');
-            icon.className = 'contract-icon';
-            icon.setAttribute('aria-hidden', 'true');
-            icon.textContent = contract.activity === 'iss-docking' ? '✉' : '⌁';
+            const art = document.createElement('img');
+            art.className = 'contract-art';
+            art.src = contract.art;
+            art.alt = '';
+            art.width = 176;
+            art.height = 132;
+            art.loading = 'lazy';
 
             const body = document.createElement('div');
             body.className = 'contract-copy';
@@ -474,12 +478,12 @@ export function createPreviewUI({
                 startable = contract;
             } else if (status === 'accepted') {
                 action.dataset.contractAction = 'travel';
-                action.textContent = paperI18n.t('game.contract.travel');
+                action.textContent = copy.travel ?? paperI18n.t('game.contract.travel');
             } else {
                 action.dataset.contractAction = 'complete';
                 action.textContent = paperI18n.t('game.contract.complete');
             }
-            card.append(icon, body, action);
+            card.append(art, body, action);
             return card;
         });
         elements.contractList.replaceChildren(...cards);
@@ -507,7 +511,7 @@ export function createPreviewUI({
         return startable;
     }
 
-    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractDestinationNearby = false } = {}) {
+    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, nearbyContractIds = [] } = {}) {
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
             ? chooseNearbyObject(flightState.nearbyPlanetKey, nearbyObjectKey)
@@ -518,7 +522,7 @@ export function createPreviewUI({
         elements.explore.hidden = !nearbyPlanet || state.notebook.open;
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
-        const startableContract = renderContracts(state, contractDestinationNearby, contractState);
+        const startableContract = renderContracts(state, nearbyContractIds, contractState);
         if (nearbyPlanet) {
             elements.nearbyPlanetName.textContent = startableContract
                 ? startableContract.copy[paperI18n.language === 'en' ? 'en' : 'pt'].start
