@@ -1437,6 +1437,13 @@ html[data-flight-input="touch"] .joystick-label {
 .docking-keyboard-hint { grid-column: 1; margin: -4px 0 0; color: #6f604c; font-size: .72rem; font-weight: 850; letter-spacing: .025em; }
 
 .docking-controls { grid-column: 2; grid-row: 3 / span 2; display: grid; grid-template-columns: repeat(3, minmax(48px, 1fr)); gap: 7px; align-self: end; }
+.docking-controls [data-docking-action="rotate-left"] { grid-area: 1 / 1; }
+.docking-controls [data-docking-action="up"] { grid-area: 1 / 2; }
+.docking-controls [data-docking-action="rotate-right"] { grid-area: 1 / 3; }
+.docking-controls [data-docking-action="reverse"] { grid-area: 2 / 1; }
+.docking-controls [data-docking-action="stabilize"] { grid-area: 2 / 2; }
+.docking-controls [data-docking-action="forward"] { grid-area: 2 / 3; }
+.docking-controls [data-docking-action="down"] { grid-area: 3 / 2; }
 .docking-control {
     min-width: 44px;
     min-height: 48px;
@@ -1490,7 +1497,9 @@ html[data-flight-input="touch"] .joystick-label {
 .contract-card > button { min-width: 150px; min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
 .contract-card > button:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }
 
-@media (max-width: 700px), (pointer: coarse) and (max-width: 1100px) {
+@media (max-width: 700px),
+    (pointer: coarse) and (max-width: 1100px),
+    (max-height: 560px) and (orientation: landscape) and (max-width: 1100px) {
     .local-orbit-mission {
         inset: 0;
         width: 100dvw;

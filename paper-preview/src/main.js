@@ -124,6 +124,7 @@ function isOrbitalContractDestinationNearby(contractId) {
     const orbitingObject = nearbyWorldObjectKey ? getWorldObject(nearbyWorldObjectKey) : null;
     return isContractDestinationNearby(contractId, {
         planetKey: flightState.nearbyPlanetKey,
+        objectKey: nearbyWorldObjectKey,
         orbitingParentKey: orbitingObject?.parentKey ?? null
     });
 }

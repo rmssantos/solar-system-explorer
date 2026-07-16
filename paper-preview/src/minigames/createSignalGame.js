@@ -16,6 +16,15 @@ export function createSignalLayout(width = 960, height = 540) {
     });
 }
 
+export function createSignalCalibrationLayout(layout) {
+    return Object.freeze({
+        x: layout.orientation === 'portrait' ? layout.width / 2 : 195,
+        y: layout.orientation === 'portrait' ? 360 : 165,
+        width: layout.orientation === 'portrait' ? 420 : 310,
+        height: 114
+    });
+}
+
 export function createSignalInputState() {
     return Object.fromEntries(SIGNAL_ACTIONS.map((action) => [action, false]));
 }
@@ -110,9 +119,8 @@ function createRelay(scene, layout) {
 }
 
 function createCalibrationCard(scene, layout) {
-    const y = layout.orientation === 'portrait' ? 725 : 86;
-    const width = layout.orientation === 'portrait' ? 420 : 310;
-    const x = layout.orientation === 'portrait' ? layout.width / 2 : 195;
+    const calibrationLayout = createSignalCalibrationLayout(layout);
+    const { x, y, width } = calibrationLayout;
     const card = scene.add.container(x, y);
     const paper = scene.add.graphics();
     paper.fillStyle(0x071021, 0.3);

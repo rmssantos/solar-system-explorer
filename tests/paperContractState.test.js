@@ -123,6 +123,7 @@ describe('paper expedition contracts', () => {
 
     it('keeps destination proximity specific to each contract', () => {
         expect(isContractDestinationNearby(LUNAR_SWEEP_CONTRACT_ID, { planetKey: 'moon' })).toBe(true);
+        expect(isContractDestinationNearby(LUNAR_SWEEP_CONTRACT_ID, { objectKey: 'moon', orbitingParentKey: 'earth' })).toBe(true);
         expect(isContractDestinationNearby(LUNAR_SWEEP_CONTRACT_ID, { planetKey: 'mars' })).toBe(false);
         expect(isContractDestinationNearby(MARS_RELAY_CONTRACT_ID, { planetKey: 'mars' })).toBe(true);
         expect(isContractDestinationNearby(MARS_RELAY_CONTRACT_ID, { orbitingParentKey: 'mars' })).toBe(true);

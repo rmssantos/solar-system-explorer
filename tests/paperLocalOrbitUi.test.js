@@ -48,6 +48,14 @@ describe('paper local-orbit mission surface', () => {
         expect(css).toContain('.local-orbit-sheet:has(.local-orbit-result:not([hidden])) .docking-controls');
     });
 
+    it('keeps the directional pad aligned when a mission hides rotation controls', () => {
+        expect(css).toMatch(/\[data-docking-action="up"\]\s*\{[^}]*grid-area:\s*1\s*\/\s*2/s);
+        expect(css).toMatch(/\[data-docking-action="reverse"\]\s*\{[^}]*grid-area:\s*2\s*\/\s*1/s);
+        expect(css).toMatch(/\[data-docking-action="stabilize"\]\s*\{[^}]*grid-area:\s*2\s*\/\s*2/s);
+        expect(css).toMatch(/\[data-docking-action="forward"\]\s*\{[^}]*grid-area:\s*2\s*\/\s*3/s);
+        expect(css).toMatch(/\[data-docking-action="down"\]\s*\{[^}]*grid-area:\s*3\s*\/\s*2/s);
+    });
+
     it('keeps the reward toast away from an active docking game', () => {
         expect(css).toContain('body:has(.local-orbit-mission[open]) .reward-toast');
     });
@@ -59,6 +67,7 @@ describe('paper local-orbit mission surface', () => {
 
     it('places landscape playfield, telemetry and controls inside the same viewport grid', () => {
         expect(css).toMatch(/@media\s*\(max-height:\s*560px\)\s*and\s*\(orientation:\s*landscape\)\s*and\s*\(max-width:\s*1100px\)/);
+        expect(css).toMatch(/@media[^{]*\(max-width:\s*700px\)[^{]*\(max-height:\s*560px\)\s*and\s*\(orientation:\s*landscape\)\s*and\s*\(max-width:\s*1100px\)\s*\{/s);
         expect(css).toMatch(/\.docking-controls\s*\{[^}]*right:\s*max\(/s);
     });
 });

@@ -30,6 +30,7 @@ describe('orbital campaign integration', () => {
 
     it('passes destination proximity per contract instead of one global boolean', () => {
         expect(game).toContain('nearbyContractIds: CONTRACT_CATALOG.filter');
+        expect(game).toContain('objectKey: nearbyWorldObjectKey');
         expect(ui).toContain('nearbyContractIds.includes(contract.id)');
         expect(ui).not.toContain('destinationNearby, contractState');
     });
