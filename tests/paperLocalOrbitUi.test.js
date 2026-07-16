@@ -22,6 +22,8 @@ describe('paper local-orbit mission surface', () => {
             expect(html).toContain(`data-docking-action="${action}"`);
         }
         expect(html).toMatch(/data-docking-action="stabilize"[^>]*type="button"/);
+        expect(html).toContain('class="docking-keyboard-hint"');
+        expect(html).toContain('data-i18n="game.docking.keys"');
     });
 
     it('uses a responsive paper surface with safe touch targets and reduced motion', () => {

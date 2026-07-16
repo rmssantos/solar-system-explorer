@@ -12,6 +12,7 @@ describe('Paper autopilot presentation', () => {
         expect(scene).not.toContain('paper-autopilot-trail');
         expect(scene).not.toContain('setAutopilotActive');
         expect(main).not.toContain('setAutopilotActive');
+        expect(main).not.toContain("paperScene.triggerSurprise('star')");
         expect(main).toContain('createAutopilot(');
         expect(main).toContain('stepAutopilot(');
     });

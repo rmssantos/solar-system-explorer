@@ -609,7 +609,6 @@ function step(seconds) {
             if (result.arrived) {
                 audioDirector.play('autopilot-arrive');
                 siteAnalytics.track('autopilot_event', { objectKey: autopilotTargetKey, state: 'arrive' });
-                paperScene.triggerSurprise('star');
             }
         }
     } else if (!dialogOpen) {

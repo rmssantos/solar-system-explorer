@@ -161,6 +161,17 @@ function keyDown(key) {
     return Boolean(key?.isDown);
 }
 
+export function readDockingKeyboardInput(keys = {}) {
+    return {
+        horizontal: Number(keyDown(keys.d) || keyDown(keys.arrowRight))
+            - Number(keyDown(keys.a) || keyDown(keys.arrowLeft)),
+        vertical: Number(keyDown(keys.w) || keyDown(keys.arrowUp))
+            - Number(keyDown(keys.s) || keyDown(keys.arrowDown)),
+        rotation: Number(keyDown(keys.rotateRight)) - Number(keyDown(keys.rotateLeft)),
+        stabilize: keyDown(keys.stabilize)
+    };
+}
+
 /**
  * @param {{
  *   parent: HTMLElement,
@@ -195,8 +206,8 @@ export async function createDockingGame({
             this.station = createIss(this);
             this.ship = createCourier(this);
             this.keys = this.input.keyboard?.addKeys({
-                forward: 'W', reverse: 'S', up: 'UP', down: 'DOWN',
-                forwardArrow: 'RIGHT', reverseArrow: 'LEFT',
+                w: 'W', a: 'A', s: 'S', d: 'D',
+                arrowUp: 'UP', arrowDown: 'DOWN', arrowLeft: 'LEFT', arrowRight: 'RIGHT',
                 rotateLeft: 'Q', rotateRight: 'E', stabilize: 'SPACE'
             }) ?? {};
             const start = mapDockingPosition(this.simulation.position);
@@ -209,15 +220,15 @@ export async function createDockingGame({
 
         update(_time, deltaMilliseconds) {
             const pointerInput = readDockingInput(actions);
+            const keyboardInput = readDockingKeyboardInput(this.keys);
             const input = {
                 horizontal: Math.max(-1, Math.min(1, pointerInput.horizontal
-                    + Number(keyDown(this.keys.forward) || keyDown(this.keys.forwardArrow))
-                    - Number(keyDown(this.keys.reverse) || keyDown(this.keys.reverseArrow)))),
+                    + keyboardInput.horizontal)),
                 vertical: Math.max(-1, Math.min(1, pointerInput.vertical
-                    + Number(keyDown(this.keys.up)) - Number(keyDown(this.keys.down)))),
+                    + keyboardInput.vertical)),
                 rotation: Math.max(-1, Math.min(1, pointerInput.rotation
-                    + Number(keyDown(this.keys.rotateRight)) - Number(keyDown(this.keys.rotateLeft)))),
-                stabilize: pointerInput.stabilize || keyDown(this.keys.stabilize)
+                    + keyboardInput.rotation)),
+                stabilize: pointerInput.stabilize || keyboardInput.stabilize
             };
             this.simulation = stepDocking(this.simulation, input, deltaMilliseconds / 1000);
             const position = mapDockingPosition(this.simulation.position);

@@ -4,6 +4,7 @@ import {
     DOCKING_LAYOUT,
     createDockingInputState,
     mapDockingPosition,
+    readDockingKeyboardInput,
     readDockingInput,
     setDockingAction
 } from '../paper-preview/src/minigames/createDockingGame.js';
@@ -34,6 +35,24 @@ describe('Phaser Canvas docking adapter', () => {
         const state = createDockingInputState();
         expect(setDockingAction(state, 'fire-laser', true)).toBe(false);
         expect(readDockingInput(state)).toEqual({ horizontal: 0, vertical: 0, rotation: 0, stabilize: false });
+    });
+
+    it('maps every arrow and WASD key to the matching directional thruster', () => {
+        const held = (...names) => Object.fromEntries(names.map((name) => [name, { isDown: true }]));
+        expect(readDockingKeyboardInput(held('arrowRight'))).toMatchObject({ horizontal: 1 });
+        expect(readDockingKeyboardInput(held('d'))).toMatchObject({ horizontal: 1 });
+        expect(readDockingKeyboardInput(held('arrowLeft'))).toMatchObject({ horizontal: -1 });
+        expect(readDockingKeyboardInput(held('a'))).toMatchObject({ horizontal: -1 });
+        expect(readDockingKeyboardInput(held('arrowUp'))).toMatchObject({ vertical: 1 });
+        expect(readDockingKeyboardInput(held('w'))).toMatchObject({ vertical: 1 });
+        expect(readDockingKeyboardInput(held('arrowDown'))).toMatchObject({ vertical: -1 });
+        expect(readDockingKeyboardInput(held('s'))).toMatchObject({ vertical: -1 });
+    });
+
+    it('keeps keyboard rotation and stabilization available', () => {
+        expect(readDockingKeyboardInput({ rotateLeft: { isDown: true } })).toMatchObject({ rotation: -1 });
+        expect(readDockingKeyboardInput({ rotateRight: { isDown: true } })).toMatchObject({ rotation: 1 });
+        expect(readDockingKeyboardInput({ stabilize: { isDown: true } })).toMatchObject({ stabilize: true });
     });
 
     it('lazy-loads Phaser and explicitly uses its Canvas renderer', () => {
