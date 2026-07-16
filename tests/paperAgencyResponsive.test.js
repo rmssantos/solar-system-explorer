@@ -12,9 +12,9 @@ describe('responsive paper agency desk', () => {
         expect(css).toContain('env(safe-area-inset-left)');
     });
 
-    it('keeps tabs scrollable and all interactive targets at least 44px', () => {
-        expect(css).toMatch(/\.agency-tabs\s*\{[^}]*overflow-x:\s*auto/s);
-        expect(css).toMatch(/\.agency-tabs button[\s\S]*?min-height:\s*44px/s);
+    it('keeps the journey route readable and all interactive targets at least 44px', () => {
+        expect(css).toMatch(/\.agency-route\s*\{[^}]*overflow-x:\s*auto/s);
+        expect(css).toMatch(/\.agency-route li[\s\S]*?min-height:\s*44px/s);
         expect(css).toMatch(/\.agency-(?:primary|secondary)-action[\s\S]*?min-height:\s*44px/s);
         expect(css).toMatch(/\.agency-choice[\s\S]*?min-height:\s*44px/s);
     });

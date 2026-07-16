@@ -13,8 +13,10 @@ const controller = readFileSync(new URL('../paper-preview/src/agency/agencyUi.js
 const scienceController = readFileSync(new URL('../paper-preview/src/agency/scienceConsole.js', import.meta.url), 'utf8');
 
 const requiredKeys = [
-    'game.agency.open', 'game.agency.title', 'game.agency.dispatch', 'game.agency.live',
-    'game.agency.probes', 'game.agency.reports', 'game.agency.prepare', 'game.agency.launch',
+    'game.agency.open', 'game.agency.title', 'game.agency.prepare', 'game.agency.launch',
+    'game.agency.route.mission', 'game.agency.route.equip', 'game.agency.route.travel',
+    'game.agency.route.investigate', 'game.agency.route.discovery',
+    'game.agency.adventure.open', 'game.agency.briefing.start', 'game.agency.album.open',
     'game.agency.instrument', 'game.agency.power', 'game.agency.route', 'game.agency.collect',
     'game.agency.emptyProbes', 'game.agency.emptyReports', 'game.agency.capacity',
     'game.agency.source.live', 'game.agency.source.cached', 'game.agency.source.fallback',
@@ -37,24 +39,20 @@ describe('space agency UI contract', () => {
         expect(safeAgencySourceUrl('not a url')).toBe('#');
     });
 
-    it('provides a dedicated fullscreen control desk with four accessible sections', () => {
+    it('provides one guided five-step journey instead of four disconnected dashboard tabs', () => {
         expect(html).toContain('id="space-agency"');
         expect(html).toContain('aria-labelledby="agency-title"');
+        expect(html).toContain('class="agency-route"');
+        expect(html.match(/data-agency-stage="[a-z]+"/g)).toHaveLength(5);
+        expect(html).toContain('id="agency-mission-board"');
+        expect(html).toContain('id="agency-briefing"');
         expect(html).toContain('id="agency-setup-sheet"');
+        expect(html).toContain('id="agency-album"');
         expect(html).toContain('id="agency-announcer"');
         expect(html).toContain('id="agency-operation-list"');
-        expect(html).toContain('id="agency-live-list"');
-        expect(html).toContain('id="agency-probe-list"');
         expect(html).toContain('id="agency-report-list"');
-        expect([...html.matchAll(/data-agency-section="([a-z]+)"/g)].map((match) => match[1])).toEqual([
-            'dispatch', 'live', 'probes', 'reports'
-        ]);
-        expect([...html.matchAll(/data-agency-panel="([a-z]+)"/g)].map((match) => match[1])).toEqual([
-            'dispatch', 'live', 'probes', 'reports'
-        ]);
-        expect(html.match(/id="agency-panel-[a-z]+"[^>]*role="tabpanel"/g)).toHaveLength(4);
-        expect(html.match(/aria-controls="agency-panel-[a-z]+"/g)).toHaveLength(4);
-        expect(html.match(/aria-labelledby="agency-tab-[a-z]+"/g)).toHaveLength(4);
+        expect(html).not.toContain('data-agency-section=');
+        expect(html).not.toContain('class="agency-tabs"');
     });
 
     it('provides an animated, accessible probe console that works without pointer input', () => {
@@ -80,24 +78,21 @@ describe('space agency UI contract', () => {
         }
     });
 
-    it('binds explicit open, close, configure, launch, track, collect and campaign actions', () => {
+    it('binds explicit open, close, briefing, equipment, launch, album and campaign actions', () => {
         expect(controller).toContain("elements.trigger.addEventListener('click', open)");
-        for (const action of ['close', 'configure', 'launch', 'track', 'collect', 'campaign']) {
+        for (const action of ['close', 'briefing', 'equip', 'launch', 'album', 'campaign']) {
             expect(controller).toContain(`'${action}'`);
         }
         expect(controller).toContain('data-agency-action');
         expect(controller).toContain('data-agency-choice');
-        expect(controller).toContain('aria-selected');
-        expect(controller).toContain("['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']");
-        expect(controller).toContain('event.preventDefault()');
-        expect(controller).toContain('nextTab.focus()');
+        expect(controller).toContain('createAgencyJourney');
+        expect(controller).toContain('advanceAgencyJourney');
     });
 
-    it('updates probe clocks in place so actions remain stable while time advances', () => {
+    it('updates the active journey route without rebuilding controls while time advances', () => {
         expect(controller).toContain('function tick(nextNowMs)');
-        expect(controller).toContain("querySelectorAll('[data-agency-mission-id]')");
-        expect(controller).toContain('data-agency-countdown');
-        expect(controller).toContain('data-agency-progress');
+        expect(controller).toContain('function renderRoute()');
+        expect(controller).toContain('data-agency-stage');
     });
 
     it('preserves launch choices and keyboard focus across live-data renders', () => {
@@ -109,8 +104,8 @@ describe('space agency UI contract', () => {
 
     it('returns focus to a meaningful control when setup closes or launches', () => {
         expect(controller).toContain('function dismissSetup()');
-        expect(controller).toContain('configureButton?.focus()');
-        expect(controller).toContain('probeTab?.focus()');
+        expect(controller).toContain('briefingButton?.focus()');
+        expect(controller).toContain('elements.equipStart?.focus()');
     });
 });
 

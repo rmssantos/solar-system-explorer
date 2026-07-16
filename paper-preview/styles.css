@@ -1690,7 +1690,7 @@ html[data-flight-input="touch"] .joystick-label {
 }
 
 .agency-heading,
-.agency-tabs,
+.agency-route,
 .agency-workbench {
     position: relative;
     z-index: 1;
@@ -1778,39 +1778,59 @@ html[data-flight-input="touch"] .joystick-label {
     font-weight: 1000;
 }
 
-.agency-tabs {
+.agency-route {
     position: relative;
     z-index: 4;
     top: auto;
     display: flex;
     gap: 6px;
+    margin-block: 0;
     padding: 9px clamp(10px, 2vw, 22px);
     overflow-x: auto;
     background: #23345f;
     border-inline: 3px solid #162546;
+    list-style: none;
     scrollbar-width: thin;
 }
 
-.agency-tabs button {
+.agency-route li {
+    position: relative;
+    display: flex;
     min-width: max-content;
     min-height: 44px;
+    align-items: center;
+    gap: 7px;
     padding: 8px 16px;
-    color: #e9ddb9;
+    color: rgb(233 221 185 / .58);
     background: transparent;
     border: 2px solid transparent;
     border-radius: 7px 10px 6px 9px;
-    cursor: pointer;
     font-size: .72rem;
     font-weight: 1000;
 }
 
-.agency-tabs button[aria-selected="true"] {
+.agency-route li::after {
+    position: absolute;
+    right: -9px;
+    width: 12px;
+    height: 2px;
+    content: '';
+    background: rgb(233 221 185 / .34);
+}
+
+.agency-route li:last-child::after { display: none; }
+.agency-route li span { display: grid; width: 24px; aspect-ratio: 1; place-items: center; border: 2px solid currentColor; border-radius: 50%; font-size: .6rem; }
+.agency-route li.is-complete { color: #b9d798; }
+.agency-route li.is-complete span { color: #23345f; background: #b9d798; border-color: #b9d798; }
+.agency-route li.is-current {
     color: #2c2a30;
     background: var(--sun-pulp);
     border-color: #9b7132;
     box-shadow: 2px 3px 0 var(--coral-pencil);
     transform: rotate(-.35deg);
 }
+
+.agency-route li.is-current span { color: #fff0c4; background: #9a4f42; border-color: #79382f; }
 
 .agency-workbench {
     min-height: 0;
@@ -2025,6 +2045,21 @@ html[data-flight-input="touch"] .joystick-label {
     box-shadow: 12px 16px 0 rgb(5 9 26 / .46);
 }
 
+.agency-board-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: end; }
+.agency-screen { min-height: 100%; }
+.agency-back-action { min-height: 44px; margin-bottom: 14px; padding: 7px 11px; color: #315d62; background: transparent; border: 2px dashed #8f7044; border-radius: 7px 11px 6px 10px; cursor: pointer; font-size: .68rem; font-weight: 1000; }
+.agency-briefing-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(260px, .85fr); gap: clamp(16px, 3vw, 32px); align-items: stretch; }
+.agency-briefing-copy { position: relative; padding: clamp(18px, 3vw, 30px); background: #fff0c4; border: 3px solid #8d7147; border-radius: 8px 15px 7px 12px; box-shadow: 6px 8px 0 rgb(78 55 30 / .16); }
+.agency-briefing-copy::before { position: absolute; top: -9px; left: 13%; width: 92px; height: 19px; content: ''; background: rgb(255 248 223 / .58); border: 1px solid rgb(80 66 46 / .16); transform: rotate(-1.5deg); }
+.agency-briefing-copy > p:first-child, .agency-live-note > p:first-child { margin: 0 0 5px; color: #9a4f42; font-size: .62rem; font-weight: 1000; letter-spacing: .1em; text-transform: uppercase; }
+.agency-briefing-copy h2 { margin: 0; font: 800 clamp(1.6rem, 4vw, 2.7rem)/.98 'Paper Fredoka', sans-serif; }
+.agency-briefing-copy > p:not(:first-child) { max-width: 55ch; color: #665947; font-size: .82rem; line-height: 1.5; }
+.agency-briefing-copy > strong { display: block; margin-top: 16px; padding: 11px 13px; color: #2f5e63; background: rgb(159 213 231 / .2); border-left: 5px solid #4388b8; font: 800 1rem/1.25 'Paper Fredoka', sans-serif; }
+.agency-tutorial-note { min-height: 2.6em; color: #765532 !important; font-weight: 850; }
+.agency-live-note { padding: 18px; background: #dce6b6; border: 3px solid #668258; border-radius: 12px 7px 14px 8px; box-shadow: 5px 7px 0 rgb(78 55 30 / .14); transform: rotate(.35deg); }
+.agency-live-note h3 { margin: 0 0 12px; font: 800 1.2rem/1 'Paper Fredoka', sans-serif; }
+.agency-briefing-start { width: min(360px, 100%); margin: 22px auto 0; }
+
 .agency-science-console[hidden] { display: none; }
 .agency-science-heading { display: flex; gap: 14px; align-items: center; justify-content: space-between; padding: 12px 16px; color: #2b2f3a; background: #ead8a8; border-bottom: 4px solid #8f7044; }
 .agency-science-heading p { margin: 0 0 3px; color: #9a4f42; font-size: .59rem; font-weight: 1000; letter-spacing: .12em; text-transform: uppercase; }
@@ -2091,8 +2126,10 @@ html[data-flight-input="touch"] .joystick-label {
     .agency-heading-actions { align-items: start; }
     .agency-heading-actions > strong { display: none; }
     .agency-close { width: 44px; min-width: 44px; min-height: 44px; }
-    .agency-tabs { top: auto; padding: 7px 8px; }
-    .agency-tabs button { padding-inline: 12px; }
+    .agency-route { top: auto; gap: 2px; padding: 6px; }
+    .agency-route li { min-width: 42px; flex: 1 0 42px; justify-content: center; padding: 6px; }
+    .agency-route li strong { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .agency-route li::after { right: -3px; width: 6px; }
     .agency-workbench { min-height: 0; padding: 14px 10px 24px; }
     .agency-panel-heading { align-items: start; margin-bottom: 12px; }
     .agency-panel-heading h2 { font-size: 1.2rem; }
@@ -2102,6 +2139,9 @@ html[data-flight-input="touch"] .joystick-label {
     .agency-probe-list,
     .agency-report-list { grid-template-columns: 1fr; }
     .agency-operation-card p { min-height: 0; }
+    .agency-board-actions { max-width: 138px; }
+    .agency-briefing-layout { grid-template-columns: 1fr; }
+    .agency-live-note { transform: none; }
     .agency-setup-sheet { inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); width: auto; padding: 18px 14px; border-left-width: 8px; }
     .agency-choice { min-height: 64px; }
     .agency-science-console { inset: max(5px, env(safe-area-inset-top)) max(5px, env(safe-area-inset-right)) max(5px, env(safe-area-inset-bottom)) max(5px, env(safe-area-inset-left)); width: calc(100vw - 10px); height: calc(100dvh - 10px); border-width: 3px; }
@@ -2141,12 +2181,22 @@ html[data-flight-input="touch"] .joystick-label {
     .agency-heading-actions { justify-content: space-between; }
     .agency-heading-actions > strong { padding: 4px 6px; font-size: .52rem; }
     .agency-close { width: 44px; min-width: 44px; min-height: 44px; }
-    .agency-tabs { position: static; grid-column: 1; grid-row: 2; display: grid; width: 100%; align-content: start; padding: 6px; overflow-x: visible; overflow-y: auto; border: 3px solid #162546; border-top: 0; }
-    .agency-tabs button { width: 100%; min-width: 0; padding: 5px 8px; text-align: left; }
+    .agency-route { position: static; grid-column: 1; grid-row: 2; display: grid; width: 100%; align-content: start; padding: 6px; overflow-x: visible; overflow-y: auto; border: 3px solid #162546; border-top: 0; }
+    .agency-route li { width: 100%; min-width: 0; min-height: 40px; padding: 5px 8px; }
+    .agency-route li::after { display: none; }
     .agency-workbench { grid-column: 2; grid-row: 1 / -1; width: 100%; min-height: 0; height: 100%; padding: 12px; overflow: auto; border: 3px solid #8f7650; border-left: 0; border-radius: 0 10px 10px 0; }
     .agency-panel-heading { margin-bottom: 9px; }
     .agency-panel-heading h2 { font-size: 1.15rem; }
     .agency-panel-heading p { display: none; }
+    .agency-briefing-layout { grid-template-columns: minmax(0, 1fr) minmax(180px, .65fr); gap: 8px; }
+    .agency-briefing-copy, .agency-live-note { padding: 10px; }
+    .agency-briefing-copy h2 { font-size: 1.3rem; }
+    .agency-briefing-copy > p:not(:first-child) { margin-block: 5px; font-size: .68rem; }
+    .agency-briefing-copy > strong { margin-top: 6px; padding: 6px 8px; font-size: .78rem; }
+    .agency-tutorial-note, .agency-live-note .agency-source-link { display: none; }
+    .agency-live-note h3 { margin-bottom: 5px; font-size: .9rem; }
+    .agency-live-facts { margin-block: 6px; }
+    .agency-briefing-start { min-height: 40px; margin-top: 8px; }
     .agency-operation-list,
     .agency-live-list,
     .agency-probe-list,
@@ -2179,6 +2229,6 @@ html[data-flight-input="touch"] .joystick-label {
 @media (prefers-reduced-motion: reduce) {
     .agency-operation-card,
     .agency-live-card,
-    .agency-tabs button[aria-selected="true"] { transform: none !important; }
+    .agency-route li.is-current { transform: none !important; }
     .agency-science-telemetry i { animation: none !important; }
 }

@@ -222,31 +222,35 @@
                     <button id="agency-close" class="agency-close" type="button" data-agency-action="close" data-i18n-aria="game.agency.close" aria-label="Fechar Agência">×</button>
                 </div>
             </header>
-            <nav class="agency-tabs" role="tablist" data-i18n-aria="game.agency.navigation" aria-label="Áreas da Agência">
-                <button id="agency-tab-dispatch" type="button" role="tab" data-agency-section="dispatch" aria-controls="agency-panel-dispatch" aria-selected="true" data-i18n="game.agency.dispatch">Despacho</button>
-                <button id="agency-tab-live" type="button" role="tab" data-agency-section="live" aria-controls="agency-panel-live" aria-selected="false" data-i18n="game.agency.live">Sistema Vivo</button>
-                <button id="agency-tab-probes" type="button" role="tab" data-agency-section="probes" aria-controls="agency-panel-probes" aria-selected="false" data-i18n="game.agency.probes">Sondas</button>
-                <button id="agency-tab-reports" type="button" role="tab" data-agency-section="reports" aria-controls="agency-panel-reports" aria-selected="false" data-i18n="game.agency.reports">Relatórios</button>
-            </nav>
-            <div class="agency-workbench">
-                <section id="agency-panel-dispatch" class="agency-panel" role="tabpanel" aria-labelledby="agency-tab-dispatch" data-agency-panel="dispatch">
-                    <div class="agency-panel-heading"><div><p data-i18n="game.agency.dispatchKicker">Operações de hoje</p><h2 data-i18n="game.agency.dispatchTitle">Escolhe uma pergunta para investigar</h2></div><button type="button" class="agency-secondary-action" data-agency-action="campaign" data-i18n="game.agency.campaign">Contratos orbitais</button></div>
+            <ol class="agency-route" data-i18n-aria="game.agency.journey" aria-label="Etapas da aventura">
+                <li data-agency-stage="mission" class="is-current"><span>1</span><strong data-i18n="game.agency.route.mission">Missão</strong></li>
+                <li data-agency-stage="equip"><span>2</span><strong data-i18n="game.agency.route.equip">Equipar</strong></li>
+                <li data-agency-stage="travel"><span>3</span><strong data-i18n="game.agency.route.travel">Viajar</strong></li>
+                <li data-agency-stage="investigate"><span>4</span><strong data-i18n="game.agency.route.investigate">Investigar</strong></li>
+                <li data-agency-stage="discovery"><span>5</span><strong data-i18n="game.agency.route.discovery">Descoberta</strong></li>
+            </ol>
+            <main class="agency-workbench">
+                <section id="agency-mission-board" class="agency-screen">
+                    <div class="agency-panel-heading">
+                        <div><p data-i18n="game.agency.dispatchKicker">Aventuras científicas</p><h2 data-i18n="game.agency.dispatchTitle">Que mistério queres investigar?</h2></div>
+                        <div class="agency-board-actions"><button type="button" class="agency-secondary-action" data-agency-action="album" data-i18n="game.agency.album.open">Álbum</button><button type="button" class="agency-secondary-action" data-agency-action="campaign" data-i18n="game.agency.campaign">Missões orbitais</button></div>
+                    </div>
                     <div id="agency-operation-list" class="agency-operation-list" aria-live="polite"></div>
                 </section>
-                <section id="agency-panel-live" class="agency-panel" role="tabpanel" aria-labelledby="agency-tab-live" data-agency-panel="live" hidden>
-                    <div class="agency-panel-heading"><div><p data-i18n="game.agency.liveKicker">Observatório ligado</p><h2 data-i18n="game.agency.liveTitle">O que está a acontecer agora</h2></div></div>
-                    <div id="agency-live-list" class="agency-live-list"></div>
+                <section id="agency-briefing" class="agency-screen agency-briefing" hidden>
+                    <button type="button" class="agency-back-action" data-agency-action="board" data-i18n="game.agency.back">← Aventuras</button>
+                    <div class="agency-briefing-layout">
+                        <div class="agency-briefing-copy"><p data-i18n="game.agency.briefing.kicker">O teu desafio</p><h2 id="agency-briefing-title">Aventura</h2><p id="agency-briefing-summary"></p><strong id="agency-briefing-objective"></strong><p id="agency-tutorial-note" class="agency-tutorial-note"></p></div>
+                        <aside class="agency-live-note"><p data-i18n="game.agency.briefing.live">Mensagem do observatório</p><h3 data-i18n="game.agency.briefing.today">O que sabemos hoje</h3><dl id="agency-live-facts" class="agency-live-facts"></dl><a id="agency-source-link" class="agency-source-link" href="#" target="_blank" rel="noreferrer"></a></aside>
+                    </div>
+                    <button id="agency-equip-start" type="button" class="agency-primary-action agency-briefing-start" data-agency-action="equip" data-i18n="game.agency.briefing.start">Montar a minha sonda</button>
                 </section>
-                <section id="agency-panel-probes" class="agency-panel" role="tabpanel" aria-labelledby="agency-tab-probes" data-agency-panel="probes" hidden>
-                    <div class="agency-panel-heading"><div><p data-i18n="game.agency.probesKicker">Trajetórias perfuradas</p><h2 data-i18n="game.agency.probesTitle">Sondas em missão</h2></div></div>
-                    <div class="agency-trajectory-map" aria-hidden="true"><i></i><i></i><i></i><span>✦</span></div>
-                    <div id="agency-probe-list" class="agency-probe-list" aria-live="polite"></div>
-                </section>
-                <section id="agency-panel-reports" class="agency-panel" role="tabpanel" aria-labelledby="agency-tab-reports" data-agency-panel="reports" hidden>
-                    <div class="agency-panel-heading"><div><p data-i18n="game.agency.reportsKicker">Arquivo científico</p><h2 data-i18n="game.agency.reportsTitle">Descobertas enviadas para casa</h2></div></div>
+                <section id="agency-album" class="agency-screen agency-album" hidden>
+                    <button type="button" class="agency-back-action" data-agency-action="board" data-i18n="game.agency.back">← Aventuras</button>
+                    <div class="agency-panel-heading"><div><p data-i18n="game.agency.album.kicker">Álbum de descobertas</p><h2 data-i18n="game.agency.album.title">Tudo o que já encontraste</h2></div></div>
                     <div id="agency-report-list" class="agency-report-list" aria-live="polite"></div>
                 </section>
-            </div>
+            </main>
             <section id="agency-setup-sheet" class="agency-setup-sheet" aria-labelledby="agency-setup-title" hidden>
                 <div class="agency-setup-copy"><p data-i18n="game.agency.prepare">Preparar sonda</p><h2 id="agency-setup-title">Operação</h2><span id="agency-setup-summary"></span></div>
                 <fieldset><legend data-i18n="game.agency.instrument">Instrumento científico</legend><div id="agency-instrument-choices" class="agency-choice-grid"></div></fieldset>

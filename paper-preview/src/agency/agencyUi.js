@@ -5,6 +5,7 @@ import {
 } from './agencyCatalog.js';
 import { getLocalizedOperation } from './operationDirector.js';
 import { presentAgencyState } from './agencyPresentation.js';
+import { advanceAgencyJourney, createAgencyJourney, getAgencyMastery, getOperationHistory } from './agencyJourney.js';
 import { bindBackdropDismiss } from '../ui/dialogDismiss.js';
 import { createScienceConsole } from './scienceConsole.js';
 
@@ -31,14 +32,14 @@ export function safeAgencySourceUrl(value) {
 /** @param {any} options */
 export function createAgencyUi(options) {
     const {
-    document = globalThis.document,
-    i18n,
-    onOpen = () => {},
-    onClose = () => {},
-    onLaunch = () => false,
-    onScienceComplete = () => false,
-    onCollect = () => false,
-    onOpenCampaign = () => {}
+        document = globalThis.document,
+        i18n,
+        onOpen = () => {},
+        onClose = () => {},
+        onLaunch = () => false,
+        onScienceComplete = () => false,
+        onCollect = () => false,
+        onOpenCampaign = () => {}
     } = options;
     /** @type {any} */
     const elements = {
@@ -46,11 +47,18 @@ export function createAgencyUi(options) {
         dialog: document.querySelector('#space-agency'),
         desk: document.querySelector('#space-agency > article'),
         close: document.querySelector('#agency-close'),
-        tabs: [...document.querySelectorAll('[data-agency-section]')],
-        panels: [...document.querySelectorAll('[data-agency-panel]')],
+        routeStages: [...document.querySelectorAll('[data-agency-stage]')],
+        board: document.querySelector('#agency-mission-board'),
+        briefing: document.querySelector('#agency-briefing'),
+        briefingTitle: document.querySelector('#agency-briefing-title'),
+        briefingSummary: document.querySelector('#agency-briefing-summary'),
+        briefingObjective: document.querySelector('#agency-briefing-objective'),
+        tutorialNote: document.querySelector('#agency-tutorial-note'),
+        liveFacts: document.querySelector('#agency-live-facts'),
+        sourceLink: document.querySelector('#agency-source-link'),
+        equipStart: document.querySelector('#agency-equip-start'),
+        album: document.querySelector('#agency-album'),
         operations: document.querySelector('#agency-operation-list'),
-        live: document.querySelector('#agency-live-list'),
-        probes: document.querySelector('#agency-probe-list'),
         reports: document.querySelector('#agency-report-list'),
         capacity: document.querySelector('#agency-capacity'),
         setup: document.querySelector('#agency-setup-sheet'),
@@ -65,38 +73,46 @@ export function createAgencyUi(options) {
     let agencyState = { activeMissions: [], reports: [] };
     let nowMs = Date.now();
     let selectedOperationId = null;
+    let currentJourney = null;
     let choices = { instrumentId: null, powerProfileId: null, routeProfileId: 'stable' };
+
     const scienceConsole = createScienceConsole({
         document,
         i18n,
         onComplete: (result) => {
             const completed = onScienceComplete(result);
             if (completed) {
-                selectSection('reports');
+                currentJourney = advanceAgencyJourney(advanceAgencyJourney(currentJourney, 'investigate'), 'discovery');
+                renderRoute();
                 elements.announcer.textContent = i18n.t('game.agency.science.complete', { score: result.score });
             }
             return completed;
         },
-        onClose: (missionId) => {
-            const trackButton = missionId
-                ? [...elements.probes.querySelectorAll('[data-agency-action="track"]')]
-                    .find((button) => button.dataset.missionId === missionId)
-                : null;
-            (trackButton ?? elements.tabs.find((candidate) => candidate.dataset.agencySection === 'probes'))?.focus({ preventScroll: true });
-        }
+        onClose: () => elements.equipStart?.focus({ preventScroll: true })
     });
 
-    function selectSection(section) {
-        elements.tabs.forEach((tab) => {
-            const selected = tab.dataset.agencySection === section;
-            tab.setAttribute('aria-selected', String(selected));
-            tab.tabIndex = selected ? 0 : -1;
+    function renderRoute() {
+        const stageIndex = currentJourney?.stageIndex ?? 0;
+        elements.routeStages.forEach((stage, index) => {
+            stage.classList.toggle('is-complete', index < stageIndex);
+            stage.classList.toggle('is-current', index === stageIndex);
+            if (index === stageIndex) stage.setAttribute('aria-current', 'step');
+            else stage.removeAttribute('aria-current');
         });
-        elements.panels.forEach((panel) => { panel.hidden = panel.dataset.agencyPanel !== section; });
+    }
+
+    function showScreen(name) {
+        elements.board.hidden = name !== 'board';
+        elements.briefing.hidden = name !== 'briefing';
+        elements.album.hidden = name !== 'album';
+        if (name !== 'equip') elements.setup.hidden = true;
     }
 
     function open() {
-        selectSection('dispatch');
+        currentJourney = null;
+        selectedOperationId = null;
+        showScreen('board');
+        renderRoute();
         elements.dialog.showModal();
         elements.desk.scrollTop = 0;
         onOpen();
@@ -107,6 +123,10 @@ export function createAgencyUi(options) {
         elements.setup.hidden = true;
         if (elements.dialog.open) elements.dialog.close();
         onClose();
+    }
+
+    function selectedOperation() {
+        return operations.find((candidate) => candidate.id === selectedOperationId) ?? null;
     }
 
     function choiceButton(group, item) {
@@ -126,8 +146,8 @@ export function createAgencyUi(options) {
         if (container.children.length !== catalog.length) {
             container.replaceChildren(...catalog.map((item) => choiceButton(group, item)));
         }
+        const key = group === 'instrument' ? 'instrumentId' : group === 'power' ? 'powerProfileId' : 'routeProfileId';
         for (const button of container.querySelectorAll('[data-agency-choice]')) {
-            const key = group === 'instrument' ? 'instrumentId' : group === 'power' ? 'powerProfileId' : 'routeProfileId';
             button.setAttribute('aria-pressed', String(choices[key] === button.dataset.choiceId));
             const label = button.querySelector('strong');
             if (label) label.textContent = i18n.t(`game.agency.${group}.${button.dataset.choiceId}`);
@@ -151,7 +171,7 @@ export function createAgencyUi(options) {
     }
 
     function renderSetup() {
-        const operation = operations.find((candidate) => candidate.id === selectedOperationId);
+        const operation = selectedOperation();
         if (!operation) return;
         const localized = getLocalizedOperation(operation, i18n.language);
         elements.setupTitle.textContent = localized.title;
@@ -159,91 +179,96 @@ export function createAgencyUi(options) {
         renderChoices();
     }
 
-    function openSetup(operationId) {
-        const operation = operations.find((candidate) => candidate.id === operationId);
+    function openEquipment() {
+        const operation = selectedOperation();
         if (!operation) return;
-        selectedOperationId = operation.id;
+        currentJourney = advanceAgencyJourney(currentJourney, 'equip');
         choices = {
             instrumentId: operation.recommendedInstrumentId,
             powerProfileId: operation.recommendedPowerProfileId,
             routeProfileId: 'stable'
         };
         renderSetup();
+        renderRoute();
+        showScreen('equip');
         elements.setup.hidden = false;
         elements.setup.querySelector('button')?.focus();
     }
 
     function dismissSetup() {
         elements.setup.hidden = true;
-        const configureButton = [...elements.operations.querySelectorAll('[data-agency-action="configure"]')]
-            .find((button) => button.dataset.operationId === selectedOperationId);
-        selectedOperationId = null;
-        configureButton?.focus();
+        currentJourney = createAgencyJourney({ operationId: selectedOperationId, reports: agencyState.reports });
+        renderRoute();
+        showScreen('briefing');
+        elements.equipStart?.focus();
     }
 
     function operationCard(operation) {
         const localized = getLocalizedOperation(operation, i18n.language);
-        const card = element(document, 'article', 'agency-operation-card');
+        const history = getOperationHistory(agencyState.reports, operation.id);
+        const mastery = getAgencyMastery(history);
+        const card = element(document, 'article', `agency-operation-card agency-operation-${operation.kind}`);
         card.dataset.sourceStatus = operation.source.status;
-        const source = element(document, 'span', 'agency-source-stamp', i18n.t(sourceKey(operation.source.status)));
-        const heading = element(document, 'h3', '', localized.title);
-        const summary = element(document, 'p', '', localized.summary);
-        const objective = element(document, 'strong', 'agency-operation-objective', localized.objective);
-        const action = element(document, 'button', 'agency-primary-action', localized.action);
+        card.append(
+            element(document, 'span', 'agency-source-stamp', i18n.t(sourceKey(operation.source.status))),
+            element(document, 'span', `agency-mastery agency-mastery-${mastery.id}`, i18n.t(`game.agency.mastery.${mastery.id}`)),
+            element(document, 'h3', '', localized.title),
+            element(document, 'p', '', localized.summary),
+            element(document, 'strong', 'agency-operation-objective', localized.objective)
+        );
+        const action = element(document, 'button', 'agency-primary-action', i18n.t('game.agency.adventure.open'));
         action.type = 'button';
-        action.dataset.agencyAction = 'configure';
+        action.dataset.agencyAction = 'briefing';
         action.dataset.operationId = operation.id;
         action.disabled = agencyState.activeMissions.some((mission) => mission.operationId === operation.id);
-        card.append(source, heading, summary, objective, action);
+        card.append(action);
         return card;
     }
 
-    function liveCard(operation) {
+    function renderBriefing() {
+        const operation = selectedOperation();
+        if (!operation) return;
         const localized = getLocalizedOperation(operation, i18n.language);
-        const card = element(document, 'article', 'agency-live-card');
-        const top = element(document, 'div', 'agency-live-card-heading');
-        top.append(element(document, 'strong', '', localized.title), element(document, 'span', `agency-data-status is-${operation.source.status}`, i18n.t(sourceKey(operation.source.status))));
-        const facts = element(document, 'dl', 'agency-live-facts');
+        elements.briefingTitle.textContent = localized.title;
+        elements.briefingSummary.textContent = localized.summary;
+        elements.briefingObjective.textContent = localized.objective;
+        elements.tutorialNote.textContent = currentJourney?.tutorial
+            ? i18n.t('game.agency.briefing.tutorial')
+            : i18n.t('game.agency.briefing.replay', { attempt: currentJourney?.attempt ?? 2 });
+        elements.liveFacts.replaceChildren();
         for (const [key, value] of Object.entries(operation.facts).filter(([, fact]) => fact !== null && fact !== undefined).slice(0, 3)) {
             const row = element(document, 'div', '');
-            row.append(element(document, 'dt', '', i18n.t(`game.agency.fact.${key}`)), element(document, 'dd', '', typeof value === 'number' ? new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'pt-PT', { maximumFractionDigits: 1 }).format(value) : String(value)));
-            facts.append(row);
+            const formatted = typeof value === 'number'
+                ? new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'pt-PT', { maximumFractionDigits: 1 }).format(value)
+                : String(value);
+            row.append(element(document, 'dt', '', i18n.t(`game.agency.fact.${key}`)), element(document, 'dd', '', formatted));
+            elements.liveFacts.append(row);
         }
-        const link = element(document, 'a', 'agency-source-link', operation.source.name);
-        link.href = safeAgencySourceUrl(operation.source.url);
-        link.target = '_blank';
-        link.rel = 'noreferrer';
-        card.append(top, facts, link);
-        return card;
+        elements.sourceLink.textContent = i18n.t('game.agency.source.more', { source: operation.source.name });
+        elements.sourceLink.href = safeAgencySourceUrl(operation.source.url);
     }
 
-    function probeCard(mission) {
-        const card = element(document, 'article', 'agency-probe-card');
-        card.dataset.agencyMissionId = mission.id;
-        const heading = element(document, 'div', 'agency-probe-heading');
-        const countdown = element(document, 'strong', 'agency-countdown', mission.remainingLabel);
-        countdown.dataset.agencyCountdown = '';
-        heading.append(element(document, 'h3', '', mission.title), countdown);
-        const progress = element(document, 'progress', 'agency-probe-progress');
-        progress.dataset.agencyProgress = '';
-        progress.max = 100;
-        progress.value = mission.progressPercent;
-        progress.setAttribute('aria-label', `${mission.title}: ${mission.progressPercent}%`);
-        const meta = element(document, 'p', 'agency-probe-meta', `${i18n.t(`game.agency.instrument.${mission.instrumentId}`)} · ${i18n.t(`game.agency.route.${mission.routeProfileId}`)}`);
-        const track = element(document, 'button', 'agency-primary-action agency-track-action', i18n.t('game.agency.science.open'));
-        track.type = 'button';
-        track.dataset.agencyAction = 'track';
-        track.dataset.missionId = mission.id;
-        card.append(heading, progress, meta, track);
-        return card;
+    function openBriefing(operationId) {
+        const operation = operations.find((candidate) => candidate.id === operationId);
+        if (!operation) return;
+        selectedOperationId = operation.id;
+        currentJourney = createAgencyJourney({ operationId: operation.id, reports: agencyState.reports });
+        renderBriefing();
+        renderRoute();
+        showScreen('briefing');
+        elements.equipStart?.focus();
     }
 
-    function openScienceConsole(missionId) {
-        const mission = agencyState.activeMissions.find((candidate) => candidate.id === missionId);
-        if (!mission) return;
-        const operation = operations.find((candidate) => candidate.id === mission.operationId);
-        const localized = operation ? getLocalizedOperation(operation, i18n.language) : null;
-        scienceConsole.open(mission, localized);
+    function openBoard() {
+        const operationId = selectedOperationId;
+        currentJourney = null;
+        selectedOperationId = null;
+        renderRoute();
+        showScreen('board');
+        const briefingButton = operationId
+            ? elements.operations.querySelector(`[data-operation-id="${operationId}"]`)
+            : elements.operations.querySelector('[data-agency-action="briefing"]');
+        briefingButton?.focus();
     }
 
     function reportCard(report) {
@@ -253,7 +278,7 @@ export function createAgencyUi(options) {
         if (Number.isFinite(report.scienceScore)) {
             card.append(element(document, 'small', 'agency-report-performance', i18n.t('game.agency.science.reportScore', { score: report.scienceScore })));
         }
-        const source = element(document, 'a', 'agency-source-link', report.sourceName || i18n.t(sourceKey(report.sourceStatus)));
+        const source = element(document, 'a', 'agency-source-link', i18n.t('game.agency.source.more', { source: report.sourceName || i18n.t(sourceKey(report.sourceStatus)) }));
         source.href = safeAgencySourceUrl(report.sourceUrl);
         source.target = '_blank';
         source.rel = 'noreferrer';
@@ -272,15 +297,13 @@ export function createAgencyUi(options) {
         elements.announcer.textContent = '';
         const view = presentAgencyState(agencyState, operations, i18n.language, nowMs);
         elements.operations.replaceChildren(...operations.map(operationCard));
-        elements.live.replaceChildren(...operations.map(liveCard));
-        elements.probes.replaceChildren(...(view.activeMissions.length
-            ? view.activeMissions.map(probeCard)
-            : [element(document, 'p', 'agency-empty-state', i18n.t('game.agency.emptyProbes'))]));
         elements.reports.replaceChildren(...(view.reports.length
             ? view.reports.map(reportCard)
             : [element(document, 'p', 'agency-empty-state', i18n.t('game.agency.emptyReports'))]));
         elements.capacity.textContent = i18n.t('game.agency.capacity', { used: view.capacity.used, total: view.capacity.total });
         if (!elements.setup.hidden && selectedOperationId) renderSetup();
+        if (!elements.briefing.hidden && selectedOperationId) renderBriefing();
+        renderRoute();
     }
 
     function update(next) {
@@ -292,24 +315,16 @@ export function createAgencyUi(options) {
 
     function tick(nextNowMs) {
         nowMs = nextNowMs ?? Date.now();
-        const view = presentAgencyState(agencyState, operations, i18n.language, nowMs);
-        const missionsById = new Map(view.activeMissions.map((mission) => [mission.id, mission]));
-        for (const card of elements.probes.querySelectorAll('[data-agency-mission-id]')) {
-            const mission = missionsById.get(card.dataset.agencyMissionId);
-            if (!mission) continue;
-            const countdown = card.querySelector('[data-agency-countdown]');
-            const progress = card.querySelector('[data-agency-progress]');
-            if (countdown) countdown.textContent = mission.remainingLabel;
-            if (progress) {
-                progress.value = mission.progressPercent;
-                progress.setAttribute('aria-label', `${mission.title}: ${mission.progressPercent}%`);
-            }
-        }
+        renderRoute();
+    }
+
+    function openScienceConsole(mission) {
+        const operation = operations.find((candidate) => candidate.id === mission.operationId);
+        const localized = operation ? getLocalizedOperation(operation, i18n.language) : null;
+        scienceConsole.open(mission, localized);
     }
 
     function handleAction(event) {
-        const tab = event.target.closest('[data-agency-section]');
-        if (tab) { selectSection(tab.dataset.agencySection); return; }
         const choice = event.target.closest('[data-agency-choice]');
         if (choice) {
             const key = choice.dataset.agencyChoice === 'instrument' ? 'instrumentId' : choice.dataset.agencyChoice === 'power' ? 'powerProfileId' : 'routeProfileId';
@@ -320,45 +335,30 @@ export function createAgencyUi(options) {
         const action = event.target.closest('[data-agency-action]');
         if (!action) return;
         if (action.dataset.agencyAction === 'close') close();
-        else if (action.dataset.agencyAction === 'configure') openSetup(action.dataset.operationId);
+        else if (action.dataset.agencyAction === 'briefing') openBriefing(action.dataset.operationId);
+        else if (action.dataset.agencyAction === 'board') openBoard();
+        else if (action.dataset.agencyAction === 'equip') openEquipment();
         else if (action.dataset.agencyAction === 'cancel') dismissSetup();
         else if (action.dataset.agencyAction === 'launch') {
             const launched = onLaunch({ operationId: selectedOperationId, ...choices });
             if (launched) {
                 const launchedMission = launched.mission ?? launched;
+                currentJourney = advanceAgencyJourney(currentJourney, 'travel');
                 elements.setup.hidden = true;
-                selectedOperationId = null;
-                selectSection('probes');
-                const probeTab = elements.tabs.find((candidate) => candidate.dataset.agencySection === 'probes');
-                probeTab?.focus();
+                renderRoute();
                 elements.announcer.textContent = i18n.t('game.agency.launched');
-                openScienceConsole(launchedMission.id);
+                openScienceConsole(launchedMission);
             }
-        } else if (action.dataset.agencyAction === 'track') {
-            openScienceConsole(action.dataset.missionId);
+        } else if (action.dataset.agencyAction === 'album') {
+            currentJourney = null;
+            renderRoute();
+            showScreen('album');
         } else if (action.dataset.agencyAction === 'collect') {
             if (onCollect(action.dataset.reportId)) elements.announcer.textContent = i18n.t('game.agency.collected');
         } else if (action.dataset.agencyAction === 'campaign') {
             close();
             onOpenCampaign();
         }
-    }
-
-    function handleTabKeydown(event) {
-        const currentTab = event.target.closest?.('[data-agency-section]');
-        const navigationKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
-        if (!currentTab || !navigationKeys.includes(event.key)) return;
-        const currentIndex = elements.tabs.indexOf(currentTab);
-        const forwards = event.key === 'ArrowRight' || event.key === 'ArrowDown';
-        const nextIndex = event.key === 'Home'
-            ? 0
-            : event.key === 'End'
-                ? elements.tabs.length - 1
-                : (currentIndex + (forwards ? 1 : -1) + elements.tabs.length) % elements.tabs.length;
-        const nextTab = elements.tabs[nextIndex];
-        event.preventDefault();
-        selectSection(nextTab.dataset.agencySection);
-        nextTab.focus();
     }
 
     function handleCancel(event) {
@@ -368,7 +368,6 @@ export function createAgencyUi(options) {
 
     elements.trigger.addEventListener('click', open);
     elements.dialog.addEventListener('click', handleAction);
-    elements.dialog.addEventListener('keydown', handleTabKeydown);
     elements.dialog.addEventListener('cancel', handleCancel);
     const unbindBackdrop = bindBackdropDismiss(elements.dialog, close);
     const unsubscribe = i18n.subscribe(render);
@@ -381,12 +380,10 @@ export function createAgencyUi(options) {
         tick,
         advanceTime: scienceConsole.advanceTime,
         getScienceState: scienceConsole.getState,
-        selectSection,
         destroy() {
             scienceConsole.destroy();
             elements.trigger.removeEventListener('click', open);
             elements.dialog.removeEventListener('click', handleAction);
-            elements.dialog.removeEventListener('keydown', handleTabKeydown);
             elements.dialog.removeEventListener('cancel', handleCancel);
             unbindBackdrop();
             unsubscribe();
