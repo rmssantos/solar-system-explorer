@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img">
+  <title>Paper Space Agency seal</title>
+  <defs>
+    <filter id="paper-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="5" dy="7" stdDeviation="1.8" flood-color="#172444" flood-opacity=".32"/>
+    </filter>
+    <pattern id="fibres" width="13" height="11" patternUnits="userSpaceOnUse">
+      <path d="M1 3l4-1m2 7l5-2M9 1l2 1" stroke="#6a583e" stroke-width=".8" opacity=".18"/>
+    </pattern>
+  </defs>
+  <g filter="url(#paper-shadow)">
+    <path d="M90 7l18 8 20-2 12 17 19 7 2 21 13 16-8 19 5 20-17 12-7 19-21 2-16 13-20-8-20 8-16-13-21-2-7-19-17-12 5-20-8-19 13-16 2-21 19-7 12-17 20 2z" fill="#ead8a8" stroke="#172444" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M90 19l16 7 18-2 10 15 17 6 1 18 12 13-7 17 4 17-15 10-6 17-18 1-14 12-18-7-18 7-14-12-18-1-6-17-15-10 4-17-7-17 12-13 1-18 17-6 10-15 18 2z" fill="#315d62" stroke="#fff0c4" stroke-width="3" stroke-dasharray="4 3" stroke-linejoin="round"/>
+    <circle cx="90" cy="81" r="46" fill="#23345f" stroke="#f5b83d" stroke-width="4"/>
+    <ellipse cx="90" cy="80" rx="63" ry="25" fill="none" stroke="#fff0c4" stroke-width="3" transform="rotate(-20 90 80)"/>
+    <ellipse cx="90" cy="80" rx="58" ry="18" fill="none" stroke="#d85d4a" stroke-width="2" stroke-dasharray="6 5" transform="rotate(22 90 80)"/>
+    <circle cx="91" cy="78" r="18" fill="#f5b83d" stroke="#7c5b2c" stroke-width="3"/>
+    <path d="M82 70c7-7 17-5 22 0l-8 4 7 8-8 10-11-3-7-10z" fill="#d85d4a" opacity=".8"/>
+    <path d="M49 62l17-7 8 8-16 9z" fill="#fff0c4" stroke="#172444" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M44 56l7 16m21-21l7 17" stroke="#4388b8" stroke-width="6"/>
+    <circle cx="143" cy="54" r="6" fill="#fff0c4" stroke="#172444" stroke-width="3"/>
+    <path d="M58 122h64l-5 25H63z" fill="#fff0c4" stroke="#172444" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M67 130h46M72 138h36" stroke="#9a4f42" stroke-width="4" stroke-linecap="round"/>
+    <path d="M7 0h180v180H7z" fill="url(#fibres)" opacity=".65"/>
+  </g>
+</svg>

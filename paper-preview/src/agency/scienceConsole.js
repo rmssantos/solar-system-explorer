@@ -5,52 +5,191 @@ import {
     getScienceTarget
 } from './scienceSimulation.js';
 
-function roundedRect(context, x, y, width, height, radius) {
-    const r = Math.min(radius, width / 2, height / 2);
-    context.beginPath();
-    context.roundRect(x, y, width, height, r);
+const PAPER_TEXTURES = Object.freeze({
+    craft: '/art/textures/paper-craft-surface.webp',
+    sun: '/art/textures/paper-sun-surface.webp',
+    earth: '/art/textures/paper-earth-surface.webp',
+    mars: '/art/textures/paper-mars-surface.webp',
+    rocky: '/art/textures/paper-rocky-surface.webp'
+});
+
+function seededWave(seed, index) {
+    const value = Math.sin((seed + index * 91.17) * 12.9898) * 43758.5453;
+    return value - Math.floor(value);
 }
 
-function drawPaperStars(context, width, height, seed) {
-    context.fillStyle = '#fff5ce';
-    for (let index = 0; index < 46; index += 1) {
-        const x = ((index * 83 + seed % 97) % 997) / 997 * width;
-        const y = ((index * 47 + seed % 61) % 521) / 521 * height;
-        const size = index % 9 === 0 ? 2.4 : 1.2;
-        context.globalAlpha = .28 + (index % 5) * .12;
-        context.fillRect(x, y, size, size);
+export function createPaperArtAtlas(view, onLoad = () => {}) {
+    const atlas = {};
+    if (typeof view?.Image !== 'function') return atlas;
+    for (const [key, source] of Object.entries(PAPER_TEXTURES)) {
+        const image = new view.Image();
+        image.decoding = 'async';
+        image.addEventListener('load', onLoad, { once: true });
+        image.src = source;
+        atlas[key] = image;
     }
-    context.globalAlpha = 1;
+    return atlas;
 }
 
-function drawProbe(context, x, y, angle = 0, flame = false) {
+function traceCutCircle(context, x, y, radius, seed = 0, points = 44) {
+    context.beginPath();
+    for (let index = 0; index <= points; index += 1) {
+        const angle = index / points * Math.PI * 2;
+        const wobble = 1 + (seededWave(seed, index) - .5) * .075;
+        const pointX = x + Math.cos(angle) * radius * wobble;
+        const pointY = y + Math.sin(angle) * radius * wobble;
+        if (index === 0) context.moveTo(pointX, pointY); else context.lineTo(pointX, pointY);
+    }
+    context.closePath();
+}
+
+function drawTexture(context, image, x, y, width, height, alpha = .72) {
+    if (!image?.complete || !image.naturalWidth) return;
+    context.save();
+    context.globalAlpha = alpha;
+    context.drawImage(image, x, y, width, height);
+    context.restore();
+}
+
+export function drawPaperBackdrop(context, width, height, seed, art, time = 0) {
+    const gradient = context.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, '#0a1533');
+    gradient.addColorStop(.52, '#172b52');
+    gradient.addColorStop(1, '#09132d');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+    drawTexture(context, art.craft, 0, 0, width, height, .16);
+
+    context.save();
+    context.globalCompositeOperation = 'screen';
+    for (let index = 0; index < 68; index += 1) {
+        const x = seededWave(seed, index * 2) * width;
+        const y = seededWave(seed, index * 2 + 1) * height;
+        const pulse = .55 + Math.sin(time / 430 + index) * .25;
+        const size = index % 13 === 0 ? 3.5 : index % 5 === 0 ? 2 : 1;
+        context.globalAlpha = Math.max(.18, pulse);
+        context.fillStyle = index % 7 === 0 ? '#9fd5e7' : '#fff0c4';
+        if (index % 13 === 0) {
+            context.save();
+            context.translate(x, y);
+            context.rotate(Math.PI / 4);
+            context.fillRect(-size / 2, -size / 2, size, size);
+            context.restore();
+        } else context.fillRect(x, y, size, size);
+    }
+    context.restore();
+
+    context.save();
+    context.strokeStyle = 'rgb(234 216 168 / .2)';
+    context.lineWidth = 2;
+    context.setLineDash([2, 10]);
+    context.strokeRect(12, 12, width - 24, height - 24);
+    context.restore();
+}
+
+export function drawPaperPlanet(context, art, options) {
+    const { x, y, radius, texture = 'earth', color = '#4388b8', seed = 1, rotation = 0 } = options;
+    context.save();
+    context.translate(x, y);
+    context.rotate(rotation);
+    context.translate(-x, -y);
+    context.fillStyle = 'rgb(3 8 24 / .48)';
+    traceCutCircle(context, x + radius * .09, y + radius * .12, radius, seed);
+    context.fill();
+    context.fillStyle = color;
+    traceCutCircle(context, x, y, radius, seed);
+    context.fill();
+    context.save();
+    traceCutCircle(context, x, y, radius, seed);
+    context.clip();
+    drawTexture(context, art[texture], x - radius, y - radius, radius * 2, radius * 2, .9);
+    const shine = context.createRadialGradient(x - radius * .35, y - radius * .4, 1, x, y, radius * 1.05);
+    shine.addColorStop(0, 'rgb(255 249 216 / .5)');
+    shine.addColorStop(.5, 'rgb(255 249 216 / .06)');
+    shine.addColorStop(1, 'rgb(5 9 26 / .45)');
+    context.fillStyle = shine;
+    context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    context.restore();
+    context.strokeStyle = '#080f25';
+    context.lineWidth = Math.max(3, radius * .035);
+    traceCutCircle(context, x, y, radius, seed);
+    context.stroke();
+    context.strokeStyle = 'rgb(255 240 196 / .55)';
+    context.lineWidth = 1.5;
+    traceCutCircle(context, x - 2, y - 2, radius * .93, seed + 7);
+    context.stroke();
+    context.restore();
+}
+
+function drawProbe(context, art, x, y, angle = 0, flame = false, time = 0) {
+    const scale = Math.max(.72, Math.min(1.16, context.canvas.clientWidth / 900 || 1));
+    context.save();
+    context.translate(x + 5, y + 7);
+    context.rotate(angle);
+    context.scale(scale, scale);
+    context.fillStyle = 'rgb(2 7 20 / .5)';
+    context.fillRect(-49, -12, 98, 27);
+    context.restore();
+
     context.save();
     context.translate(x, y);
     context.rotate(angle);
-    context.fillStyle = '#ead8a8';
-    context.strokeStyle = '#101936';
-    context.lineWidth = 3;
-    roundedRect(context, -22, -12, 44, 24, 5);
-    context.fill();
-    context.stroke();
+    context.scale(scale, scale);
     context.fillStyle = '#4388b8';
-    context.fillRect(-48, -10, 22, 20);
-    context.fillRect(26, -10, 22, 20);
-    context.strokeRect(-48, -10, 22, 20);
-    context.strokeRect(26, -10, 22, 20);
-    context.fillStyle = '#f5b83d';
-    context.beginPath();
-    context.arc(0, 0, 5, 0, Math.PI * 2);
-    context.fill();
-    if (flame) {
-        context.fillStyle = '#d85d4a';
+    context.strokeStyle = '#080f25';
+    context.lineWidth = 3;
+    for (const side of [-1, 1]) {
+        const panelX = side < 0 ? -52 : 27;
+        context.fillRect(panelX, -12, 25, 24);
+        context.strokeRect(panelX, -12, 25, 24);
+        context.strokeStyle = 'rgb(255 240 196 / .45)';
+        context.lineWidth = 1;
         context.beginPath();
-        context.moveTo(-24, -7);
-        context.lineTo(-42, 0);
-        context.lineTo(-24, 7);
-        context.fill();
+        context.moveTo(panelX + 8, -11); context.lineTo(panelX + 8, 11);
+        context.moveTo(panelX + 16, -11); context.lineTo(panelX + 16, 11);
+        context.stroke();
+        context.strokeStyle = '#080f25'; context.lineWidth = 3;
+    }
+    context.fillStyle = '#ead8a8';
+    context.beginPath();
+    context.moveTo(-24, -13); context.lineTo(20, -10); context.lineTo(24, 10);
+    context.lineTo(-19, 14); context.lineTo(-27, 3); context.closePath();
+    context.fill(); context.stroke();
+    context.save();
+    context.clip();
+    drawTexture(context, art.craft, -27, -14, 54, 29, .72);
+    context.restore();
+    context.fillStyle = '#f5b83d';
+    context.beginPath(); context.arc(1, 0, 6, 0, Math.PI * 2); context.fill(); context.stroke();
+    context.beginPath(); context.moveTo(14, -11); context.lineTo(25, -30); context.stroke();
+    context.fillStyle = '#fff0c4'; context.beginPath(); context.arc(27, -32, 5, 0, Math.PI * 2); context.fill(); context.stroke();
+    if (flame) {
+        const flicker = 8 + Math.sin(time / 45) * 4;
+        context.fillStyle = '#f5b83d';
+        context.beginPath(); context.moveTo(-27, -8); context.lineTo(-51 - flicker, 0); context.lineTo(-27, 8); context.fill();
+        context.fillStyle = '#d85d4a';
+        context.beginPath(); context.moveTo(-27, -5); context.lineTo(-42 - flicker, 0); context.lineTo(-27, 5); context.fill();
     }
     context.restore();
+}
+
+export function drawExhaustParticles(context, state, width, height) {
+    const progress = state.launchProgress;
+    const point = trajectoryPoint(progress, width, height);
+    const previous = trajectoryPoint(Math.max(0, progress - .03), width, height);
+    const angle = Math.atan2(point.y - previous.y, point.x - previous.x);
+    for (let index = 0; index < 15; index += 1) {
+        const phase = ((state.elapsedMs / 13 + index * 19) % 100) / 100;
+        const distance = 18 + phase * 92;
+        const drift = Math.sin(index * 4.2 + state.elapsedMs / 120) * 13 * phase;
+        const x = point.x - Math.cos(angle) * distance - Math.sin(angle) * drift;
+        const y = point.y - Math.sin(angle) * distance + Math.cos(angle) * drift;
+        context.globalAlpha = (1 - phase) * .82;
+        context.fillStyle = index % 3 === 0 ? '#d85d4a' : index % 2 === 0 ? '#f5b83d' : '#fff0c4';
+        traceCutCircle(context, x, y, 2 + (1 - phase) * 5, state.seed + index, 8);
+        context.fill();
+    }
+    context.globalAlpha = 1;
 }
 
 function trajectoryPoint(progress, width, height) {
@@ -64,9 +203,10 @@ function trajectoryPoint(progress, width, height) {
     };
 }
 
-export function drawLaunch(context, state, width, height) {
-    context.strokeStyle = '#f5b83d';
-    context.lineWidth = 3;
+export function drawLaunch(context, state, width, height, art = {}) {
+    drawPaperPlanet(context, art, { x: width * .08, y: height * .84, radius: height * .17, texture: 'earth', color: '#4388b8', seed: state.seed });
+    context.strokeStyle = 'rgb(245 184 61 / .78)';
+    context.lineWidth = 4;
     context.setLineDash([7, 10]);
     context.beginPath();
     for (let index = 0; index <= 40; index += 1) {
@@ -76,30 +216,50 @@ export function drawLaunch(context, state, width, height) {
     }
     context.stroke();
     context.setLineDash([]);
-    context.fillStyle = '#4388b8';
-    context.beginPath();
-    context.arc(width * .08, height * .84, height * .16, 0, Math.PI * 2);
-    context.fill();
-    context.strokeStyle = '#fff5ce';
-    context.lineWidth = 4;
-    context.stroke();
     const point = trajectoryPoint(state.launchProgress, width, height);
     const next = trajectoryPoint(Math.min(1, state.launchProgress + .01), width, height);
-    drawProbe(context, point.x, point.y, Math.atan2(next.y - point.y, next.x - point.x), true);
+    drawExhaustParticles(context, state, width, height);
+    drawProbe(context, art, point.x, point.y, Math.atan2(next.y - point.y, next.x - point.x), true, state.elapsedMs);
 }
 
-export function drawSolar(context, state, width, height) {
+export function drawSignalRibbons(context, startX, startY, endX, endY, strength, time, color = '#9fd5e7') {
+    const distance = Math.hypot(endX - startX, endY - startY);
+    const angle = Math.atan2(endY - startY, endX - startX);
+    context.save();
+    context.translate(startX, startY);
+    context.rotate(angle);
+    for (let ribbon = -1; ribbon <= 1; ribbon += 1) {
+        context.beginPath();
+        for (let index = 0; index <= 44; index += 1) {
+            const progress = index / 44;
+            const x = progress * distance;
+            const fade = Math.sin(progress * Math.PI);
+            const y = ribbon * 14 + Math.sin(progress * Math.PI * 7 - time / 230 + ribbon) * (5 + strength * 10) * fade;
+            if (index === 0) context.moveTo(x, y); else context.lineTo(x, y);
+        }
+        context.globalAlpha = .2 + strength * (.28 + (ribbon === 0 ? .3 : .12));
+        context.strokeStyle = color;
+        context.lineWidth = ribbon === 0 ? 5 : 2;
+        context.stroke();
+    }
+    context.restore();
+    context.globalAlpha = 1;
+}
+
+export function drawSolar(context, state, width, height, art = {}) {
     const target = getScienceTarget(state).scan;
     const targetX = width * (.12 + target * .78);
     const scanX = width * (.12 + state.scan * .78);
-    const gradient = context.createRadialGradient(width * .12, height * .5, 8, width * .12, height * .5, height * .28);
+    const pulse = 1 + Math.sin(state.scienceElapsedMs / 180) * .035;
+    const gradient = context.createRadialGradient(width * .12, height * .5, 8, width * .12, height * .5, height * .34);
     gradient.addColorStop(0, '#fff4b0');
     gradient.addColorStop(.45, '#f5b83d');
     gradient.addColorStop(1, 'rgb(216 93 74 / 0)');
     context.fillStyle = gradient;
     context.beginPath();
-    context.arc(width * .12, height * .5, height * .28, 0, Math.PI * 2);
+    context.arc(width * .12, height * .5, height * .34, 0, Math.PI * 2);
     context.fill();
+    drawPaperPlanet(context, art, { x: width * .12, y: height * .5, radius: height * .205 * pulse, texture: 'sun', color: '#f5b83d', seed: state.seed, rotation: state.scienceElapsedMs / 12000 });
     context.fillStyle = 'rgb(107 152 91 / .22)';
     context.fillRect(targetX - width * .025, height * .12, width * .05, height * .76);
     context.strokeStyle = '#9fd5e7';
@@ -112,16 +272,17 @@ export function drawSolar(context, state, width, height) {
         if (index === 0) context.moveTo(x, y); else context.lineTo(x, y);
     }
     context.stroke();
+    drawSignalRibbons(context, width * .22, height * .5, width * .83, height * .23, .72, state.scienceElapsedMs, '#d85d4a');
     context.strokeStyle = '#fff5ce';
     context.lineWidth = 3;
     context.beginPath();
     context.moveTo(scanX, height * .1);
     context.lineTo(scanX, height * .9);
     context.stroke();
-    drawProbe(context, width * .87, height * .2, -.18);
+    drawProbe(context, art, width * .87, height * .2 + Math.sin(state.scienceElapsedMs / 380) * 4, -.18, false, state.scienceElapsedMs);
 }
 
-export function drawNeo(context, state, width, height) {
+export function drawNeo(context, state, width, height, art = {}) {
     const target = getScienceTarget(state);
     const asteroid = { x: target.x * width, y: target.y * height };
     context.strokeStyle = 'rgb(245 184 61 / .55)';
@@ -131,22 +292,16 @@ export function drawNeo(context, state, width, height) {
     context.ellipse(width * .5, height * .5, width * .4, height * .28, -.2, 0, Math.PI * 2);
     context.stroke();
     context.setLineDash([]);
-    context.fillStyle = '#4388b8';
-    context.beginPath();
-    context.arc(width * .83, height * .68, height * .13, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = '#b59468';
-    context.strokeStyle = '#5b4633';
-    context.lineWidth = 4;
-    context.beginPath();
-    context.moveTo(asteroid.x - 22, asteroid.y - 10);
-    context.lineTo(asteroid.x - 6, asteroid.y - 25);
-    context.lineTo(asteroid.x + 23, asteroid.y - 12);
-    context.lineTo(asteroid.x + 18, asteroid.y + 18);
-    context.lineTo(asteroid.x - 12, asteroid.y + 23);
-    context.closePath();
-    context.fill();
-    context.stroke();
+    drawPaperPlanet(context, art, { x: width * .84, y: height * .72, radius: height * .15, texture: 'earth', color: '#4388b8', seed: state.seed + 11, rotation: -.08 });
+    drawPaperPlanet(context, art, { x: asteroid.x, y: asteroid.y, radius: Math.max(25, height * .065), texture: 'rocky', color: '#b59468', seed: state.seed + 23, rotation: state.scienceElapsedMs / 1600 });
+    context.strokeStyle = 'rgb(216 93 74 / .34)';
+    context.lineWidth = 2;
+    for (let trail = 1; trail <= 3; trail += 1) {
+        context.beginPath();
+        context.moveTo(asteroid.x - 30 - trail * 8, asteroid.y + trail * 5);
+        context.lineTo(asteroid.x - 72 - trail * 18, asteroid.y + trail * 11);
+        context.stroke();
+    }
     const aimX = state.aim.x * width;
     const aimY = state.aim.y * height;
     context.strokeStyle = '#fff5ce';
@@ -160,32 +315,35 @@ export function drawNeo(context, state, width, height) {
     context.stroke();
 }
 
-export function drawMars(context, state, width, height) {
-    context.fillStyle = '#d85d4a';
-    context.strokeStyle = '#7a382f';
-    context.lineWidth = 6;
-    context.beginPath();
-    context.arc(width * .78, height * .52, height * .22, 0, Math.PI * 2);
-    context.fill();
-    context.stroke();
-    context.fillStyle = 'rgb(92 48 42 / .28)';
-    context.beginPath();
-    context.arc(width * .72, height * .45, height * .05, 0, Math.PI * 2);
-    context.arc(width * .84, height * .61, height * .035, 0, Math.PI * 2);
-    context.fill();
-    drawProbe(context, width * .2, height * .5, 0);
-    context.strokeStyle = `rgb(159 213 231 / ${.2 + state.signalStrength * .8})`;
-    context.lineWidth = 4;
-    for (let radius = 1; radius <= 4; radius += 1) {
-        context.beginPath();
-        context.arc(width * .25, height * .5, radius * width * .095, -.65, .65);
-        context.stroke();
-    }
+export function drawMars(context, state, width, height, art = {}) {
+    drawPaperPlanet(context, art, { x: width * .78, y: height * .52, radius: height * .235, texture: 'mars', color: '#d85d4a', seed: state.seed, rotation: state.scienceElapsedMs / 17000 });
+    drawProbe(context, art, width * .2, height * .5 + Math.sin(state.scienceElapsedMs / 420) * 4, 0, false, state.scienceElapsedMs);
+    drawSignalRibbons(context, width * .25, height * .5, width * .62, height * .5, state.signalStrength, state.scienceElapsedMs, '#9fd5e7');
     context.strokeStyle = '#f5b83d';
     context.lineWidth = 10;
     context.beginPath();
     context.arc(width * .5, height * .86, width * .12, Math.PI, Math.PI + Math.PI * state.lockProgress);
     context.stroke();
+    context.fillStyle = '#fff0c4';
+    context.font = `900 ${Math.max(12, height * .035)}px monospace`;
+    context.textAlign = 'center';
+    context.fillText(`${Math.round(state.signalStrength * 100)}%`, width * .5, height * .86 - 8);
+}
+
+export function drawCaptureFlash(context, width, height, effects) {
+    if (effects.captureFlash <= 0) return;
+    const alpha = Math.min(.72, effects.captureFlash * .72);
+    context.fillStyle = `rgb(255 240 196 / ${alpha})`;
+    context.fillRect(0, 0, width, height);
+    context.save();
+    context.translate(width / 2, height / 2);
+    context.strokeStyle = `rgb(245 184 61 / ${effects.captureFlash})`;
+    context.lineWidth = 5;
+    for (let index = 0; index < 14; index += 1) {
+        context.rotate(Math.PI * 2 / 14);
+        context.beginPath(); context.moveTo(48, 0); context.lineTo(72 + effects.captureFlash * 45, 0); context.stroke();
+    }
+    context.restore();
 }
 
 /** @param {any} options */
@@ -214,6 +372,8 @@ export function createScienceConsole(options) {
     let lastFrameTime = null;
     let completionSent = false;
     let deterministic = false;
+    const effects = { captureFlash: 0 };
+    const art = createPaperArtAtlas(view, () => draw());
 
     function instructionKey() {
         if (state?.kind === 'near-earth-object') return 'game.agency.science.neo.instructions';
@@ -256,13 +416,12 @@ export function createScienceConsole(options) {
         if (!state || elements.root.hidden) return;
         const { width, height } = resizeCanvas();
         context.clearRect(0, 0, width, height);
-        context.fillStyle = '#101936';
-        context.fillRect(0, 0, width, height);
-        drawPaperStars(context, width, height, state.seed);
-        if (state.phase === 'launch') drawLaunch(context, state, width, height);
-        else if (state.kind === 'solar-weather') drawSolar(context, state, width, height);
-        else if (state.kind === 'near-earth-object') drawNeo(context, state, width, height);
-        else drawMars(context, state, width, height);
+        drawPaperBackdrop(context, width, height, state.seed, art, state.elapsedMs);
+        if (state.phase === 'launch') drawLaunch(context, state, width, height, art);
+        else if (state.kind === 'solar-weather') drawSolar(context, state, width, height, art);
+        else if (state.kind === 'near-earth-object') drawNeo(context, state, width, height, art);
+        else drawMars(context, state, width, height, art);
+        drawCaptureFlash(context, width, height, effects);
     }
 
     function render() {
@@ -292,6 +451,7 @@ export function createScienceConsole(options) {
     function step(milliseconds) {
         if (!state || elements.root.hidden) return;
         state = advanceScienceSimulation(state, milliseconds);
+        effects.captureFlash = Math.max(0, effects.captureFlash - milliseconds / 520);
         render();
         notifyCompletion();
     }
@@ -315,6 +475,7 @@ export function createScienceConsole(options) {
         mission = nextMission;
         operationTitle = operation?.title ?? '';
         state = createScienceSimulation({ kind: nextMission.kind, seed: nextMission.id });
+        effects.captureFlash = 0;
         completionSent = false;
         elements.announcer.textContent = '';
         elements.root.hidden = false;
@@ -335,7 +496,10 @@ export function createScienceConsole(options) {
         if (!state) return;
         const previousSamples = state.samples;
         state = applyScienceAction(state, { type: 'capture' });
-        if (state.samples > previousSamples) elements.announcer.textContent = statusText();
+        if (state.samples > previousSamples) {
+            effects.captureFlash = 1;
+            elements.announcer.textContent = statusText();
+        }
         render();
         notifyCompletion();
     }
