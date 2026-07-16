@@ -67,6 +67,8 @@ describe('Phaser Canvas docking adapter', () => {
         expect(source).toContain('ResizeObserver');
         expect(source).toMatch(/game\.destroy\(true\)/);
         expect(source).toContain('resizeObserver.disconnect()');
+        expect(source).toContain('getState()');
+        expect(source).toContain('advanceTime(milliseconds)');
     });
 
     it('keeps the full ISS on canvas while aligning the ship nose with its port', () => {

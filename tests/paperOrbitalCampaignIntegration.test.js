@@ -22,4 +22,9 @@ describe('orbital campaign integration', () => {
         expect(game).toContain('handleOrbitalContractComplete');
         expect(game).not.toContain('handleIssDeliveryComplete');
     });
+
+    it('includes the active orbital simulation in deterministic browser state', () => {
+        expect(game).toContain('orbitalMission: localOrbitHost?.getState()');
+        expect(game).toMatch(/if \(localOrbitOpen\)[\s\S]{0,100}localOrbitHost\?\.advanceTime\(milliseconds\)/);
+    });
 });

@@ -394,6 +394,17 @@ export async function createDockingGame({
 
     return Object.freeze({
         setAction: (action, active) => setDockingAction(actions, action, active),
+        getState() {
+            const scene = game.scene.getScene(profile.id);
+            return scene?.simulation ? structuredClone(scene.simulation) : null;
+        },
+        advanceTime(milliseconds) {
+            const scene = game.scene.getScene(profile.id);
+            if (!scene?.simulation) return;
+            const frameMilliseconds = 1000 / 60;
+            const steps = Math.max(1, Math.round(milliseconds / frameMilliseconds));
+            for (let index = 0; index < steps; index += 1) scene.update(0, frameMilliseconds);
+        },
         destroy() {
             resizeObserver.disconnect();
             game.destroy(true);

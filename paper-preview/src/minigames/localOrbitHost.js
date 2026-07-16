@@ -44,7 +44,12 @@ function setSafetyClass(element, safe) {
  *     onReady: () => void,
  *     onTelemetry: (telemetry: { distance: number, relativeSpeed: number, alignmentDegrees: number, corridorSafe: boolean, speedSafe: boolean, alignmentSafe: boolean }) => void,
  *     onEvent: (event: string) => void
- *   }) => Promise<{ destroy?: () => void, setAction?: (action: string, active: boolean) => unknown }>,
+ *   }) => Promise<{
+ *     destroy?: () => void,
+ *     setAction?: (action: string, active: boolean) => unknown,
+ *     getState?: () => object | null,
+ *     advanceTime?: (milliseconds: number) => void
+ *   }>,
  *   messages?: { retry?: string, guidance?: string },
  *   onComplete?: () => void,
  *   onClose?: () => void
@@ -61,6 +66,7 @@ export function createLocalOrbitHost({
     let game = null;
     let openOptions = {};
     let completed = false;
+    let latestTelemetry = null;
     let loadGeneration = 0;
     const listeners = [];
 
@@ -70,6 +76,7 @@ export function createLocalOrbitHost({
     }
 
     function updateTelemetry(telemetry) {
+        latestTelemetry = { ...telemetry };
         elements.distance.textContent = `${telemetry.distance.toFixed(1)} m`;
         elements.speed.textContent = `${telemetry.relativeSpeed.toFixed(2)} m/s`;
         elements.alignment.textContent = `${telemetry.alignmentDegrees.toFixed(1)}°`;
@@ -121,6 +128,7 @@ export function createLocalOrbitHost({
         const profile = getOrbitalMissionProfile(options.missionId, options.language);
         openOptions = { ...options, profile };
         completed = false;
+        latestTelemetry = null;
         elements.result.hidden = true;
         elements.error.hidden = true;
         elements.kicker.textContent = profile.kicker;
@@ -165,5 +173,18 @@ export function createLocalOrbitHost({
         listeners.length = 0;
     }
 
-    return Object.freeze({ open, close, destroy, updateTelemetry });
+    function getState() {
+        return {
+            missionId: openOptions.profile?.id ?? null,
+            completed,
+            telemetry: latestTelemetry ? { ...latestTelemetry } : null,
+            simulation: game?.getState?.() ?? null
+        };
+    }
+
+    function advanceTime(milliseconds) {
+        game?.advanceTime?.(milliseconds);
+    }
+
+    return Object.freeze({ open, close, destroy, updateTelemetry, getState, advanceTime });
 }

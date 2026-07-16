@@ -728,6 +728,7 @@ window.render_game_to_text = () => {
         },
         progression: { ...expeditionProgress, presentation: progressPresentation },
         contract: { ...contractState, localOrbitOpen, activeOrbitContractId },
+        orbitalMission: localOrbitHost?.getState() ?? null,
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
         autopilot: autoPilotState ? { ...autoPilotState } : null,
         audio: audioDirector.getState(),
@@ -737,6 +738,11 @@ window.render_game_to_text = () => {
 
 window.advanceTime = (milliseconds) => {
     deterministicMode = true;
+    if (localOrbitOpen) {
+        localOrbitHost?.advanceTime(milliseconds);
+        paperScene.render();
+        return;
+    }
     const steps = Math.max(1, Math.round(milliseconds / (1000 / 60)));
     for (let index = 0; index < steps; index += 1) step(1 / 60);
     paperScene.render();

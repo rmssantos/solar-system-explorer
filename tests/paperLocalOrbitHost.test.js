@@ -157,5 +157,32 @@ describe('local orbit host', () => {
         expect(elements.dialog.open).toBe(false);
         expect(closed).toBe(1);
     });
+
+    it('exposes concise mission state and deterministic stepping for browser QA', async () => {
+        const elements = createElements();
+        let advanced = 0;
+        const host = createLocalOrbitHost({
+            elements,
+            gameFactory: async (options) => {
+                options.onReady();
+                options.onTelemetry({ distance: 3, relativeSpeed: 0.2, alignmentDegrees: 2, corridorSafe: true, speedSafe: true, alignmentSafe: true });
+                return {
+                    destroy() {}, setAction() {},
+                    getState: () => ({ phase: 'approach', position: { x: -3, y: 0 } }),
+                    advanceTime: (milliseconds) => { advanced += milliseconds; }
+                };
+            }
+        });
+        await host.open({ missionId: 'hubble-service', language: 'pt' });
+
+        host.advanceTime(250);
+
+        expect(advanced).toBe(250);
+        expect(host.getState()).toMatchObject({
+            missionId: 'hubble-service', completed: false,
+            telemetry: { distance: 3 },
+            simulation: { phase: 'approach' }
+        });
+    });
 });
 
