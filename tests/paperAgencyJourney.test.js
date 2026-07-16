@@ -7,6 +7,7 @@ import {
     getAgencyMastery,
     getOperationHistory
 } from '../paper-preview/src/agency/agencyJourney.js';
+import { INSTRUMENT_CATALOG, POWER_PROFILE_CATALOG, ROUTE_PROFILE_CATALOG } from '../paper-preview/src/agency/agencyCatalog.js';
 
 const reports = Object.freeze([
     Object.freeze({ id: 'one', operationId: 'solar', quality: 64, scienceScore: 52, completedAt: 10 }),
@@ -15,6 +16,14 @@ const reports = Object.freeze([
 ]);
 
 describe('guided paper agency journey', () => {
+    it('explains what every equipment decision does before the child chooses it', () => {
+        for (const item of [...INSTRUMENT_CATALOG, ...POWER_PROFILE_CATALOG, ...ROUTE_PROFILE_CATALOG]) {
+            expect(item).toEqual(expect.objectContaining({
+                purposeKey: expect.stringMatching(/^game\.agency\./),
+                consequenceKey: expect.stringMatching(/^game\.agency\./)
+            }));
+        }
+    });
     it('uses one understandable five-step route', () => {
         expect(AGENCY_JOURNEY_STAGES).toEqual(['mission', 'equip', 'travel', 'investigate', 'discovery']);
         let journey = createAgencyJourney({ operationId: 'solar', reports: [] });

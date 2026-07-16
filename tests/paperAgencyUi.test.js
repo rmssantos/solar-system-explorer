@@ -100,6 +100,10 @@ describe('space agency UI contract', () => {
         expect(controller).toContain('if (!elements.setup.hidden && selectedOperationId) renderSetup()');
         expect(controller).toContain('function updateChoiceSelection(group)');
         expect(controller).not.toContain('choices = { ...choices, [key]: choice.dataset.choiceId };\n            renderChoices();');
+        expect(controller).toContain('agency-choice-copy');
+        expect(controller).toContain('agency-choice-consequence');
+        expect(controller).toContain('agency-choice-recommended');
+        expect(controller).toContain('isRecommendedChoice');
     });
 
     it('returns focus to a meaningful control when setup closes or launches', () => {

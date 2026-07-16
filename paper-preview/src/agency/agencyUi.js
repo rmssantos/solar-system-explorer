@@ -129,6 +129,14 @@ export function createAgencyUi(options) {
         return operations.find((candidate) => candidate.id === selectedOperationId) ?? null;
     }
 
+    function isRecommendedChoice(group, item) {
+        const operation = selectedOperation();
+        if (!operation) return false;
+        if (group === 'instrument') return item.id === operation.recommendedInstrumentId;
+        if (group === 'power') return item.id === operation.recommendedPowerProfileId;
+        return item.id === 'stable';
+    }
+
     function choiceButton(group, item) {
         const key = group === 'instrument' ? 'instrumentId' : group === 'power' ? 'powerProfileId' : 'routeProfileId';
         const button = element(document, 'button', 'agency-choice');
@@ -138,7 +146,17 @@ export function createAgencyUi(options) {
         button.setAttribute('aria-pressed', String(choices[key] === item.id));
         const icon = element(document, 'span', 'agency-choice-icon', item.icon ?? (item.id === 'fast' ? '➜' : '◎'));
         icon.setAttribute('aria-hidden', 'true');
-        button.append(icon, element(document, 'strong', '', i18n.t(`game.agency.${group}.${item.id}`)));
+        const copy = element(document, 'span', 'agency-choice-copy');
+        copy.append(
+            element(document, 'strong', '', i18n.t(`game.agency.${group}.${item.id}`)),
+            element(document, 'small', '', i18n.t(item.purposeKey)),
+            element(document, 'em', 'agency-choice-consequence', i18n.t(item.consequenceKey))
+        );
+        button.append(icon, copy);
+        if (isRecommendedChoice(group, item)) {
+            button.classList.add('is-recommended');
+            button.append(element(document, 'b', 'agency-choice-recommended', i18n.t('game.agency.choice.recommended')));
+        }
         return button;
     }
 
@@ -151,6 +169,11 @@ export function createAgencyUi(options) {
             button.setAttribute('aria-pressed', String(choices[key] === button.dataset.choiceId));
             const label = button.querySelector('strong');
             if (label) label.textContent = i18n.t(`game.agency.${group}.${button.dataset.choiceId}`);
+            const item = catalog.find((candidate) => candidate.id === button.dataset.choiceId);
+            const purpose = button.querySelector('.agency-choice-copy small');
+            const consequence = button.querySelector('.agency-choice-consequence');
+            if (purpose && item) purpose.textContent = i18n.t(item.purposeKey);
+            if (consequence && item) consequence.textContent = i18n.t(item.consequenceKey);
         }
     }
 
