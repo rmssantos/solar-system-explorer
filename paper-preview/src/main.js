@@ -48,6 +48,12 @@ import {
     isContractDestinationNearby
 } from './contracts/contractState.js';
 import { CONTRACT_CATALOG, getContract } from './contracts/contractCatalog.js';
+import {
+    arriveContractTravel,
+    cancelContractTravel,
+    createContractJourney,
+    startContractTravel
+} from './contracts/contractJourney.js';
 import { createLocalOrbitHost } from './minigames/localOrbitHost.js';
 import { createAgencyUi } from './agency/agencyUi.js';
 import { createLivingOperations } from './agency/operationDirector.js';
@@ -117,6 +123,7 @@ let autoPilotState = null;
 let localOrbitOpen = false;
 let localOrbitHost = null;
 let activeOrbitContractId = null;
+let contractJourney = createContractJourney();
 let agencyUiElapsed = 0;
 let lastInput = {
     forward: 0,
@@ -464,6 +471,19 @@ function handleAcceptContract(contractId) {
     return true;
 }
 
+function handleTravelContract(contractId) {
+    const next = startContractTravel(contractJourney, contractId);
+    if (next === contractJourney) return false;
+    contractJourney = next;
+    if (!flyToWorldObject(next.targetKey)) {
+        contractJourney = cancelContractTravel(contractJourney);
+        syncUI(true);
+        return false;
+    }
+    syncUI(true);
+    return true;
+}
+
 async function startOrbitalContract(contractId) {
     const contract = getContract(contractId);
     const accepted = getContractStatus(
@@ -474,6 +494,7 @@ async function startOrbitalContract(contractId) {
     if (!contract || !accepted || !isOrbitalContractDestinationNearby(contractId) || localOrbitOpen || !localOrbitHost) return false;
     localOrbitOpen = true;
     activeOrbitContractId = contractId;
+    contractJourney = cancelContractTravel(contractJourney);
     autoPilotState = null;
     updateAutopilotDisplay();
     flightInput.reset();
@@ -515,6 +536,7 @@ const previewUI = createPreviewUI({
     onAnswerQuiz: handleAnswerQuiz,
     onRetryQuiz: handleRetryQuiz,
     onAcceptContract: handleAcceptContract,
+    onTravelContract: handleTravelContract,
     onStartContract: startOrbitalContract,
     onMissionLogOpen: () => flightInput.setEnabled(false),
     onMissionLogClose: () => flightInput.setEnabled(true),
@@ -599,7 +621,9 @@ function updateAutopilotDisplay() {
 function cancelAutopilot() {
     if (autoPilotState) siteAnalytics.track('autopilot_event', { objectKey: autoPilotState.targetKey, state: 'cancel' });
     autoPilotState = null;
+    contractJourney = cancelContractTravel(contractJourney);
     updateAutopilotDisplay();
+    syncUI(true);
 }
 
 function flyToWorldObject(key) {
@@ -660,6 +684,8 @@ function syncUI(force = false) {
         previewState.learning.quiz.attempts,
         contractState.acceptedContractIds.join(','),
         contractState.completedContractIds.join(','),
+        contractJourney.activeContractId ?? 'none',
+        contractJourney.phase,
         localOrbitOpen
     ].join(':');
     if (!force && signature === lastUiSignature) return;
@@ -669,6 +695,7 @@ function syncUI(force = false) {
         missions,
         expeditionProgress,
         contractState,
+        contractJourney,
         nearbyContractIds: CONTRACT_CATALOG.filter((contract) => isOrbitalContractDestinationNearby(contract.id))
             .map((contract) => contract.id)
     });
@@ -737,6 +764,12 @@ function step(seconds) {
             if (result.arrived) {
                 audioDirector.play('autopilot-arrive');
                 siteAnalytics.track('autopilot_event', { objectKey: autopilotTargetKey, state: 'arrive' });
+                const arrived = arriveContractTravel(contractJourney, autopilotTargetKey);
+                if (arrived !== contractJourney) {
+                    contractJourney = arrived;
+                    syncUI(true);
+                    previewUI.openMissionLog('missions');
+                }
             }
         }
     } else if (!dialogOpen) {
@@ -848,7 +881,7 @@ window.render_game_to_text = () => {
             discoveredKeys: [...previewState.learning.discoveredKeys]
         },
         progression: { ...expeditionProgress, presentation: progressPresentation },
-        contract: { ...contractState, localOrbitOpen, activeOrbitContractId },
+        contract: { ...contractState, journey: contractJourney, localOrbitOpen, activeOrbitContractId },
         agency: {
             open: Boolean(agencyUi?.elements.dialog.open),
             operationIds: livingOperations.map((operation) => operation.id),
@@ -899,6 +932,7 @@ window.__paperPreview = {
     answerQuiz: handleAnswerQuiz,
     retryQuiz: handleRetryQuiz,
     acceptContract: handleAcceptContract,
+    travelContract: handleTravelContract,
     startOrbitalContract,
     completeOrbitalContract: handleOrbitalContractComplete,
     acceptIssDelivery: () => handleAcceptContract(ISS_DELIVERY_CONTRACT_ID),

@@ -12,8 +12,16 @@ describe('orbital campaign integration', () => {
         expect(ui).toContain('CONTRACT_CATALOG');
         expect(ui).toContain('data-contract-id');
         expect(ui).toContain('onAcceptContract(contractId)');
+        expect(ui).toContain('onTravelContract(contractId)');
         expect(ui).toContain('onStartContract(contractId)');
         expect(ui).not.toContain('issContractAction');
+    });
+
+    it('connects accepted contracts to the existing paper autopilot and arrival flow', () => {
+        expect(game).toContain('handleTravelContract');
+        expect(game).toContain('startContractTravel');
+        expect(game).toContain('arriveContractTravel');
+        expect(game).toContain('previewUI.openMissionLog(\'missions\')');
     });
 
     it('tracks the active orbital contract instead of hard-coding ISS completion', () => {
