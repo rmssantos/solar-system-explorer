@@ -664,5 +664,5 @@ export function createPreviewUI({
         }
     }
 
-    return { update, updateNavigation, updateCockpitTelemetry, updateAudioState, setApod, showSurprise, showProgressFeedback, closeMissionLog, markReady, destroy, elements };
+    return { update, updateNavigation, updateCockpitTelemetry, updateAudioState, setApod, showSurprise, showProgressFeedback, openMissionLog, closeMissionLog, markReady, destroy, elements };
 }

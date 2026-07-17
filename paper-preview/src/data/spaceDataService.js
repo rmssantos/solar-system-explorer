@@ -1,8 +1,10 @@
 import { readDataCache, writeDataCache } from './cache.js';
 import {
     parseApod,
+    parseDonkiSolarFlares,
     parseHorizonsVector,
     parseNasaImageSearch,
+    parseNeoFeed,
     parseOmmElements
 } from './parsers.js';
 
@@ -11,6 +13,7 @@ const NASA_IMAGE_TTL = 7 * DAY_MS;
 const APOD_TTL = DAY_MS;
 const HORIZONS_TTL = DAY_MS;
 const SATELLITE_TTL = 2 * 60 * 60 * 1000;
+const LIVING_FEED_TTL = 6 * 60 * 60 * 1000;
 
 function defaultStorage() {
     try {
@@ -79,7 +82,9 @@ export function createSpaceDataService({
                 status: 'fallback',
                 source: Object.freeze(typeof source === 'function' ? source(fallback) : source),
                 updatedAt: currentDate.toISOString(),
-                data: Object.freeze({ ...fallback })
+                data: Array.isArray(fallback)
+                    ? Object.freeze([...fallback])
+                    : Object.freeze({ ...fallback })
             });
         }
     }
@@ -161,5 +166,43 @@ export function createSpaceDataService({
         });
     }
 
-    return { getNasaImage, getApod, getDailySky, getPlanetVector, getSatelliteElements };
+    function getSpaceWeather(startDate, endDate, fallback = []) {
+        const url = new URL('https://api.nasa.gov/DONKI/FLR');
+        url.searchParams.set('startDate', startDate);
+        url.searchParams.set('endDate', endDate);
+        url.searchParams.set('api_key', nasaApiKey);
+        return load({
+            key: `donki-flares:${startDate}:${endDate}`,
+            ttl: LIVING_FEED_TTL,
+            source: { name: 'NASA DONKI', url: 'https://ccmc.gsfc.nasa.gov/tools/DONKI/' },
+            fallback,
+            url: url.toString(),
+            parser: parseDonkiSolarFlares
+        });
+    }
+
+    function getNearEarthObjects(startDate, endDate, fallback = []) {
+        const url = new URL('https://api.nasa.gov/neo/rest/v1/feed');
+        url.searchParams.set('start_date', startDate);
+        url.searchParams.set('end_date', endDate);
+        url.searchParams.set('api_key', nasaApiKey);
+        return load({
+            key: `neows:${startDate}:${endDate}`,
+            ttl: LIVING_FEED_TTL,
+            source: { name: 'NASA/JPL NeoWs', url: 'https://cneos.jpl.nasa.gov/' },
+            fallback,
+            url: url.toString(),
+            parser: parseNeoFeed
+        });
+    }
+
+    return {
+        getNasaImage,
+        getApod,
+        getDailySky,
+        getPlanetVector,
+        getSatelliteElements,
+        getSpaceWeather,
+        getNearEarthObjects
+    };
 }

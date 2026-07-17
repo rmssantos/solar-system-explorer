@@ -69,3 +69,47 @@ export function parseOmmElements(payload) {
     if (!normalized.epoch || !numeric.every(Number.isFinite)) throw new Error('CelesTrak returned invalid OMM values');
     return Object.freeze(normalized);
 }
+
+export function parseDonkiSolarFlares(payload) {
+    if (!Array.isArray(payload)) throw new Error('DONKI returned invalid flare data');
+    return Object.freeze(payload.map((item) => {
+        requiredObject(item, 'DONKI returned an invalid flare');
+        const id = String(item.flrID ?? '');
+        const beginTime = String(item.beginTime ?? '');
+        const classType = String(item.classType ?? '');
+        if (!id || !beginTime || !classType) throw new Error('DONKI flare is missing required values');
+        return Object.freeze({
+            id,
+            beginTime,
+            peakTime: item.peakTime ? String(item.peakTime) : null,
+            endTime: item.endTime ? String(item.endTime) : null,
+            classType,
+            sourceLocation: item.sourceLocation ? String(item.sourceLocation) : null
+        });
+    }));
+}
+
+export function parseNeoFeed(payload) {
+    const groups = requiredObject(payload?.near_earth_objects, 'NeoWs returned invalid approach data');
+    const objects = Object.values(groups).flatMap((group) => Array.isArray(group) ? group : []);
+    const normalized = objects.map((item) => {
+        const approach = item?.close_approach_data?.[0];
+        const minimum = Number(item?.estimated_diameter?.meters?.estimated_diameter_min);
+        const maximum = Number(item?.estimated_diameter?.meters?.estimated_diameter_max);
+        const speedKps = Number(approach?.relative_velocity?.kilometers_per_second);
+        const missDistanceKm = Number(approach?.miss_distance?.kilometers);
+        if (!item?.id || !approach?.close_approach_date || ![minimum, maximum, speedKps, missDistanceKm].every(Number.isFinite)) {
+            throw new Error('NeoWs approach is missing required values');
+        }
+        return Object.freeze({
+            id: String(item.id),
+            name: String(item.name ?? 'Near-Earth object'),
+            approachDate: String(approach.close_approach_date),
+            speedKps,
+            missDistanceKm,
+            diameterMeters: (minimum + maximum) / 2,
+            hazardous: item.is_potentially_hazardous_asteroid === true
+        });
+    });
+    return Object.freeze(normalized.sort((a, b) => a.missDistanceKm - b.missDistanceKm));
+}

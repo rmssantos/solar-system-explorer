@@ -23,8 +23,32 @@ describe('paper progress store contract migration', () => {
             completedQuizIds: ['earth-0'],
             xp: 55,
             acceptedContractIds: [],
-            completedContractIds: []
+            completedContractIds: [],
+            agencyActiveMissions: [],
+            agencyReports: []
         });
+    });
+
+    it('round-trips active probes and scientific reports without changing the storage key', () => {
+        const storage = createMemoryStorage();
+        const mission = { id: 'solar:1', operationId: 'solar', startedAt: 10, endsAt: 20 };
+        const report = { id: 'report:solar:1', operationId: 'solar', collected: true };
+
+        saveProgress({ agencyActiveMissions: [mission], agencyReports: [report] }, storage);
+
+        expect(loadProgress(storage)).toMatchObject({
+            agencyActiveMissions: [mission],
+            agencyReports: [report]
+        });
+    });
+
+    it('discards malformed agency collections while keeping other progress', () => {
+        const storage = createMemoryStorage(JSON.stringify({
+            xp: 90,
+            agencyActiveMissions: { broken: true },
+            agencyReports: 'broken'
+        }));
+        expect(loadProgress(storage)).toMatchObject({ xp: 90, agencyActiveMissions: [], agencyReports: [] });
     });
 
     it('saves unique accepted and completed contract identifiers', () => {
@@ -43,7 +67,9 @@ describe('paper progress store contract migration', () => {
     it('returns safe contract defaults for malformed storage', () => {
         expect(loadProgress(createMemoryStorage('{broken'))).toMatchObject({
             acceptedContractIds: [],
-            completedContractIds: []
+            completedContractIds: [],
+            agencyActiveMissions: [],
+            agencyReports: []
         });
     });
 });
