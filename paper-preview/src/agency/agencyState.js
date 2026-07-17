@@ -112,8 +112,11 @@ export function launchAgencyMission(state, configuration = {}) {
     const startedAt = finiteTimestamp(nowMs);
     const route = getAgencyCatalogItem(ROUTE_PROFILE_CATALOG, routeProfileId);
     const durationMs = Math.max(1, Math.round(operation.durationMs * route.durationMultiplier));
+    const attempt = base.activeMissions.filter((mission) => mission.operationId === operation.id).length
+        + base.reports.filter((report) => report.operationId === operation.id).length
+        + 1;
     const mission = freezeMission({
-        id: `${operation.id}:${startedAt}`,
+        id: `${operation.id}:${startedAt}:attempt-${attempt}`,
         operationId: operation.id,
         kind: operation.kind,
         targetKey: operation.targetKey,

@@ -14,9 +14,9 @@ describe('responsive paper agency desk', () => {
 
     it('keeps the journey route readable and all interactive targets at least 44px', () => {
         expect(css).toMatch(/\.agency-route\s*\{[^}]*overflow-x:\s*auto/s);
-        expect(css).toMatch(/\.agency-route li[\s\S]*?min-height:\s*44px/s);
-        expect(css).toMatch(/\.agency-(?:primary|secondary)-action[\s\S]*?min-height:\s*44px/s);
-        expect(css).toMatch(/\.agency-choice[\s\S]*?min-height:\s*44px/s);
+        expect(css).toMatch(/\.agency-route li[^{]*\{[^}]*min-height:\s*44px/s);
+        expect(css).toMatch(/\.agency-(?:primary|secondary)-action[^{]*\{[^}]*min-height:\s*44px/s);
+        expect(css).toMatch(/\.agency-choice[^{]*\{[^}]*min-height:\s*44px/s);
     });
 
     it('provides dedicated phone portrait and short-landscape compositions', () => {

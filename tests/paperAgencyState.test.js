@@ -56,7 +56,7 @@ describe('paper agency state', () => {
 
         expect(result.error).toBeNull();
         expect(result.mission).toMatchObject({
-            id: 'solar-flare:2026-07-16:1000',
+            id: 'solar-flare:2026-07-16:1000:attempt-1',
             operationId: operation.id,
             status: 'active',
             startedAt: 1_000,
@@ -117,7 +117,7 @@ describe('paper agency state', () => {
         expect(after.activeMissions).toHaveLength(0);
         expect(after.reports).toHaveLength(1);
         expect(after.reports[0]).toMatchObject({
-            id: 'report:solar-flare:2026-07-16:1000',
+            id: 'report:solar-flare:2026-07-16:1000:attempt-1',
             operationId: operation.id,
             targetKey: 'sun',
             quality: 100,
@@ -171,12 +171,14 @@ describe('paper agency state', () => {
         }).state;
         const first = completeAgencyMissionWithScience(firstLaunch, firstLaunch.activeMissions[0].id, 62, 2_000);
         const secondLaunch = launchAgencyMission(first.state, {
-            operation, instrumentId: 'magnetometer', powerProfileId: 'focused', routeProfileId: 'stable', nowMs: 3_000
+            operation, instrumentId: 'magnetometer', powerProfileId: 'focused', routeProfileId: 'stable', nowMs: 1_000
         });
         const second = completeAgencyMissionWithScience(secondLaunch.state, secondLaunch.mission.id, 94, 4_000);
 
         expect(second.error).toBeNull();
+        expect(secondLaunch.mission.id).not.toBe(firstLaunch.activeMissions[0].id);
         expect(second.state.reports).toHaveLength(2);
+        expect(new Set(second.state.reports.map((report) => report.id)).size).toBe(2);
         expect(second.state.reports.map((report) => report.scienceScore)).toEqual([62, 94]);
     });
 

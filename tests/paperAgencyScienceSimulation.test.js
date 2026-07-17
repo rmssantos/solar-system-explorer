@@ -104,4 +104,17 @@ describe('agency scientific simulations', () => {
         expect(tuned.tuning).toBe(1);
         expect(advanceScienceSimulation(tuned, -10)).toEqual(tuned);
     });
+
+    it('counts only post-launch time when one large step crosses the launch boundary', () => {
+        const initial = createScienceSimulation({ kind: 'near-earth-object', seed: 'boundary-crossing' });
+        const projected = { ...initial, elapsedMs: 1_700, scienceElapsedMs: 100, phase: 'science' };
+        const target = getScienceTarget(projected);
+        const aimedDuringLaunch = { ...initial, aim: { x: target.x, y: target.y } };
+
+        const next = advanceScienceSimulation(aimedDuringLaunch, 1_700);
+
+        expect(next.phase).toBe('science');
+        expect(next.scienceElapsedMs).toBe(100);
+        expect(next.focusProgress).toBeCloseTo(100 / 650, 5);
+    });
 });

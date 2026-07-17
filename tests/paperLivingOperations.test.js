@@ -145,4 +145,17 @@ describe('daily operation director', () => {
         expect(operations.every((item) => Object.keys(item.facts).length > 0)).toBe(true);
         expect(operations.every((item) => !item.source.name.includes('included'))).toBe(true);
     });
+
+    it('marks synthetic facts as fallback even when an empty provider result claims live or cached data', () => {
+        const operations = createLivingOperations({
+            date: '2026-07-16',
+            solar: { status: 'live', source: { name: 'NASA DONKI' }, data: [] },
+            neo: { status: 'cached', source: { name: 'NASA/JPL NeoWs' }, data: [] },
+            planet: { status: 'live', source: { name: 'NASA/JPL Horizons' }, data: { distanceKm: Number.NaN } }
+        });
+
+        expect(operations.map((item) => item.source.status)).toEqual(['fallback', 'fallback', 'fallback']);
+        expect(operations[1].facts.objectName).toBe('Paper Scout');
+        expect(operations[2].facts.distanceKm).toBe(225_000_000);
+    });
 });

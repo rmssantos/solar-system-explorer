@@ -85,7 +85,7 @@ npm run typecheck
 npm run build:paper
 ```
 
-Resultado final desta feature: **87 ficheiros de teste, 431 testes aprovados**, lint e TypeScript sem erros e build de produção concluído.
+Resultado final desta feature: **90 ficheiros de teste, 460 testes aprovados**, lint e TypeScript sem erros e build de produção concluído.
 
 O playtest no browser cobriu:
 

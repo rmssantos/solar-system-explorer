@@ -58,4 +58,8 @@ describe('paper agency visual direction', () => {
     it('shows that the focused asteroid is clickable', () => {
         expect(css).toMatch(/\.agency-science-canvas\.is-capture-ready[^}]*cursor:\s*pointer/s);
     });
+
+    it('uses canonical lowercase CSS keyword casing in the journey route', () => {
+        expect(css).toMatch(/\.agency-route li span\s*\{[^}]*border:\s*2px solid currentcolor/s);
+    });
 });

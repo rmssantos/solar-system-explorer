@@ -25,7 +25,7 @@ describe('paper mission center', () => {
         expect(ui).toContain("[elements.missionCenterTrigger, 'click', () => openMissionLog('missions')]");
         expect(agencyUi).toContain("trigger: document.querySelector('#space-agency-trigger')");
         expect(agencyUi).toContain("elements.trigger.addEventListener('click', open)");
-        expect(ui).toContain('openMissionLog');
+        expect(ui).toMatch(/return\s*\{[^}]*\bopenMissionLog\b[^}]*\belements\b[^}]*\};/s);
         expect(ui).toContain("paperI18n.t('game.missionCenter.open')");
     });
 

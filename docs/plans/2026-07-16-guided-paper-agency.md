@@ -10,6 +10,8 @@
 
 ---
 
+## Tasks
+
 ### Task 1: Journey and replay domain
 
 **Files:**
@@ -99,4 +101,3 @@
 3. Verify the exact first-time and replay loops for all three adventures, including keyboard and touch.
 4. Inspect screenshots for clipping, hierarchy, instruction clarity, and reward visibility.
 5. Commit the completed redesign locally. Do not create or update a PR until explicitly approved after playtest.
-

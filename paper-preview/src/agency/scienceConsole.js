@@ -366,6 +366,8 @@ export function createScienceConsole(options) {
         root: document.querySelector('#agency-science-console'),
         title: document.querySelector('#agency-science-title'),
         close: document.querySelector('#agency-science-close'),
+        screen: document.querySelector('.agency-science-screen'),
+        dashboard: document.querySelector('.agency-science-dashboard'),
         canvas: document.querySelector('#agency-science-canvas'),
         coach: document.querySelector('#agency-science-coach'),
         instructions: document.querySelector('#agency-science-instructions'),
@@ -493,8 +495,8 @@ export function createScienceConsole(options) {
         elements.resultTitle.textContent = i18n.t(`game.agency.discovery.${kindKey}.title`);
         elements.resultExplanation.textContent = i18n.t(`game.agency.discovery.${kindKey}.copy`);
         elements.resultScore.textContent = `${Math.round(report?.quality ?? state?.score ?? 0)}%`;
-        elements.root.querySelector('.agency-science-screen').hidden = true;
-        elements.root.querySelector('.agency-science-dashboard').hidden = true;
+        elements.screen.hidden = true;
+        elements.dashboard.hidden = true;
         elements.result.hidden = false;
         elements.resultActions.find((button) => button.dataset.scienceResultAction === 'archive')?.focus({ preventScroll: true });
     }
@@ -511,9 +513,17 @@ export function createScienceConsole(options) {
 
     function frame(timestamp) {
         if (deterministic || elements.root.hidden) return;
+        if (state?.completed || elements.screen.hidden) {
+            frameId = null;
+            return;
+        }
         const delta = lastFrameTime === null ? 16 : Math.min(64, timestamp - lastFrameTime);
         lastFrameTime = timestamp;
         step(delta);
+        if (state?.completed || elements.screen.hidden) {
+            frameId = null;
+            return;
+        }
         frameId = view.requestAnimationFrame(frame);
     }
 
@@ -538,8 +548,8 @@ export function createScienceConsole(options) {
         completedReport = null;
         suppressNextCanvasClick = false;
         elements.announcer.textContent = '';
-        elements.root.querySelector('.agency-science-screen').hidden = false;
-        elements.root.querySelector('.agency-science-dashboard').hidden = false;
+        elements.screen.hidden = false;
+        elements.dashboard.hidden = false;
         elements.result.hidden = true;
         elements.root.hidden = false;
         render();

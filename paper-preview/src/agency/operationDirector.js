@@ -4,9 +4,9 @@ const DEFAULT_SOURCES = Object.freeze({
     planet: Object.freeze({ status: 'fallback', name: 'NASA/JPL Horizons', url: 'https://ssd.jpl.nasa.gov/horizons/' })
 });
 
-function sourceFrom(result, fallback) {
+function sourceFrom(result, fallback, hasProviderData = true) {
     return Object.freeze({
-        status: result?.status ?? fallback.status,
+        status: hasProviderData ? (result?.status ?? fallback.status) : 'fallback',
         name: result?.source?.name ?? fallback.name,
         url: result?.source?.url ?? fallback.url,
         updatedAt: result?.updatedAt ?? null
@@ -50,9 +50,12 @@ function mostRecentSolarSignal(values, fallback) {
 export function createLivingOperations(input = {}) {
     const { date, solar, neo, planet } = input;
     const day = /^\d{4}-\d{2}-\d{2}$/.test(date ?? '') ? date : new Date().toISOString().slice(0, 10);
+    const hasSolarData = Array.isArray(solar?.data) && solar.data.length > 0;
+    const hasNeoData = Array.isArray(neo?.data) && neo.data.length > 0;
+    const hasPlanetData = Number.isFinite(planet?.data?.distanceKm);
     const flare = mostRecentSolarSignal(solar?.data, fallbackSolar(day));
     const nearObject = neo?.data?.[0] ?? fallbackNeo(day);
-    const planetDistanceKm = Number.isFinite(planet?.data?.distanceKm) ? planet.data.distanceKm : 225_000_000;
+    const planetDistanceKm = hasPlanetData ? planet.data.distanceKm : 225_000_000;
 
     return Object.freeze([
         operation({
@@ -62,7 +65,7 @@ export function createLivingOperations(input = {}) {
             durationMs: 120_000,
             recommendedInstrumentId: 'magnetometer',
             recommendedPowerProfileId: 'focused',
-            source: sourceFrom(solar, DEFAULT_SOURCES.solar),
+            source: sourceFrom(solar, DEFAULT_SOURCES.solar, hasSolarData),
             facts: { flareClass: flare.classType, peakTime: flare.peakTime, sourceLocation: flare.sourceLocation }
         }),
         operation({
@@ -72,7 +75,7 @@ export function createLivingOperations(input = {}) {
             durationMs: 300_000,
             recommendedInstrumentId: 'camera',
             recommendedPowerProfileId: 'balanced',
-            source: sourceFrom(neo, DEFAULT_SOURCES.neo),
+            source: sourceFrom(neo, DEFAULT_SOURCES.neo, hasNeoData),
             facts: {
                 objectName: nearObject.name,
                 approachDate: nearObject.approachDate,
@@ -89,7 +92,7 @@ export function createLivingOperations(input = {}) {
             durationMs: 480_000,
             recommendedInstrumentId: 'radio',
             recommendedPowerProfileId: 'survey',
-            source: sourceFrom(planet, DEFAULT_SOURCES.planet),
+            source: sourceFrom(planet, DEFAULT_SOURCES.planet, hasPlanetData),
             facts: { distanceKm: planetDistanceKm, ephemerisDate: day }
         })
     ]);

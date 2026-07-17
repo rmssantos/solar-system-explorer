@@ -29,7 +29,12 @@ describe('orbital campaign integration', () => {
             game.indexOf('window.advanceTime'),
             game.indexOf('window.__paperPreview')
         );
-        expect(advanceTimeBlock).toMatch(/if \(localOrbitOpen\) \{[\s\S]*?localOrbitHost\?\.advanceTime\(milliseconds\)/);
+        const branchStart = advanceTimeBlock.indexOf('if (localOrbitOpen) {');
+        const branchEnd = advanceTimeBlock.indexOf('\n    const steps', branchStart);
+        expect(branchStart).toBeGreaterThanOrEqual(0);
+        expect(branchEnd).toBeGreaterThan(branchStart);
+        expect(advanceTimeBlock.slice(branchStart, branchEnd))
+            .toContain('localOrbitHost?.advanceTime(milliseconds)');
     });
 
     it('passes destination proximity per contract instead of one global boolean', () => {

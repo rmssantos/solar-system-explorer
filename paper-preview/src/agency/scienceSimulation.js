@@ -156,6 +156,7 @@ export function advanceScienceSimulation(state, deltaMs) {
     if (!state || state.completed || !Number.isFinite(milliseconds) || milliseconds <= 0) return state;
     const elapsedMs = state.elapsedMs + milliseconds;
     const scienceElapsedMs = Math.max(0, elapsedMs - LAUNCH_DURATION_MS);
+    const scienceDeltaMs = Math.max(0, scienceElapsedMs - (state.scienceElapsedMs ?? 0));
     const phase = elapsedMs >= LAUNCH_DURATION_MS ? 'science' : 'launch';
     const next = {
         ...state,
@@ -173,7 +174,7 @@ export function advanceScienceSimulation(state, deltaMs) {
         const target = getScienceTarget(next);
         const distance = Math.hypot(next.aim.x - target.x, next.aim.y - target.y);
         const focusMilliseconds = clamp(
-            state.focusProgress * 650 + (distance <= .2 ? milliseconds : -milliseconds * .55),
+            state.focusProgress * 650 + (distance <= .2 ? scienceDeltaMs : -scienceDeltaMs * .55),
             0,
             650
         );
@@ -184,7 +185,7 @@ export function advanceScienceSimulation(state, deltaMs) {
         const target = getScienceTarget(next).tuning;
         next.signalStrength = clamp(1 - Math.abs(next.tuning - target) / .38);
         const locked = next.signalStrength >= .86;
-        const lockMilliseconds = clamp((state.lockProgress * SIGNAL_LOCK_MS + (locked ? milliseconds : -milliseconds * .65)), 0, SIGNAL_LOCK_MS);
+        const lockMilliseconds = clamp((state.lockProgress * SIGNAL_LOCK_MS + (locked ? scienceDeltaMs : -scienceDeltaMs * .65)), 0, SIGNAL_LOCK_MS);
         next.lockProgress = lockMilliseconds / SIGNAL_LOCK_MS;
         next.feedback = locked ? 'hold-signal' : 'find-signal';
         if (next.lockProgress >= 1) {

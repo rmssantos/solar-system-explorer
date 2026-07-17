@@ -63,11 +63,15 @@ export function presentAgencyState(state, operations = [], language = 'pt', nowM
             mastery: getAgencyMastery(history)
         });
     });
+    const knownOperationIds = new Set([
+        ...operations.map((operation) => operation.id),
+        ...discoveries.map((discovery) => discovery.operationId)
+    ]);
     return Object.freeze({
         capacity: getAgencyCapacity(state),
         activeMissions: Object.freeze(activeMissions),
         reports: Object.freeze(reports),
         discoveries: Object.freeze(discoveries),
-        discoveryProgress: Object.freeze({ discovered: discoveries.length, total: operations.length })
+        discoveryProgress: Object.freeze({ discovered: discoveries.length, total: knownOperationIds.size })
     });
 }

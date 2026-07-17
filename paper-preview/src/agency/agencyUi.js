@@ -181,6 +181,17 @@ export function createAgencyUi(options) {
             const consequence = button.querySelector('.agency-choice-consequence');
             if (purpose && item) purpose.textContent = i18n.t(item.purposeKey);
             if (consequence && item) consequence.textContent = i18n.t(item.consequenceKey);
+            const recommended = Boolean(item && isRecommendedChoice(group, item));
+            button.classList.toggle('is-recommended', recommended);
+            let recommendation = button.querySelector('.agency-choice-recommended');
+            if (recommended && !recommendation) {
+                recommendation = element(document, 'b', 'agency-choice-recommended');
+                button.append(recommendation);
+            }
+            if (recommendation) {
+                recommendation.textContent = i18n.t('game.agency.choice.recommended');
+                if (!recommended) recommendation.remove();
+            }
         }
     }
 

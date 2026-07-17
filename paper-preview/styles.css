@@ -1819,7 +1819,7 @@ html[data-flight-input="touch"] .joystick-label {
 }
 
 .agency-route li:last-child::after { display: none; }
-.agency-route li span { display: grid; width: 24px; aspect-ratio: 1; place-items: center; border: 2px solid currentColor; border-radius: 50%; font-size: .6rem; }
+.agency-route li span { display: grid; width: 24px; aspect-ratio: 1; place-items: center; border: 2px solid currentcolor; border-radius: 50%; font-size: .6rem; }
 .agency-route li.is-complete { color: #b9d798; }
 .agency-route li.is-complete span { color: #23345f; background: #b9d798; border-color: #b9d798; }
 .agency-route li.is-current {

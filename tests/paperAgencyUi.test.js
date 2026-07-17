@@ -24,6 +24,7 @@ const requiredKeys = [
     'game.agency.power.survey', 'game.agency.power.balanced', 'game.agency.power.focused',
     'game.agency.route.fast', 'game.agency.route.stable',
     'game.agency.science.open', 'game.agency.science.close', 'game.agency.science.capture',
+    'game.agency.science.canvasLabel',
     'game.agency.science.capture.solar', 'game.agency.science.capture.neo',
     'game.agency.science.launching', 'game.agency.science.solar.instructions',
     'game.agency.science.neo.instructions', 'game.agency.science.mars.instructions',
@@ -75,6 +76,8 @@ describe('space agency UI contract', () => {
         expect(html).toContain('data-science-result-action="archive"');
         expect(html).toContain('data-science-result-action="another"');
         expect(html).toContain('aria-describedby="agency-science-instructions"');
+        expect(html).toContain('data-i18n-aria="game.agency.science.canvasLabel"');
+        expect(html).toMatch(/id="agency-science-canvas"[^>]*aria-label="[^"]+"/);
         expect(scienceController).toContain("addEventListener('keydown'");
         expect(scienceController).toContain("addEventListener('pointermove'");
         expect(scienceController).toContain("addEventListener('pointerup', handleCanvasPointerUp)");
@@ -95,6 +98,7 @@ describe('space agency UI contract', () => {
         expect(scienceController).toContain('focusProgress');
         expect(scienceController).toContain('function showDiscoveryResult');
         expect(scienceController).toContain('onResultAction');
+        expect(scienceController).toContain('if (state?.completed || elements.screen.hidden)');
         expect(controller).toContain('tutorial: currentJourney?.tutorial');
         expect(controller).toContain('attempt: currentJourney?.attempt');
         expect(controller).toContain("action === 'replay'");
@@ -154,6 +158,12 @@ describe('space agency UI contract', () => {
         expect(controller).toContain('agency-choice-consequence');
         expect(controller).toContain('agency-choice-recommended');
         expect(controller).toContain('isRecommendedChoice');
+        const renderChoiceGroup = controller.slice(
+            controller.indexOf('function renderChoiceGroup'),
+            controller.indexOf('function renderChoices')
+        );
+        expect(renderChoiceGroup).toContain("button.classList.toggle('is-recommended'");
+        expect(renderChoiceGroup).toContain("button.querySelector('.agency-choice-recommended')");
     });
 
     it('renders one album card per adventure with its best score and pending reward', () => {
@@ -225,5 +235,22 @@ describe('agency presentation', () => {
             pendingReport: { id: 'report:3' }
         });
         expect(view.discoveryProgress).toEqual({ discovered: 1, total: 1 });
+    });
+
+    it('keeps album progress valid when discoveries belong to previous daily operation IDs', () => {
+        const reports = ['solar:yesterday', 'neo:yesterday'].map((operationId, index) => ({
+            id: `report:${index}`,
+            operationId,
+            kind: index === 0 ? 'solar-weather' : 'near-earth-object',
+            targetKey: index === 0 ? 'sun' : 'earth',
+            quality: 80,
+            completedAt: index + 1,
+            collected: true
+        }));
+
+        const view = presentAgencyState({ activeMissions: [], reports }, [operation], 'pt', 400);
+
+        expect(view.discoveryProgress).toEqual({ discovered: 2, total: 3 });
+        expect(view.discoveryProgress.discovered).toBeLessThanOrEqual(view.discoveryProgress.total);
     });
 });
