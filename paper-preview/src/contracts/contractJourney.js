@@ -35,7 +35,7 @@ export function cancelContractTravel(state) {
 }
 
 export function getContractJourneyAction({
-    status,
+    status = 'locked',
     destinationNearby = false,
     journey = createContractJourney(),
     contractId = null

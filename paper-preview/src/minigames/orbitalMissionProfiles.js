@@ -11,8 +11,18 @@ function profile(value) {
         initialState: Object.freeze({ ...value.initialState }),
         metrics: Object.freeze(value.metrics.map((metric) => Object.freeze({ ...metric }))),
         copy: Object.freeze({
-            pt: Object.freeze({ ...value.copy.pt, metricLabels: Object.freeze([...value.copy.pt.metricLabels]) }),
-            en: Object.freeze({ ...value.copy.en, metricLabels: Object.freeze([...value.copy.en.metricLabels]) })
+            pt: Object.freeze({
+                ...value.copy.pt,
+                metricLabels: Object.freeze([...value.copy.pt.metricLabels]),
+                controlLabels: Object.freeze({ ...value.copy.pt.controlLabels }),
+                tutorialSteps: Object.freeze([...(value.copy.pt.tutorialSteps ?? [])])
+            }),
+            en: Object.freeze({
+                ...value.copy.en,
+                metricLabels: Object.freeze([...value.copy.en.metricLabels]),
+                controlLabels: Object.freeze({ ...value.copy.en.controlLabels }),
+                tutorialSteps: Object.freeze([...(value.copy.en.tutorialSteps ?? [])])
+            })
         })
     });
 }
@@ -43,6 +53,9 @@ export const ORBITAL_MISSION_PROFILES = Object.freeze({
                 success: 'Encomenda entregue!',
                 science: 'A ISS recebe regularmente experiências, alimentos e equipamento através de naves de carga.',
                 metricLabels: ['Distância', 'Velocidade relativa', 'Alinhamento'],
+                controlLabels: { forward: 'Aproximar da ISS', reverse: 'Afastar da ISS', up: 'Subir', down: 'Descer', 'rotate-left': 'Rodar para a esquerda', 'rotate-right': 'Rodar para a direita', stabilize: 'Estabilizar' },
+                tutorialTitle: 'Treino de acoplagem',
+                tutorialSteps: ['Entra no corredor amarelo e aponta o nariz da nave para a porta.', 'Aproxima-te devagar. Se a velocidade ou o alinhamento ficarem amarelos, estabiliza.'],
                 centerControl: 'Estabilizar',
                 keyboardHint: 'Teclado: WASD ou setas · Q/E roda · Espaço estabiliza'
             },
@@ -54,6 +67,9 @@ export const ORBITAL_MISSION_PROFILES = Object.freeze({
                 success: 'Delivery complete!',
                 science: 'The ISS regularly receives experiments, food and equipment aboard cargo spacecraft.',
                 metricLabels: ['Distance', 'Relative speed', 'Alignment'],
+                controlLabels: { forward: 'Approach the ISS', reverse: 'Move away from the ISS', up: 'Move up', down: 'Move down', 'rotate-left': 'Rotate left', 'rotate-right': 'Rotate right', stabilize: 'Stabilize' },
+                tutorialTitle: 'Docking practice',
+                tutorialSteps: ['Enter the yellow corridor and point the ship nose at the port.', 'Approach slowly. If speed or alignment turns yellow, stabilize.'],
                 centerControl: 'Stabilize',
                 keyboardHint: 'Keyboard: WASD or arrows · Q/E rotates · Space stabilizes'
             }
@@ -78,6 +94,9 @@ export const ORBITAL_MISSION_PROFILES = Object.freeze({
                 success: 'Módulo entregue ao Hubble!',
                 science: 'O Hubble foi visitado por astronautas em cinco missões de manutenção entre 1993 e 2009.',
                 metricLabels: ['Distância', 'Velocidade relativa', 'Alinhamento'],
+                controlLabels: { forward: 'Aproximar do Hubble', reverse: 'Afastar do Hubble', up: 'Subir', down: 'Descer', 'rotate-left': 'Rodar para a esquerda', 'rotate-right': 'Rodar para a direita', stabilize: 'Estabilizar' },
+                tutorialTitle: 'Treino de manutenção',
+                tutorialSteps: ['Compensa a deriva antes de entrares no corredor.', 'Mantém velocidade e alinhamento verdes durante a aproximação.'],
                 centerControl: 'Estabilizar',
                 keyboardHint: 'Teclado: WASD ou setas · Q/E roda · Espaço estabiliza'
             },
@@ -89,6 +108,9 @@ export const ORBITAL_MISSION_PROFILES = Object.freeze({
                 success: 'Module delivered to Hubble!',
                 science: 'Astronauts visited Hubble on five servicing missions between 1993 and 2009.',
                 metricLabels: ['Distance', 'Relative speed', 'Alignment'],
+                controlLabels: { forward: 'Approach Hubble', reverse: 'Move away from Hubble', up: 'Move up', down: 'Move down', 'rotate-left': 'Rotate left', 'rotate-right': 'Rotate right', stabilize: 'Stabilize' },
+                tutorialTitle: 'Maintenance practice',
+                tutorialSteps: ['Counter the drift before entering the corridor.', 'Keep speed and alignment green during the approach.'],
                 centerControl: 'Stabilize',
                 keyboardHint: 'Keyboard: WASD or arrows · Q/E rotates · Space stabilizes'
             }
@@ -116,6 +138,9 @@ export const ORBITAL_MISSION_PROFILES = Object.freeze({
                 success: 'Transmissores recuperados!',
                 science: 'As missões lunares usam redes de antenas e relés para manter contacto quando a geometria bloqueia um sinal direto.',
                 metricLabels: ['Transmissores', 'Escudo', 'Sinal'],
+                controlLabels: { forward: 'Mover para a direita', reverse: 'Mover para a esquerda', up: 'Mover para cima', down: 'Mover para baixo', stabilize: 'Travar a deriva' },
+                tutorialTitle: 'Treino de recolha',
+                tutorialSteps: ['Segue os anéis amarelos até cada transmissor.', 'Evita os fragmentos escuros e trava para mudares de direção.'],
                 centerControl: 'Travar',
                 keyboardHint: 'Teclado: WASD ou setas · Espaço trava a deriva'
             },
@@ -127,6 +152,9 @@ export const ORBITAL_MISSION_PROFILES = Object.freeze({
                 success: 'Transmitters recovered!',
                 science: 'Lunar missions use antenna networks and relays to stay in contact when geometry blocks a direct signal.',
                 metricLabels: ['Transmitters', 'Shield', 'Signal'],
+                controlLabels: { forward: 'Move right', reverse: 'Move left', up: 'Move up', down: 'Move down', stabilize: 'Brake drift' },
+                tutorialTitle: 'Recovery practice',
+                tutorialSteps: ['Follow the yellow rings to each transmitter.', 'Avoid dark debris and brake before changing direction.'],
                 centerControl: 'Brake',
                 keyboardHint: 'Keyboard: WASD or arrows · Space brakes the drift'
             }
@@ -153,6 +181,9 @@ export const ORBITAL_MISSION_PROFILES = Object.freeze({
                 success: 'Mensagem recebida em Marte!',
                 science: 'As comunicações com Marte demoram vários minutos em cada sentido e dependem de antenas muito bem apontadas.',
                 metricLabels: ['Ângulo', 'Frequência', 'Bloqueio'],
+                controlLabels: { forward: 'Aumentar ângulo', reverse: 'Diminuir ângulo', up: 'Diminuir frequência', down: 'Aumentar frequência', stabilize: 'Transmitir' },
+                tutorialTitle: 'Treino de rádio',
+                tutorialSteps: ['Usa esquerda e direita para centrar o ângulo.', 'Usa cima e baixo para centrar a frequência; depois mantém Transmitir.'],
                 centerControl: 'Transmitir',
                 keyboardHint: 'Teclado: esquerda/direita ajusta o ângulo · cima/baixo ajusta a frequência · Espaço transmite'
             },
@@ -164,6 +195,9 @@ export const ORBITAL_MISSION_PROFILES = Object.freeze({
                 success: 'Message received on Mars!',
                 science: 'Messages to Mars take several minutes each way and depend on very accurately pointed antennas.',
                 metricLabels: ['Angle', 'Frequency', 'Lock'],
+                controlLabels: { forward: 'Increase angle', reverse: 'Decrease angle', up: 'Decrease frequency', down: 'Increase frequency', stabilize: 'Transmit' },
+                tutorialTitle: 'Radio practice',
+                tutorialSteps: ['Use left and right to center the angle.', 'Use up and down to center the frequency, then hold Transmit.'],
                 centerControl: 'Transmit',
                 keyboardHint: 'Keyboard: left/right adjusts angle · up/down adjusts frequency · Space transmits'
             }

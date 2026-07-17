@@ -60,7 +60,13 @@ import {
     getContractAttempt,
     saveContractAttempt
 } from './contracts/contractAttemptState.js';
+import {
+    completeMissionTraining,
+    createMissionTrainingState,
+    needsMissionTraining
+} from './contracts/missionTrainingState.js';
 import { createLocalOrbitHost } from './minigames/localOrbitHost.js';
+import { ORBITAL_MISSION_PROFILES } from './minigames/orbitalMissionProfiles.js';
 import { createAgencyUi } from './agency/agencyUi.js';
 import { createLivingOperations } from './agency/operationDirector.js';
 import {
@@ -93,6 +99,7 @@ const savedProgress = loadProgress();
 let previewState = createPreviewState(savedProgress);
 let contractState = createContractState(savedProgress);
 let contractAttemptState = createContractAttemptState(savedProgress);
+let missionTrainingState = createMissionTrainingState(savedProgress);
 let agencyState = reconcileAgencyState(createAgencyState({
     agencyActiveMissions: savedProgress.agencyActiveMissions,
     activeMissions: savedProgress.agencyActiveMissions,
@@ -131,6 +138,7 @@ let localOrbitOpen = false;
 let localOrbitHost = null;
 let activeOrbitContractId = null;
 let contractJourney = createContractJourney();
+let activeOrbitTraining = false;
 let agencyUiElapsed = 0;
 let lastInput = {
     forward: 0,
@@ -384,6 +392,7 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
         ...expeditionProgress,
         ...contractState,
         contractAttempts: contractAttemptState.contractAttempts,
+        seenMissionTrainingIds: missionTrainingState.seenMissionTrainingIds,
         agencyActiveMissions: agencyState.activeMissions,
         agencyReports: agencyState.reports
     });
@@ -502,6 +511,7 @@ async function startOrbitalContract(contractId) {
     if (!contract || !accepted || !isOrbitalContractDestinationNearby(contractId) || localOrbitOpen || !localOrbitHost) return false;
     localOrbitOpen = true;
     activeOrbitContractId = contractId;
+    activeOrbitTraining = false;
     contractJourney = cancelContractTravel(contractJourney);
     autoPilotState = null;
     updateAutopilotDisplay();
@@ -516,12 +526,39 @@ async function startOrbitalContract(contractId) {
         language: paperI18n.language,
         missionId: contract.activity,
         contract,
-        initialSimulation: attempt?.missionId === contract.activity ? attempt.simulation : null
+        initialSimulation: attempt?.missionId === contract.activity ? attempt.simulation : null,
+        showTraining: needsMissionTraining(missionTrainingState, getOrbitalGameplay(contract.activity))
     });
     return true;
 }
 
-function handleOrbitalContractComplete() {
+function getOrbitalGameplay(missionId) {
+    return ORBITAL_MISSION_PROFILES[missionId]?.gameplay ?? 'docking';
+}
+
+async function startContractTraining(contractId) {
+    const contract = getContract(contractId);
+    const status = getContractStatus(contractState, contractId, previewState.learning);
+    if (!contract || status === 'locked' || localOrbitOpen || !localOrbitHost) return false;
+    localOrbitOpen = true;
+    activeOrbitContractId = contractId;
+    activeOrbitTraining = true;
+    flightInput.reset();
+    flightInput.setEnabled(false);
+    audioDirector.play('paper-fold');
+    syncUI(true);
+    await localOrbitHost.open({
+        language: paperI18n.language,
+        missionId: contract.activity,
+        contract,
+        trainingMode: true,
+        showTraining: true
+    });
+    return true;
+}
+
+function handleOrbitalContractComplete(context) {
+    if (context?.trainingMode) return false;
     if (!activeOrbitContractId) return false;
     const next = completeContract(contractState, activeOrbitContractId);
     if (next === contractState) return false;
@@ -546,6 +583,14 @@ function handleContractAttemptClear(contractId) {
     return true;
 }
 
+function handleMissionTrainingComplete(gameplay) {
+    const next = completeMissionTraining(missionTrainingState, gameplay);
+    if (next === missionTrainingState) return false;
+    missionTrainingState = next;
+    reconcileAndSaveProgress({ feedback: false });
+    return true;
+}
+
 function handleLocalOrbitClose() {
     if (!localOrbitOpen) return;
     localOrbitOpen = false;
@@ -553,6 +598,7 @@ function handleLocalOrbitClose() {
     audioDirector.play('paper-fold');
     if (activeOrbitContractId) siteAnalytics.track('contract_event', { contractId: activeOrbitContractId, state: 'close' });
     activeOrbitContractId = null;
+    activeOrbitTraining = false;
     syncUI(true);
 }
 
@@ -565,6 +611,7 @@ const previewUI = createPreviewUI({
     onRetryQuiz: handleRetryQuiz,
     onAcceptContract: handleAcceptContract,
     onTravelContract: handleTravelContract,
+    onTrainContract: startContractTraining,
     onStartContract: startOrbitalContract,
     onMissionLogOpen: () => flightInput.setEnabled(false),
     onMissionLogClose: () => flightInput.setEnabled(true),
@@ -631,7 +678,8 @@ localOrbitHost = createLocalOrbitHost({
     onComplete: handleOrbitalContractComplete,
     onClose: handleLocalOrbitClose,
     onAttemptSave: handleContractAttemptSave,
-    onAttemptClear: handleContractAttemptClear
+    onAttemptClear: handleContractAttemptClear,
+    onTrainingComplete: handleMissionTrainingComplete
 });
 
 function interactionRadiusFor(object) {
@@ -911,7 +959,7 @@ window.render_game_to_text = () => {
             discoveredKeys: [...previewState.learning.discoveredKeys]
         },
         progression: { ...expeditionProgress, presentation: progressPresentation },
-        contract: { ...contractState, attempts: contractAttemptState.contractAttempts, journey: contractJourney, localOrbitOpen, activeOrbitContractId },
+        contract: { ...contractState, attempts: contractAttemptState.contractAttempts, journey: contractJourney, localOrbitOpen, activeOrbitContractId, trainingMode: activeOrbitTraining },
         agency: {
             open: Boolean(agencyUi?.elements.dialog.open),
             operationIds: livingOperations.map((operation) => operation.id),
@@ -963,6 +1011,7 @@ window.__paperPreview = {
     retryQuiz: handleRetryQuiz,
     acceptContract: handleAcceptContract,
     travelContract: handleTravelContract,
+    trainContract: startContractTraining,
     startOrbitalContract,
     completeOrbitalContract: handleOrbitalContractComplete,
     acceptIssDelivery: () => handleAcceptContract(ISS_DELIVERY_CONTRACT_ID),

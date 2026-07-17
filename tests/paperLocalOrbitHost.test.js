@@ -32,6 +32,7 @@ function createElements() {
         kicker: fakeElement(), title: fakeElement(), playfield: fakeElement(), resultTitle: fakeElement(), resultScience: fakeElement(),
         close: fakeElement(), finish: fakeElement(), retry: fakeElement(),
         leaveConfirm: fakeElement(), leaveContinue: fakeElement(), leaveSave: fakeElement(), leaveRestart: fakeElement(),
+        training: fakeElement(), trainingTitle: fakeElement(), trainingStep: fakeElement(), trainingNext: fakeElement(), trainingSkip: fakeElement(),
         controls: ['forward', 'reverse', 'up', 'down', 'rotate-left', 'rotate-right', 'stabilize']
             .map((action) => fakeElement({ dockingAction: action }))
     };
@@ -133,6 +134,8 @@ describe('local orbit host', () => {
         expect(elements.metricLabels.map((item) => item.textContent)).toEqual(['Transmissores', 'Escudo', 'Sinal']);
         expect([elements.distance.textContent, elements.speed.textContent, elements.alignment.textContent])
             .toEqual(['2/4', '2/3', '75%']);
+        expect(elements.controls.find((item) => item.dataset.dockingAction === 'forward').getAttribute('aria-label'))
+            .toBe('Mover para a direita');
     });
 
     it('uses mission-specific feedback and completion events', async () => {
@@ -229,6 +232,43 @@ describe('local orbit host', () => {
             telemetry: { distance: 3 },
             simulation: { phase: 'approach' }
         });
+    });
+
+    it('uses semantic Mars controls instead of generic flight labels', async () => {
+        const elements = createElements();
+        const host = createLocalOrbitHost({
+            elements,
+            gameFactory: async (options) => { options.onReady(); return { destroy() {}, setAction() {} }; }
+        });
+
+        await host.open({ missionId: 'mars-relay', language: 'pt' });
+
+        const labels = Object.fromEntries(elements.controls.map((control) => [
+            control.dataset.dockingAction, control.getAttribute('aria-label')
+        ]));
+        expect(labels).toMatchObject({
+            forward: 'Aumentar ângulo', reverse: 'Diminuir ângulo',
+            up: 'Diminuir frequência', down: 'Aumentar frequência', stabilize: 'Transmitir'
+        });
+    });
+
+    it('shows a first-play tutorial and reports completion or an explicit replay mode', async () => {
+        const elements = createElements();
+        const completed = [];
+        const host = createLocalOrbitHost({
+            elements,
+            onTrainingComplete: (gameplay) => completed.push(gameplay),
+            gameFactory: async (options) => { options.onReady(); return { destroy() {}, setAction() {} }; }
+        });
+
+        await host.open({ missionId: 'iss-docking', language: 'en', showTraining: true });
+        expect(elements.training.hidden).toBe(false);
+        expect(elements.trainingTitle.textContent).toMatch(/practice/i);
+        expect(elements.trainingStep.textContent).toMatch(/yellow corridor/i);
+        elements.trainingNext.emit('click');
+        elements.trainingNext.emit('click');
+        expect(completed).toEqual(['docking']);
+        expect(elements.training.hidden).toBe(true);
     });
 
     it('asks before leaving an incomplete attempt and can save its simulation', async () => {

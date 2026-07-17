@@ -32,6 +32,14 @@ describe('orbital campaign integration', () => {
         expect(game).toContain('contractAttempts: contractAttemptState.contractAttempts');
     });
 
+    it('offers replayable training without completing or rewarding the contract', () => {
+        expect(ui).toContain('onTrainContract(contractId)');
+        expect(game).toContain('startContractTraining');
+        expect(game).toContain('trainingMode: true');
+        expect(game).toContain('if (context?.trainingMode) return false');
+        expect(game).toContain('seenMissionTrainingIds: missionTrainingState.seenMissionTrainingIds');
+    });
+
     it('tracks the active orbital contract instead of hard-coding ISS completion', () => {
         expect(game).toContain('activeOrbitContractId');
         expect(game).toContain('startOrbitalContract');

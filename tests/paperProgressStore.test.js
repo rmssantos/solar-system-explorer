@@ -55,6 +55,12 @@ describe('paper progress store contract migration', () => {
         expect(loadProgress(storage).contractAttempts).toEqual(contractAttempts);
     });
 
+    it('round-trips completed mission training families', () => {
+        const storage = createMemoryStorage();
+        saveProgress({ seenMissionTrainingIds: ['docking', 'signal', 'docking'] }, storage);
+        expect(loadProgress(storage).seenMissionTrainingIds).toEqual(['docking', 'signal']);
+    });
+
     it('discards malformed agency collections while keeping other progress', () => {
         const storage = createMemoryStorage(JSON.stringify({
             xp: 90,

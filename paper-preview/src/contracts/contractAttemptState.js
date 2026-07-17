@@ -62,6 +62,10 @@ export function getContractAttempt(state, contractId) {
     return createContractAttemptState(state).contractAttempts[contractId] ?? null;
 }
 
+/**
+ * @param {object} state
+ * @param {{ contractId?: string, missionId?: string, simulation?: object, savedAt?: number }} value
+ */
 export function saveContractAttempt(state, { contractId, missionId, simulation, savedAt = Date.now() } = {}) {
     if (typeof contractId !== 'string' || typeof missionId !== 'string') return state;
     const attempt = restoreAttempt({ version: CONTRACT_ATTEMPT_VERSION, missionId, simulation, savedAt });

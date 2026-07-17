@@ -30,6 +30,7 @@ export function createPreviewUI({
     onRetryQuiz,
     onAcceptContract,
     onTravelContract,
+    onTrainContract,
     onStartContract,
     onMissionLogOpen,
     onMissionLogClose,
@@ -205,6 +206,13 @@ export function createPreviewUI({
         [elements.quizOptions, 'click', handleQuizClick],
         [elements.quizRetry, 'click', onRetryQuiz]
         , [elements.contractList, 'click', (event) => {
+            const training = event.target.closest('[data-contract-training]');
+            if (training) {
+                const contractId = training.dataset.contractTraining;
+                closeMissionLog();
+                onTrainContract(contractId);
+                return;
+            }
             const action = event.target.closest('[data-contract-id]');
             if (!action) return;
             const contractId = action.dataset.contractId;
@@ -491,7 +499,17 @@ export function createPreviewUI({
             } else {
                 action.textContent = paperI18n.t('game.contract.complete');
             }
-            card.append(art, body, action);
+            const actions = document.createElement('div');
+            actions.className = 'contract-actions';
+            actions.append(action);
+            if (status !== 'locked') {
+                const training = document.createElement('button');
+                training.type = 'button';
+                training.dataset.contractTraining = contract.id;
+                training.textContent = paperI18n.t('game.contract.training.open');
+                actions.append(training);
+            }
+            card.append(art, body, actions);
             return card;
         });
         elements.contractList.replaceChildren(...cards);

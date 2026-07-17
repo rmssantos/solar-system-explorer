@@ -1434,6 +1434,14 @@ html[data-flight-input="touch"] .joystick-label {
 .local-orbit-leave-confirm > div { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .local-orbit-leave-confirm button { min-height: 44px; padding: 9px 14px; color: #29232c; background: var(--sun-pulp); border: 3px solid #8d6730; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-weight: 1000; }
 .local-orbit-leave-confirm button:first-child { color: #f8edcf; background: #4f8775; border-color: #2f594e; }
+.local-orbit-training { position: absolute; z-index: 7; inset: auto 24px 24px; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; max-width: 520px; margin: auto; padding: 18px; color: #25233d; background: #f8edcf; border: 4px solid #2d2940; border-radius: 10px 15px 9px 13px; box-shadow: 8px 10px 0 rgb(4 9 26 / .35); text-align: left; }
+.local-orbit-training[hidden] { display: none; }
+.local-orbit-training > span { grid-row: 1 / 4; color: var(--coral-pencil); font-size: 2rem; }
+.local-orbit-training strong { font-family: 'Paper Fredoka', sans-serif; font-size: 1.25rem; }
+.local-orbit-training p { margin: 0; line-height: 1.4; }
+.local-orbit-training > div { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.local-orbit-training button { min-height: 44px; padding: 8px 12px; color: #25233d; background: #f4c85f; border: 3px solid #8d6730; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-weight: 1000; }
+.local-orbit-training button:first-child { background: transparent; border-color: #8e7b5a; }
 .local-orbit-message button, .local-orbit-result button { min-height: 44px; padding: 9px 16px; color: #29232c; background: var(--sun-pulp); border: 3px solid #8d6730; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-weight: 1000; }
 .local-orbit-result > span { margin: auto; width: 68px; aspect-ratio: 1; display: grid; place-content: center; color: #f7ebc8; background: #4f8775; border: 4px solid #2f594e; border-radius: 50%; font-size: 2rem; }
 .local-orbit-result strong { font-family: 'Paper Fredoka', sans-serif; font-size: 1.7rem; }
@@ -1508,6 +1516,10 @@ html[data-flight-input="touch"] .joystick-label {
 .contract-copy dt { color: #806137; font-weight: 1000; }.contract-copy dd { margin: 0; }
 .contract-card > button { min-width: 150px; min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
 .contract-card > button:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }
+.contract-actions { display: grid; gap: 7px; min-width: 150px; }
+.contract-actions > button { min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
+.contract-actions > button:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }
+.contract-actions > [data-contract-training] { color: #25374e; background: #e9dcae; border-color: #716142; }
 
 @media (max-width: 700px),
     (pointer: coarse) and (max-width: 1100px),

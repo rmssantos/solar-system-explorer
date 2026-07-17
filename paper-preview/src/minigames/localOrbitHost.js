@@ -25,6 +25,11 @@ function queryElements(root) {
         leaveContinue: root.querySelector('#local-orbit-leave-continue'),
         leaveSave: root.querySelector('#local-orbit-leave-save'),
         leaveRestart: root.querySelector('#local-orbit-leave-restart'),
+        training: root.querySelector('#local-orbit-training'),
+        trainingTitle: root.querySelector('#local-orbit-training-title'),
+        trainingStep: root.querySelector('#local-orbit-training-step'),
+        trainingNext: root.querySelector('#local-orbit-training-next'),
+        trainingSkip: root.querySelector('#local-orbit-training-skip'),
         controls: [...root.querySelectorAll('[data-docking-action]')]
     };
 }
@@ -68,10 +73,11 @@ function formatMetric(metric, telemetry) {
  *     advanceTime?: (milliseconds: number) => void
  *   }>,
  *   messages?: { retry?: string, guidance?: string },
- *   onComplete?: () => void,
+ *   onComplete?: (context: object) => void,
  *   onClose?: () => void,
  *   onAttemptSave?: (attempt: { contractId: string, missionId: string, simulation: object }) => void,
  *   onAttemptClear?: (contractId: string) => void
+ *   onTrainingComplete?: (gameplay: string) => void
  * }} options
  */
 export function createLocalOrbitHost({
@@ -79,16 +85,18 @@ export function createLocalOrbitHost({
     elements = queryElements(root),
     gameFactory = defaultGameFactory,
     messages = {},
-    onComplete = () => {},
+    onComplete = (_context) => {},
     onClose = () => {},
     onAttemptSave = () => {},
-    onAttemptClear = () => {}
+    onAttemptClear = () => {},
+    onTrainingComplete = () => {}
 } = {}) {
     let game = null;
     let openOptions = {};
     let completed = false;
     let latestTelemetry = null;
     let loadGeneration = 0;
+    let trainingStepIndex = 0;
     const listeners = [];
 
     function listen(element, type, handler) {
@@ -114,7 +122,23 @@ export function createLocalOrbitHost({
         if (event !== openOptions.profile?.completionEvent || completed) return;
         completed = true;
         elements.result.hidden = false;
-        onComplete();
+        onComplete(openOptions);
+    }
+
+    function renderTrainingStep() {
+        const steps = openOptions.profile?.tutorialSteps ?? [];
+        if (!elements.training || steps.length === 0) return;
+        elements.trainingTitle.textContent = openOptions.profile.tutorialTitle;
+        elements.trainingStep.textContent = steps[trainingStepIndex];
+        elements.trainingNext.textContent = trainingStepIndex === steps.length - 1
+            ? (openOptions.language === 'en' ? 'Start practice' : 'Começar treino')
+            : (openOptions.language === 'en' ? 'Next' : 'Seguinte');
+    }
+
+    function finishTraining() {
+        if (!elements.training || elements.training.hidden) return;
+        elements.training.hidden = true;
+        onTrainingComplete(openOptions.profile?.gameplay);
     }
 
     async function startGame({ restore = true } = {}) {
@@ -156,6 +180,11 @@ export function createLocalOrbitHost({
         elements.result.hidden = true;
         elements.error.hidden = true;
         elements.leaveConfirm && (elements.leaveConfirm.hidden = true);
+        trainingStepIndex = 0;
+        if (elements.training) {
+            elements.training.hidden = !options.showTraining;
+            if (options.showTraining) renderTrainingStep();
+        }
         elements.kicker.textContent = profile.kicker;
         elements.title.textContent = profile.title;
         elements.resultTitle.textContent = profile.success;
@@ -169,10 +198,9 @@ export function createLocalOrbitHost({
         const visibleControls = new Set(profile.controls);
         for (const control of elements.controls) {
             control.hidden = !visibleControls.has(control.dataset.dockingAction);
-            if (control.dataset.dockingAction === 'stabilize') {
-                control.textContent = profile.centerControl;
-                control.setAttribute?.('aria-label', profile.centerControl);
-            }
+            const controlLabel = profile.controlLabels?.[control.dataset.dockingAction];
+            if (controlLabel) control.setAttribute?.('aria-label', controlLabel);
+            if (control.dataset.dockingAction === 'stabilize') control.textContent = profile.centerControl;
         }
         if (!elements.dialog.open) elements.dialog.showModal();
         await startGame();
@@ -228,6 +256,16 @@ export function createLocalOrbitHost({
         elements.leaveConfirm.hidden = true;
         startGame({ restore: false });
     });
+    if (elements.trainingNext) listen(elements.trainingNext, 'click', () => {
+        const steps = openOptions.profile?.tutorialSteps ?? [];
+        if (trainingStepIndex >= steps.length - 1) {
+            finishTraining();
+            return;
+        }
+        trainingStepIndex += 1;
+        renderTrainingStep();
+    });
+    if (elements.trainingSkip) listen(elements.trainingSkip, 'click', finishTraining);
 
     function destroy() {
         loadGeneration += 1;
