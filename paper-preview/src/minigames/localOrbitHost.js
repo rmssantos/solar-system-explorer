@@ -21,6 +21,10 @@ function queryElements(root) {
         close: root.querySelector('#local-orbit-close'),
         finish: root.querySelector('#local-orbit-finish'),
         retry: root.querySelector('#local-orbit-load-retry'),
+        leaveConfirm: root.querySelector('#local-orbit-leave-confirm'),
+        leaveContinue: root.querySelector('#local-orbit-leave-continue'),
+        leaveSave: root.querySelector('#local-orbit-leave-save'),
+        leaveRestart: root.querySelector('#local-orbit-leave-restart'),
         controls: [...root.querySelectorAll('[data-docking-action]')]
     };
 }
@@ -65,7 +69,9 @@ function formatMetric(metric, telemetry) {
  *   }>,
  *   messages?: { retry?: string, guidance?: string },
  *   onComplete?: () => void,
- *   onClose?: () => void
+ *   onClose?: () => void,
+ *   onAttemptSave?: (attempt: { contractId: string, missionId: string, simulation: object }) => void,
+ *   onAttemptClear?: (contractId: string) => void
  * }} options
  */
 export function createLocalOrbitHost({
@@ -74,7 +80,9 @@ export function createLocalOrbitHost({
     gameFactory = defaultGameFactory,
     messages = {},
     onComplete = () => {},
-    onClose = () => {}
+    onClose = () => {},
+    onAttemptSave = () => {},
+    onAttemptClear = () => {}
 } = {}) {
     let game = null;
     let openOptions = {};
@@ -109,20 +117,23 @@ export function createLocalOrbitHost({
         onComplete();
     }
 
-    async function startGame() {
+    async function startGame({ restore = true } = {}) {
         const generation = ++loadGeneration;
         game?.destroy?.();
         game = null;
         elements.loading.hidden = false;
         elements.error.hidden = true;
         try {
+            const initialState = restore && openOptions.initialSimulation
+                ? openOptions.initialSimulation
+                : openOptions.profile.initialState;
             const created = await gameFactory({
                 parent: elements.stage,
                 language: openOptions.language ?? 'pt',
                 onReady: () => { if (generation === loadGeneration) elements.loading.hidden = true; },
                 onTelemetry: updateTelemetry,
                 onEvent: handleGameEvent,
-                profile: openOptions.profile
+                profile: { ...openOptions.profile, initialState }
             });
             if (generation !== loadGeneration) {
                 created?.destroy?.();
@@ -144,6 +155,7 @@ export function createLocalOrbitHost({
         latestTelemetry = null;
         elements.result.hidden = true;
         elements.error.hidden = true;
+        elements.leaveConfirm && (elements.leaveConfirm.hidden = true);
         elements.kicker.textContent = profile.kicker;
         elements.title.textContent = profile.title;
         elements.resultTitle.textContent = profile.success;
@@ -166,12 +178,21 @@ export function createLocalOrbitHost({
         await startGame();
     }
 
-    function close() {
+    function closeImmediately() {
         loadGeneration += 1;
         game?.destroy?.();
         game = null;
         if (elements.dialog.open) elements.dialog.close();
         onClose();
+    }
+
+    function requestClose() {
+        const simulation = game?.getState?.() ?? null;
+        if (!completed && simulation && elements.leaveConfirm) {
+            elements.leaveConfirm.hidden = false;
+            return;
+        }
+        closeImmediately();
     }
 
     for (const control of elements.controls) {
@@ -185,10 +206,28 @@ export function createLocalOrbitHost({
             listen(control, type, () => setActive(false));
         }
     }
-    listen(elements.close, 'click', close);
-    listen(elements.finish, 'click', close);
+    listen(elements.close, 'click', requestClose);
+    listen(elements.finish, 'click', closeImmediately);
     listen(elements.retry, 'click', () => { startGame(); });
-    listen(elements.dialog, 'cancel', (event) => { event.preventDefault(); close(); });
+    listen(elements.dialog, 'cancel', (event) => { event.preventDefault(); requestClose(); });
+    if (elements.leaveContinue) listen(elements.leaveContinue, 'click', () => { elements.leaveConfirm.hidden = true; });
+    if (elements.leaveSave) listen(elements.leaveSave, 'click', () => {
+        const simulation = game?.getState?.() ?? null;
+        if (simulation && openOptions.contract?.id) {
+            onAttemptSave({
+                contractId: openOptions.contract.id,
+                missionId: openOptions.profile.id,
+                simulation
+            });
+        }
+        closeImmediately();
+    });
+    if (elements.leaveRestart) listen(elements.leaveRestart, 'click', () => {
+        if (openOptions.contract?.id) onAttemptClear(openOptions.contract.id);
+        openOptions = { ...openOptions, initialSimulation: null };
+        elements.leaveConfirm.hidden = true;
+        startGame({ restore: false });
+    });
 
     function destroy() {
         loadGeneration += 1;
@@ -211,5 +250,5 @@ export function createLocalOrbitHost({
         game?.advanceTime?.(milliseconds);
     }
 
-    return Object.freeze({ open, close, destroy, updateTelemetry, getState, advanceTime });
+    return Object.freeze({ open, close: requestClose, destroy, updateTelemetry, getState, advanceTime });
 }

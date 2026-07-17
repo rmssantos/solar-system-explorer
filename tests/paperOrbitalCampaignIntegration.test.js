@@ -24,6 +24,14 @@ describe('orbital campaign integration', () => {
         expect(game).toContain('previewUI.openMissionLog(\'missions\')');
     });
 
+    it('restores, saves and clears versioned attempts through the shared progress store', () => {
+        expect(game).toContain('createContractAttemptState(savedProgress)');
+        expect(game).toContain('getContractAttempt(contractAttemptState, contractId)');
+        expect(game).toContain('onAttemptSave: handleContractAttemptSave');
+        expect(game).toContain('onAttemptClear: handleContractAttemptClear');
+        expect(game).toContain('contractAttempts: contractAttemptState.contractAttempts');
+    });
+
     it('tracks the active orbital contract instead of hard-coding ISS completion', () => {
         expect(game).toContain('activeOrbitContractId');
         expect(game).toContain('startOrbitalContract');

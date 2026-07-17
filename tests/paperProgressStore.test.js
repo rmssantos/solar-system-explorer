@@ -42,6 +42,19 @@ describe('paper progress store contract migration', () => {
         });
     });
 
+    it('round-trips versioned orbital contract attempts', () => {
+        const storage = createMemoryStorage();
+        const contractAttempts = {
+            'iss-delivery': {
+                version: 1, missionId: 'iss-docking', savedAt: 123,
+                simulation: { phase: 'approach', position: { x: -4, y: 0 } }
+            }
+        };
+
+        expect(saveProgress({ contractAttempts }, storage)).toBe(true);
+        expect(loadProgress(storage).contractAttempts).toEqual(contractAttempts);
+    });
+
     it('discards malformed agency collections while keeping other progress', () => {
         const storage = createMemoryStorage(JSON.stringify({
             xp: 90,

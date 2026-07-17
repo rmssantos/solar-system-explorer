@@ -31,6 +31,7 @@ function createElements() {
         metricLabels: [fakeElement(), fakeElement(), fakeElement()],
         kicker: fakeElement(), title: fakeElement(), playfield: fakeElement(), resultTitle: fakeElement(), resultScience: fakeElement(),
         close: fakeElement(), finish: fakeElement(), retry: fakeElement(),
+        leaveConfirm: fakeElement(), leaveContinue: fakeElement(), leaveSave: fakeElement(), leaveRestart: fakeElement(),
         controls: ['forward', 'reverse', 'up', 'down', 'rotate-left', 'rotate-right', 'stabilize']
             .map((action) => fakeElement({ dockingAction: action }))
     };
@@ -228,5 +229,64 @@ describe('local orbit host', () => {
             telemetry: { distance: 3 },
             simulation: { phase: 'approach' }
         });
+    });
+
+    it('asks before leaving an incomplete attempt and can save its simulation', async () => {
+        const elements = createElements();
+        const saved = [];
+        const host = createLocalOrbitHost({
+            elements,
+            onAttemptSave: (attempt) => saved.push(attempt),
+            gameFactory: async (options) => {
+                options.onReady();
+                return {
+                    destroy() {}, setAction() {},
+                    getState: () => ({ phase: 'approach', elapsedSeconds: 4, position: { x: -4, y: 0 } })
+                };
+            }
+        });
+        await host.open({ contract: { id: 'iss-delivery' }, missionId: 'iss-docking' });
+
+        elements.close.emit('click');
+        expect(elements.dialog.open).toBe(true);
+        expect(elements.leaveConfirm.hidden).toBe(false);
+        elements.leaveContinue.emit('click');
+        expect(elements.leaveConfirm.hidden).toBe(true);
+        elements.close.emit('click');
+        elements.leaveSave.emit('click');
+
+        expect(saved).toEqual([{
+            contractId: 'iss-delivery', missionId: 'iss-docking',
+            simulation: { phase: 'approach', elapsedSeconds: 4, position: { x: -4, y: 0 } }
+        }]);
+        expect(elements.dialog.open).toBe(false);
+    });
+
+    it('restores a saved simulation and can clear it before restarting', async () => {
+        const elements = createElements();
+        const profiles = [];
+        const cleared = [];
+        const host = createLocalOrbitHost({
+            elements,
+            onAttemptClear: (contractId) => cleared.push(contractId),
+            gameFactory: async (options) => {
+                profiles.push(options.profile);
+                options.onReady();
+                return { destroy() {}, setAction() {}, getState: () => ({ phase: 'approach', elapsedSeconds: 2 }) };
+            }
+        });
+
+        await host.open({
+            contract: { id: 'iss-delivery' }, missionId: 'iss-docking',
+            initialSimulation: { phase: 'approach', elapsedSeconds: 12, position: { x: -2, y: 0 } }
+        });
+        expect(profiles[0].initialState.elapsedSeconds).toBe(12);
+        elements.close.emit('click');
+        elements.leaveRestart.emit('click');
+        await Promise.resolve();
+
+        expect(cleared).toEqual(['iss-delivery']);
+        expect(profiles.at(-1).initialState).not.toHaveProperty('elapsedSeconds', 12);
+        expect(elements.dialog.open).toBe(true);
     });
 });

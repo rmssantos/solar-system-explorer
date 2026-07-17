@@ -11,6 +11,9 @@ export function loadProgress(storage = globalThis.localStorage) {
             seenSurpriseIds: Array.isArray(value.seenSurpriseIds) ? value.seenSurpriseIds : [],
             acceptedContractIds: Array.isArray(value.acceptedContractIds) ? value.acceptedContractIds : [],
             completedContractIds: Array.isArray(value.completedContractIds) ? value.completedContractIds : [],
+            contractAttempts: value.contractAttempts && typeof value.contractAttempts === 'object' && !Array.isArray(value.contractAttempts)
+                ? value.contractAttempts
+                : {},
             agencyActiveMissions: Array.isArray(value.agencyActiveMissions) ? value.agencyActiveMissions : [],
             agencyReports: Array.isArray(value.agencyReports) ? value.agencyReports : []
         };
@@ -18,6 +21,7 @@ export function loadProgress(storage = globalThis.localStorage) {
         return {
             discoveredKeys: [], completedQuizIds: [], xp: 0, awardedEventIds: [], seenSurpriseIds: [],
             acceptedContractIds: [], completedContractIds: [], agencyActiveMissions: [], agencyReports: []
+            , contractAttempts: {}
         };
     }
 }
@@ -32,6 +36,9 @@ export function saveProgress(progress, storage = globalThis.localStorage) {
             seenSurpriseIds: [...new Set(progress.seenSurpriseIds ?? [])],
             acceptedContractIds: [...new Set(progress.acceptedContractIds ?? [])],
             completedContractIds: [...new Set(progress.completedContractIds ?? [])],
+            contractAttempts: progress.contractAttempts && typeof progress.contractAttempts === 'object'
+                ? progress.contractAttempts
+                : {},
             agencyActiveMissions: Array.isArray(progress.agencyActiveMissions)
                 ? progress.agencyActiveMissions.filter((value) => value && typeof value === 'object')
                 : [],

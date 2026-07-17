@@ -54,6 +54,12 @@ import {
     createContractJourney,
     startContractTravel
 } from './contracts/contractJourney.js';
+import {
+    clearContractAttempt,
+    createContractAttemptState,
+    getContractAttempt,
+    saveContractAttempt
+} from './contracts/contractAttemptState.js';
 import { createLocalOrbitHost } from './minigames/localOrbitHost.js';
 import { createAgencyUi } from './agency/agencyUi.js';
 import { createLivingOperations } from './agency/operationDirector.js';
@@ -86,6 +92,7 @@ const learningCatalogView = new Proxy({}, {
 const savedProgress = loadProgress();
 let previewState = createPreviewState(savedProgress);
 let contractState = createContractState(savedProgress);
+let contractAttemptState = createContractAttemptState(savedProgress);
 let agencyState = reconcileAgencyState(createAgencyState({
     agencyActiveMissions: savedProgress.agencyActiveMissions,
     activeMissions: savedProgress.agencyActiveMissions,
@@ -376,6 +383,7 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
         ...previewState.learning,
         ...expeditionProgress,
         ...contractState,
+        contractAttempts: contractAttemptState.contractAttempts,
         agencyActiveMissions: agencyState.activeMissions,
         agencyReports: agencyState.reports
     });
@@ -503,7 +511,13 @@ async function startOrbitalContract(contractId) {
     audioDirector.play('paper-fold');
     siteAnalytics.track('contract_event', { contractId, state: 'open' });
     syncUI(true);
-    await localOrbitHost.open({ language: paperI18n.language, missionId: contract.activity, contract });
+    const attempt = getContractAttempt(contractAttemptState, contractId);
+    await localOrbitHost.open({
+        language: paperI18n.language,
+        missionId: contract.activity,
+        contract,
+        initialSimulation: attempt?.missionId === contract.activity ? attempt.simulation : null
+    });
     return true;
 }
 
@@ -512,9 +526,23 @@ function handleOrbitalContractComplete() {
     const next = completeContract(contractState, activeOrbitContractId);
     if (next === contractState) return false;
     contractState = next;
+    contractAttemptState = clearContractAttempt(contractAttemptState, activeOrbitContractId);
     siteAnalytics.track('contract_event', { contractId: activeOrbitContractId, state: 'complete' });
     reconcileAndSaveProgress();
     syncUI(true);
+    return true;
+}
+
+function handleContractAttemptSave(attempt) {
+    contractAttemptState = saveContractAttempt(contractAttemptState, attempt);
+    reconcileAndSaveProgress({ feedback: false });
+}
+
+function handleContractAttemptClear(contractId) {
+    const next = clearContractAttempt(contractAttemptState, contractId);
+    if (next === contractAttemptState) return false;
+    contractAttemptState = next;
+    reconcileAndSaveProgress({ feedback: false });
     return true;
 }
 
@@ -601,7 +629,9 @@ localOrbitHost = createLocalOrbitHost({
         get retry() { return paperI18n.t('game.docking.assisted'); }
     },
     onComplete: handleOrbitalContractComplete,
-    onClose: handleLocalOrbitClose
+    onClose: handleLocalOrbitClose,
+    onAttemptSave: handleContractAttemptSave,
+    onAttemptClear: handleContractAttemptClear
 });
 
 function interactionRadiusFor(object) {
@@ -881,7 +911,7 @@ window.render_game_to_text = () => {
             discoveredKeys: [...previewState.learning.discoveredKeys]
         },
         progression: { ...expeditionProgress, presentation: progressPresentation },
-        contract: { ...contractState, journey: contractJourney, localOrbitOpen, activeOrbitContractId },
+        contract: { ...contractState, attempts: contractAttemptState.contractAttempts, journey: contractJourney, localOrbitOpen, activeOrbitContractId },
         agency: {
             open: Boolean(agencyUi?.elements.dialog.open),
             operationIds: livingOperations.map((operation) => operation.id),
@@ -925,7 +955,7 @@ window.advanceTime = (milliseconds) => {
 };
 
 window.__paperPreview = {
-    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, localOrbitOpen, activeOrbitContractId }, agency: { ...agencyState, operations: livingOperations }, scene: paperScene.getState() }),
+    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, attempts: contractAttemptState.contractAttempts, localOrbitOpen, activeOrbitContractId }, agency: { ...agencyState, operations: livingOperations }, scene: paperScene.getState() }),
     explore: handleExplore,
     closeNotebook: handleCloseNotebook,
     selectSection: handleSelectSection,

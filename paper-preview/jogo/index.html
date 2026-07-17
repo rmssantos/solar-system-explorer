@@ -374,6 +374,16 @@
                     <p data-i18n="game.docking.science">A ISS recebe regularmente experiências, alimentos e equipamento através de naves de carga.</p>
                     <button id="local-orbit-finish" type="button" data-i18n="game.docking.return">Regressar à expedição</button>
                 </div>
+                <div id="local-orbit-leave-confirm" class="local-orbit-leave-confirm" role="alertdialog" aria-labelledby="local-orbit-leave-title" hidden>
+                    <span aria-hidden="true">↶</span>
+                    <strong id="local-orbit-leave-title" data-i18n="game.contract.leave.title">Queres guardar esta tentativa?</strong>
+                    <p data-i18n="game.contract.leave.copy">Podes continuar agora, guardar para mais tarde ou começar de novo.</p>
+                    <div>
+                        <button id="local-orbit-leave-continue" type="button" data-i18n="game.contract.leave.continue">Continuar missão</button>
+                        <button id="local-orbit-leave-save" type="button" data-i18n="game.contract.leave.save">Guardar e sair</button>
+                        <button id="local-orbit-leave-restart" type="button" data-i18n="game.contract.leave.restart">Começar de novo</button>
+                    </div>
+                </div>
             </section>
 
             <section class="docking-instruments" aria-label="Telemetria de acoplagem" data-i18n-aria="game.docking.telemetry">
