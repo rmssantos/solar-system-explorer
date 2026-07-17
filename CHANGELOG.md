@@ -2,6 +2,13 @@
 
 Public changes to the Paper Solar Explorer are maintained automatically by Release Please from Conventional Commits.
 
+## [1.3.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.2.0...v1.3.0) (2026-07-17)
+
+
+### Features
+
+* turn the space agency into guided science adventures ([#43](https://github.com/rmssantos/solar-system-explorer/issues/43)) ([a9c92ad](https://github.com/rmssantos/solar-system-explorer/commit/a9c92ad24930ef256dab442c5ed9c103794e98e0))
+
 ## [1.2.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.1.3...v1.2.0) (2026-07-16)
 
 
