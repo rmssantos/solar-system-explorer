@@ -106,4 +106,13 @@ describe('orbital contract attempt persistence', () => {
         });
         expect(getContractAttempt(state, 'enceladus-plume')?.simulation).toMatchObject({ samples: 2, purity: 0.9, cooling: 0.7, collector: false });
     });
+
+    it('round-trips a Titan dragonfly route', () => {
+        const state = saveContractAttempt(createContractAttemptState(), {
+            contractId: 'titan-dragonfly', missionId: 'titan-dragonfly',
+            simulation: { phase: 'flying', routeProgress: 0.52, altitude: 0.7, stability: 0.82,
+                wind: -0.2, analysedSites: ['dunes'], actionHeld: false }
+        });
+        expect(getContractAttempt(state, 'titan-dragonfly')?.simulation).toMatchObject({ routeProgress: 0.52, altitude: 0.7, stability: 0.82, analysedSites: ['dunes'] });
+    });
 });
