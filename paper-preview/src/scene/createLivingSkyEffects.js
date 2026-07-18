@@ -129,7 +129,8 @@ export function createLivingSkyEffects({ reducedMotion = false } = {}) {
     function destroy() {
         root.traverse((object) => {
             object.geometry?.dispose?.();
-            object.material?.dispose?.();
+            if (Array.isArray(object.material)) object.material.forEach((material) => material.dispose());
+            else object.material?.dispose?.();
         });
         root.clear();
         anchors.clear();

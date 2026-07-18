@@ -869,11 +869,12 @@ async function captureLivingSkyObservation({ eventId, filter }) {
         return false;
     }
     const storageId = globalThis.crypto?.randomUUID?.() ?? `sky-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    await skyPhotoStore.put(storageId, captured.blob);
+    const persistent = await skyPhotoStore.put(storageId, captured.blob);
+    if (!persistent) {
+        await skyPhotoStore.delete(storageId);
+        return false;
+    }
     const skyEvent = getLivingSkyEvent(eventId);
-    const previousEventPhoto = skyEvent
-        ? livingSkyState.photoRecords.find((record) => record.eventId === skyEvent.id)
-        : null;
     const record = {
         id: storageId,
         storageId,
@@ -890,10 +891,12 @@ async function captureLivingSkyObservation({ eventId, filter }) {
     if (!saved) {
         await skyPhotoStore.delete(storageId);
     } else {
+        const retainedStorageIds = new Set(next.photoRecords.map((photo) => photo.storageId).filter(Boolean));
+        const evictedStorageIds = livingSkyState.photoRecords
+            .map((photo) => photo.storageId)
+            .filter((id) => id && !retainedStorageIds.has(id));
         livingSkyState = next;
-        if (previousEventPhoto?.storageId && previousEventPhoto.storageId !== storageId) {
-            await skyPhotoStore.delete(previousEventPhoto.storageId);
-        }
+        await Promise.all(evictedStorageIds.map((id) => skyPhotoStore.delete(id)));
         audioDirector.play('sky-photo-developed');
         if (assessment.qualified) audioDirector.play('reward-chime');
         siteAnalytics.track('living_sky_event', {
@@ -955,7 +958,8 @@ livingSkyUi = createLivingSkyUi({
     onObserve: observeLivingSkyEvent,
     onCapture: captureLivingSkyObservation,
     onDeletePhoto: deleteLivingSkyPhotoRecord,
-    getPhotoUrl: (storageId) => skyPhotoStore.getObjectUrl(storageId)
+    getPhotoUrl: (storageId) => skyPhotoStore.getObjectUrl(storageId),
+    revokePhotoUrl: (storageId) => skyPhotoStore.revokeObjectUrl(storageId)
 });
 livingSkyUi.update(livingSkyPresentation, livingSkyState);
 
@@ -1286,6 +1290,7 @@ function handleKeydown(event) {
     }
     if (event.code === 'KeyK' && !previewState.notebook.open && !previewUI.elements.missionLog.open && !agencyUi?.elements.dialog.open) {
         event.preventDefault();
+        livingSkyUi.setOpen(false);
         livingSkyUi.setCameraOpen(true, livingSkyPresentation.activeEvents[0]?.id ?? null);
         return;
     }

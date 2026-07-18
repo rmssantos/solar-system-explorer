@@ -64,6 +64,17 @@ describe('Living Sky director', () => {
         expect(inactive.feedback).toBe('outside-window');
     });
 
+    it('distinguishes being too close from being too far away', () => {
+        const base = {
+            active: true, visible: true, screenDistance: 0.04,
+            stability: 1, filter: 'magnetic'
+        };
+        expect(assessLivingSkyObservation('earth-aurora', { ...base, worldDistance: 2.35 }).feedback)
+            .toBe('move-back');
+        expect(assessLivingSkyObservation('earth-aurora', { ...base, worldDistance: 24 }).feedback)
+            .toBe('move-closer');
+    });
+
     it('keeps the shutter available for free photography while explaining weak framing', () => {
         const result = assessLivingSkyObservation(null, {
             active: false, visible: true, screenDistance: 0.6, worldDistance: 30,

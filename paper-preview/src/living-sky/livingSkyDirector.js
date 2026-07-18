@@ -81,7 +81,8 @@ export function assessLivingSkyObservation(eventId, telemetry = {}) {
     else if (event && !active && ready) feedback = 'outside-window';
     else if (event && ready && screenDistance > 0.18) feedback = 'center-target';
     else if (event && ready && stability < 0.65) feedback = 'hold-steady';
-    else if (event && ready && !distanceSafe) feedback = 'adjust-distance';
+    else if (event && ready && worldDistance < event.distanceRange[0]) feedback = 'move-back';
+    else if (event && ready && worldDistance > event.distanceRange[1]) feedback = 'move-closer';
     else if (event && ready && !filterCorrect) feedback = 'try-instrument';
     else if (qualified) feedback = 'ready';
     return Object.freeze({

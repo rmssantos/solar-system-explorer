@@ -19,7 +19,7 @@ export function createSkyPhotoStore(options = {}) {
         urlApi = null;
     }
     const memory = new Map();
-    const objectUrls = new Set();
+    const objectUrls = new Map();
     let database = null;
     let destroyed = false;
     const databasePromise = (async () => {
@@ -44,8 +44,15 @@ export function createSkyPhotoStore(options = {}) {
     async function withStore(mode, operation) {
         const nextDatabase = await databasePromise;
         if (!nextDatabase || destroyed) throw new Error('Persistent photo storage unavailable');
-        const store = nextDatabase.transaction(STORE_NAME, mode).objectStore(STORE_NAME);
-        return requestPromise(operation(store));
+        const transaction = nextDatabase.transaction(STORE_NAME, mode);
+        const completion = new Promise((resolve, reject) => {
+            transaction.oncomplete = () => resolve(true);
+            transaction.onerror = () => reject(transaction.error ?? new Error('IndexedDB transaction failed'));
+            transaction.onabort = () => reject(transaction.error ?? new Error('IndexedDB transaction aborted'));
+        });
+        const request = requestPromise(operation(transaction.objectStore(STORE_NAME)));
+        const [result] = await Promise.all([request, completion]);
+        return result;
     }
 
     async function put(id, blob) {
@@ -70,6 +77,7 @@ export function createSkyPhotoStore(options = {}) {
 
     async function remove(id) {
         memory.delete(id);
+        revokeObjectUrl(id);
         try {
             await withStore('readwrite', (store) => store.delete(id));
             return true;
@@ -79,11 +87,20 @@ export function createSkyPhotoStore(options = {}) {
     }
 
     async function getObjectUrl(id) {
+        if (objectUrls.has(id)) return objectUrls.get(id);
         const blob = await get(id);
         if (!blob || !urlApi?.createObjectURL) return null;
         const objectUrl = urlApi.createObjectURL(blob);
-        objectUrls.add(objectUrl);
+        objectUrls.set(id, objectUrl);
         return objectUrl;
+    }
+
+    function revokeObjectUrl(id) {
+        const objectUrl = objectUrls.get(id);
+        if (!objectUrl) return false;
+        urlApi?.revokeObjectURL?.(objectUrl);
+        objectUrls.delete(id);
+        return true;
     }
 
     function destroy() {
@@ -95,5 +112,5 @@ export function createSkyPhotoStore(options = {}) {
         memory.clear();
     }
 
-    return { put, get, delete: remove, getObjectUrl, destroy };
+    return { put, get, delete: remove, getObjectUrl, revokeObjectUrl, destroy };
 }

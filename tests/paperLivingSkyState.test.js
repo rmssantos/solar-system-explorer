@@ -39,6 +39,13 @@ describe('Living Sky observation state', () => {
         expect(Object.isFrozen(state.photoRecords[0])).toBe(true);
     });
 
+    it('rejects saved timestamps outside the JavaScript Date range', () => {
+        const state = createLivingSkyState({
+            photoRecords: [photo('photo-1', { capturedAt: 1e20, orbitDate: 'not-a-date' })]
+        });
+        expect(state.photoRecords).toEqual([]);
+    });
+
     it('keeps only the best event photograph and completes a qualified event once', () => {
         let state = createLivingSkyState();
         state = recordLivingSkyPhoto(state, photo('photo-1', {
@@ -65,6 +72,18 @@ describe('Living Sky observation state', () => {
         });
         expect(state.photoRecords).toHaveLength(1);
         expect(state.photoRecords[0]).toMatchObject({ id: 'photo-2', score: 0.8 });
+    });
+
+    it('lets a qualified observation replace a higher-scoring unqualified attempt', () => {
+        const attempted = recordLivingSkyPhoto(createLivingSkyState(), photo('photo-1', {
+            eventId: 'earth-aurora', score: 0.98, qualified: false
+        }));
+        const qualified = recordLivingSkyPhoto(attempted, photo('photo-2', {
+            eventId: 'earth-aurora', score: 0.72, qualified: true
+        }));
+        expect(qualified.completedEventIds).toEqual(['earth-aurora']);
+        expect(qualified.photoRecords).toHaveLength(1);
+        expect(qualified.photoRecords[0]).toMatchObject({ id: 'photo-2', qualified: true });
     });
 
     it('allows free photographs and caps the album at the newest twelve', () => {

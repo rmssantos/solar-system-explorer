@@ -340,6 +340,9 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         scene.add(planet);
         return planet;
     });
+    /** @type {Record<string, { x: number, y: number, z: number }>} */
+    const livingSkyPositions = Object.create(null);
+    for (const planet of planets) livingSkyPositions[planet.userData.key] = planet.position;
     const worldObjects = createPaperWorldObjects({ paperTextures: objectSurfaceTextures });
     scene.add(worldObjects.root);
     const livingSkyEffects = createLivingSkyEffects({
@@ -477,9 +480,8 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         });
         runtime.orbitalObjectElapsed += delta * orbitalTime.satelliteFactor;
         worldObjects.update(runtime.orbitalObjectElapsed, runtime.primarySnapshot);
-        const livingSkyPositions = Object.fromEntries(planets.map((planet) => [planet.userData.key, planet.position]));
         const halleyPosition = worldObjects.getPosition('halley');
-        if (halleyPosition) livingSkyPositions.halley = new THREE.Vector3(halleyPosition.x, halleyPosition.y, halleyPosition.z);
+        if (halleyPosition) livingSkyPositions.halley = halleyPosition;
         livingSkyEffects.update(runtime.elapsed, livingSkyPositions);
         if (runtime.surpriseRemaining > 0) {
             runtime.surpriseRemaining = Math.max(0, runtime.surpriseRemaining - delta);

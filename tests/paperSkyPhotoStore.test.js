@@ -20,7 +20,11 @@ function createFakeIndexedDb() {
     const database = {
         objectStoreNames: { contains: () => true },
         createObjectStore() {},
-        transaction: () => ({ objectStore: () => objectStore }),
+        transaction: () => {
+            const transaction = { objectStore: () => objectStore };
+            queueMicrotask(() => transaction.oncomplete?.({ target: transaction }));
+            return transaction;
+        },
         close: vi.fn()
     };
     return {
@@ -66,7 +70,25 @@ describe('Living Sky IndexedDB photo store', () => {
         const store = createSkyPhotoStore({ indexedDBRef: null, urlApi });
         await store.put('photo-3', new Blob(['preview'], { type: 'image/webp' }));
         expect(await store.getObjectUrl('photo-3')).toBe('blob:preview');
-        store.destroy();
+        expect(await store.getObjectUrl('photo-3')).toBe('blob:preview');
+        expect(urlApi.createObjectURL).toHaveBeenCalledOnce();
+        expect(store.revokeObjectUrl('photo-3')).toBe(true);
         expect(urlApi.revokeObjectURL).toHaveBeenCalledWith('blob:preview');
+        store.destroy();
+        expect(urlApi.revokeObjectURL).toHaveBeenCalledOnce();
+    });
+
+    it('reports a failed write when the transaction aborts after request success', async () => {
+        const indexedDBRef = createFakeIndexedDb();
+        indexedDBRef.database.transaction = () => {
+            const transaction = { objectStore: () => ({ put: (_value, key) => asyncRequest(key) }) };
+            queueMicrotask(() => {
+                transaction.error = new Error('commit failed');
+                transaction.onabort?.({ target: transaction });
+            });
+            return transaction;
+        };
+        const store = createSkyPhotoStore({ indexedDBRef });
+        expect(await store.put('photo-abort', new Blob(['lost']))).toBe(false);
     });
 });

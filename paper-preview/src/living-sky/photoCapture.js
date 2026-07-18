@@ -27,7 +27,11 @@ export function mapInstrumentPixel(filter, pixel) {
 
 function encodeCanvas(canvas) {
     return new Promise((resolve, reject) => {
-        canvas.toBlob?.((blob) => {
+        if (typeof canvas.toBlob !== 'function') {
+            reject(new Error('Could not encode explorer photo'));
+            return;
+        }
+        canvas.toBlob((blob) => {
             if (blob) resolve(blob);
             else reject(new Error('Could not encode explorer photo'));
         }, 'image/webp', WEBP_QUALITY);

@@ -7,17 +7,20 @@ const unique = (values = []) => [...new Set(values)];
 function sanitizePhotoRecord(value) {
     if (!value || typeof value !== 'object' || typeof value.id !== 'string' || !value.id) return null;
     if (typeof value.targetKey !== 'string' || !value.targetKey || !Number.isFinite(value.capturedAt)) return null;
+    const capturedAt = Math.max(0, value.capturedAt);
+    const capturedDate = new Date(capturedAt);
+    if (!Number.isFinite(capturedDate.getTime())) return null;
     const eventId = getLivingSkyEvent(value.eventId)?.id ?? null;
     const orbitDate = typeof value.orbitDate === 'string' && Number.isFinite(Date.parse(value.orbitDate))
         ? new Date(value.orbitDate).toISOString()
-        : new Date(value.capturedAt).toISOString();
+        : capturedDate.toISOString();
     return Object.freeze({
         id: value.id,
         storageId: typeof value.storageId === 'string' && value.storageId ? value.storageId : null,
         eventId,
         targetKey: value.targetKey,
         filter: OBSERVATION_FILTERS.includes(value.filter) ? value.filter : 'visible',
-        capturedAt: Math.max(0, value.capturedAt),
+        capturedAt,
         orbitDate,
         score: Number(clamp(Number.isFinite(value.score) ? value.score : 0).toFixed(3)),
         qualified: Boolean(value.qualified && eventId)
@@ -35,8 +38,12 @@ export function createLivingSkyState(value = {}) {
     const freePhotos = [];
     for (const record of safeRecords) {
         if (!record.eventId) freePhotos.push(record);
-        else if (!bestByEvent.has(record.eventId) || bestByEvent.get(record.eventId).score < record.score) {
-            bestByEvent.set(record.eventId, record);
+        else {
+            const existing = bestByEvent.get(record.eventId);
+            if (!existing || (record.qualified && !existing.qualified)
+                || (record.qualified === existing.qualified && existing.score < record.score)) {
+                bestByEvent.set(record.eventId, record);
+            }
         }
     }
     const eventPhotos = [...bestByEvent.values()];
@@ -61,7 +68,9 @@ export function recordLivingSkyPhoto(state, photo) {
     const existing = record.eventId
         ? base.photoRecords.find((candidate) => candidate.eventId === record.eventId)
         : null;
-    if (existing && existing.score >= record.score) return state;
+    if (existing && (existing.qualified !== record.qualified
+        ? existing.qualified
+        : existing.score >= record.score)) return state;
     const photoRecords = existing
         ? base.photoRecords.filter((candidate) => candidate.id !== existing.id)
         : [...base.photoRecords];

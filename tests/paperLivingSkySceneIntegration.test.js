@@ -11,5 +11,8 @@ describe('living-sky scene integration', () => {
         expect(scene).toContain('getLivingSkyTelemetry');
         expect(scene).toContain('getCaptureCanvas');
         expect(scene).toContain('preserveDrawingBuffer: true');
+        expect(scene).toContain('const livingSkyPositions = Object.create(null)');
+        expect(scene).not.toContain('Object.fromEntries(planets.map((planet) => [planet.userData.key, planet.position]))');
+        expect(scene).not.toContain('livingSkyPositions.halley = new THREE.Vector3');
     });
 });

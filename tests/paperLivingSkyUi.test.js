@@ -16,6 +16,9 @@ describe('living-sky observatory and explorer camera UI', () => {
     });
 
     it('provides explicit touch controls, keyboard hints and an accessible shutter', () => {
+        expect(html).toMatch(/id="explorer-camera"[^>]*role="dialog"[^>]*aria-modal="false"[^>]*aria-labelledby="explorer-camera-title"/);
+        expect(html).toContain('id="explorer-camera-title"');
+        expect(html).toContain('aria-describedby="explorer-camera-coach"');
         expect(html).toContain('id="explorer-camera-shutter"');
         expect(html).toContain('data-camera-filter="visible"');
         expect(html).toContain('data-camera-filter="infrared"');
@@ -36,5 +39,8 @@ describe('living-sky observatory and explorer camera UI', () => {
         expect(main).toContain('paperScene.setLivingSkyPresentation');
         expect(main).toContain("event.code === 'KeyK'");
         expect(main).toContain("event.code === 'Space'");
+        expect(main).toContain('skyPhotoStore.revokeObjectUrl');
+        expect(main).toContain('if (!persistent)');
+        expect(main).toContain('livingSkyUi.setOpen(false)');
     });
 });

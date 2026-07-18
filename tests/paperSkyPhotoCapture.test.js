@@ -55,5 +55,8 @@ describe('Explorer camera capture', () => {
         factory.canvas.toBlob = (callback) => callback(null);
         await expect(captureSkyPhoto({ width: 10, height: 10 }, { createCanvas: factory.createCanvas }))
             .rejects.toThrow(/encode/i);
+        delete factory.canvas.toBlob;
+        await expect(captureSkyPhoto({ width: 10, height: 10 }, { createCanvas: factory.createCanvas }))
+            .rejects.toThrow(/encode/i);
     });
 });
