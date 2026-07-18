@@ -111,7 +111,10 @@
              <header>
                  <small data-i18n="game.time.kicker">Relógio orbital</small>
                  <strong id="time-observatory-title" data-i18n="game.time.title">Observatório do Tempo</strong>
-                 <time id="time-observatory-date" datetime=""></time>
+                 <div class="time-observatory-date-row">
+                     <time id="time-observatory-date" datetime=""></time>
+                     <button id="time-observatory-today" type="button" data-i18n="game.time.today">Hoje</button>
+                 </div>
              </header>
              <p id="time-observatory-explanation" aria-live="polite">1 segundo = 10 dias no Sistema Solar</p>
              <div class="orbital-time-controls" role="group" aria-label="Velocidade do céu" data-i18n-aria="game.time.speedGroup">

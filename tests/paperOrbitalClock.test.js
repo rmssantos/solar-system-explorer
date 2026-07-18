@@ -4,6 +4,7 @@ import {
     ORBITAL_TIME_SCALES,
     createOrbitalClock,
     presentOrbitalClock,
+    resetOrbitalClockToToday,
     setOrbitalTimeScale,
     stepOrbitalClock
 } from '../paper-preview/src/world/orbitalClock.js';
@@ -36,11 +37,18 @@ describe('live Solar System orbital clock', () => {
         expect(presentOrbitalClock(clock)).toMatchObject({ paused: true, daysPerSecond: 0 });
     });
 
+    it('returns to today without changing the selected sky speed', () => {
+        const future = createOrbitalClock({ dateMs: START + (400 * DAY_MS), timeScale: 100 });
+        const today = resetOrbitalClockToToday(future, START + (2 * DAY_MS));
+
+        expect(today).toEqual({ dateMs: START + (2 * DAY_MS), timeScale: 100 });
+    });
+
     it('caps visual motion so 100x remains readable', () => {
         const slow = presentOrbitalClock(createOrbitalClock({ dateMs: START, timeScale: 1 }));
         const fast = presentOrbitalClock(createOrbitalClock({ dateMs: START, timeScale: 100 }));
         expect(slow).toMatchObject({ paused: false, daysPerSecond: 1, satelliteFactor: 1, rotationFactor: 1 });
-        expect(fast).toMatchObject({ daysPerSecond: 100, satelliteFactor: 100, rotationFactor: 10 });
+        expect(fast).toMatchObject({ daysPerSecond: 100, satelliteFactor: 30, rotationFactor: 10 });
         expect(fast.isoDate).toBe('2026-07-18T12:00:00.000Z');
         expect(Object.isFrozen(fast)).toBe(true);
     });

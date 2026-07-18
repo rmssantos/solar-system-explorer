@@ -12,6 +12,7 @@ import { cameraFollowAlpha } from './cameraFollow.js';
 import {
     createOrbitalClock,
     presentOrbitalClock,
+    resetOrbitalClockToToday,
     setOrbitalTimeScale as setOrbitalTimeScaleState,
     stepOrbitalClock
 } from '../world/orbitalClock.js';
@@ -595,6 +596,11 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         return presentOrbitalClock(runtime.orbitalClock);
     }
 
+    function resetOrbitalTimeToToday(dateMs = Date.now()) {
+        runtime.orbitalClock = resetOrbitalClockToToday(runtime.orbitalClock, dateMs);
+        return presentOrbitalClock(runtime.orbitalClock);
+    }
+
     function triggerSurprise(effect = 'star') {
         runtime.right.set(1, 0, 0).applyQuaternion(runtime.flightQuaternion);
         surpriseEffect.position.copy(runtime.shipPosition)
@@ -675,6 +681,7 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         adjustZoom,
         toggleOrbits,
         setOrbitalTimeScale,
+        resetOrbitalTimeToToday,
         triggerSurprise,
         destroy
     };

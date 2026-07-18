@@ -12,6 +12,7 @@ describe('time observatory game integration', () => {
 
     it('connects the HUD to the scene and refreshes the clock without coupling flight time', () => {
         expect(main).toContain('onOrbitalTimeScale: (timeScale) => paperScene.setOrbitalTimeScale(timeScale)');
+        expect(main).toContain('onOrbitalTimeToday: () => paperScene.resetOrbitalTimeToToday(Date.now())');
         expect(main).toContain('previewUI.updateOrbitalClock(paperScene.getState().orbitalClock)');
         expect(main).toContain('orbitalClockUiElapsed += seconds');
         expect(main).not.toContain('stepFlight(flightState, lastInput, seconds *');
@@ -20,5 +21,6 @@ describe('time observatory game integration', () => {
     it('exposes the clock to text-mode and deterministic QA controls', () => {
         expect(main).toContain('orbitalClock: paperScene.getState().orbitalClock');
         expect(main).toContain('setOrbitalTimeScale: (timeScale) =>');
+        expect(main).toContain('resetOrbitalTimeToToday: () =>');
     });
 });

@@ -20,8 +20,10 @@ describe('live Solar System Three.js bridge', () => {
 
     it('exposes a settable observable clock in the scene state', () => {
         expect(scene).toContain('function setOrbitalTimeScale(timeScale)');
+        expect(scene).toContain('function resetOrbitalTimeToToday(dateMs = Date.now())');
         expect(scene).toContain('runtime.orbitalClock = setOrbitalTimeScaleState(');
         expect(scene).toContain('orbitalClock: presentOrbitalClock(runtime.orbitalClock)');
         expect(scene).toMatch(/return\s*\{[\s\S]*setOrbitalTimeScale,/);
+        expect(scene).toMatch(/return\s*\{[\s\S]*resetOrbitalTimeToToday,/);
     });
 });

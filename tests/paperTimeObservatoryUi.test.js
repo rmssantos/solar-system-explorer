@@ -12,6 +12,7 @@ describe('paper time observatory HUD', () => {
         expect(html).toContain('aria-controls="time-observatory"');
         expect(html).toContain('id="time-observatory"');
         expect(html).toContain('id="time-observatory-date"');
+        expect(html).toContain('id="time-observatory-today"');
         expect(html).toContain('id="time-observatory-explanation"');
         for (const scale of [0, 1, 10, 100]) {
             expect(html).toContain(`data-orbital-time-scale="${scale}"`);
@@ -28,8 +29,10 @@ describe('paper time observatory HUD', () => {
 
     it('opens, closes and renders localized orbital-clock snapshots', () => {
         expect(ui).toContain('onOrbitalTimeScale');
+        expect(ui).toContain('onOrbitalTimeToday');
         expect(ui).toContain("elements.timeObservatoryToggle.setAttribute('aria-expanded'");
         expect(ui).toContain("event.target.closest('[data-orbital-time-scale]')");
+        expect(ui).toContain('[elements.timeObservatoryToday, \'click\'');
         expect(ui).toContain('function updateOrbitalClock(clock)');
         expect(ui).toContain("new Intl.DateTimeFormat(paperI18n.language === 'en' ? 'en-GB' : 'pt-PT'");
         expect(ui).toContain("paperI18n.t('game.time.daysPerSecond', { days: clock.daysPerSecond })");

@@ -247,7 +247,10 @@ export function createPaperWorldObjects({ paperTextures = {} } = {}) {
                 );
             }
             else if (object.parentKey) {
-                const angle = (object.orbitPhase ?? 0) + elapsed * (object.orbitSpeed ?? 0.08);
+                const angularSpeed = object.orbitPeriodDays
+                    ? (Math.PI * 2) / object.orbitPeriodDays
+                    : (object.orbitSpeed ?? 0.08);
+                const angle = (object.orbitPhase ?? 0) + elapsed * angularSpeed;
                 const tilt = Math.sin(angle * 0.63) * 0.28;
                 mesh.position.set(
                     parentPosition.x + Math.cos(angle) * object.orbitRadius,

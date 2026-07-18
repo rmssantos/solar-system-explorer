@@ -39,6 +39,7 @@ export function createPreviewUI({
     onZoom,
     onToggleOrbits,
     onOrbitalTimeScale,
+    onOrbitalTimeToday,
     onSoundToggle
 }) {
     const elements = {
@@ -100,6 +101,7 @@ export function createPreviewUI({
         , timeObservatoryClose: document.querySelector('#time-observatory-close')
         , timeObservatoryScale: document.querySelector('#time-observatory-scale')
         , timeObservatoryDate: document.querySelector('#time-observatory-date')
+        , timeObservatoryToday: document.querySelector('#time-observatory-today')
         , timeObservatoryExplanation: document.querySelector('#time-observatory-explanation')
         , orbitalTimeControls: [...document.querySelectorAll('[data-orbital-time-scale]')]
         , soundToggle: document.querySelector('#sound-toggle')
@@ -288,6 +290,7 @@ export function createPreviewUI({
             if (!control) return;
             updateOrbitalClock(onOrbitalTimeScale(Number(control.dataset.orbitalTimeScale)));
         }]
+        , [elements.timeObservatoryToday, 'click', () => updateOrbitalClock(onOrbitalTimeToday())]
         , [document, 'keydown', (event) => {
             if (event.key !== 'Escape' || elements.timeObservatory.hidden) return;
             setTimeObservatoryOpen(false);

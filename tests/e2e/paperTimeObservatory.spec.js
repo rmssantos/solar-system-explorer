@@ -39,6 +39,25 @@ test('controls the live sky without moving game time', async ({ page }) => {
     await expect(toggle).toContainText('Ⅱ');
     await expect(panel.locator('#time-observatory-explanation')).toHaveText('O céu está parado');
 
+    await panel.locator('[data-orbital-time-scale="10"]').click();
+    const moonBefore = await page.evaluate(() => {
+        const earth = window.__paperPreview.worldPosition('earth');
+        const moon = window.__paperPreview.worldPosition('moon');
+        return { x: moon.x - earth.x, z: moon.z - earth.z };
+    });
+    await page.evaluate(() => window.advanceTime(500));
+    const moonAfter = await page.evaluate(() => {
+        const earth = window.__paperPreview.worldPosition('earth');
+        const moon = window.__paperPreview.worldPosition('moon');
+        return { x: moon.x - earth.x, z: moon.z - earth.z };
+    });
+    expect(Math.hypot(moonAfter.x - moonBefore.x, moonAfter.z - moonBefore.z)).toBeGreaterThan(3);
+
+    await panel.locator('#time-observatory-today').click();
+    const today = await page.evaluate(() => window.__paperPreview.getState().scene.orbitalClock);
+    expect(Math.abs(today.dateMs - Date.now())).toBeLessThan(5_000);
+    expect(today.timeScale).toBe(10);
+
     await page.screenshot({ path: '.local/playtest/time-observatory-desktop.png' });
     expect(runtimeErrors).toEqual([]);
 });

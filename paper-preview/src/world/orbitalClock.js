@@ -22,6 +22,10 @@ export function setOrbitalTimeScale(clock, timeScale) {
     return createOrbitalClock({ ...clock, timeScale: scale });
 }
 
+export function resetOrbitalClockToToday(clock, dateMs = Date.now()) {
+    return createOrbitalClock({ dateMs, timeScale: clock.timeScale });
+}
+
 export function stepOrbitalClock(clock, deltaSeconds) {
     const delta = Number(deltaSeconds);
     if (!Number.isFinite(delta) || delta <= 0 || clock.timeScale === 0) return clock;
@@ -39,7 +43,7 @@ export function presentOrbitalClock(clock) {
         timeScale: clock.timeScale,
         paused,
         daysPerSecond: clock.timeScale,
-        satelliteFactor: paused ? 0 : Math.min(100, clock.timeScale),
+        satelliteFactor: paused ? 0 : Math.min(30, clock.timeScale),
         rotationFactor: paused ? 0 : Math.min(10, Math.sqrt(clock.timeScale))
     });
 }

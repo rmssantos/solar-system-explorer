@@ -674,6 +674,17 @@ html[data-flight-input="touch"] .joystick-label {
 .time-observatory header small { color: #a14f42; font-size: .58rem; font-weight: 1000; letter-spacing: .12em; text-transform: uppercase; }
 .time-observatory header strong { font: 1000 1.05rem/1.05 'Paper Fredoka', sans-serif; }
 .time-observatory time { color: #315d62; font: 900 .76rem/1.2 var(--font-body, system-ui); text-transform: capitalize; }
+.time-observatory-date-row { display: flex; gap: .55rem; align-items: center; justify-content: space-between; }
+.time-observatory-date-row button {
+    min-height: 44px;
+    padding: .3rem .75rem;
+    color: #302d31;
+    background: #f4c85f;
+    border: 2px solid #8d6c2d;
+    border-radius: .5rem .38rem .55rem .42rem;
+    font: 1000 .65rem/1 var(--font-body, system-ui);
+    cursor: pointer;
+}
 .time-observatory > p { margin: .7rem 0 .6rem; color: #625747; font-size: .72rem; line-height: 1.35; }
 .time-observatory-close {
     position: absolute;
@@ -707,6 +718,7 @@ html[data-flight-input="touch"] .joystick-label {
 .orbital-time-controls button:first-child { gap: .12rem; font-size: .56rem; }
 .orbital-time-controls button[aria-pressed="true"] { color: #f8edcb; background: #315d62; border-color: #213f43; box-shadow: 2px 3px 0 #d5634d; transform: translateY(-1px); }
 .orbital-time-controls button:focus-visible,
+.time-observatory-date-row button:focus-visible,
 .time-observatory-close:focus-visible { outline: 3px solid #76b5c4; outline-offset: 2px; }
 .time-observatory-note { display: block; margin-top: .65rem; color: #776b5b; font-size: .59rem; line-height: 1.35; }
 

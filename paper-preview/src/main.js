@@ -629,6 +629,7 @@ const previewUI = createPreviewUI({
     ),
     onToggleOrbits: () => paperScene.toggleOrbits(),
     onOrbitalTimeScale: (timeScale) => paperScene.setOrbitalTimeScale(timeScale),
+    onOrbitalTimeToday: () => paperScene.resetOrbitalTimeToToday(Date.now()),
     onSoundToggle: () => {
         audioDirector.toggle();
         return audioDirector.getState();
@@ -1039,6 +1040,11 @@ window.__paperPreview = {
     collectAgencyOperationReport,
     setOrbitalTimeScale: (timeScale) => {
         const clock = paperScene.setOrbitalTimeScale(timeScale);
+        previewUI.updateOrbitalClock(clock);
+        return clock;
+    },
+    resetOrbitalTimeToToday: () => {
+        const clock = paperScene.resetOrbitalTimeToToday(Date.now());
         previewUI.updateOrbitalClock(clock);
         return clock;
     },
