@@ -158,7 +158,7 @@ export function createPreviewUI({
     let rewardTimer = null;
     let activeMedia = null;
     let audioState = { enabled: true, unlocked: false };
-    let orbitalClockState = { dateMs: Date.now(), timeScale: 10, paused: false, daysPerSecond: 10 };
+    let orbitalClockState = { dateMs: Date.now(), timeScale: 1, paused: false, daysPerSecond: 1 };
     let orbitalClockFormatterLanguage = null;
     let orbitalClockFormatter = null;
     const mediaViewer = createMediaViewer(elements.mediaViewer, {

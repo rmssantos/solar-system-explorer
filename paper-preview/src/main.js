@@ -175,8 +175,7 @@ let lastInput = {
     brake: false
 };
 
-const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-const paperScene = createPaperScene(stage, { timeScale: prefersReducedMotion ? 1 : 10 });
+const paperScene = createPaperScene(stage, { timeScale: 1 });
 const audioDirector = createAudioDirector();
 const missionPrefetch = createMissionPrefetch();
 const spaceData = createSpaceDataService();

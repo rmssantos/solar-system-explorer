@@ -8,7 +8,7 @@ const SIMULATION_KEYS = new Set([
     'speedGain', 'launchProgress', 'inCorridor', 'flybyDistance', 'boostProgress',
     'committing', 'risk', 'cursor', 'sensors', 'alignmentOffset', 'selectedImpact',
     'actionHeld', 'power', 'scanning', 'overheated', 'passProgress', 'coverage',
-    'echoConfidence'
+    'echoConfidence', 'samples', 'purity', 'cooling', 'collector', 'grains', 'size'
 ]);
 
 function sanitizeNode(value, depth = 0) {

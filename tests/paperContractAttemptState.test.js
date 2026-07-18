@@ -97,4 +97,13 @@ describe('orbital contract attempt persistence', () => {
             coverage: 0.5, echoConfidence: 0.8
         });
     });
+
+    it('round-trips an Enceladus plume sample', () => {
+        const state = saveContractAttempt(createContractAttemptState(), {
+            contractId: 'enceladus-plume', missionId: 'enceladus-plume',
+            simulation: { phase: 'collecting', samples: 2, purity: 0.9, cooling: 0.7,
+                collector: false, grains: [{ id: 'c1', x: 0, y: 0.2, size: 'small', collected: true }] }
+        });
+        expect(getContractAttempt(state, 'enceladus-plume')?.simulation).toMatchObject({ samples: 2, purity: 0.9, cooling: 0.7, collector: false });
+    });
 });
