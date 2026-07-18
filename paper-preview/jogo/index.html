@@ -151,7 +151,14 @@
                 <button id="explorer-camera-close" type="button" aria-label="Fechar Câmara">×</button>
             </header>
             <div class="camera-reticle" aria-hidden="true"><i></i><span></span></div>
-            <div id="explorer-camera-coach" class="explorer-camera-coach" role="status" aria-live="polite"></div>
+            <div class="explorer-camera-guidance">
+                <div class="explorer-camera-target">
+                    <span><i aria-hidden="true"></i><small data-living-sky-copy="targetKicker">A fotografar</small></span>
+                    <strong id="explorer-camera-target-title"></strong>
+                    <p id="explorer-camera-target-clue"></p>
+                </div>
+                <p id="explorer-camera-coach" class="explorer-camera-coach" role="status" aria-live="polite"></p>
+            </div>
             <section id="explorer-camera-result" class="explorer-camera-result" aria-live="polite" hidden>
                 <figure><img id="explorer-camera-result-image" alt=""></figure>
                 <div>

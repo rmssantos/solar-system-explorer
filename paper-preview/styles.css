@@ -2644,7 +2644,32 @@ html[data-flight-input="touch"] .joystick-label {
 .camera-reticle::before { width: 2px; height: 2.4rem; }
 .camera-reticle::after { width: 2.4rem; height: 2px; }
 .camera-reticle span { position: absolute; inset: 18%; border: 2px solid #54be9c; border-radius: 0.65rem; }
-.explorer-camera-coach { position: absolute; top: 22%; left: 50%; width: min(32rem, calc(100vw - 3rem)); padding: 0.55rem 0.8rem; transform: translateX(-50%); text-align: center; font-weight: 900; color: #252b3b; background: #f2f0e8; border: 2px solid #252b3b; border-radius: 0.45rem; }
+.explorer-camera-guidance {
+  position: absolute;
+  z-index: 4;
+  top: clamp(5.2rem, 16%, 8rem);
+  left: 50%;
+  display: grid;
+  grid-template-columns: minmax(11rem, 0.8fr) minmax(13rem, 1.2fr);
+  width: min(42rem, calc(100vw - 3rem));
+  overflow: hidden;
+  transform: translateX(-50%) rotate(-0.25deg);
+  color: #252b3b;
+  background: #f2f0e8;
+  border: 2px solid #252b3b;
+  border-radius: 0.55rem 0.8rem 0.48rem 0.7rem;
+  box-shadow: 5px 6px 0 rgb(16 25 54 / 48%);
+}
+.explorer-camera-target { display: grid; gap: 0.1rem; padding: 0.55rem 0.7rem; background: #dfe8eb; border-right: 2px dashed rgb(37 43 59 / 42%); }
+.explorer-camera-target span { display: flex; align-items: center; gap: 0.35rem; color: #5f5592; font-size: 0.7rem; font-weight: 950; letter-spacing: 0.08em; text-transform: uppercase; }
+.explorer-camera-target i { width: 0.72rem; height: 0.72rem; background: #54be9c; border: 2px solid #252b3b; border-radius: 50%; box-shadow: 0 0 0 3px rgb(84 190 156 / 22%); }
+.explorer-camera-target strong { font-family: var(--font-display, Georgia, serif); font-size: 1rem; line-height: 1.1; }
+.explorer-camera-target p { margin: 0.12rem 0 0; font-size: 0.74rem; font-weight: 750; line-height: 1.25; }
+.explorer-camera-coach { align-self: stretch; display: grid; place-items: center; margin: 0; padding: 0.6rem 0.8rem; text-align: center; font-weight: 900; line-height: 1.3; }
+.explorer-camera.is-reviewing .explorer-camera-guidance { visibility: hidden; opacity: 0; }
+.explorer-camera[data-event="io-shadow-transit"] .explorer-camera-target i { background: #101936; box-shadow: 0 0 0 3px rgb(140 123 192 / 35%); }
+.explorer-camera[data-event="mars-dust-front"] .explorer-camera-target i { background: #e26d58; box-shadow: 0 0 0 3px rgb(226 109 88 / 24%); }
+.explorer-camera[data-event="halley-2061"] .explorer-camera-target i { background: #78d7d2; box-shadow: 0 0 0 3px rgb(120 215 210 / 25%); }
 .explorer-camera-result {
   position: absolute;
   z-index: 5;
@@ -2754,7 +2779,10 @@ html[data-flight-input="touch"] .is-explorer-camera-open .flight-joystick {
   .explorer-camera-heading { top: 0.8rem; left: 0.9rem; right: 0.9rem; }
   .explorer-camera-heading div { max-width: calc(100vw - 5rem); }
   .camera-reticle { top: 42%; width: min(62vw, 18rem); }
-  .explorer-camera-coach { top: 18%; font-size: 0.82rem; }
+  .explorer-camera-guidance { top: 15%; grid-template-columns: 1fr; width: min(22rem, calc(100vw - 2rem)); }
+  .explorer-camera-target { border-right: 0; border-bottom: 2px dashed rgb(37 43 59 / 42%); }
+  .explorer-camera-target p { font-size: 0.7rem; }
+  .explorer-camera-coach { padding: 0.42rem 0.6rem; font-size: 0.76rem; }
   .explorer-camera-result { top: 47%; grid-template-columns: 7.2rem minmax(0, 1fr); gap: 0.65rem; padding: 0.6rem; }
   .explorer-camera-result strong { font-size: 1rem; }
   .explorer-camera-result p { font-size: 0.78rem; }

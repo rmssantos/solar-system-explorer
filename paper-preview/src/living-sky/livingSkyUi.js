@@ -29,6 +29,7 @@ const COPY = Object.freeze({
         intro: 'Descobre fenómenos, viaja até ao melhor dia e fotografa-os com o instrumento certo.',
         progress: 'Observações no álbum', active: 'A acontecer', upcoming: 'Próxima janela', complete: 'Fotografado',
         openAlbum: 'Ver fotografias', enlargeArt: 'Ver ilustração em grande',
+        targetKicker: 'A fotografar', targetFreeClue: 'Explora o enquadramento e cria a tua própria fotografia espacial.',
         observe: 'Viajar e observar', cameraKicker: 'Instrumento de bordo', cameraTitle: 'Câmara de Explorador',
         visible: 'Visível', infrared: 'Infravermelho', magnetic: 'Campo magnético', closeHint: 'fechar', photoHint: 'fotografia', spaceKey: 'Espaço',
         close: 'Fechar', shutter: 'Tirar fotografia', filterGroup: 'Instrumentos de observação',
@@ -52,6 +53,7 @@ const COPY = Object.freeze({
         intro: 'Find phenomena, travel to the best day and photograph them with the right instrument.',
         progress: 'Observations in album', active: 'Happening now', upcoming: 'Next window', complete: 'Photographed',
         openAlbum: 'View photos', enlargeArt: 'View illustration larger',
+        targetKicker: 'Photographing', targetFreeClue: 'Explore the frame and create your own space photograph.',
         observe: 'Travel and observe', cameraKicker: 'On-board instrument', cameraTitle: 'Explorer Camera',
         visible: 'Visible', infrared: 'Infrared', magnetic: 'Magnetic field', closeHint: 'close', photoHint: 'photo', spaceKey: 'Space',
         close: 'Close', shutter: 'Take photo', filterGroup: 'Observation instruments',
@@ -111,6 +113,8 @@ export function createLivingSkyUi({
         disclosure: requiredElement('#living-sky-disclosure', HTMLElement),
         camera: requiredElement('#explorer-camera', HTMLElement),
         cameraClose: requiredElement('#explorer-camera-close', HTMLButtonElement),
+        targetTitle: requiredElement('#explorer-camera-target-title', HTMLElement),
+        targetClue: requiredElement('#explorer-camera-target-clue', HTMLElement),
         coach: requiredElement('#explorer-camera-coach', HTMLElement),
         result: requiredElement('#explorer-camera-result', HTMLElement),
         resultImage: requiredElement('#explorer-camera-result-image', HTMLImageElement),
@@ -153,6 +157,7 @@ export function createLivingSkyUi({
         elements.shutter.setAttribute('aria-label', text(i18n, 'shutter'));
         elements.filterGroup.setAttribute('aria-label', text(i18n, 'filterGroup'));
         elements.viewerClose.setAttribute('aria-label', text(i18n, 'close'));
+        updateCameraTarget();
         updateReviewCopy();
         eventSignature = '';
         renderEvents();
@@ -176,8 +181,17 @@ export function createLivingSkyUi({
     function setReviewOpen(open) {
         reviewingPhoto = Boolean(open);
         elements.result.hidden = !reviewingPhoto;
+        elements.camera.classList.toggle('is-reviewing', reviewingPhoto);
         if (!reviewingPhoto) reviewedPhoto = null;
         return reviewingPhoto;
+    }
+
+    function updateCameraTarget() {
+        const skyEvent = getLivingSkyEvent(selectedEventId);
+        const localized = skyEvent?.copy[languageOf(i18n)];
+        elements.targetTitle.textContent = localized?.title ?? text(i18n, 'freePhoto');
+        elements.targetClue.textContent = localized?.visualClue ?? text(i18n, 'targetFreeClue');
+        elements.camera.dataset.event = skyEvent?.id ?? 'free-photo';
     }
 
     function setBackgroundInert(inert) {
@@ -207,6 +221,7 @@ export function createLivingSkyUi({
         const wasOpen = cameraOpen;
         cameraOpen = Boolean(open);
         selectedEventId = getLivingSkyEvent(eventId)?.id ?? null;
+        updateCameraTarget();
         elements.camera.hidden = !cameraOpen;
         elements.camera.classList.toggle('is-open', cameraOpen);
         document.body.classList.toggle('is-explorer-camera-open', cameraOpen);

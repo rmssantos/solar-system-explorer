@@ -31,18 +31,27 @@ test('observes, photographs and archives a living-sky phenomenon', async ({ page
     await observatory.locator('[data-living-sky-observe="earth-aurora"]').click();
     const camera = page.locator('#explorer-camera');
     await expect(camera).toBeVisible();
+    await page.evaluate(() => {
+        window.__paperPreview.cancelAutopilot();
+        window.__paperPreview.teleport('earth');
+        window.advanceTime(100);
+    });
     const clock = await page.evaluate(() => window.__paperPreview.getState().scene.orbitalClock);
     expect(clock.timeScale).toBe(1);
     const sky = await page.evaluate(() => window.__paperPreview.getState().livingSky);
     expect(sky.cameraOpen).toBe(true);
     expect(sky.selectedEventId).toBe('earth-aurora');
     expect(sky.activeEventIds).toContain('earth-aurora');
+    await expect(camera.locator('#explorer-camera-target-title')).toHaveText('Aurora da Terra');
+    await expect(camera.locator('#explorer-camera-target-clue')).toContainText('fitas verdes');
+    await page.screenshot({ path: '.local/playtest/living-sky-aurora-viewfinder-desktop.png' });
 
     await camera.locator('[data-camera-filter="magnetic"]').click();
     await camera.locator('#explorer-camera-shutter').click();
     await expect.poll(() => page.evaluate(() => window.__paperPreview.getState().livingSky.photoRecords.length)).toBe(1);
     const result = camera.locator('#explorer-camera-result');
     await expect(result).toBeVisible();
+    await expect(camera.locator('.explorer-camera-guidance')).toBeHidden();
     await expect(result.locator('#explorer-camera-result-image')).toHaveAttribute('src', /^blob:/);
     await page.screenshot({ path: '.local/playtest/living-sky-photo-developed-desktop.png' });
     await result.locator('#explorer-camera-view-album').click();
@@ -72,6 +81,14 @@ test('keeps observatory and camera touch-safe on phone and landscape tablet', as
     expect(panelBox.y + panelBox.height).toBeLessThanOrEqual(844);
 
     await panel.locator('[data-living-sky-observe="mars-dust-front"]').click();
+    await page.evaluate(() => {
+        window.__paperPreview.cancelAutopilot();
+        window.__paperPreview.teleport('mars');
+        window.advanceTime(100);
+    });
+    await expect(page.locator('#explorer-camera-target-title')).toHaveText('A frente de poeira');
+    await expect(page.locator('#explorer-camera-target-clue')).toContainText('faixa coral');
+    await page.screenshot({ path: '.local/playtest/living-sky-dust-viewfinder-mobile.png' });
     const shutter = page.locator('#explorer-camera-shutter');
     const shutterBox = await shutter.boundingBox();
     expect(shutterBox.width).toBeGreaterThanOrEqual(56);
@@ -81,6 +98,7 @@ test('keeps observatory and camera touch-safe on phone and landscape tablet', as
     await shutter.click();
     const result = page.locator('#explorer-camera-result');
     await expect(result).toBeVisible();
+    await expect(page.locator('.explorer-camera-guidance')).toBeHidden();
     const resultBox = await result.boundingBox();
     expect(resultBox.x).toBeGreaterThanOrEqual(0);
     expect(resultBox.x + resultBox.width).toBeLessThanOrEqual(390);

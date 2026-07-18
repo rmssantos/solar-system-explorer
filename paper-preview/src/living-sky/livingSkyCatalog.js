@@ -30,12 +30,14 @@ export const LIVING_SKY_EVENTS = Object.freeze([
         copy: {
             pt: {
                 kicker: 'Clima espacial', title: 'Aurora da Terra', short: 'Partículas do Sol encontram o escudo magnético da Terra.',
+                visualClue: 'Procura as fitas verdes e roxas a dançar nos polos.',
                 objective: 'Enquadra os polos e usa Campo magnético para revelar o caminho das partículas.',
                 discovery: 'As partículas energéticas seguem o campo magnético e fazem gases da atmosfera brilhar.',
                 simulationNote: 'Janela recorrente simulada no diorama; não é uma previsão real de auroras.'
             },
             en: {
                 kicker: 'Space weather', title: 'Earth aurora', short: 'Particles from the Sun meet Earth’s magnetic shield.',
+                visualClue: 'Look for green and purple ribbons dancing over the poles.',
                 objective: 'Frame the poles and use Magnetic field to reveal the particles’ path.',
                 discovery: 'Energetic particles follow the magnetic field and make gases in the atmosphere glow.',
                 simulationNote: 'Recurring window simulated in the diorama; this is not a real aurora forecast.'
@@ -50,12 +52,14 @@ export const LIVING_SKY_EVENTS = Object.freeze([
         copy: {
             pt: {
                 kicker: 'Eclipse noutro mundo', title: 'A sombra de Io', short: 'Io atravessa a luz do Sol e desenha uma sombra nas nuvens de Júpiter.',
+                visualClue: 'Procura o ponto escuro com anéis a atravessar Júpiter.',
                 objective: 'Segue o ponto escuro sobre Júpiter com Luz visível.',
                 discovery: 'Tal como a Lua num eclipse solar, Io pode projetar a sua sombra sobre o planeta.',
                 simulationNote: 'Trânsito simulado com períodos comprimidos para o diorama.'
             },
             en: {
                 kicker: 'Eclipse on another world', title: 'Io’s shadow', short: 'Io crosses the sunlight and draws a shadow on Jupiter’s clouds.',
+                visualClue: 'Look for the dark ringed spot crossing Jupiter.',
                 objective: 'Follow the dark spot across Jupiter with Visible light.',
                 discovery: 'Like our Moon during a solar eclipse, Io can cast its shadow on the planet.',
                 simulationNote: 'Transit simulated with periods compressed for the diorama.'
@@ -70,12 +74,14 @@ export const LIVING_SKY_EVENTS = Object.freeze([
         copy: {
             pt: {
                 kicker: 'Meteorologia marciana', title: 'A frente de poeira', short: 'Poeira fina sobe e esconde parte da superfície de Marte.',
+                visualClue: 'Procura a faixa coral de poeira e os pequenos fragmentos em movimento.',
                 objective: 'Usa Infravermelho para comparar calor e poeira mesmo quando o solo fica escondido.',
                 discovery: 'Orbitadores acompanham poeira e temperatura para perceber como a tempestade cresce.',
                 simulationNote: 'Época de tempestade simulada no diorama; não representa o tempo atual em Marte.'
             },
             en: {
                 kicker: 'Martian weather', title: 'The dust front', short: 'Fine dust rises and hides part of Mars’s surface.',
+                visualClue: 'Look for the coral dust band and its moving paper flecks.',
                 objective: 'Use Infrared to compare heat and dust even when the ground is hidden.',
                 discovery: 'Orbiters track dust and temperature to understand how a storm grows.',
                 simulationNote: 'Storm season simulated in the diorama; it does not represent current weather on Mars.'
@@ -90,12 +96,14 @@ export const LIVING_SKY_EVENTS = Object.freeze([
         copy: {
             pt: {
                 kicker: 'Visitante gelado', title: 'O regresso do Halley', short: 'O cometa aquece perto do Sol e abre duas caudas diferentes.',
+                visualClue: 'Procura duas caudas compridas: uma branca e outra azul.',
                 objective: 'Usa Luz visível e enquadra o núcleo com as duas caudas.',
                 discovery: 'A poeira forma uma cauda curva; o vento solar empurra os iões numa cauda mais direita.',
                 simulationNote: 'Regresso de 2061 representado numa órbita e escala simuladas no diorama.'
             },
             en: {
                 kicker: 'Icy visitor', title: 'Halley returns', short: 'The comet warms near the Sun and opens two different tails.',
+                visualClue: 'Look for two long tails: one white and one blue.',
                 objective: 'Use Visible light and frame the nucleus with both tails.',
                 discovery: 'Dust makes a curved tail; the solar wind pushes ions into a straighter tail.',
                 simulationNote: 'The 2061 return is shown with a simulated orbit and scale in the diorama.'

@@ -482,7 +482,7 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         worldObjects.update(runtime.orbitalObjectElapsed, runtime.primarySnapshot);
         const halleyPosition = worldObjects.getPosition('halley');
         if (halleyPosition) livingSkyPositions.halley = halleyPosition;
-        livingSkyEffects.update(runtime.elapsed, livingSkyPositions);
+        livingSkyEffects.update(runtime.elapsed, livingSkyPositions, camera);
         if (runtime.surpriseRemaining > 0) {
             runtime.surpriseRemaining = Math.max(0, runtime.surpriseRemaining - delta);
             surpriseEffect.position.addScaledVector(runtime.surpriseVelocity, delta);
