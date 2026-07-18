@@ -1578,7 +1578,7 @@ html[data-flight-input="touch"] .joystick-label {
     .local-orbit-message, .local-orbit-result { z-index: 5; gap: 8px; padding: max(72px, env(safe-area-inset-top)) 18px max(96px, env(safe-area-inset-bottom)); }
     .local-orbit-result > span { width: 54px; font-size: 1.45rem; }
     .local-orbit-result strong { font-size: 1.18rem; }
-    .local-orbit-result p { display: none; }
+    .local-orbit-result p { display: block; max-width: 32ch; font-size: .78rem; line-height: 1.35; }
     .local-orbit-result button { min-height: 48px; padding: 7px 12px; }
     .docking-instruments {
         position: absolute;

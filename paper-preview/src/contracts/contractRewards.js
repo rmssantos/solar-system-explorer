@@ -44,6 +44,15 @@ export const CONTRACT_REWARDS = Object.freeze([
             pt: { title: 'Selo Ponte Vermelha', description: 'Ligaste a órbita à superfície de Marte.' },
             en: { title: 'Red Bridge Stamp', description: 'You linked Mars orbit to its surface.' }
         }
+    }),
+    reward({
+        contractId: 'jupiter-slingshot',
+        xp: 240,
+        art: '/art/awards/contract-jupiter-slingshot.webp',
+        copy: {
+            pt: { title: 'Selo Curva Gigante', description: 'Transformaste gravidade em velocidade.' },
+            en: { title: 'Giant Curve Stamp', description: 'You turned gravity into speed.' }
+        }
     })
 ]);
 

@@ -53,6 +53,8 @@ function formatMetric(metric, telemetry) {
     if (metric.format === 'collection') return `${Math.round(value)}/${Math.round(telemetry.total ?? 0)}`;
     if (metric.format === 'shield') return `${Math.round(value)}/3`;
     if (metric.format === 'percent') return `${Math.round(value * 100)}%`;
+    if (metric.format === 'kilometers') return `${Math.round(value).toLocaleString()} km`;
+    if (metric.format === 'speed-gain') return `+${value.toFixed(1)} km/s`;
     return String(value);
 }
 

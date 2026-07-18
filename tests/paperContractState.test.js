@@ -4,6 +4,7 @@ import {
     ISS_DELIVERY_CONTRACT_ID,
     LUNAR_SWEEP_CONTRACT_ID,
     MARS_RELAY_CONTRACT_ID,
+    JUPITER_SLINGSHOT_CONTRACT_ID,
     acceptContract,
     completeContract,
     createContractState,
@@ -130,8 +131,26 @@ describe('paper expedition contracts', () => {
         expect(isContractDestinationNearby(MARS_RELAY_CONTRACT_ID, { planetKey: 'earth' })).toBe(false);
     });
 
+    it('unlocks the Jupiter slingshot after Mars relay and Jupiter discovery', () => {
+        const afterMars = createContractState({ completedContractIds: [
+            ISS_DELIVERY_CONTRACT_ID, HUBBLE_MAINTENANCE_CONTRACT_ID,
+            LUNAR_SWEEP_CONTRACT_ID, MARS_RELAY_CONTRACT_ID
+        ] });
+        expect(getContractStatus(afterMars, JUPITER_SLINGSHOT_CONTRACT_ID, {
+            discoveredKeys: ['earth', 'moon', 'mars']
+        })).toBe('locked');
+        expect(getContractStatus(afterMars, JUPITER_SLINGSHOT_CONTRACT_ID, {
+            discoveredKeys: ['earth', 'moon', 'mars', 'jupiter']
+        })).toBe('available');
+        expect(CONTRACT_CATALOG.find((item) => item.id === JUPITER_SLINGSHOT_CONTRACT_ID)).toMatchObject({
+            destinationKey: 'jupiter', activity: 'jupiter-slingshot',
+            unlockContracts: [MARS_RELAY_CONTRACT_ID]
+        });
+        expect(isContractDestinationNearby(JUPITER_SLINGSHOT_CONTRACT_ID, { planetKey: 'jupiter' })).toBe(true);
+    });
+
     it('provides one paper-art postcard for every campaign contract', () => {
-        expect(CONTRACT_CATALOG).toHaveLength(4);
+        expect(CONTRACT_CATALOG).toHaveLength(5);
         for (const item of CONTRACT_CATALOG) expect(item.art).toMatch(/^\/art\/missions\/mission-.+\.webp$/);
     });
 });

@@ -202,6 +202,50 @@ export const ORBITAL_MISSION_PROFILES = Object.freeze({
                 keyboardHint: 'Keyboard: left/right adjusts angle · up/down adjusts frequency · Space transmits'
             }
         }
+    }),
+    'jupiter-slingshot': profile({
+        id: 'jupiter-slingshot',
+        gameplay: 'slingshot',
+        completionEvent: 'slingshot-complete',
+        retryEvents: ['heat-warning', 'slingshot-miss'],
+        controls: FLAT_CONTROLS,
+        target: 'jupiter',
+        metrics: [
+            { field: 'routePercent', format: 'percent', safeField: 'primarySafe' },
+            { field: 'altitudeKm', format: 'kilometers', safeField: 'secondarySafe' },
+            { field: 'speedGain', format: 'speed-gain', safeField: 'tertiarySafe' }
+        ],
+        initialState: {},
+        copy: {
+            pt: {
+                kicker: 'Manobra de gravidade · Júpiter', title: 'Estilingue de Júpiter',
+                playfield: 'Planeamento de assistência gravitacional junto de Júpiter',
+                guidance: 'Centra a rota, escolhe a faixa verde e mantém Ativar impulso para contornar Júpiter.',
+                retry: 'A passagem ainda não é segura. Afasta-te do calor ou volta a centrar a curva.',
+                success: 'Impulso gravitacional conseguido!',
+                science: 'Uma assistência gravitacional troca movimento com um planeta e pode aumentar a velocidade de uma sonda sem gastar mais combustível.',
+                metricLabels: ['Rota', 'Distância a Júpiter', 'Velocidade ganha'],
+                controlLabels: { forward: 'Curvar rota para a direita', reverse: 'Curvar rota para a esquerda', up: 'Passar mais longe de Júpiter', down: 'Passar mais perto de Júpiter', stabilize: 'Ativar impulso gravitacional' },
+                tutorialTitle: 'Treino de estilingue',
+                tutorialSteps: ['Usa esquerda e direita para centrar a linha da rota.', 'Usa cima e baixo para colocar a passagem na faixa verde: nem demasiado perto, nem demasiado longe.', 'Mantém Ativar impulso e observa a velocidade a aumentar.'],
+                centerControl: 'Ativar impulso',
+                keyboardHint: 'Teclado: esquerda/direita curva a rota · cima/baixo muda a distância · Espaço ativa o impulso'
+            },
+            en: {
+                kicker: 'Gravity manoeuvre · Jupiter', title: 'Jupiter slingshot',
+                playfield: 'Gravitational-assist planning near Jupiter',
+                guidance: 'Center the route, choose the green band and hold Start boost to swing around Jupiter.',
+                retry: 'The pass is not safe yet. Move away from the heat or center the curve again.',
+                success: 'Gravity boost complete!',
+                science: 'A gravitational assist exchanges motion with a planet and can speed up a probe without using extra fuel.',
+                metricLabels: ['Route', 'Distance from Jupiter', 'Speed gained'],
+                controlLabels: { forward: 'Curve route right', reverse: 'Curve route left', up: 'Pass farther from Jupiter', down: 'Pass closer to Jupiter', stabilize: 'Start gravitational boost' },
+                tutorialTitle: 'Slingshot practice',
+                tutorialSteps: ['Use left and right to center the route line.', 'Use up and down to place the flyby in the green band: neither too close nor too far.', 'Hold Start boost and watch the speed increase.'],
+                centerControl: 'Start boost',
+                keyboardHint: 'Keyboard: left/right curves the route · up/down changes distance · Space starts the boost'
+            }
+        }
     })
 });
 

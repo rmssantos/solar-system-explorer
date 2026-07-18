@@ -48,4 +48,19 @@ describe('orbital contract attempt persistence', () => {
         expect(getContractAttempt(cleared, 'valid')).toBeNull();
         expect(clearContractAttempt(cleared, 'valid')).toBe(cleared);
     });
+
+    it('round-trips a partial Jupiter slingshot plan', () => {
+        const state = saveContractAttempt(createContractAttemptState(), {
+            contractId: 'jupiter-slingshot',
+            missionId: 'jupiter-slingshot',
+            simulation: {
+                phase: 'planning', angleError: 0.08, flybyDistance: 0.51,
+                boostProgress: 1.2, committing: false, risk: null
+            }
+        });
+        expect(getContractAttempt(state, 'jupiter-slingshot')?.simulation).toMatchObject({
+            phase: 'planning', angleError: 0.08, flybyDistance: 0.51,
+            boostProgress: 1.2, committing: false, risk: null
+        });
+    });
 });
