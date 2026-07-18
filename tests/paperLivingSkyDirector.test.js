@@ -75,4 +75,3 @@ describe('Living Sky director', () => {
         expect(result.score).toBeGreaterThanOrEqual(0);
     });
 });
-

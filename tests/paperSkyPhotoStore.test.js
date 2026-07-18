@@ -70,4 +70,3 @@ describe('Living Sky IndexedDB photo store', () => {
         expect(urlApi.revokeObjectURL).toHaveBeenCalledWith('blob:preview');
     });
 });
-

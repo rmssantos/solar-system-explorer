@@ -57,4 +57,3 @@ describe('Explorer camera capture', () => {
             .rejects.toThrow(/encode/i);
     });
 });
-

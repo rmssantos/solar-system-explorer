@@ -23,7 +23,6 @@ export function getLivingSkyEventWindow(eventId, dateMs = Date.now()) {
         cycle: active ? cycle : cycle + (now >= cycleEnd ? 1 : 0)
     });
 }
-
 export function getNextLivingSkyObservationDate(eventId, dateMs = Date.now()) {
     const window = getLivingSkyEventWindow(eventId, dateMs);
     if (!window) return null;
@@ -97,4 +96,3 @@ export function assessLivingSkyObservation(eventId, telemetry = {}) {
         feedback
     });
 }
-

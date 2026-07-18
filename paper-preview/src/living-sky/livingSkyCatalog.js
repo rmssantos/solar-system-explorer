@@ -109,4 +109,3 @@ const EVENT_BY_ID = new Map(LIVING_SKY_EVENTS.map((item) => [item.id, item]));
 export function getLivingSkyEvent(id) {
     return EVENT_BY_ID.get(id) ?? null;
 }
-

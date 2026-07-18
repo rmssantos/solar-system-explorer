@@ -61,4 +61,3 @@ export async function captureSkyPhoto(sourceCanvas, options = {}) {
     const blob = await encodeCanvas(canvas);
     return Object.freeze({ blob, width, height, filter, mimeType: 'image/webp' });
 }
-

@@ -97,4 +97,3 @@ export function createSkyPhotoStore(options = {}) {
 
     return { put, get, delete: remove, getObjectUrl, destroy };
 }
-
