@@ -16,6 +16,7 @@ function queryElements(root) {
         keyboardHint: root.querySelector('.docking-keyboard-hint'),
         kicker: root.querySelector('.local-orbit-kicker'),
         title: root.querySelector('#local-orbit-title'),
+        scale: root.querySelector('.local-orbit-scale'),
         playfield: root.querySelector('.local-orbit-playfield'),
         resultTitle: root.querySelector('#local-orbit-result strong'),
         resultScience: root.querySelector('#local-orbit-result p'),
@@ -200,6 +201,7 @@ export function createLocalOrbitHost({
         }
         elements.kicker.textContent = profile.kicker;
         elements.title.textContent = profile.title;
+        if (elements.scale && profile.scale) elements.scale.textContent = profile.scale;
         elements.resultTitle.textContent = profile.success;
         elements.resultScience.textContent = profile.science;
         elements.playfield.setAttribute?.('aria-label', profile.playfield);

@@ -7,6 +7,7 @@ const SIMULATION_KEYS = new Set([
     'lockSeconds', 'transmitting', 'approachAngle', 'periapsis', 'heat', 'speed',
     'speedGain', 'launchProgress', 'inCorridor', 'flybyDistance', 'boostProgress',
     'committing', 'risk'
+    , 'cursor', 'sensors', 'alignmentOffset', 'selectedImpact', 'actionHeld'
 ]);
 
 function sanitizeNode(value, depth = 0) {

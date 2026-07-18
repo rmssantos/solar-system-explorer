@@ -63,4 +63,22 @@ describe('orbital contract attempt persistence', () => {
             boostProgress: 1.2, committing: false, risk: null
         });
     });
+
+    it('round-trips a lunar sensor network without private renderer data', () => {
+        const state = saveContractAttempt(createContractAttemptState(), {
+            contractId: 'moon-seismology',
+            missionId: 'moon-seismology',
+            simulation: {
+                phase: 'aligning', cursor: { x: 0.2, y: -0.1 },
+                sensors: [{ id: 'sensor-1', x: -0.6, y: 0.2 }],
+                alignmentOffset: 0.24, selectedImpact: 1, actionHeld: false,
+                rendererHandle: 'drop-me'
+            }
+        });
+        expect(getContractAttempt(state, 'moon-seismology')?.simulation).toEqual({
+            phase: 'aligning', cursor: { x: 0.2, y: -0.1 },
+            sensors: [{ id: 'sensor-1', x: -0.6, y: 0.2 }],
+            alignmentOffset: 0.24, selectedImpact: 1, actionHeld: false
+        });
+    });
 });

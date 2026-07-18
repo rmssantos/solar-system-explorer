@@ -29,7 +29,7 @@ function createElements() {
         dialog: fakeElement(), stage: fakeElement(), loading: fakeElement(), error: fakeElement(), result: fakeElement(),
         guidance: fakeElement(), distance: fakeElement(), speed: fakeElement(), alignment: fakeElement(),
         metricLabels: [fakeElement(), fakeElement(), fakeElement()],
-        kicker: fakeElement(), title: fakeElement(), playfield: fakeElement(), resultTitle: fakeElement(), resultScience: fakeElement(),
+        kicker: fakeElement(), title: fakeElement(), scale: fakeElement(), playfield: fakeElement(), resultTitle: fakeElement(), resultScience: fakeElement(),
         close: fakeElement(), finish: fakeElement(), retry: fakeElement(),
         leaveConfirm: fakeElement(), leaveContinue: fakeElement(), leaveSave: fakeElement(), leaveRestart: fakeElement(),
         training: fakeElement(), trainingTitle: fakeElement(), trainingStep: fakeElement(), trainingNext: fakeElement(), trainingSkip: fakeElement(),
@@ -402,6 +402,7 @@ describe('local orbit host', () => {
         });
 
         await host.open({ attemptKey: 'moon-seismology', missionId: 'moon-seismology' });
+        expect(elements.scale.textContent).toMatch(/superfície|surface/i);
         elements.close.emit('click');
         elements.leaveSave.emit('click');
         expect(saved).toEqual([{
