@@ -30,20 +30,23 @@ test('observes, photographs and archives a living-sky phenomenon', async ({ page
 
     await observatory.locator('[data-living-sky-observe="earth-aurora"]').click();
     const camera = page.locator('#explorer-camera');
-    await expect(camera).toBeVisible();
-    await page.evaluate(() => {
-        window.__paperPreview.cancelAutopilot();
-        window.__paperPreview.teleport('earth');
-        window.advanceTime(100);
-    });
+    await expect(camera).toBeHidden();
+    await expect(page.locator('#autopilot-status')).toBeVisible();
+    await expect.poll(async () => {
+        await page.evaluate(() => window.advanceTime(5_000));
+        return camera.isVisible();
+    }, { timeout: 20_000 }).toBe(true);
+    await expect(page.locator('#autopilot-status')).toBeHidden();
     const clock = await page.evaluate(() => window.__paperPreview.getState().scene.orbitalClock);
-    expect(clock.timeScale).toBe(1);
+    expect(clock.timeScale).toBe(0);
     const sky = await page.evaluate(() => window.__paperPreview.getState().livingSky);
     expect(sky.cameraOpen).toBe(true);
     expect(sky.selectedEventId).toBe('earth-aurora');
     expect(sky.activeEventIds).toContain('earth-aurora');
     await expect(camera.locator('#explorer-camera-target-title')).toHaveText('Aurora da Terra');
     await expect(camera.locator('#explorer-camera-target-clue')).toContainText('fitas verdes');
+    await expect(camera.locator('#explorer-camera-target-marker')).toBeVisible();
+    await expect(camera.locator('#explorer-camera-target-marker')).toHaveAttribute('data-target-visible', 'true');
     await page.screenshot({ path: '.local/playtest/living-sky-aurora-viewfinder-desktop.png' });
 
     await camera.locator('[data-camera-filter="magnetic"]').click();
@@ -56,6 +59,7 @@ test('observes, photographs and archives a living-sky phenomenon', async ({ page
     await page.screenshot({ path: '.local/playtest/living-sky-photo-developed-desktop.png' });
     await result.locator('#explorer-camera-view-album').click();
     await expect(camera).toBeHidden();
+    await expect.poll(() => page.evaluate(() => window.__paperPreview.getState().scene.orbitalClock.timeScale)).toBe(1);
     await expect(page.locator('[data-passport-section="collection"]')).toHaveAttribute('aria-selected', 'true');
     const album = page.locator('.sky-photo-album');
     await expect(album).toBeVisible();
@@ -81,11 +85,12 @@ test('keeps observatory and camera touch-safe on phone and landscape tablet', as
     expect(panelBox.y + panelBox.height).toBeLessThanOrEqual(844);
 
     await panel.locator('[data-living-sky-observe="mars-dust-front"]').click();
-    await page.evaluate(() => {
-        window.__paperPreview.cancelAutopilot();
-        window.__paperPreview.teleport('mars');
-        window.advanceTime(100);
-    });
+    const mobileCamera = page.locator('#explorer-camera');
+    await expect(mobileCamera).toBeHidden();
+    await expect.poll(async () => {
+        await page.evaluate(() => window.advanceTime(5_000));
+        return mobileCamera.isVisible();
+    }, { timeout: 20_000 }).toBe(true);
     await expect(page.locator('#explorer-camera-target-title')).toHaveText('A frente de poeira');
     await expect(page.locator('#explorer-camera-target-clue')).toContainText('faixa coral');
     await page.screenshot({ path: '.local/playtest/living-sky-dust-viewfinder-mobile.png' });
@@ -121,5 +126,8 @@ test('keeps observatory and camera touch-safe on phone and landscape tablet', as
     expect(consoleBox.x).toBeGreaterThanOrEqual(0);
     expect(consoleBox.x + consoleBox.width).toBeLessThanOrEqual(844);
     expect(consoleBox.y + consoleBox.height).toBeLessThanOrEqual(390);
+    const landscapeGuidanceBox = await page.locator('.explorer-camera-guidance').boundingBox();
+    const landscapeMarkerBox = await page.locator('#explorer-camera-target-marker').boundingBox();
+    expect(landscapeGuidanceBox.x + landscapeGuidanceBox.width).toBeLessThan(landscapeMarkerBox.x);
     await page.screenshot({ path: '.local/playtest/living-sky-camera-landscape.png' });
 });

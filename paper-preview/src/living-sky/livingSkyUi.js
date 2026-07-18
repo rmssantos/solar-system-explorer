@@ -29,7 +29,7 @@ const COPY = Object.freeze({
         intro: 'Descobre fenómenos, viaja até ao melhor dia e fotografa-os com o instrumento certo.',
         progress: 'Observações no álbum', active: 'A acontecer', upcoming: 'Próxima janela', complete: 'Fotografado',
         openAlbum: 'Ver fotografias', enlargeArt: 'Ver ilustração em grande',
-        targetKicker: 'A fotografar', targetFreeClue: 'Explora o enquadramento e cria a tua própria fotografia espacial.',
+        targetKicker: 'A fotografar', targetMarker: 'ALVO', targetLocked: 'ALVO PRONTO', targetFreeClue: 'Explora o enquadramento e cria a tua própria fotografia espacial.',
         observe: 'Viajar e observar', cameraKicker: 'Instrumento de bordo', cameraTitle: 'Câmara de Explorador',
         visible: 'Visível', infrared: 'Infravermelho', magnetic: 'Campo magnético', closeHint: 'fechar', photoHint: 'fotografia', spaceKey: 'Espaço',
         close: 'Fechar', shutter: 'Tirar fotografia', filterGroup: 'Instrumentos de observação',
@@ -53,7 +53,7 @@ const COPY = Object.freeze({
         intro: 'Find phenomena, travel to the best day and photograph them with the right instrument.',
         progress: 'Observations in album', active: 'Happening now', upcoming: 'Next window', complete: 'Photographed',
         openAlbum: 'View photos', enlargeArt: 'View illustration larger',
-        targetKicker: 'Photographing', targetFreeClue: 'Explore the frame and create your own space photograph.',
+        targetKicker: 'Photographing', targetMarker: 'TARGET', targetLocked: 'TARGET READY', targetFreeClue: 'Explore the frame and create your own space photograph.',
         observe: 'Travel and observe', cameraKicker: 'On-board instrument', cameraTitle: 'Explorer Camera',
         visible: 'Visible', infrared: 'Infrared', magnetic: 'Magnetic field', closeHint: 'close', photoHint: 'photo', spaceKey: 'Space',
         close: 'Close', shutter: 'Take photo', filterGroup: 'Observation instruments',
@@ -90,6 +90,7 @@ function text(i18n, key) { return COPY[languageOf(i18n)][key] ?? key; }
  *   onCapture?: (input: { eventId: string | null, filter: string }) => Promise<any>,
  *   onDeletePhoto?: (photoId: string) => Promise<boolean>,
  *   onOpenAlbum?: () => void,
+ *   onCameraChange?: (open: boolean, eventId: string | null) => void,
  *   getPhotoUrl?: (storageId: string) => Promise<string | null>,
  *   revokePhotoUrl?: (storageId: string) => boolean
  * }} options
@@ -100,6 +101,7 @@ export function createLivingSkyUi({
     onCapture = async (_input) => false,
     onDeletePhoto = async (_photoId) => false,
     onOpenAlbum = () => {},
+    onCameraChange = (_open, _eventId) => {},
     getPhotoUrl = async (_storageId) => null,
     revokePhotoUrl = (_storageId) => false
 }) {
@@ -115,6 +117,8 @@ export function createLivingSkyUi({
         cameraClose: requiredElement('#explorer-camera-close', HTMLButtonElement),
         targetTitle: requiredElement('#explorer-camera-target-title', HTMLElement),
         targetClue: requiredElement('#explorer-camera-target-clue', HTMLElement),
+        targetMarker: requiredElement('#explorer-camera-target-marker', HTMLElement),
+        targetMarkerLabel: requiredElement('#explorer-camera-target-marker span', HTMLElement),
         coach: requiredElement('#explorer-camera-coach', HTMLElement),
         result: requiredElement('#explorer-camera-result', HTMLElement),
         resultImage: requiredElement('#explorer-camera-result-image', HTMLImageElement),
@@ -224,6 +228,10 @@ export function createLivingSkyUi({
         updateCameraTarget();
         elements.camera.hidden = !cameraOpen;
         elements.camera.classList.toggle('is-open', cameraOpen);
+        elements.targetMarker.hidden = !cameraOpen || !selectedEventId;
+        elements.targetMarker.dataset.targetVisible = 'false';
+        elements.targetMarker.dataset.targetReady = 'false';
+        elements.targetMarkerLabel.textContent = text(i18n, 'targetMarker');
         document.body.classList.toggle('is-explorer-camera-open', cameraOpen);
         if (cameraOpen && !wasOpen) {
             setReviewOpen(false);
@@ -239,6 +247,7 @@ export function createLivingSkyUi({
             focusTarget.focus();
             previousFocus = null;
         }
+        if (cameraOpen !== wasOpen) onCameraChange(cameraOpen, selectedEventId);
         return cameraOpen;
     }
 
@@ -347,6 +356,19 @@ export function createLivingSkyUi({
 
     function updateTelemetry(assessment) {
         if (!cameraOpen || busy || reviewingPhoto || !assessment) return;
+        const hasTarget = Boolean(assessment.eventId);
+        elements.targetMarker.hidden = !hasTarget;
+        if (hasTarget) {
+            const screenX = Number.isFinite(assessment.screenX) ? assessment.screenX : 0;
+            const screenY = Number.isFinite(assessment.screenY) ? assessment.screenY : 0;
+            const clampedX = Math.max(-0.82, Math.min(0.82, screenX));
+            const clampedY = Math.max(-0.68, Math.min(0.68, screenY));
+            elements.targetMarker.style.setProperty('--target-x', `${((clampedX + 1) / 2) * 100}%`);
+            elements.targetMarker.style.setProperty('--target-y', `${((1 - clampedY) / 2) * 100}%`);
+            elements.targetMarker.dataset.targetVisible = String(Boolean(assessment.visible));
+            elements.targetMarker.dataset.targetReady = String(Boolean(assessment.qualified));
+            elements.targetMarkerLabel.textContent = text(i18n, assessment.qualified ? 'targetLocked' : 'targetMarker');
+        }
         if (assessment.feedback === 'try-instrument') {
             const preferredFilter = getLivingSkyEvent(assessment.eventId)?.preferredFilter ?? 'visible';
             elements.coach.textContent = `${text(i18n, 'useInstrument')} ${text(i18n, preferredFilter)}.`;
@@ -404,7 +426,7 @@ export function createLivingSkyUi({
         const button = event.target.closest('[data-living-sky-observe]');
         if (!(button instanceof HTMLButtonElement)) return;
         selectedEventId = button.dataset.livingSkyObserve;
-        if (onObserve(selectedEventId) !== false) { setOpen(false); setCameraOpen(true, selectedEventId); }
+        if (onObserve(selectedEventId) !== false) setOpen(false);
     });
     elements.photoGrid.addEventListener('click', (event) => {
         if (!(event.target instanceof Element)) return;

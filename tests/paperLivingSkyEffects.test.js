@@ -46,9 +46,26 @@ describe('living-sky scene effects', () => {
 
         expect(effects.getTelemetry('earth-aurora', camera, new THREE.Vector3(0, 0, 8))).toMatchObject({
             visible: true,
+            screenX: 0,
+            screenY: 0,
             screenDistance: 0,
             worldDistance: 8
         });
+        effects.destroy();
+    });
+
+    it('projects with the camera pose from the current simulation step', () => {
+        const effects = createLivingSkyEffects();
+        const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
+        camera.position.set(0, 0, 10);
+        camera.lookAt(0, 0, 0);
+        camera.updateMatrixWorld();
+        effects.update(0, { earth: new THREE.Vector3(0, 0, 0) });
+
+        camera.position.x = 5;
+        const telemetry = effects.getTelemetry('earth-aurora', camera, new THREE.Vector3(0, 0, 8));
+
+        expect(telemetry.screenX).toBeLessThan(-0.5);
         effects.destroy();
     });
 

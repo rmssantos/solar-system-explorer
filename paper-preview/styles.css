@@ -2644,6 +2644,54 @@ html[data-flight-input="touch"] .joystick-label {
 .camera-reticle::before { width: 2px; height: 2.4rem; }
 .camera-reticle::after { width: 2.4rem; height: 2px; }
 .camera-reticle span { position: absolute; inset: 18%; border: 2px solid #54be9c; border-radius: 0.65rem; }
+.explorer-camera-target-marker {
+  --target-x: 50%;
+  --target-y: 50%;
+  position: absolute;
+  z-index: 3;
+  left: var(--target-x);
+  top: var(--target-y);
+  display: grid;
+  width: 6.5rem;
+  height: 6.5rem;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 3px 0 rgb(16 25 54 / 72%));
+  transition: left 180ms ease-out, top 180ms ease-out;
+}
+.explorer-camera-target-marker[hidden] { display: none; }
+.explorer-camera-target-marker i {
+  position: absolute;
+  inset: 0.45rem;
+  border: 3px dashed #78d7d2;
+  border-radius: 48% 52% 46% 54%;
+  box-shadow: 0 0 0 3px rgb(16 25 54 / 58%), inset 0 0 18px rgb(120 215 210 / 24%);
+  animation: camera-target-pulse 1.1s ease-in-out infinite alternate;
+}
+.explorer-camera-target-marker b {
+  color: #f2f0e8;
+  font-size: 1.15rem;
+  text-shadow: 0 2px 0 #101936;
+}
+.explorer-camera-target-marker span {
+  position: absolute;
+  top: 100%;
+  min-width: max-content;
+  padding: 0.22rem 0.5rem;
+  color: #101936;
+  background: #78d7d2;
+  border: 2px solid #101936;
+  border-radius: 0.4rem 0.25rem 0.5rem 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+}
+.explorer-camera-target-marker[data-target-visible="false"] { width: 4.6rem; height: 4.6rem; }
+.explorer-camera-target-marker[data-target-visible="false"] i { border-style: solid; }
+.explorer-camera-target-marker[data-target-visible="false"] b { font-size: 1.6rem; transform: rotate(45deg); }
+.explorer-camera-target-marker[data-target-ready="true"] i { border-color: #54be9c; box-shadow: 0 0 0 4px rgb(16 25 54 / 70%), 0 0 24px rgb(84 190 156 / 55%); }
+.explorer-camera-target-marker[data-target-ready="true"] span { color: #f2f0e8; background: #4d8f7d; }
+.explorer-camera.is-reviewing .explorer-camera-target-marker { display: none; }
 .explorer-camera-guidance {
   position: absolute;
   z-index: 4;
@@ -2753,6 +2801,7 @@ html[data-flight-input="touch"] .is-explorer-camera-open .flight-joystick {
 }
 .explorer-camera.is-flashing .explorer-camera-flash { animation: camera-flash 280ms ease-out; }
 @keyframes camera-flash { 0% { opacity: 0.9; } 100% { opacity: 0; } }
+@keyframes camera-target-pulse { from { transform: scale(0.92) rotate(-3deg); opacity: 0.78; } to { transform: scale(1.08) rotate(3deg); opacity: 1; } }
 
 .sky-photo-album { margin: 0.8rem 0 1.25rem; padding: 1rem; color: #252b3b; background: #e8edf2; border: 2px dashed #7568a6; border-radius: 0.7rem; }
 .sky-photo-album:focus-visible { outline: 4px solid #78d7d2; outline-offset: 3px; }
@@ -2796,7 +2845,20 @@ html[data-flight-input="touch"] .is-explorer-camera-open .flight-joystick {
   .sky-photo-viewer footer { display: grid; }
 }
 
+@media (max-height: 520px) and (min-width: 721px) {
+  .explorer-camera-guidance {
+    left: 1.2rem;
+    grid-template-columns: 1fr;
+    width: min(18.5rem, calc(100vw - 2.4rem));
+    transform: rotate(-0.25deg);
+  }
+  .explorer-camera-target { border-right: 0; border-bottom: 2px dashed rgb(37 43 59 / 42%); }
+  .explorer-camera-target p { font-size: 0.67rem; }
+  .explorer-camera-coach { padding: 0.4rem 0.55rem; font-size: 0.72rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .explorer-camera.is-flashing .explorer-camera-flash { animation-duration: 80ms; }
+  .explorer-camera-target-marker i { animation: none; }
   .living-sky-card, .sky-photo-card { transform: none; }
 }

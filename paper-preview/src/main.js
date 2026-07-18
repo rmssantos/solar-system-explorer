@@ -172,6 +172,8 @@ let lastUiSignature = '';
 let nearbyWorldObjectKey = null;
 let currentNavigation = null;
 let autoPilotState = null;
+let pendingLivingSkyEventId = null;
+let livingSkyObservationTimeScale = null;
 let localOrbitOpen = false;
 let localOrbitHost = null;
 let activeOrbitContractId = null;
@@ -834,13 +836,19 @@ function currentLivingSkyAssessment(eventId, filter) {
     const skyEvent = getLivingSkyEvent(eventId);
     const sceneTelemetry = skyEvent
         ? paperScene.getLivingSkyTelemetry(skyEvent.id)
-        : { visible: true, screenDistance: 0, worldDistance: 10 };
+        : { visible: true, screenX: 0, screenY: 0, screenDistance: 0, worldDistance: 10 };
     const speed = Math.hypot(flightState.velocity.x, flightState.velocity.y, flightState.velocity.z);
-    return assessLivingSkyObservation(skyEvent?.id ?? null, {
+    const assessment = assessLivingSkyObservation(skyEvent?.id ?? null, {
         ...sceneTelemetry,
         filter,
         active: Boolean(livingSkyPresentation.activeEvents.some((event) => event.id === skyEvent?.id)),
         stability: Math.max(0, Math.min(1, 1 - speed / 3.2))
+    });
+    return Object.freeze({
+        ...assessment,
+        visible: Boolean(sceneTelemetry.visible),
+        screenX: Number(sceneTelemetry.screenX),
+        screenY: Number(sceneTelemetry.screenY)
     });
 }
 
@@ -856,7 +864,22 @@ function observeLivingSkyEvent(eventId) {
     }
     siteAnalytics.track('living_sky_event', { eventId, state: 'observe' });
     audioDirector.play('sky-event-alert');
-    return flyToWorldObject(skyEvent.targetKey, { allowMissionLog: true });
+    const travelling = flyToWorldObject(skyEvent.targetKey, { allowMissionLog: true });
+    if (travelling) {
+        pendingLivingSkyEventId = skyEvent.id;
+        livingSkyObservationTimeScale = paperScene.getState().orbitalClock.timeScale;
+        const clock = paperScene.setOrbitalTimeScale(0);
+        previewUI.updateOrbitalClock(clock);
+    }
+    return travelling;
+}
+
+function endLivingSkyObservationSession() {
+    if (livingSkyObservationTimeScale === null) return;
+    const clock = paperScene.setOrbitalTimeScale(livingSkyObservationTimeScale);
+    livingSkyObservationTimeScale = null;
+    previewUI.updateOrbitalClock(clock);
+    refreshLivingSkyPresentation();
 }
 
 async function captureLivingSkyObservation({ eventId, filter }) {
@@ -974,6 +997,9 @@ livingSkyUi = createLivingSkyUi({
             album?.focus?.({ preventScroll: true });
         });
     },
+    onCameraChange: (open) => {
+        if (!open) endLivingSkyObservationSession();
+    },
     getPhotoUrl: (storageId) => skyPhotoStore.getObjectUrl(storageId),
     revokePhotoUrl: (storageId) => skyPhotoStore.revokeObjectUrl(storageId)
 });
@@ -1053,6 +1079,8 @@ function updateAutopilotDisplay() {
 function cancelAutopilot() {
     if (autoPilotState) siteAnalytics.track('autopilot_event', { objectKey: autoPilotState.targetKey, state: 'cancel' });
     autoPilotState = null;
+    endLivingSkyObservationSession();
+    pendingLivingSkyEventId = null;
     contractJourney = cancelContractTravel(contractJourney);
     expeditionJourney = cancelExpeditionTravel(expeditionJourney);
     updateAutopilotDisplay();
@@ -1063,6 +1091,7 @@ function flyToWorldObject(key, { allowMissionLog = false } = {}) {
     const object = getWorldObject(key);
     const target = paperScene.getWorldObjectPosition(key);
     if (!object || !target || previewState.notebook.open || (!allowMissionLog && previewUI.elements.missionLog.open) || agencyUi?.elements.dialog.open) return false;
+    pendingLivingSkyEventId = null;
     flightInput.reset();
     autoPilotState = createAutopilot(key, flightState.position, target, interactionRadiusFor(object));
     audioDirector.play('autopilot-start');
@@ -1207,6 +1236,11 @@ function step(seconds) {
             if (result.arrived) {
                 audioDirector.play('autopilot-arrive');
                 siteAnalytics.track('autopilot_event', { objectKey: autopilotTargetKey, state: 'arrive' });
+                const livingSkyEvent = getLivingSkyEvent(pendingLivingSkyEventId);
+                if (livingSkyEvent?.targetKey === autopilotTargetKey) {
+                    pendingLivingSkyEventId = null;
+                    livingSkyUi?.setCameraOpen(true, livingSkyEvent.id);
+                }
                 const arrived = arriveContractTravel(contractJourney, autopilotTargetKey);
                 if (arrived !== contractJourney) {
                     contractJourney = arrived;

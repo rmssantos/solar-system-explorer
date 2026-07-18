@@ -298,12 +298,17 @@ export function createLivingSkyEffects({ reducedMotion = false } = {}) {
 
     function getTelemetry(eventId, camera, observerPosition) {
         const effect = root.getObjectByName(`living-sky-${eventId}`);
-        if (!effect || !camera || !observerPosition) return { visible: false, screenDistance: 1, worldDistance: Infinity };
+        if (!effect || !camera || !observerPosition) {
+            return { visible: false, screenX: 0, screenY: 0, screenDistance: 1, worldDistance: Infinity };
+        }
+        camera.updateMatrixWorld();
         const projected = effect.position.clone().project(camera);
         const visible = projected.z >= -1 && projected.z <= 1
             && Math.abs(projected.x) <= 1 && Math.abs(projected.y) <= 1;
         return Object.freeze({
             visible,
+            screenX: Number(projected.x.toFixed(3)),
+            screenY: Number(projected.y.toFixed(3)),
             screenDistance: Number(Math.hypot(projected.x, projected.y).toFixed(3)),
             worldDistance: Number(effect.position.distanceTo(observerPosition).toFixed(3))
         });
