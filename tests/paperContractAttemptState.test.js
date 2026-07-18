@@ -81,4 +81,20 @@ describe('orbital contract attempt persistence', () => {
             alignmentOffset: 0.24, selectedImpact: 1, actionHeld: false
         });
     });
+
+    it('round-trips a Europa radar map without renderer data', () => {
+        const state = saveContractAttempt(createContractAttemptState(), {
+            contractId: 'europa-radar', missionId: 'europa-radar',
+            simulation: {
+                phase: 'scanning', position: 0.4, power: 0.72, heat: 0.3,
+                scanning: true, overheated: false, passProgress: [1, 0.5, 0],
+                coverage: 0.5, echoConfidence: 0.8, beamSprite: 'drop-me'
+            }
+        });
+        expect(getContractAttempt(state, 'europa-radar')?.simulation).toEqual({
+            phase: 'scanning', position: 0.4, power: 0.72, heat: 0.3,
+            scanning: true, overheated: false, passProgress: [1, 0.5, 0],
+            coverage: 0.5, echoConfidence: 0.8
+        });
+    });
 });

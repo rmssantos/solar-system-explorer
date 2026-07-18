@@ -6,8 +6,9 @@ const SIMULATION_KEYS = new Set([
     'debris', 'id', 'collected', 'radius', 'angleError', 'frequencyError',
     'lockSeconds', 'transmitting', 'approachAngle', 'periapsis', 'heat', 'speed',
     'speedGain', 'launchProgress', 'inCorridor', 'flybyDistance', 'boostProgress',
-    'committing', 'risk'
-    , 'cursor', 'sensors', 'alignmentOffset', 'selectedImpact', 'actionHeld'
+    'committing', 'risk', 'cursor', 'sensors', 'alignmentOffset', 'selectedImpact',
+    'actionHeld', 'power', 'scanning', 'overheated', 'passProgress', 'coverage',
+    'echoConfidence'
 ]);
 
 function sanitizeNode(value, depth = 0) {
