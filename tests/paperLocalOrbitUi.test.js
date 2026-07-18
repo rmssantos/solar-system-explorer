@@ -66,6 +66,20 @@ describe('paper local-orbit mission surface', () => {
         expect(css).not.toMatch(/\.contract-card\s*>\s*button/);
     });
 
+    it('reflows contract postcards before their copy can be squeezed', () => {
+        expect(css).toMatch(/\.contract-list\s*\{[^}]*container-type:\s*inline-size/s);
+        expect(css).toMatch(/@container\s+contract-list\s*\(max-width:\s*46rem\)/);
+        expect(css).toMatch(/@container\s+contract-list\s*\(max-width:\s*32rem\)/);
+        expect(css).toMatch(/@container\s+contract-list\s*\(max-width:\s*46rem\)[\s\S]*?\.contract-actions\s*\{[^}]*grid-column:\s*1\s*\/\s*-1/);
+        expect(css).toMatch(/@container\s+contract-list\s*\(max-width:\s*32rem\)[\s\S]*?\.contract-card\s*\{[^}]*grid-template-columns:\s*1fr/);
+    });
+
+    it('presents mission artwork as an obvious keyboard-accessible zoom control', () => {
+        expect(css).toMatch(/\.contract-art-button\s*\{[^}]*cursor:\s*zoom-in/s);
+        expect(css).toMatch(/\.contract-art-button:focus-visible\s*\{[^}]*outline:/s);
+        expect(css).toMatch(/\.contract-art-hint\s*\{/);
+    });
+
     it('places landscape playfield, telemetry and controls inside the same viewport grid', () => {
         expect(css).toMatch(/@media\s*\(max-height:\s*560px\)\s*and\s*\(orientation:\s*landscape\)\s*and\s*\(max-width:\s*1100px\)/);
         expect(css).toMatch(/@media[^{]*\(max-width:\s*700px\)[^{]*\(max-height:\s*560px\)\s*and\s*\(orientation:\s*landscape\)\s*and\s*\(max-width:\s*1100px\)\s*\{/s);

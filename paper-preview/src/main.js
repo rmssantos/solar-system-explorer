@@ -865,7 +865,10 @@ function step(seconds) {
     } else if (!dialogOpen) {
         flightState = stepFlight(flightState, lastInput, seconds, paperScene.getPrimaryBodies());
     }
-    paperScene.update(seconds);
+    // Keep the ship and its destination in the same frame of reference while a
+    // panel is open. Otherwise the accelerated orbital clock can move a moon or
+    // planet out of interaction range before the player can start the mission.
+    paperScene.update(dialogOpen ? 0 : seconds);
     orbitalClockUiElapsed += seconds;
     if (orbitalClockUiElapsed >= 0.25) {
         previewUI.updateOrbitalClock(paperScene.getState().orbitalClock);

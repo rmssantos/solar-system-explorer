@@ -33,6 +33,10 @@ async function ready(page) {
     await page.waitForFunction(() => Boolean(window.__paperPreview));
 }
 
+async function pauseOrbitalClock(page) {
+    await page.evaluate(() => window.__paperPreview.setOrbitalTimeScale(0));
+}
+
 async function openMissions(page) {
     const dialog = page.locator('#mission-log');
     if (!await dialog.evaluate((element) => element.open)) await page.locator('#mission-center-trigger').click();
@@ -73,6 +77,7 @@ test('accepts, travels, resumes and completes the five-contract campaign', async
     test.setTimeout(120_000);
     await seed(page);
     await ready(page);
+    await pauseOrbitalClock(page);
 
     for (const [index, contract] of CONTRACTS.entries()) {
         await acceptTravelAndOpen(page, contract);
@@ -82,16 +87,22 @@ test('accepts, travels, resumes and completes the five-contract campaign', async
             await page.locator('#local-orbit-close').click();
             await page.locator('#local-orbit-leave-save').click();
             await ready(page);
+            await pauseOrbitalClock(page);
             await page.evaluate((destination) => window.__paperPreview.teleport(destination), contract.destination);
             await openMissions(page);
-            await page.locator(`[data-contract-id="${contract.id}"]`).click();
+            const resumeAction = page.locator(`[data-contract-id="${contract.id}"]`);
+            await expect(resumeAction).toHaveAttribute('data-contract-action', 'start');
+            await resumeAction.click();
+            await expect(page.locator('#local-orbit-mission')).toBeVisible();
             await page.locator('#local-orbit-loading').waitFor({ state: 'hidden' });
-            const restored = await page.evaluate(() => JSON.parse(window.render_game_to_text()).orbitalMission.simulation);
-            expect(restored.elapsedSeconds).toBeGreaterThan(0);
+            await expect.poll(() => page.evaluate(() => (
+                JSON.parse(window.render_game_to_text()).orbitalMission.simulation?.elapsedSeconds ?? 0
+            ))).toBeGreaterThan(0);
         }
 
         await expect(page.evaluate(() => window.__paperPreview.completeOrbitalContract())).resolves.toBe(true);
         await ready(page);
+        await pauseOrbitalClock(page);
         await openMissions(page);
         const card = contractCard(page, contract.id);
         await expect(card).toHaveAttribute('data-status', 'completed');
@@ -107,6 +118,27 @@ test('accepts, travels, resumes and completes the five-contract campaign', async
     await openMissions(page);
     await expect(contractCard(page, 'jupiter-slingshot'))
         .toContainText('Jupiter slingshot');
+});
+
+test('keeps an arrived moving destination reachable while the mission log is open', async ({ page }) => {
+    await seed(page, {
+        completedContractIds: CONTRACTS.slice(0, 2).map((contract) => contract.id),
+        acceptedContractIds: ['lunar-sweep']
+    });
+    await ready(page);
+    await page.evaluate(() => {
+        window.__paperPreview.setOrbitalTimeScale(0);
+        window.__paperPreview.teleport('moon');
+    });
+    await openMissions(page);
+
+    const action = page.locator('[data-contract-id="lunar-sweep"]');
+    await expect(action).toHaveAttribute('data-contract-action', 'start');
+    await page.evaluate(() => {
+        window.__paperPreview.setOrbitalTimeScale(10);
+        window.advanceTime(1_000);
+    });
+    await expect(action).toHaveAttribute('data-contract-action', 'start');
 });
 
 for (const viewport of [
