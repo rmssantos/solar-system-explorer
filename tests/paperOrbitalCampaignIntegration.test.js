@@ -73,4 +73,10 @@ describe('orbital campaign integration', () => {
         expect(ui).toContain('art.src = contract.art');
         expect(ui).toContain("art.alt = ''");
     });
+
+    it('renders each contract unique stamp and XP instead of a shared placeholder reward', () => {
+        expect(ui).toContain('getContractReward(contract.id)');
+        expect(ui).toContain('reward.copy[language].title');
+        expect(ui).not.toContain("[paperI18n.t('game.contract.reward'), '+140 XP']");
+    });
 });

@@ -11,6 +11,7 @@ import { providerFamily } from './productVocabulary.js';
 import { CONTRACT_CATALOG } from './contracts/contractCatalog.js';
 import { getContractStatus } from './contracts/contractState.js';
 import { getContractJourneyAction } from './contracts/contractJourney.js';
+import { getContractReward } from './contracts/contractRewards.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -434,6 +435,7 @@ export function createPreviewUI({
         const statuses = CONTRACT_CATALOG.map((contract) => getContractStatus(contractState, contract.id, state.learning));
         const cards = CONTRACT_CATALOG.map((contract, index) => {
             const copy = contract.copy[language];
+            const reward = getContractReward(contract.id);
             const status = statuses[index];
             const destinationNearby = nearbyContractIds.includes(contract.id);
             const journeyAction = getContractJourneyAction({
@@ -468,7 +470,7 @@ export function createPreviewUI({
             for (const [label, value] of [
                 [paperI18n.t('game.contract.cargo'), copy.cargo],
                 [paperI18n.t('game.contract.destination'), copy.destination],
-                [paperI18n.t('game.contract.reward'), '+140 XP']
+                [paperI18n.t('game.contract.reward'), `${reward.copy[language].title} · +${reward.xp} XP`]
             ]) {
                 const row = document.createElement('div');
                 const term = document.createElement('dt');
@@ -478,6 +480,14 @@ export function createPreviewUI({
                 row.append(term, description);
                 details.append(row);
             }
+            const stamp = document.createElement('img');
+            stamp.className = 'contract-reward-stamp';
+            stamp.src = reward.art;
+            stamp.alt = reward.copy[language].title;
+            stamp.width = 54;
+            stamp.height = 54;
+            stamp.loading = 'lazy';
+            details.lastElementChild?.append(stamp);
             body.append(header, title, summary, details);
 
             const action = document.createElement('button');

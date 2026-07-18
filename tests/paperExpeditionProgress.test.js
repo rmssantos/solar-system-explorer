@@ -10,6 +10,7 @@ import {
     reconcileExpeditionProgress
 } from '../paper-preview/src/progression/expeditionProgress.js';
 import { AWARD_ART } from '../paper-preview/src/progression/awardArt.js';
+import { getContractReward } from '../paper-preview/src/contracts/contractRewards.js';
 
 describe('paper expedition progression', () => {
     it('awards discoveries, quizzes, surprises and missions only once', () => {
@@ -29,7 +30,7 @@ describe('paper expedition progression', () => {
         const first = reconcileExpeditionProgress(createExpeditionProgress(), snapshot);
         const second = reconcileExpeditionProgress(first, snapshot);
 
-        expect(first.xp).toBe(EVENT_XP.contract);
+        expect(first.xp).toBe(getContractReward('iss-delivery').xp);
         expect(first.awardedEventIds).toEqual(['contract:iss-delivery']);
         expect(second).toEqual(first);
     });

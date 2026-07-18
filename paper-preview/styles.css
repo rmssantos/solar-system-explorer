@@ -1498,7 +1498,7 @@ html[data-flight-input="touch"] .joystick-label {
 }
 .contract-card[hidden] { display: none; }
 .contract-card[data-status="locked"] { border-color: #9b8c6e; border-left-color: #8f846e; }
-.contract-card[data-status="locked"] .contract-art { filter: grayscale(.75) sepia(.18); opacity: .66; }
+.contract-card[data-status="locked"] .contract-art { filter: grayscale(.75); opacity: .66; }
 .contract-art {
     width: 176px;
     aspect-ratio: 4 / 3;
@@ -1520,6 +1520,8 @@ html[data-flight-input="touch"] .joystick-label {
 .contract-actions > button { min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
 .contract-actions > button:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }
 .contract-actions > [data-contract-training] { color: #25374e; background: #e9dcae; border-color: #716142; }
+.contract-reward-stamp { width: 54px; height: 54px; margin-left: auto; border-radius: 50%; filter: drop-shadow(0 2px 0 #1c2638); object-fit: contain; }
+.contract-card dl > div:last-child { align-items: center; }
 
 @media (max-width: 700px),
     (pointer: coarse) and (max-width: 1100px),
@@ -1615,7 +1617,7 @@ html[data-flight-input="touch"] .joystick-label {
     .local-orbit-sheet:has(.local-orbit-result:not([hidden])) .docking-controls { display: none; }
     .contract-card { grid-template-columns: minmax(104px, 34%) 1fr; gap: 10px; padding: 12px; }
     .contract-art { width: 100%; align-self: start; }
-    .contract-card > button { grid-column: 1 / -1; width: 100%; }
+    .contract-actions { grid-column: 1 / -1; width: 100%; }
 }
 
 @media (hover: none) and (pointer: coarse) {
