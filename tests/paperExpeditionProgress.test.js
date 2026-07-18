@@ -50,6 +50,16 @@ describe('paper expedition progression', () => {
         expect(reconcileExpeditionProgress(createExpeditionProgress(), { collectedAgencyReportIds: [] }).xp).toBe(0);
     });
 
+    it('awards each expedition chapter at its catalog value only once', () => {
+        const snapshot = { completedExpeditionChapterIds: ['moon-seismology', 'moon-seismology'] };
+        const first = reconcileExpeditionProgress(createExpeditionProgress(), snapshot);
+        const second = reconcileExpeditionProgress(first, snapshot);
+
+        expect(first.xp).toBe(80);
+        expect(first.awardedEventIds).toEqual(['expedition-chapter:moon-seismology']);
+        expect(second).toEqual(first);
+    });
+
     it('calculates calm, finite explorer levels and progress to the next one', () => {
         expect(getExplorerLevel(0)).toMatchObject({ level: 1, title: 'Cadete de Papel', progress: 0 });
         expect(getExplorerLevel(125)).toMatchObject({ level: 2, title: 'Cartógrafo Lunar' });

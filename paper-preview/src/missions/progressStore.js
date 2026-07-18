@@ -17,6 +17,22 @@ export function loadProgress(storage = globalThis.localStorage) {
             seenMissionTrainingIds: Array.isArray(value.seenMissionTrainingIds)
                 ? [...new Set(value.seenMissionTrainingIds.filter((item) => typeof item === 'string'))]
                 : [],
+            expeditionVersion: Number.isFinite(value.expeditionVersion) ? value.expeditionVersion : 1,
+            acceptedExpeditionChapterIds: Array.isArray(value.acceptedExpeditionChapterIds)
+                ? [...new Set(value.acceptedExpeditionChapterIds.filter((item) => typeof item === 'string'))]
+                : [],
+            completedExpeditionChapterIds: Array.isArray(value.completedExpeditionChapterIds)
+                ? [...new Set(value.completedExpeditionChapterIds.filter((item) => typeof item === 'string'))]
+                : [],
+            expeditionEvidenceIds: Array.isArray(value.expeditionEvidenceIds)
+                ? [...new Set(value.expeditionEvidenceIds.filter((item) => typeof item === 'string'))]
+                : [],
+            expeditionUpgradeIds: Array.isArray(value.expeditionUpgradeIds)
+                ? [...new Set(value.expeditionUpgradeIds.filter((item) => typeof item === 'string'))]
+                : [],
+            expeditionAttempts: value.expeditionAttempts && typeof value.expeditionAttempts === 'object' && !Array.isArray(value.expeditionAttempts)
+                ? value.expeditionAttempts
+                : {},
             agencyActiveMissions: Array.isArray(value.agencyActiveMissions) ? value.agencyActiveMissions : [],
             agencyReports: Array.isArray(value.agencyReports) ? value.agencyReports : []
         };
@@ -25,6 +41,8 @@ export function loadProgress(storage = globalThis.localStorage) {
             discoveredKeys: [], completedQuizIds: [], xp: 0, awardedEventIds: [], seenSurpriseIds: [],
             acceptedContractIds: [], completedContractIds: [], agencyActiveMissions: [], agencyReports: []
             , contractAttempts: {}, seenMissionTrainingIds: []
+            , expeditionVersion: 1, acceptedExpeditionChapterIds: [], completedExpeditionChapterIds: []
+            , expeditionEvidenceIds: [], expeditionUpgradeIds: [], expeditionAttempts: {}
         };
     }
 }
@@ -43,6 +61,14 @@ export function saveProgress(progress, storage = globalThis.localStorage) {
                 ? progress.contractAttempts
                 : {},
             seenMissionTrainingIds: [...new Set(progress.seenMissionTrainingIds ?? [])],
+            expeditionVersion: Number.isFinite(progress.expeditionVersion) ? progress.expeditionVersion : 1,
+            acceptedExpeditionChapterIds: [...new Set(progress.acceptedExpeditionChapterIds ?? [])],
+            completedExpeditionChapterIds: [...new Set(progress.completedExpeditionChapterIds ?? [])],
+            expeditionEvidenceIds: [...new Set(progress.expeditionEvidenceIds ?? [])],
+            expeditionUpgradeIds: [...new Set(progress.expeditionUpgradeIds ?? [])],
+            expeditionAttempts: progress.expeditionAttempts && typeof progress.expeditionAttempts === 'object' && !Array.isArray(progress.expeditionAttempts)
+                ? progress.expeditionAttempts
+                : {},
             agencyActiveMissions: Array.isArray(progress.agencyActiveMissions)
                 ? progress.agencyActiveMissions.filter((value) => value && typeof value === 'object')
                 : [],
