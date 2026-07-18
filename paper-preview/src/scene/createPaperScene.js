@@ -252,6 +252,10 @@ function createSurpriseEffect() {
     return root;
 }
 
+/**
+ * @param {HTMLElement} stage
+ * @param {{ initialDate?: Date, timeScale?: number }} [options]
+ */
 export function createPaperScene(stage, { initialDate = new Date(), timeScale } = {}) {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#101936');
