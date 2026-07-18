@@ -19,12 +19,12 @@ export function createPlumeLayout(width = 960, height = 540) {
     height: portrait ? 960 : 540,
     field: Object.freeze(
       portrait
-        ? { x: 44, y: 170, width: 452, height: 440 }
+        ? { x: 44, y: 225, width: 452, height: 285 }
         : { x: 48, y: 90, width: 650, height: 394 },
     ),
     console: Object.freeze(
       portrait
-        ? { x: 44, y: 630, width: 452, height: 140 }
+        ? { x: 44, y: 520, width: 452, height: 105 }
         : { x: 720, y: 90, width: 192, height: 394 },
     ),
   });
@@ -118,7 +118,7 @@ function flightField(scene, layout) {
 }
 function heading(scene, layout, language) {
   const pt = language !== "en",
-    y = layout.orientation === "portrait" ? 118 : 23;
+    y = layout.orientation === "portrait" ? 145 : 23;
   scene.add
     .text(
       layout.width / 2,

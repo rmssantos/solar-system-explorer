@@ -17,7 +17,7 @@ test('controls the live sky without moving game time', async ({ page }) => {
 
     const toggle = page.locator('#time-observatory-toggle');
     const panel = page.locator('#time-observatory');
-    await expect(toggle).toContainText('10×');
+    await expect(toggle).toContainText('1×');
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(panel).toBeVisible();
@@ -29,7 +29,7 @@ test('controls the live sky without moving game time', async ({ page }) => {
     const before = await page.evaluate(() => window.__paperPreview.getState().scene.orbitalClock.dateMs);
     await page.evaluate(() => window.advanceTime(1_000));
     const after = await page.evaluate(() => window.__paperPreview.getState().scene.orbitalClock.dateMs);
-    expect(after - before).toBeCloseTo(10 * 24 * 60 * 60 * 1_000, -2);
+    expect(after - before).toBeCloseTo(24 * 60 * 60 * 1_000, -2);
 
     await panel.locator('[data-orbital-time-scale="0"]').click();
     const pausedAt = await page.evaluate(() => window.__paperPreview.getState().scene.orbitalClock.dateMs);

@@ -14,10 +14,10 @@ export function createIceRadarLayout(width = 960, height = 540) {
         width: portrait ? 540 : 960,
         height: portrait ? 960 : 540,
         field: Object.freeze(portrait
-            ? { x: 44, y: 170, width: 452, height: 335 }
+            ? { x: 44, y: 225, width: 452, height: 270 }
             : { x: 48, y: 92, width: 560, height: 390 }),
         console: Object.freeze(portrait
-            ? { x: 44, y: 525, width: 452, height: 245 }
+            ? { x: 44, y: 510, width: 452, height: 190 }
             : { x: 632, y: 92, width: 280, height: 390 })
     });
 }
@@ -94,7 +94,7 @@ function drawIceField(scene, layout) {
 
 function createHeading(scene, layout, language) {
     const pt = language !== 'en';
-    const y = layout.orientation === 'portrait' ? 118 : 24;
+    const y = layout.orientation === 'portrait' ? 145 : 24;
     scene.add.text(layout.width / 2, y, pt ? 'PISTA 2 · VÊ SOB O GELO' : 'CLUE 2 · SEE BELOW THE ICE', {
         fontFamily: 'Arial', fontSize: layout.orientation === 'portrait' ? '17px' : '15px',
         fontStyle: 'bold', color: '#f4c85f', letterSpacing: 2
@@ -170,9 +170,10 @@ function drawMeters(graphics, simulation, layout, language) {
         [pt ? 'POTÊNCIA' : 'POWER', simulation.power, 0xf4c85f],
         [pt ? 'CALOR' : 'HEAT', simulation.heat, simulation.heat > 0.8 ? 0xd5634d : 0x5a9a74]
     ];
-    const startY = c.y + 108;
+    const portrait = layout.orientation === 'portrait';
+    const startY = c.y + (portrait ? 80 : 108);
     rows.forEach(([label, value, color], index) => {
-        const y = startY + index * 53;
+        const y = startY + index * (portrait ? 36 : 53);
         graphics.fillStyle(0xe2d3a9, 1).fillRoundedRect(c.x + 22, y + 20, c.width - 44, 17, 8);
         graphics.fillStyle(color, 1).fillRoundedRect(c.x + 22, y + 20, (c.width - 44) * value, 17, 8);
         sceneText(graphics.scene, c.x + 22, y, `${label}  ${Math.round(value * 100)}%`);

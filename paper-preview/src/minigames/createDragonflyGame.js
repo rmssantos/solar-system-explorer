@@ -20,12 +20,12 @@ export function createDragonflyLayout(width = 960, height = 540) {
     height: portrait ? 960 : 540,
     field: Object.freeze(
       portrait
-        ? { x: 42, y: 170, width: 456, height: 430 }
+        ? { x: 42, y: 225, width: 456, height: 285 }
         : { x: 48, y: 92, width: 650, height: 390 },
     ),
     console: Object.freeze(
       portrait
-        ? { x: 42, y: 620, width: 456, height: 150 }
+        ? { x: 42, y: 520, width: 456, height: 105 }
         : { x: 718, y: 92, width: 194, height: 390 },
     ),
   });
@@ -138,7 +138,7 @@ function drawWorld(scene, layout) {
 }
 function drawHeading(scene, layout, language) {
   const pt = language !== "en",
-    y = layout.orientation === "portrait" ? 117 : 23;
+    y = layout.orientation === "portrait" ? 145 : 23;
   scene.add
     .text(
       layout.width / 2,
