@@ -51,4 +51,11 @@ describe('living-sky scene effects', () => {
         });
         effects.destroy();
     });
+
+    it('ignores late presentation updates after teardown', () => {
+        const effects = createLivingSkyEffects();
+        effects.destroy();
+        expect(() => effects.setPresentation(['earth-aurora'])).not.toThrow();
+        expect(() => effects.update(1, { earth: new THREE.Vector3() })).not.toThrow();
+    });
 });

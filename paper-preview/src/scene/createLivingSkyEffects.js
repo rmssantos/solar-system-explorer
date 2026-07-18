@@ -91,7 +91,8 @@ export function createLivingSkyEffects({ reducedMotion = false } = {}) {
             if (BUILDERS[id]) active.add(id);
         });
         for (const eventId of Object.keys(BUILDERS)) {
-            root.getObjectByName(`living-sky-${eventId}`).visible = active.has(eventId);
+            const effect = root.getObjectByName(`living-sky-${eventId}`);
+            if (effect) effect.visible = active.has(eventId);
         }
     }
 
