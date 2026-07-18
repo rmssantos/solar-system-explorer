@@ -37,7 +37,7 @@
         "sharp": "^0.35.1",
         "typescript": "^6.0.3",
         "vite": "^8.0.16",
-        "vitest": "^4.1.9"
+        "vitest": "^4.1.10"
     },
     "dependencies": {
         "@microsoft/applicationinsights-web": "^3.4.3",
