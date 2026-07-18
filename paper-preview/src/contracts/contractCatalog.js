@@ -133,6 +133,37 @@ export const CONTRACT_CATALOG = Object.freeze([
                 travel: 'Fly to Mars'
             }
         }
+    }),
+    contract({
+        id: 'jupiter-slingshot',
+        art: '/art/missions/mission-jupiter-slingshot.webp',
+        destinationKey: 'jupiter',
+        activity: 'jupiter-slingshot',
+        unlockDiscoveries: ['jupiter'],
+        unlockContracts: ['mars-relay'],
+        cargo: 'gravity-map',
+        copy: {
+            pt: {
+                title: 'Estilingue de Júpiter',
+                summary: 'Desenha uma passagem segura e usa a gravidade de Júpiter para dar velocidade à Paper Courier.',
+                cargo: 'Mapa de gravidade',
+                destination: 'Corredor de passagem de Júpiter',
+                unlock: 'Completa o relé e descobre Júpiter',
+                accept: 'Aceitar manobra',
+                start: 'Calcular passagem',
+                travel: 'Viajar até Júpiter'
+            },
+            en: {
+                title: 'Jupiter slingshot',
+                summary: 'Plan a safe pass and use Jupiter’s gravity to give the Paper Courier extra speed.',
+                cargo: 'Gravity map',
+                destination: 'Jupiter flyby corridor',
+                unlock: 'Complete the relay and discover Jupiter',
+                accept: 'Accept manoeuvre',
+                start: 'Calculate flyby',
+                travel: 'Fly to Jupiter'
+            }
+        }
     })
 ]);
 

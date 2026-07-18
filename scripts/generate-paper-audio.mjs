@@ -63,6 +63,48 @@ const cues = [
         duration_seconds: 2.4,
         loop: false,
         text: 'A friendly incoming observatory transmission signal: a faint radio sweep, two twinkling star tones and a light paper antenna flutter. Mysterious but safe and calm, no speech, no alarm.'
+    },
+    {
+        filename: 'cargo-capture.mp3',
+        duration_seconds: 1.5,
+        loop: false,
+        text: 'A tiny orbital cargo capture cue: soft magnetic click, short cardboard latch, one warm marimba note and a faint paper flag flutter. Satisfying, tactile, child-friendly, no voice, no arcade coin sound.'
+    },
+    {
+        filename: 'shield-impact.mp3',
+        duration_seconds: 1.2,
+        loop: false,
+        text: 'A gentle debris deflection against a handcrafted paper spacecraft shield: muted padded tap, brief cardboard wobble and soft low wooden tone. Safe and non-scary for children, no explosion, no alarm, no voice.'
+    },
+    {
+        filename: 'soft-impact.mp3',
+        duration_seconds: 1.1,
+        loop: false,
+        text: 'A soft spacecraft docking bump: cushioned wooden knock, tiny folded-paper creak, kind try-again feeling. Quiet, non-punitive and child-friendly, no alarm, no crash, no voice.'
+    },
+    {
+        filename: 'docking-clamp.mp3',
+        duration_seconds: 2,
+        loop: false,
+        text: 'Successful gentle orbital docking: two precise mechanical paper-card latches, a quiet airtight settle and one warm glass note. Reassuring handcrafted science game feedback, no voice, no fanfare.'
+    },
+    {
+        filename: 'signal-lock.mp3',
+        duration_seconds: 2.2,
+        loop: false,
+        text: 'A Mars radio signal reaching perfect lock: clean observatory sweep narrowing into three warm clear tones with a faint antenna paper flutter. Curious and rewarding, no speech, no alarm, no arcade sound.'
+    },
+    {
+        filename: 'slingshot-boost.mp3',
+        duration_seconds: 2.4,
+        loop: false,
+        text: 'A paper spacecraft gaining speed from a planetary gravitational slingshot: smooth rising airy rush, warm cardboard resonance and a bright scientific confirmation tone. Exciting but calm, no engine roar, no voice.'
+    },
+    {
+        filename: 'mission-celebration.mp3',
+        duration_seconds: 3,
+        loop: false,
+        text: 'A concise handcrafted space mission celebration: four light wooden and glass notes, gentle paper confetti, warm resolved ending. Proud and joyful for children but restrained, no drums, no voice, no cinematic boom.'
     }
 ];
 

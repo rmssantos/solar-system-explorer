@@ -1,3 +1,5 @@
+import { getContractReward } from '../contracts/contractRewards.js';
+
 export const EVENT_XP = Object.freeze({
     discovery: 20,
     quiz: 35,
@@ -47,9 +49,10 @@ export function awardExpeditionEvent(progress, event) {
     if (!event || !(event.type in EVENT_XP) || !event.id) return base;
     const eventId = `${event.type}:${event.id}`;
     if (base.awardedEventIds.includes(eventId)) return base;
+    const xp = Number.isFinite(event.xp) ? Math.max(0, Math.round(event.xp)) : EVENT_XP[event.type];
     return createExpeditionProgress({
         ...base,
-        xp: base.xp + EVENT_XP[event.type],
+        xp: base.xp + xp,
         awardedEventIds: [...base.awardedEventIds, eventId]
     });
 }
@@ -95,7 +98,9 @@ export function reconcileExpeditionProgress(progress, snapshot = {}) {
     for (const id of unique(snapshot.discoveredKeys)) next = awardExpeditionEvent(next, { type: 'discovery', id });
     for (const id of unique(snapshot.completedQuizIds)) next = awardExpeditionEvent(next, { type: 'quiz', id });
     for (const id of unique(snapshot.completedMissionIds)) next = awardExpeditionEvent(next, { type: 'mission', id });
-    for (const id of unique(snapshot.completedContractIds)) next = awardExpeditionEvent(next, { type: 'contract', id });
+    for (const id of unique(snapshot.completedContractIds)) {
+        next = awardExpeditionEvent(next, { type: 'contract', id, xp: getContractReward(id)?.xp });
+    }
     for (const id of unique(snapshot.collectedAgencyReportIds)) next = awardExpeditionEvent(next, { type: 'operation', id });
     for (const id of unique(snapshot.seenSurpriseIds)) next = awardExpeditionEvent(next, { type: 'surprise', id });
     return createExpeditionProgress({

@@ -12,6 +12,7 @@ describe('Paper Solar Explorer PT/EN i18n', () => {
             'game.objective.kicker', 'game.notebook', 'game.tabs.discover', 'game.passport.missions',
             'game.collection.locked', 'game.quiz.correct', 'game.lumi.kicker',
             'game.contract.iss.title', 'game.contract.iss.accept', 'game.contract.iss.start',
+            'game.contract.training.title',
             'game.docking.scale', 'game.docking.guidance', 'game.docking.keys', 'game.docking.stabilize',
             'game.docking.success', 'game.docking.retry', 'game.docking.loadError'
         ];

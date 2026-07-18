@@ -49,7 +49,14 @@ const designs = [
     ['quiz-correct.mp3', 1.8, (t) => (bell(t, .12, 659.25, 4.5) + bell(t, .48, 880, 4.3)) * .18],
     ['quiz-wrong.mp3', 1.2, (t) => (bell(t, .08, 170, 9) * .18) + (bell(t, .34, 130, 7) * .09)],
     ['reward-chime.mp3', 3.2, (t) => (bell(t, .08, 392) + bell(t, .42, 523.25) + bell(t, .78, 659.25) + bell(t, 1.16, 783.99)) * .14 + filteredNoise(0.18) * pulse(t, .75, 1.5) * .055],
-    ['lumi-signal.mp3', 2.4, (t) => (bell(t, .2, 740, 4) + bell(t, .65, 988, 3.8)) * .11 + Math.sin(twoPi * (250 + t * 140) * t) * pulse(t, 0, 1.35) * .04]
+    ['lumi-signal.mp3', 2.4, (t) => (bell(t, .2, 740, 4) + bell(t, .65, 988, 3.8)) * .11 + Math.sin(twoPi * (250 + t * 140) * t) * pulse(t, 0, 1.35) * .04],
+    ['cargo-capture.mp3', 1.5, (t) => bell(t, .08, 190, 14) * .15 + bell(t, .24, 587, 5) * .12 + filteredNoise(.2) * pulse(t, .06, .5) * .04],
+    ['shield-impact.mp3', 1.2, (t) => bell(t, .05, 120, 11) * .13 + filteredNoise(.15) * pulse(t, .03, .45) * .08],
+    ['soft-impact.mp3', 1.1, (t) => bell(t, .05, 145, 12) * .13 + bell(t, .21, 110, 10) * .07],
+    ['docking-clamp.mp3', 2, (t) => bell(t, .08, 180, 13) * .11 + bell(t, .28, 220, 12) * .1 + bell(t, .48, 659, 3.5) * .1],
+    ['signal-lock.mp3', 2.2, (t) => Math.sin(twoPi * (250 + t * 160) * t) * pulse(t, .02, .65) * .035 + (bell(t, .55, 523) + bell(t, .85, 659) + bell(t, 1.15, 784)) * .12],
+    ['slingshot-boost.mp3', 2.4, (t) => Math.sin(twoPi * (95 + t * 85) * t) * pulse(t, .05, 1.8) * .06 + filteredNoise(.03) * pulse(t, .1, 1.9) * .05 + bell(t, 1.25, 784, 3) * .1],
+    ['mission-celebration.mp3', 3, (t) => (bell(t, .08, 392) + bell(t, .38, 523) + bell(t, .68, 659) + bell(t, 1.02, 880)) * .13 + filteredNoise(.18) * pulse(t, .8, 1.4) * .04]
 ];
 
 function writeWav(path, duration, sampleAt) {

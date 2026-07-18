@@ -4,6 +4,7 @@ export const ISS_DELIVERY_CONTRACT_ID = 'iss-delivery';
 export const HUBBLE_MAINTENANCE_CONTRACT_ID = 'hubble-maintenance';
 export const LUNAR_SWEEP_CONTRACT_ID = 'lunar-sweep';
 export const MARS_RELAY_CONTRACT_ID = 'mars-relay';
+export const JUPITER_SLINGSHOT_CONTRACT_ID = 'jupiter-slingshot';
 
 function unique(values = []) {
     return [...new Set(values.filter((value) => typeof value === 'string' && value.length > 0))];

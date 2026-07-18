@@ -1,4 +1,5 @@
 import { getOrbitalMissionProfile } from './orbitalMissionProfiles.js';
+import { getMissionEventCue } from '../audio/missionAudio.js';
 
 function queryElements(root) {
     return {
@@ -21,6 +22,15 @@ function queryElements(root) {
         close: root.querySelector('#local-orbit-close'),
         finish: root.querySelector('#local-orbit-finish'),
         retry: root.querySelector('#local-orbit-load-retry'),
+        leaveConfirm: root.querySelector('#local-orbit-leave-confirm'),
+        leaveContinue: root.querySelector('#local-orbit-leave-continue'),
+        leaveSave: root.querySelector('#local-orbit-leave-save'),
+        leaveRestart: root.querySelector('#local-orbit-leave-restart'),
+        training: root.querySelector('#local-orbit-training'),
+        trainingTitle: root.querySelector('#local-orbit-training-title'),
+        trainingStep: root.querySelector('#local-orbit-training-step'),
+        trainingNext: root.querySelector('#local-orbit-training-next'),
+        trainingSkip: root.querySelector('#local-orbit-training-skip'),
         controls: [...root.querySelectorAll('[data-docking-action]')]
     };
 }
@@ -35,14 +45,21 @@ function setSafetyClass(element, safe) {
     element.classList.toggle('is-warning', !safe);
 }
 
-function formatMetric(metric, telemetry) {
+function formatMetric(metric, telemetry, language = 'pt') {
     const value = Number(telemetry[metric.field] ?? 0);
+    const locale = language === 'en' ? 'en-GB' : 'pt-PT';
     if (metric.format === 'distance') return `${value.toFixed(1)} m`;
     if (metric.format === 'speed') return `${value.toFixed(2)} m/s`;
     if (metric.format === 'degrees') return `${value.toFixed(1)}°`;
     if (metric.format === 'collection') return `${Math.round(value)}/${Math.round(telemetry.total ?? 0)}`;
     if (metric.format === 'shield') return `${Math.round(value)}/3`;
     if (metric.format === 'percent') return `${Math.round(value * 100)}%`;
+    if (metric.format === 'kilometers') {
+        return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value)} km`;
+    }
+    if (metric.format === 'speed-gain') {
+        return `+${new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)} km/s`;
+    }
     return String(value);
 }
 
@@ -64,8 +81,12 @@ function formatMetric(metric, telemetry) {
  *     advanceTime?: (milliseconds: number) => void
  *   }>,
  *   messages?: { retry?: string, guidance?: string },
- *   onComplete?: () => void,
- *   onClose?: () => void
+ *   onComplete?: (context: object) => void,
+ *   onClose?: () => void,
+ *   onAttemptSave?: (attempt: { contractId: string, missionId: string, simulation: object }) => void,
+ *   onAttemptClear?: (contractId: string) => void
+ *   onTrainingComplete?: (gameplay: string) => void
+ *   onAudioCue?: (cue: string) => void
  * }} options
  */
 export function createLocalOrbitHost({
@@ -73,14 +94,19 @@ export function createLocalOrbitHost({
     elements = queryElements(root),
     gameFactory = defaultGameFactory,
     messages = {},
-    onComplete = () => {},
-    onClose = () => {}
+    onComplete = (_context) => {},
+    onClose = () => {},
+    onAttemptSave = () => {},
+    onAttemptClear = () => {},
+    onTrainingComplete = () => {},
+    onAudioCue = () => {}
 } = {}) {
     let game = null;
     let openOptions = {};
     let completed = false;
     let latestTelemetry = null;
     let loadGeneration = 0;
+    let trainingStepIndex = 0;
     const listeners = [];
 
     function listen(element, type, handler) {
@@ -93,12 +119,14 @@ export function createLocalOrbitHost({
         const values = [elements.distance, elements.speed, elements.alignment];
         const metrics = openOptions.profile?.metrics ?? [];
         metrics.forEach((metric, index) => {
-            values[index].textContent = formatMetric(metric, telemetry);
+            values[index].textContent = formatMetric(metric, telemetry, openOptions.language);
             setSafetyClass(values[index], Boolean(telemetry[metric.safeField]));
         });
     }
 
     function handleGameEvent(event) {
+        const cue = getMissionEventCue(event);
+        if (cue) onAudioCue(cue);
         if (openOptions.profile?.retryEvents.includes(event)) {
             elements.guidance.textContent = openOptions.profile?.retry ?? messages.retry ?? elements.guidance.textContent;
             return;
@@ -106,23 +134,43 @@ export function createLocalOrbitHost({
         if (event !== openOptions.profile?.completionEvent || completed) return;
         completed = true;
         elements.result.hidden = false;
-        onComplete();
+        onComplete(openOptions);
     }
 
-    async function startGame() {
+    function renderTrainingStep() {
+        const steps = openOptions.profile?.tutorialSteps ?? [];
+        if (!elements.training || steps.length === 0) return;
+        elements.trainingTitle.textContent = openOptions.profile.tutorialTitle;
+        elements.trainingStep.textContent = steps[trainingStepIndex];
+        elements.trainingNext.textContent = trainingStepIndex === steps.length - 1
+            ? (openOptions.language === 'en' ? 'Start practice' : 'Começar treino')
+            : (openOptions.language === 'en' ? 'Next' : 'Seguinte');
+    }
+
+    function finishTraining() {
+        if (!elements.training || elements.training.hidden) return;
+        elements.training.hidden = true;
+        onTrainingComplete(openOptions.profile?.gameplay);
+        void startGame();
+    }
+
+    async function startGame({ restore = true } = {}) {
         const generation = ++loadGeneration;
         game?.destroy?.();
         game = null;
         elements.loading.hidden = false;
         elements.error.hidden = true;
         try {
+            const initialState = restore && openOptions.initialSimulation
+                ? openOptions.initialSimulation
+                : openOptions.profile.initialState;
             const created = await gameFactory({
                 parent: elements.stage,
                 language: openOptions.language ?? 'pt',
                 onReady: () => { if (generation === loadGeneration) elements.loading.hidden = true; },
                 onTelemetry: updateTelemetry,
                 onEvent: handleGameEvent,
-                profile: openOptions.profile
+                profile: { ...openOptions.profile, initialState }
             });
             if (generation !== loadGeneration) {
                 created?.destroy?.();
@@ -144,6 +192,12 @@ export function createLocalOrbitHost({
         latestTelemetry = null;
         elements.result.hidden = true;
         elements.error.hidden = true;
+        elements.leaveConfirm && (elements.leaveConfirm.hidden = true);
+        trainingStepIndex = 0;
+        if (elements.training) {
+            elements.training.hidden = !options.showTraining;
+            if (options.showTraining) renderTrainingStep();
+        }
         elements.kicker.textContent = profile.kicker;
         elements.title.textContent = profile.title;
         elements.resultTitle.textContent = profile.success;
@@ -157,21 +211,36 @@ export function createLocalOrbitHost({
         const visibleControls = new Set(profile.controls);
         for (const control of elements.controls) {
             control.hidden = !visibleControls.has(control.dataset.dockingAction);
-            if (control.dataset.dockingAction === 'stabilize') {
-                control.textContent = profile.centerControl;
-                control.setAttribute?.('aria-label', profile.centerControl);
-            }
+            const controlLabel = profile.controlLabels?.[control.dataset.dockingAction];
+            if (controlLabel) control.setAttribute?.('aria-label', controlLabel);
+            if (control.dataset.dockingAction === 'stabilize') control.textContent = profile.centerControl;
         }
         if (!elements.dialog.open) elements.dialog.showModal();
-        await startGame();
+        if (options.showTraining) {
+            loadGeneration += 1;
+            game?.destroy?.();
+            game = null;
+            elements.loading.hidden = true;
+        } else {
+            await startGame();
+        }
     }
 
-    function close() {
+    function closeImmediately() {
         loadGeneration += 1;
         game?.destroy?.();
         game = null;
         if (elements.dialog.open) elements.dialog.close();
         onClose();
+    }
+
+    function requestClose() {
+        const simulation = game?.getState?.() ?? null;
+        if (!openOptions.trainingMode && !completed && simulation && elements.leaveConfirm) {
+            elements.leaveConfirm.hidden = false;
+            return;
+        }
+        closeImmediately();
     }
 
     for (const control of elements.controls) {
@@ -185,10 +254,38 @@ export function createLocalOrbitHost({
             listen(control, type, () => setActive(false));
         }
     }
-    listen(elements.close, 'click', close);
-    listen(elements.finish, 'click', close);
+    listen(elements.close, 'click', requestClose);
+    listen(elements.finish, 'click', closeImmediately);
     listen(elements.retry, 'click', () => { startGame(); });
-    listen(elements.dialog, 'cancel', (event) => { event.preventDefault(); close(); });
+    listen(elements.dialog, 'cancel', (event) => { event.preventDefault(); requestClose(); });
+    if (elements.leaveContinue) listen(elements.leaveContinue, 'click', () => { elements.leaveConfirm.hidden = true; });
+    if (elements.leaveSave) listen(elements.leaveSave, 'click', () => {
+        const simulation = game?.getState?.() ?? null;
+        if (!openOptions.trainingMode && simulation && openOptions.contract?.id) {
+            onAttemptSave({
+                contractId: openOptions.contract.id,
+                missionId: openOptions.profile.id,
+                simulation
+            });
+        }
+        closeImmediately();
+    });
+    if (elements.leaveRestart) listen(elements.leaveRestart, 'click', () => {
+        if (openOptions.contract?.id) onAttemptClear(openOptions.contract.id);
+        openOptions = { ...openOptions, initialSimulation: null };
+        elements.leaveConfirm.hidden = true;
+        startGame({ restore: false });
+    });
+    if (elements.trainingNext) listen(elements.trainingNext, 'click', () => {
+        const steps = openOptions.profile?.tutorialSteps ?? [];
+        if (trainingStepIndex >= steps.length - 1) {
+            finishTraining();
+            return;
+        }
+        trainingStepIndex += 1;
+        renderTrainingStep();
+    });
+    if (elements.trainingSkip) listen(elements.trainingSkip, 'click', finishTraining);
 
     function destroy() {
         loadGeneration += 1;
@@ -211,5 +308,5 @@ export function createLocalOrbitHost({
         game?.advanceTime?.(milliseconds);
     }
 
-    return Object.freeze({ open, close, destroy, updateTelemetry, getState, advanceTime });
+    return Object.freeze({ open, close: requestClose, destroy, updateTelemetry, getState, advanceTime });
 }

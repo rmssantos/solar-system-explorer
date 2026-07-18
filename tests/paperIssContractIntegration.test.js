@@ -19,13 +19,15 @@ describe('ISS delivery integration contract', () => {
 
     it('keeps the locked delivery visible and explains how to find the minigame', () => {
         expect(ui).toContain("card.className = 'contract-card'");
-        expect(ui).toContain("action.dataset.contractAction = 'locked'");
-        expect(ui).toMatch(/action\.disabled\s*=\s*status === 'locked'/);
+        expect(ui).toContain('getContractJourneyAction');
+        expect(ui).toContain('action.dataset.contractAction = journeyAction.action');
+        expect(ui).toContain('action.disabled = journeyAction.disabled');
+        expect(ui).toContain("journeyAction.action === 'locked'");
         expect(catalog).toContain("unlock: 'Descobre a Terra'");
         expect(catalog).toContain("unlock: 'Discover Earth'");
         expect(i18n).toContain("'game.contract.locked': 'Por descobrir'");
         expect(i18n).toContain("'game.contract.locked': 'Undiscovered'");
-        expect(ui).toContain("status === 'locked'");
+        expect(ui).toContain('card.dataset.status = status');
         expect(ui).not.toContain('issContractCard');
     });
 

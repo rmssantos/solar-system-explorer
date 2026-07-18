@@ -9,9 +9,11 @@
         "dev:archive": "vite --host --open /arquivo/jogo-antigo/index.html",
         "build": "vite build paper-preview --outDir ../dist --emptyOutDir",
         "build:paper": "vite build paper-preview --outDir ../dist-paper-preview --emptyOutDir",
+        "verify:paper-build": "node scripts/verify-paper-build.mjs dist-paper-preview",
         "preview": "vite preview paper-preview --outDir ../dist",
         "preview:paper": "vite preview paper-preview --outDir ../dist-paper-preview",
         "test": "vitest run",
+        "test:e2e": "playwright test",
         "lint": "eslint .",
         "typecheck": "tsc -p tsconfig.json",
         "icons": "node scripts/generate-icons.mjs"
@@ -28,6 +30,7 @@
     "license": "MIT",
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@playwright/test": "^1.61.1",
         "@types/node": "^25.9.3",
         "eslint": "^10.4.1",
         "globals": "^17.6.0",

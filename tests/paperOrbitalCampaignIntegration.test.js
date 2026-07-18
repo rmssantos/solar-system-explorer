@@ -12,8 +12,33 @@ describe('orbital campaign integration', () => {
         expect(ui).toContain('CONTRACT_CATALOG');
         expect(ui).toContain('data-contract-id');
         expect(ui).toContain('onAcceptContract(contractId)');
+        expect(ui).toContain('if (onTravelContract(contractId)) closeMissionLog()');
         expect(ui).toContain('onStartContract(contractId)');
         expect(ui).not.toContain('issContractAction');
+    });
+
+    it('connects accepted contracts to the existing paper autopilot and arrival flow', () => {
+        expect(game).toContain('handleTravelContract');
+        expect(game).toContain('startContractTravel');
+        expect(game).toContain('flyToWorldObject(next.targetKey, { allowMissionLog: true })');
+        expect(game).toContain('arriveContractTravel');
+        expect(game).toContain('previewUI.openMissionLog(\'missions\')');
+    });
+
+    it('restores, saves and clears versioned attempts through the shared progress store', () => {
+        expect(game).toContain('createContractAttemptState(savedProgress)');
+        expect(game).toContain('getContractAttempt(contractAttemptState, contractId)');
+        expect(game).toContain('onAttemptSave: handleContractAttemptSave');
+        expect(game).toContain('onAttemptClear: handleContractAttemptClear');
+        expect(game).toContain('contractAttempts: contractAttemptState.contractAttempts');
+    });
+
+    it('offers replayable training without completing or rewarding the contract', () => {
+        expect(ui).toContain('onTrainContract(contractId)');
+        expect(game).toContain('startContractTraining');
+        expect(game).toContain('trainingMode: true');
+        expect(game).toContain('if (activeOrbitTraining || context?.trainingMode) return false');
+        expect(game).toContain('seenMissionTrainingIds: missionTrainingState.seenMissionTrainingIds');
     });
 
     it('tracks the active orbital contract instead of hard-coding ISS completion', () => {
@@ -48,5 +73,16 @@ describe('orbital campaign integration', () => {
         expect(ui).toContain("art.className = 'contract-art'");
         expect(ui).toContain('art.src = contract.art');
         expect(ui).toContain("art.alt = ''");
+    });
+
+    it('renders each contract unique stamp and XP instead of a shared placeholder reward', () => {
+        expect(ui).toContain('getContractReward(contract.id)');
+        expect(ui).toContain('reward.copy[language].title');
+        expect(ui).toContain("stamp.alt = ''");
+        expect(ui).not.toContain("[paperI18n.t('game.contract.reward'), '+140 XP']");
+    });
+
+    it('routes semantic minigame events into the shared audio director', () => {
+        expect(game).toContain('onAudioCue: (cue) => audioDirector.play(cue)');
     });
 });

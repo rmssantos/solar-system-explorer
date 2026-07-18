@@ -42,6 +42,31 @@ describe('paper progress store contract migration', () => {
         });
     });
 
+    it('round-trips versioned orbital contract attempts', () => {
+        const storage = createMemoryStorage();
+        const contractAttempts = {
+            'iss-delivery': {
+                version: 1, missionId: 'iss-docking', savedAt: 123,
+                simulation: { phase: 'approach', position: { x: -4, y: 0 } }
+            }
+        };
+
+        expect(saveProgress({ contractAttempts }, storage)).toBe(true);
+        expect(loadProgress(storage).contractAttempts).toEqual(contractAttempts);
+    });
+
+    it('does not serialize arrays as contract attempt maps', () => {
+        const storage = createMemoryStorage();
+        saveProgress({ contractAttempts: [] }, storage);
+        expect(JSON.parse(storage.read()).contractAttempts).toEqual({});
+    });
+
+    it('round-trips completed mission training families', () => {
+        const storage = createMemoryStorage();
+        saveProgress({ seenMissionTrainingIds: ['docking', 'signal', 'docking'] }, storage);
+        expect(loadProgress(storage).seenMissionTrainingIds).toEqual(['docking', 'signal']);
+    });
+
     it('discards malformed agency collections while keeping other progress', () => {
         const storage = createMemoryStorage(JSON.stringify({
             xp: 90,

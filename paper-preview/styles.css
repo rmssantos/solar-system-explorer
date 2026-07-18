@@ -1425,8 +1425,23 @@ html[data-flight-input="touch"] .joystick-label {
 .local-orbit-stage { position: absolute; inset: 0; }
 .local-orbit-stage canvas { display: block; width: 100% !important; height: 100% !important; }
 .local-orbit-message,
-.local-orbit-result { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; gap: 12px; padding: 24px; color: #f5e8bf; background: rgb(15 29 57 / .9); text-align: center; }
-.local-orbit-message[hidden], .local-orbit-result[hidden] { display: none; }
+.local-orbit-result,
+.local-orbit-leave-confirm { position: absolute; z-index: 6; inset: 0; display: grid; place-content: center; gap: 12px; padding: 24px; color: #f5e8bf; background: rgb(15 29 57 / .94); text-align: center; }
+.local-orbit-message[hidden], .local-orbit-result[hidden], .local-orbit-leave-confirm[hidden] { display: none; }
+.local-orbit-leave-confirm > span { margin: auto; font-size: 2.2rem; }
+.local-orbit-leave-confirm strong { font-family: 'Paper Fredoka', sans-serif; font-size: 1.55rem; }
+.local-orbit-leave-confirm p { max-width: 38ch; margin: 0; line-height: 1.45; }
+.local-orbit-leave-confirm > div { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.local-orbit-leave-confirm button { min-height: 44px; padding: 9px 14px; color: #29232c; background: var(--sun-pulp); border: 3px solid #8d6730; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-weight: 1000; }
+.local-orbit-leave-confirm button:first-child { color: #f8edcf; background: #4f8775; border-color: #2f594e; }
+.local-orbit-training { position: absolute; z-index: 7; inset: auto 24px 24px; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; max-width: 520px; margin: auto; padding: 18px; color: #25233d; background: #f8edcf; border: 4px solid #2d2940; border-radius: 10px 15px 9px 13px; box-shadow: 8px 10px 0 rgb(4 9 26 / .35); text-align: left; }
+.local-orbit-training[hidden] { display: none; }
+.local-orbit-training > span { grid-row: 1 / 4; color: var(--coral-pencil); font-size: 2rem; }
+.local-orbit-training strong { font-family: 'Paper Fredoka', sans-serif; font-size: 1.25rem; }
+.local-orbit-training p { margin: 0; line-height: 1.4; }
+.local-orbit-training > div { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.local-orbit-training button { min-height: 44px; padding: 8px 12px; color: #25233d; background: #f4c85f; border: 3px solid #8d6730; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-weight: 1000; }
+.local-orbit-training button:first-child { background: transparent; border-color: #8e7b5a; }
 .local-orbit-message button, .local-orbit-result button { min-height: 44px; padding: 9px 16px; color: #29232c; background: var(--sun-pulp); border: 3px solid #8d6730; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-weight: 1000; }
 .local-orbit-result > span { margin: auto; width: 68px; aspect-ratio: 1; display: grid; place-content: center; color: #f7ebc8; background: #4f8775; border: 4px solid #2f594e; border-radius: 50%; font-size: 2rem; }
 .local-orbit-result strong { font-family: 'Paper Fredoka', sans-serif; font-size: 1.7rem; }
@@ -1483,7 +1498,7 @@ html[data-flight-input="touch"] .joystick-label {
 }
 .contract-card[hidden] { display: none; }
 .contract-card[data-status="locked"] { border-color: #9b8c6e; border-left-color: #8f846e; }
-.contract-card[data-status="locked"] .contract-art { filter: grayscale(.75) sepia(.18); opacity: .66; }
+.contract-card[data-status="locked"] .contract-art { filter: grayscale(.75); opacity: .66; }
 .contract-art {
     width: 176px;
     aspect-ratio: 4 / 3;
@@ -1499,8 +1514,12 @@ html[data-flight-input="touch"] .joystick-label {
 .contract-copy dl { display: flex; flex-wrap: wrap; gap: 7px 16px; margin: 0; }
 .contract-copy dl > div { display: flex; gap: 5px; font-size: .65rem; }
 .contract-copy dt { color: #806137; font-weight: 1000; }.contract-copy dd { margin: 0; }
-.contract-card > button { min-width: 150px; min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
-.contract-card > button:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }
+.contract-actions { display: grid; gap: 7px; min-width: 150px; }
+.contract-actions > button { min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
+.contract-actions > button:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }
+.contract-actions > [data-contract-training] { color: #25374e; background: #e9dcae; border-color: #716142; }
+.contract-reward-stamp { width: 54px; height: 54px; margin-left: auto; border-radius: 50%; filter: drop-shadow(0 2px 0 #1c2638); object-fit: contain; }
+.contract-card dl > div:last-child { align-items: center; }
 
 @media (max-width: 700px),
     (pointer: coarse) and (max-width: 1100px),
@@ -1557,7 +1576,7 @@ html[data-flight-input="touch"] .joystick-label {
     .local-orbit-message, .local-orbit-result { z-index: 5; gap: 8px; padding: max(72px, env(safe-area-inset-top)) 18px max(96px, env(safe-area-inset-bottom)); }
     .local-orbit-result > span { width: 54px; font-size: 1.45rem; }
     .local-orbit-result strong { font-size: 1.18rem; }
-    .local-orbit-result p { display: none; }
+    .local-orbit-result p { display: block; max-width: 32ch; font-size: .78rem; line-height: 1.35; }
     .local-orbit-result button { min-height: 48px; padding: 7px 12px; }
     .docking-instruments {
         position: absolute;
@@ -1596,7 +1615,7 @@ html[data-flight-input="touch"] .joystick-label {
     .local-orbit-sheet:has(.local-orbit-result:not([hidden])) .docking-controls { display: none; }
     .contract-card { grid-template-columns: minmax(104px, 34%) 1fr; gap: 10px; padding: 12px; }
     .contract-art { width: 100%; align-self: start; }
-    .contract-card > button { grid-column: 1 / -1; width: 100%; }
+    .contract-actions { grid-column: 1 / -1; width: 100%; }
 }
 
 @media (hover: none) and (pointer: coarse) {

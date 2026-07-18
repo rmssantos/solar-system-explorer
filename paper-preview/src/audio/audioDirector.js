@@ -9,7 +9,14 @@ const CUES = Object.freeze({
     'quiz-correct': { file: 'quiz-correct.mp3', volume: 0.4 },
     'quiz-wrong': { file: 'quiz-wrong.mp3', volume: 0.3 },
     'reward-chime': { file: 'reward-chime.mp3', volume: 0.42 },
-    'lumi-signal': { file: 'lumi-signal.mp3', volume: 0.34 }
+    'lumi-signal': { file: 'lumi-signal.mp3', volume: 0.34 },
+    'cargo-capture': { file: 'cargo-capture.mp3', volume: 0.38, cooldownMs: 400 },
+    'shield-impact': { file: 'shield-impact.mp3', volume: 0.32, cooldownMs: 600 },
+    'soft-impact': { file: 'soft-impact.mp3', volume: 0.3, cooldownMs: 600 },
+    'docking-clamp': { file: 'docking-clamp.mp3', volume: 0.4, cooldownMs: 600 },
+    'signal-lock': { file: 'signal-lock.mp3', volume: 0.4, cooldownMs: 600 },
+    'slingshot-boost': { file: 'slingshot-boost.mp3', volume: 0.4, cooldownMs: 600 },
+    'mission-celebration': { file: 'mission-celebration.mp3', volume: 0.42, cooldownMs: 800 }
 });
 
 function safeReadPreference(storage) {
@@ -32,7 +39,8 @@ export function createAudioDirector({
     createAudio = (src) => new globalThis.Audio(src),
     storage = globalThis.localStorage,
     documentRef = globalThis.document,
-    onStateChange = (_state) => {}
+    onStateChange = (_state) => {},
+    now = () => globalThis.performance?.now?.() ?? Date.now()
 } = {}) {
     const ambience = createAudio(`${AUDIO_ROOT}cosmic-ambience.mp3`);
     const engine = createAudio(`${AUDIO_ROOT}paper-engine.mp3`);
@@ -49,6 +57,7 @@ export function createAudioDirector({
     let destroyed = false;
     let lastCue = null;
     const activeOneShots = new Set();
+    const lastCueTimes = new Map();
 
     function getState() {
         return {
@@ -101,6 +110,9 @@ export function createAudioDirector({
     function play(cueName) {
         const cue = CUES[cueName];
         if (!cue || destroyed || !enabled || !unlocked || !visible) return false;
+        const playedAt = now();
+        const previous = lastCueTimes.get(cueName);
+        if (previous !== undefined && playedAt - previous < (cue.cooldownMs ?? 0)) return false;
         const audio = createAudio(`${AUDIO_ROOT}${cue.file}`);
         audio.preload = 'auto';
         audio.volume = cue.volume;
@@ -110,6 +122,7 @@ export function createAudioDirector({
         };
         audio.addEventListener?.('ended', clean, { once: true });
         activeOneShots.add(audio);
+        lastCueTimes.set(cueName, playedAt);
         lastCue = cueName;
         safePlay(audio).then((started) => { if (started === false) clean(); });
         return true;

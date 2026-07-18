@@ -10,6 +10,8 @@ import { siteAnalytics } from './analytics/siteAnalytics.js';
 import { providerFamily } from './productVocabulary.js';
 import { CONTRACT_CATALOG } from './contracts/contractCatalog.js';
 import { getContractStatus } from './contracts/contractState.js';
+import { getContractJourneyAction } from './contracts/contractJourney.js';
+import { getContractReward } from './contracts/contractRewards.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -28,6 +30,8 @@ export function createPreviewUI({
     onAnswerQuiz,
     onRetryQuiz,
     onAcceptContract,
+    onTravelContract,
+    onTrainContract,
     onStartContract,
     onMissionLogOpen,
     onMissionLogClose,
@@ -203,10 +207,20 @@ export function createPreviewUI({
         [elements.quizOptions, 'click', handleQuizClick],
         [elements.quizRetry, 'click', onRetryQuiz]
         , [elements.contractList, 'click', (event) => {
+            const training = event.target.closest('[data-contract-training]');
+            if (training) {
+                const contractId = training.dataset.contractTraining;
+                closeMissionLog();
+                onTrainContract(contractId);
+                return;
+            }
             const action = event.target.closest('[data-contract-id]');
             if (!action) return;
             const contractId = action.dataset.contractId;
             if (action.dataset.contractAction === 'accept') onAcceptContract(contractId);
+            else if (action.dataset.contractAction === 'travel') {
+                if (onTravelContract(contractId)) closeMissionLog();
+            }
             else if (action.dataset.contractAction === 'start') {
                 closeMissionLog();
                 onStartContract(contractId);
@@ -414,17 +428,22 @@ export function createPreviewUI({
         }));
     }
 
-    function renderContracts(state, nearbyContractIds, contractState) {
+    function renderContracts(state, nearbyContractIds, contractState, contractJourney) {
         let startable = null;
         const language = paperI18n.language === 'en' ? 'en' : 'pt';
         const statuses = CONTRACT_CATALOG.map((contract) => getContractStatus(contractState, contract.id, state.learning));
         const cards = CONTRACT_CATALOG.map((contract, index) => {
             const copy = contract.copy[language];
+            const reward = getContractReward(contract.id);
             const status = statuses[index];
             const destinationNearby = nearbyContractIds.includes(contract.id);
+            const journeyAction = getContractJourneyAction({
+                status, destinationNearby, journey: contractJourney, contractId: contract.id
+            });
             const card = document.createElement('article');
             card.className = 'contract-card';
             card.dataset.status = status;
+            if (contractJourney?.activeContractId === contract.id) card.dataset.journey = contractJourney.phase;
 
             const art = document.createElement('img');
             art.className = 'contract-art';
@@ -450,7 +469,7 @@ export function createPreviewUI({
             for (const [label, value] of [
                 [paperI18n.t('game.contract.cargo'), copy.cargo],
                 [paperI18n.t('game.contract.destination'), copy.destination],
-                [paperI18n.t('game.contract.reward'), '+140 XP']
+                [paperI18n.t('game.contract.reward'), `${reward.copy[language].title} · +${reward.xp} XP`]
             ]) {
                 const row = document.createElement('div');
                 const term = document.createElement('dt');
@@ -460,30 +479,46 @@ export function createPreviewUI({
                 row.append(term, description);
                 details.append(row);
             }
+            const stamp = document.createElement('img');
+            stamp.className = 'contract-reward-stamp';
+            stamp.src = reward.art;
+            stamp.alt = '';
+            stamp.width = 54;
+            stamp.height = 54;
+            stamp.loading = 'lazy';
+            details.lastElementChild?.append(stamp);
             body.append(header, title, summary, details);
 
             const action = document.createElement('button');
             action.type = 'button';
             action.setAttribute('data-contract-id', contract.id);
-            action.disabled = status === 'locked' || status === 'completed' || (status === 'accepted' && !destinationNearby);
-            if (status === 'locked') {
-                action.dataset.contractAction = 'locked';
+            action.disabled = journeyAction.disabled;
+            action.dataset.contractAction = journeyAction.action;
+            if (journeyAction.action === 'locked') {
                 action.textContent = copy.unlock;
-            } else if (status === 'available') {
-                action.dataset.contractAction = 'accept';
+            } else if (journeyAction.action === 'accept') {
                 action.textContent = copy.accept;
-            } else if (status === 'accepted' && destinationNearby) {
-                action.dataset.contractAction = 'start';
+            } else if (journeyAction.action === 'start') {
                 action.textContent = copy.start;
                 startable = contract;
-            } else if (status === 'accepted') {
-                action.dataset.contractAction = 'travel';
+            } else if (journeyAction.action === 'travel') {
                 action.textContent = copy.travel ?? paperI18n.t('game.contract.travel');
+            } else if (journeyAction.action === 'travelling') {
+                action.textContent = paperI18n.t('game.contract.travelling');
             } else {
-                action.dataset.contractAction = 'complete';
                 action.textContent = paperI18n.t('game.contract.complete');
             }
-            card.append(art, body, action);
+            const actions = document.createElement('div');
+            actions.className = 'contract-actions';
+            actions.append(action);
+            if (status !== 'locked') {
+                const training = document.createElement('button');
+                training.type = 'button';
+                training.dataset.contractTraining = contract.id;
+                training.textContent = paperI18n.t('game.contract.training.open');
+                actions.append(training);
+            }
+            card.append(art, body, actions);
             return card;
         });
         elements.contractList.replaceChildren(...cards);
@@ -511,7 +546,7 @@ export function createPreviewUI({
         return startable;
     }
 
-    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, nearbyContractIds = [] } = {}) {
+    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractJourney = null, nearbyContractIds = [] } = {}) {
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
             ? chooseNearbyObject(flightState.nearbyPlanetKey, nearbyObjectKey)
@@ -522,7 +557,7 @@ export function createPreviewUI({
         elements.explore.hidden = !nearbyPlanet || state.notebook.open;
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
-        const startableContract = renderContracts(state, nearbyContractIds, contractState);
+        const startableContract = renderContracts(state, nearbyContractIds, contractState, contractJourney);
         if (nearbyPlanet) {
             elements.nearbyPlanetName.textContent = startableContract
                 ? startableContract.copy[paperI18n.language === 'en' ? 'en' : 'pt'].start
