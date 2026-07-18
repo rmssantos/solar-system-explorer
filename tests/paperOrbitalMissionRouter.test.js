@@ -6,14 +6,22 @@ describe('orbital mission game router', () => {
         ['docking', 'dock'],
         ['sweep', 'sweep'],
         ['signal', 'signal'],
-        ['slingshot', 'slingshot']
+        ['slingshot', 'slingshot'],
+        ['seismic', 'seismic'],
+        ['ice-radar', 'ice-radar'],
+        ['plume', 'plume'],
+        ['dragonfly', 'dragonfly']
     ])('lazy-routes %s gameplay to its own factory', async (gameplay, expected) => {
         const calls = [];
         const loaders = {
             docking: vi.fn(async () => ({ createDockingGame: async () => calls.push('dock') })),
             sweep: vi.fn(async () => ({ createSweepGame: async () => calls.push('sweep') })),
             signal: vi.fn(async () => ({ createSignalGame: async () => calls.push('signal') })),
-            slingshot: vi.fn(async () => ({ createSlingshotGame: async () => calls.push('slingshot') }))
+            slingshot: vi.fn(async () => ({ createSlingshotGame: async () => calls.push('slingshot') })),
+            seismic: vi.fn(async () => ({ createSeismicGame: async () => calls.push('seismic') })),
+            'ice-radar': vi.fn(async () => ({ createIceRadarGame: async () => calls.push('ice-radar') })),
+            plume: vi.fn(async () => ({ createPlumeGame: async () => calls.push('plume') })),
+            dragonfly: vi.fn(async () => ({ createDragonflyGame: async () => calls.push('dragonfly') }))
         };
 
         await createOrbitalMissionGame({ profile: { gameplay } }, loaders);

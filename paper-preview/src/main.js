@@ -77,6 +77,21 @@ import {
     launchAgencyMission,
     reconcileAgencyState
 } from './agency/agencyState.js';
+import { getExpeditionChapter } from './expedition/expeditionCatalog.js';
+import {
+    acceptExpeditionChapter,
+    completeExpeditionChapter,
+    createExpeditionState,
+    getExpeditionChapterStatus
+} from './expedition/expeditionState.js';
+import {
+    arriveExpeditionTravel,
+    cancelExpeditionTravel,
+    createExpeditionJourney,
+    startExpeditionTravel
+} from './expedition/expeditionJourney.js';
+import { isExpeditionDestinationNearby } from './expedition/expeditionDirector.js';
+import { createFinaleState } from './expedition/finaleState.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -100,6 +115,11 @@ const savedProgress = loadProgress();
 let previewState = createPreviewState(savedProgress);
 let contractState = createContractState(savedProgress);
 let contractAttemptState = createContractAttemptState(savedProgress);
+let expeditionState = createExpeditionState(savedProgress);
+let expeditionFinaleState = createFinaleState(savedProgress.expeditionFinaleState);
+let expeditionAttemptState = createContractAttemptState({
+    contractAttempts: savedProgress.expeditionAttempts
+});
 let missionTrainingState = createMissionTrainingState(savedProgress);
 let agencyState = reconcileAgencyState(createAgencyState({
     agencyActiveMissions: savedProgress.agencyActiveMissions,
@@ -114,6 +134,7 @@ let expeditionProgress = reconcileExpeditionProgress(createExpeditionProgress(sa
     ...previewState.learning,
     completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds,
     completedContractIds: contractState.completedContractIds,
+    completedExpeditionChapterIds: expeditionState.completedChapterIds,
     collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id)
 });
 let surpriseState = createSurpriseState({ seenIds: savedProgress.seenSurpriseIds });
@@ -124,6 +145,7 @@ function currentProgressSnapshot() {
         completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds,
         seenSurpriseIds: surpriseState.seenIds,
         completedContractIds: contractState.completedContractIds,
+        completedExpeditionChapterIds: expeditionState.completedChapterIds,
         collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id)
     };
 }
@@ -139,6 +161,8 @@ let localOrbitOpen = false;
 let localOrbitHost = null;
 let activeOrbitContractId = null;
 let contractJourney = createContractJourney();
+let activeExpeditionChapterId = null;
+let expeditionJourney = createExpeditionJourney();
 let activeOrbitTraining = false;
 let agencyUiElapsed = 0;
 let orbitalClockUiElapsed = 0;
@@ -153,8 +177,8 @@ let lastInput = {
     brake: false
 };
 
-const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-const paperScene = createPaperScene(stage, { timeScale: prefersReducedMotion ? 1 : 10 });
+const paperScene = createPaperScene(stage, { timeScale: 1 });
+paperScene.setShipUpgrades(expeditionState.upgradeIds);
 const audioDirector = createAudioDirector();
 const missionPrefetch = createMissionPrefetch();
 const spaceData = createSpaceDataService();
@@ -194,6 +218,24 @@ function isOrbitalContractDestinationNearby(contractId) {
         objectKey: nearbyWorldObjectKey,
         orbitingParentKey: orbitingObject?.parentKey ?? null
     });
+}
+
+function currentExpeditionContext() {
+    return {
+        discoveredKeys: previewState.learning.discoveredKeys,
+        completedContractIds: contractState.completedContractIds
+    };
+}
+
+function currentExpeditionProximity() {
+    return {
+        planetKey: flightState.nearbyPlanetKey,
+        objectKey: nearbyWorldObjectKey
+    };
+}
+
+function isCurrentExpeditionDestinationNearby(chapterId) {
+    return isExpeditionDestinationNearby(chapterId, currentExpeditionProximity());
 }
 
 function startableOrbitalContractId() {
@@ -388,14 +430,23 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
         completedMissionIds: missions.completedIds,
         seenSurpriseIds: surpriseState.seenIds,
         completedContractIds: contractState.completedContractIds,
+        completedExpeditionChapterIds: expeditionState.completedChapterIds,
         collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id)
     });
     progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
+    paperScene.setShipUpgrades(expeditionState.upgradeIds);
     saveProgress({
         ...previewState.learning,
         ...expeditionProgress,
         ...contractState,
         contractAttempts: contractAttemptState.contractAttempts,
+        expeditionVersion: expeditionState.expeditionVersion,
+        acceptedExpeditionChapterIds: expeditionState.acceptedChapterIds,
+        completedExpeditionChapterIds: expeditionState.completedChapterIds,
+        expeditionEvidenceIds: expeditionState.evidenceIds,
+        expeditionUpgradeIds: expeditionState.upgradeIds,
+        expeditionAttempts: expeditionAttemptState.contractAttempts,
+        expeditionFinaleState,
         seenMissionTrainingIds: missionTrainingState.seenMissionTrainingIds,
         agencyActiveMissions: agencyState.activeMissions,
         agencyReports: agencyState.reports
@@ -509,6 +560,97 @@ function handleTravelContract(contractId) {
     return true;
 }
 
+function handleExpeditionAction(chapterId, action) {
+    if (action === 'finale') {
+        const next = acceptExpeditionChapter(expeditionState, chapterId, currentExpeditionContext());
+        if (next !== expeditionState) {
+            expeditionState = next;
+            siteAnalytics.track('expedition_event', { chapterId, state: 'accept' });
+            reconcileAndSaveProgress({ feedback: false });
+            syncUI(true);
+        }
+        return false;
+    }
+    if (action === 'complete') {
+        const next = completeExpeditionChapter(expeditionState, chapterId);
+        if (next === expeditionState) return false;
+        expeditionState = next;
+        siteAnalytics.track('expedition_event', { chapterId, state: 'complete' });
+        audioDirector.play('reward-chime');
+        reconcileAndSaveProgress();
+        syncUI(true);
+        return false;
+    }
+    if (action === 'accept') {
+        const next = acceptExpeditionChapter(
+            expeditionState,
+            chapterId,
+            currentExpeditionContext()
+        );
+        if (next === expeditionState) return false;
+        expeditionState = next;
+        const chapter = getExpeditionChapter(chapterId);
+        if (chapter) missionPrefetch.prefetch(getOrbitalGameplay(chapter.activity));
+        siteAnalytics.track('expedition_event', { chapterId, state: 'accept' });
+        audioDirector.play('paper-fold');
+        reconcileAndSaveProgress({ feedback: false });
+        syncUI(true);
+        return false;
+    }
+    if (action === 'travel') {
+        const next = startExpeditionTravel(expeditionJourney, chapterId);
+        if (next === expeditionJourney) return false;
+        expeditionJourney = next;
+        if (!flyToWorldObject(next.targetKey, { allowMissionLog: true })) {
+            expeditionJourney = cancelExpeditionTravel(expeditionJourney);
+            syncUI(true);
+            return false;
+        }
+        syncUI(true);
+        return true;
+    }
+    if (action === 'start') {
+        void startExpeditionChapter(chapterId);
+        return true;
+    }
+    return false;
+}
+
+async function startExpeditionChapter(chapterId) {
+    const chapter = getExpeditionChapter(chapterId);
+    const accepted = getExpeditionChapterStatus(
+        expeditionState,
+        chapterId,
+        currentExpeditionContext()
+    ) === 'accepted';
+    if (!chapter || chapter.kind !== 'investigation' || !accepted
+        || !isCurrentExpeditionDestinationNearby(chapterId)
+        || localOrbitOpen || !localOrbitHost) return false;
+    localOrbitOpen = true;
+    activeExpeditionChapterId = chapter.id;
+    activeOrbitContractId = null;
+    activeOrbitTraining = false;
+    expeditionJourney = cancelExpeditionTravel(expeditionJourney);
+    autoPilotState = null;
+    updateAutopilotDisplay();
+    flightInput.reset();
+    flightInput.setEnabled(false);
+    objectHover.hidden = true;
+    audioDirector.play('paper-fold');
+    siteAnalytics.track('expedition_event', { chapterId, state: 'open' });
+    syncUI(true);
+    const attempt = getContractAttempt(expeditionAttemptState, chapter.id);
+    await localOrbitHost.open({
+        language: paperI18n.language,
+        missionId: chapter.activity,
+        attemptKey: chapter.id,
+        chapter,
+        initialSimulation: attempt?.missionId === chapter.activity ? attempt.simulation : null,
+        showTraining: needsMissionTraining(missionTrainingState, getOrbitalGameplay(chapter.activity))
+    });
+    return true;
+}
+
 async function startOrbitalContract(contractId) {
     const contract = getContract(contractId);
     const accepted = getContractStatus(
@@ -519,6 +661,7 @@ async function startOrbitalContract(contractId) {
     if (!contract || !accepted || !isOrbitalContractDestinationNearby(contractId) || localOrbitOpen || !localOrbitHost) return false;
     localOrbitOpen = true;
     activeOrbitContractId = contractId;
+    activeExpeditionChapterId = null;
     activeOrbitTraining = false;
     contractJourney = cancelContractTravel(contractJourney);
     autoPilotState = null;
@@ -550,6 +693,7 @@ async function startContractTraining(contractId) {
     if (!contract || status === 'locked' || localOrbitOpen || !localOrbitHost) return false;
     localOrbitOpen = true;
     activeOrbitContractId = contractId;
+    activeExpeditionChapterId = null;
     activeOrbitTraining = true;
     flightInput.reset();
     flightInput.setEnabled(false);
@@ -578,6 +722,24 @@ function handleOrbitalContractComplete(context) {
     return true;
 }
 
+function handleExpeditionChapterComplete(context) {
+    if (activeOrbitTraining || context?.trainingMode || !activeExpeditionChapterId) return false;
+    const next = completeExpeditionChapter(expeditionState, activeExpeditionChapterId);
+    if (next === expeditionState) return false;
+    const completedChapterId = activeExpeditionChapterId;
+    expeditionState = next;
+    expeditionAttemptState = clearContractAttempt(expeditionAttemptState, completedChapterId);
+    siteAnalytics.track('expedition_event', { chapterId: completedChapterId, state: 'complete' });
+    reconcileAndSaveProgress();
+    syncUI(true);
+    return true;
+}
+
+function handleLocalMissionComplete(context) {
+    if (activeExpeditionChapterId) return handleExpeditionChapterComplete(context);
+    return handleOrbitalContractComplete(context);
+}
+
 function handleContractAttemptSave(attempt) {
     contractAttemptState = saveContractAttempt(contractAttemptState, attempt);
     reconcileAndSaveProgress({ feedback: false });
@@ -587,6 +749,25 @@ function handleContractAttemptClear(contractId) {
     const next = clearContractAttempt(contractAttemptState, contractId);
     if (next === contractAttemptState) return false;
     contractAttemptState = next;
+    reconcileAndSaveProgress({ feedback: false });
+    return true;
+}
+
+function handleMissionAttemptSave(attempt) {
+    if (!attempt?.attemptKey) return handleContractAttemptSave(attempt);
+    expeditionAttemptState = saveContractAttempt(expeditionAttemptState, {
+        contractId: attempt.attemptKey,
+        missionId: attempt.missionId,
+        simulation: attempt.simulation
+    });
+    reconcileAndSaveProgress({ feedback: false });
+}
+
+function handleMissionAttemptClear(attemptKey) {
+    if (!activeExpeditionChapterId) return handleContractAttemptClear(attemptKey);
+    const next = clearContractAttempt(expeditionAttemptState, attemptKey);
+    if (next === expeditionAttemptState) return false;
+    expeditionAttemptState = next;
     reconcileAndSaveProgress({ feedback: false });
     return true;
 }
@@ -606,6 +787,7 @@ function handleLocalOrbitClose() {
     audioDirector.play('paper-fold');
     if (activeOrbitContractId) siteAnalytics.track('contract_event', { contractId: activeOrbitContractId, state: 'close' });
     activeOrbitContractId = null;
+    activeExpeditionChapterId = null;
     activeOrbitTraining = false;
     syncUI(true);
 }
@@ -621,6 +803,11 @@ const previewUI = createPreviewUI({
     onTravelContract: handleTravelContract,
     onTrainContract: startContractTraining,
     onStartContract: startOrbitalContract,
+    onExpeditionAction: handleExpeditionAction,
+    onExpeditionFinaleChange: (nextState) => {
+        expeditionFinaleState = createFinaleState(nextState);
+        reconcileAndSaveProgress({ feedback: false });
+    },
     onMissionLogOpen: () => flightInput.setEnabled(false),
     onMissionLogClose: () => flightInput.setEnabled(true),
     onDismissSurprise: handleDismissSurprise,
@@ -686,10 +873,10 @@ localOrbitHost = createLocalOrbitHost({
         get guidance() { return paperI18n.t('game.docking.guidance'); },
         get retry() { return paperI18n.t('game.docking.assisted'); }
     },
-    onComplete: handleOrbitalContractComplete,
+    onComplete: handleLocalMissionComplete,
     onClose: handleLocalOrbitClose,
-    onAttemptSave: handleContractAttemptSave,
-    onAttemptClear: handleContractAttemptClear,
+    onAttemptSave: handleMissionAttemptSave,
+    onAttemptClear: handleMissionAttemptClear,
     onTrainingComplete: handleMissionTrainingComplete,
     onAudioCue: (cue) => audioDirector.play(cue)
 });
@@ -712,6 +899,7 @@ function cancelAutopilot() {
     if (autoPilotState) siteAnalytics.track('autopilot_event', { objectKey: autoPilotState.targetKey, state: 'cancel' });
     autoPilotState = null;
     contractJourney = cancelContractTravel(contractJourney);
+    expeditionJourney = cancelExpeditionTravel(expeditionJourney);
     updateAutopilotDisplay();
     syncUI(true);
 }
@@ -776,6 +964,12 @@ function syncUI(force = false) {
         contractState.completedContractIds.join(','),
         contractJourney.activeContractId ?? 'none',
         contractJourney.phase,
+        expeditionState.acceptedChapterIds.join(','),
+        expeditionState.completedChapterIds.join(','),
+        expeditionJourney.activeChapterId ?? 'none',
+        expeditionJourney.phase,
+        expeditionFinaleState.status,
+        expeditionFinaleState.reviewedIds.join(','),
         localOrbitOpen
     ].join(':');
     if (!force && signature === lastUiSignature) return;
@@ -786,6 +980,10 @@ function syncUI(force = false) {
         expeditionProgress,
         contractState,
         contractJourney,
+        expeditionState,
+        expeditionContext: currentExpeditionContext(),
+        expeditionJourney,
+        expeditionFinaleState,
         nearbyContractIds: CONTRACT_CATALOG.filter((contract) => isOrbitalContractDestinationNearby(contract.id))
             .map((contract) => contract.id)
     });
@@ -859,6 +1057,13 @@ function step(seconds) {
                     contractJourney = arrived;
                     syncUI(true);
                     previewUI.openMissionLog('missions');
+                } else {
+                    const expeditionArrived = arriveExpeditionTravel(expeditionJourney, autopilotTargetKey);
+                    if (expeditionArrived !== expeditionJourney) {
+                        expeditionJourney = expeditionArrived;
+                        syncUI(true);
+                        previewUI.openMissionLog('investigation');
+                    }
                 }
             }
         }
@@ -943,7 +1148,7 @@ window.render_game_to_text = () => {
     return JSON.stringify({
         coordinateSystem: '3D paper flight: yaw 0 faces -Z; +X right, +Y up, +Z behind. Movement is camera-relative.',
         mode: localOrbitOpen
-            ? `local-orbit-${activeOrbitContractId}`
+            ? `local-mission-${activeExpeditionChapterId ?? activeOrbitContractId}`
             : agencyUi?.elements.dialog.open
                 ? 'space-agency'
                 : (previewState.notebook.open ? 'notebook' : 'free-flight-360'),
@@ -980,6 +1185,7 @@ window.render_game_to_text = () => {
         },
         progression: { ...expeditionProgress, presentation: progressPresentation },
         contract: { ...contractState, attempts: contractAttemptState.contractAttempts, journey: contractJourney, localOrbitOpen, activeOrbitContractId, trainingMode: activeOrbitTraining },
+        expedition: { ...expeditionState, journey: expeditionJourney, attempts: expeditionAttemptState.contractAttempts, activeExpeditionChapterId },
         agency: {
             open: Boolean(agencyUi?.elements.dialog.open),
             operationIds: livingOperations.map((operation) => operation.id),
@@ -1024,7 +1230,7 @@ window.advanceTime = (milliseconds) => {
 };
 
 window.__paperPreview = {
-    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, attempts: contractAttemptState.contractAttempts, localOrbitOpen, activeOrbitContractId }, agency: { ...agencyState, operations: livingOperations }, scene: paperScene.getState() }),
+    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, attempts: contractAttemptState.contractAttempts, localOrbitOpen, activeOrbitContractId }, expedition: { ...expeditionState, journey: expeditionJourney, attempts: expeditionAttemptState.contractAttempts, activeExpeditionChapterId }, agency: { ...agencyState, operations: livingOperations }, scene: paperScene.getState() }),
     explore: handleExplore,
     closeNotebook: handleCloseNotebook,
     selectSection: handleSelectSection,
@@ -1035,6 +1241,10 @@ window.__paperPreview = {
     trainContract: startContractTraining,
     startOrbitalContract,
     completeOrbitalContract: handleOrbitalContractComplete,
+    acceptExpeditionChapter: (chapterId) => handleExpeditionAction(chapterId, 'accept'),
+    travelExpeditionChapter: (chapterId) => handleExpeditionAction(chapterId, 'travel'),
+    startExpeditionChapter,
+    completeExpeditionChapter: handleExpeditionChapterComplete,
     acceptIssDelivery: () => handleAcceptContract(ISS_DELIVERY_CONTRACT_ID),
     startIssDelivery: () => startOrbitalContract(ISS_DELIVERY_CONTRACT_ID),
     completeIssDelivery: handleOrbitalContractComplete,

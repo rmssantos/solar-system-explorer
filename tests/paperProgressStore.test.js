@@ -67,6 +67,27 @@ describe('paper progress store contract migration', () => {
         expect(loadProgress(storage).seenMissionTrainingIds).toEqual(['docking', 'signal']);
     });
 
+    it('round-trips versioned Signal of the Moons progress and attempts', () => {
+        const storage = createMemoryStorage();
+        saveProgress({
+            expeditionVersion: 1,
+            acceptedExpeditionChapterIds: ['moon-seismology', 'moon-seismology'],
+            completedExpeditionChapterIds: ['moon-seismology'],
+            expeditionEvidenceIds: ['moon-seismic-evidence'],
+            expeditionUpgradeIds: ['paper-seismometer'],
+            expeditionAttempts: { 'europa-radar': { version: 1, simulation: { coverage: 0.4 } } }
+        }, storage);
+
+        expect(loadProgress(storage)).toMatchObject({
+            expeditionVersion: 1,
+            acceptedExpeditionChapterIds: ['moon-seismology'],
+            completedExpeditionChapterIds: ['moon-seismology'],
+            expeditionEvidenceIds: ['moon-seismic-evidence'],
+            expeditionUpgradeIds: ['paper-seismometer'],
+            expeditionAttempts: { 'europa-radar': { version: 1, simulation: { coverage: 0.4 } } }
+        });
+    });
+
     it('discards malformed agency collections while keeping other progress', () => {
         const storage = createMemoryStorage(JSON.stringify({
             xp: 90,
@@ -95,6 +116,8 @@ describe('paper progress store contract migration', () => {
             completedContractIds: [],
             agencyActiveMissions: [],
             agencyReports: []
+            , acceptedExpeditionChapterIds: [], completedExpeditionChapterIds: []
+            , expeditionEvidenceIds: [], expeditionUpgradeIds: [], expeditionAttempts: {}
         });
     });
 });

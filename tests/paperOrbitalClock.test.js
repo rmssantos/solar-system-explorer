@@ -15,9 +15,9 @@ const DAY_MS = 86_400_000;
 describe('live Solar System orbital clock', () => {
     it('starts at the child-friendly visible speed and only accepts supported scales', () => {
         const clock = createOrbitalClock({ dateMs: START });
-        expect(DEFAULT_ORBITAL_TIME_SCALE).toBe(10);
+        expect(DEFAULT_ORBITAL_TIME_SCALE).toBe(1);
         expect(ORBITAL_TIME_SCALES).toEqual([0, 1, 10, 100]);
-        expect(clock).toEqual({ dateMs: START, timeScale: 10 });
+        expect(clock).toEqual({ dateMs: START, timeScale: 1 });
         expect(Object.isFrozen(clock)).toBe(true);
         expect(setOrbitalTimeScale(clock, 100).timeScale).toBe(100);
         expect(setOrbitalTimeScale(clock, 7)).toBe(clock);

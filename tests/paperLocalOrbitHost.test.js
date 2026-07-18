@@ -29,7 +29,7 @@ function createElements() {
         dialog: fakeElement(), stage: fakeElement(), loading: fakeElement(), error: fakeElement(), result: fakeElement(),
         guidance: fakeElement(), distance: fakeElement(), speed: fakeElement(), alignment: fakeElement(),
         metricLabels: [fakeElement(), fakeElement(), fakeElement()],
-        kicker: fakeElement(), title: fakeElement(), playfield: fakeElement(), resultTitle: fakeElement(), resultScience: fakeElement(),
+        kicker: fakeElement(), title: fakeElement(), scale: fakeElement(), playfield: fakeElement(), resultTitle: fakeElement(), resultScience: fakeElement(),
         close: fakeElement(), finish: fakeElement(), retry: fakeElement(),
         leaveConfirm: fakeElement(), leaveContinue: fakeElement(), leaveSave: fakeElement(), leaveRestart: fakeElement(),
         training: fakeElement(), trainingTitle: fakeElement(), trainingStep: fakeElement(), trainingNext: fakeElement(), trainingSkip: fakeElement(),
@@ -68,6 +68,21 @@ describe('local orbit host', () => {
         expect(options.profile).toMatchObject({ id: 'hubble-service', target: 'hubble' });
         expect(elements.title.textContent).toBe('Hubble maintenance');
         expect(elements.resultTitle.textContent).toMatch(/Hubble/);
+    });
+
+    it('clears a scale note left by the previous mission profile', async () => {
+        const elements = createElements();
+        const host = createLocalOrbitHost({
+            elements,
+            gameFactory: async (options) => {
+                options.onReady();
+                return { destroy() {}, setAction() {} };
+            }
+        });
+        await host.open({ missionId: 'moon-seismology' });
+        expect(elements.scale.textContent).not.toBe('');
+        await host.open({ missionId: 'iss-docking' });
+        expect(elements.scale.textContent).toBe('');
     });
 
     it('renders telemetry and its safe or warning state', async () => {
@@ -385,5 +400,34 @@ describe('local orbit host', () => {
         expect(cleared).toEqual(['iss-delivery']);
         expect(profiles.at(-1).initialState).not.toHaveProperty('elapsedSeconds', 12);
         expect(elements.dialog.open).toBe(true);
+    });
+
+    it('saves and clears a non-contract mission through a stable attempt key', async () => {
+        const elements = createElements();
+        const saved = [];
+        const cleared = [];
+        const host = createLocalOrbitHost({
+            elements,
+            onAttemptSave: (attempt) => saved.push(attempt),
+            onAttemptClear: (attemptKey) => cleared.push(attemptKey),
+            gameFactory: async (options) => {
+                options.onReady();
+                return { destroy() {}, setAction() {}, getState: () => ({ phase: 'listening' }) };
+            }
+        });
+
+        await host.open({ attemptKey: 'moon-seismology', missionId: 'moon-seismology' });
+        expect(elements.scale.textContent).toMatch(/superfície|surface/i);
+        elements.close.emit('click');
+        elements.leaveSave.emit('click');
+        expect(saved).toEqual([{
+            attemptKey: 'moon-seismology', missionId: 'moon-seismology',
+            simulation: { phase: 'listening' }
+        }]);
+
+        await host.open({ attemptKey: 'moon-seismology', missionId: 'moon-seismology' });
+        elements.close.emit('click');
+        elements.leaveRestart.emit('click');
+        expect(cleared).toEqual(['moon-seismology']);
     });
 });

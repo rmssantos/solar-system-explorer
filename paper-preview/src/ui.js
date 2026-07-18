@@ -12,6 +12,10 @@ import { CONTRACT_CATALOG } from './contracts/contractCatalog.js';
 import { getContractStatus } from './contracts/contractState.js';
 import { getContractJourneyAction } from './contracts/contractJourney.js';
 import { getContractReward } from './contracts/contractRewards.js';
+import { presentExpeditionBoard } from './expedition/expeditionPresentation.js';
+import { OCEAN_CONCLUSIONS, OCEAN_EVIDENCE } from './expedition/evidenceCatalog.js';
+import { createFinaleState, reviewFinaleEvidence, selectFinaleConclusion, submitFinaleConclusion } from './expedition/finaleState.js';
+import { OCEAN_FINALE_ID } from './expedition/expeditionCatalog.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -33,6 +37,8 @@ export function createPreviewUI({
     onTravelContract,
     onTrainContract,
     onStartContract,
+    onExpeditionAction = /** @type {(chapterId: string, action: string) => boolean} */ (() => false),
+    onExpeditionFinaleChange = /** @type {(state: object) => void} */ (() => {}),
     onMissionLogOpen,
     onMissionLogClose,
     onDismissSurprise,
@@ -144,15 +150,32 @@ export function createPreviewUI({
         , missionDispatchProgress: document.querySelector('#mission-dispatch-progress')
         , mediaViewer: document.querySelector('#media-viewer')
         , contractList: document.querySelector('#contract-list')
+        , expeditionBoard: document.querySelector('#expedition-board')
+        , expeditionProgress: document.querySelector('#expedition-progress')
+        , expeditionProgressMeter: document.querySelector('#expedition-progress-meter')
+        , expeditionLumiMessage: document.querySelector('#expedition-lumi-message')
+        , expeditionChapterList: document.querySelector('#expedition-chapter-list')
+        , expeditionEvidenceGrid: document.querySelector('#expedition-evidence-grid')
+        , expeditionFinale: document.querySelector('#expedition-finale')
+        , expeditionFinaleClose: document.querySelector('#expedition-finale-close')
+        , expeditionFinaleKicker: document.querySelector('#expedition-finale-kicker')
+        , expeditionFinaleTitle: document.querySelector('#expedition-finale-title')
+        , expeditionFinaleIntro: document.querySelector('#expedition-finale-intro')
+        , expeditionFinaleEvidence: document.querySelector('#expedition-finale-evidence')
+        , expeditionFinaleQuestion: document.querySelector('#expedition-finale-question')
+        , expeditionFinaleOptions: document.querySelector('#expedition-finale-options')
+        , expeditionFinaleFeedback: document.querySelector('#expedition-finale-feedback')
+        , expeditionFinaleSubmit: document.querySelector('#expedition-finale-submit')
     };
 
     let lumiTimer = null;
     let rewardTimer = null;
     let activeMedia = null;
     let audioState = { enabled: true, unlocked: false };
-    let orbitalClockState = { dateMs: Date.now(), timeScale: 10, paused: false, daysPerSecond: 10 };
+    let orbitalClockState = { dateMs: Date.now(), timeScale: 1, paused: false, daysPerSecond: 1 };
     let orbitalClockFormatterLanguage = null;
     let orbitalClockFormatter = null;
+    let finaleState = createFinaleState();
     const mediaViewer = createMediaViewer(elements.mediaViewer, {
         onImageOpen: (media) => siteAnalytics.track('image_open', { objectKey: media.objectKey, surface: 'game' }),
         onSourceOpen: (media) => siteAnalytics.track('source_open', {
@@ -243,6 +266,61 @@ export function createPreviewUI({
         onMissionLogClose();
     }
 
+    function renderFinale() {
+        const pt = paperI18n.language !== 'en';
+        elements.expeditionFinaleKicker.textContent = pt ? 'ARQUIVO SECRETO · CONCLUSÃO' : 'SECRET ARCHIVE · CONCLUSION';
+        elements.expeditionFinaleTitle.textContent = pt ? 'O mapa invisível' : 'The invisible map';
+        elements.expeditionFinaleIntro.textContent = pt
+            ? 'Abre as quatro pistas, separa o que sabemos do que ainda procuramos e escolhe uma conclusão.'
+            : 'Open all four clues, separate what we know from what we still seek, then choose a conclusion.';
+        elements.expeditionFinaleQuestion.textContent = pt ? 'O que podemos concluir com estas pistas?' : 'What can we conclude from these clues?';
+        elements.expeditionFinaleClose.setAttribute('aria-label', pt ? 'Fechar mapa' : 'Close map');
+        const cards = OCEAN_EVIDENCE.map((evidence) => {
+            const copy = evidence.copy[pt ? 'pt' : 'en'];
+            const reviewed = finaleState.reviewedIds.includes(evidence.id);
+            const button = document.createElement('button');
+            button.type = 'button'; button.className = `finale-evidence-card${reviewed ? ' is-reviewed' : ''}`;
+            button.dataset.finaleEvidence = evidence.id; button.setAttribute('aria-expanded', String(reviewed));
+            const icon = document.createElement('span'); icon.textContent = evidence.icon; icon.setAttribute('aria-hidden', 'true');
+            const title = document.createElement('strong'); title.textContent = copy.title;
+            const prompt = document.createElement('small'); prompt.textContent = reviewed ? (pt ? 'Pista analisada' : 'Clue analysed') : (pt ? 'Abrir pista' : 'Open clue');
+            const detail = document.createElement('span'); detail.className = 'finale-evidence-detail';
+            detail.textContent = reviewed ? `${copy.known} ${copy.search}` : '•••';
+            button.append(icon, title, prompt, detail); return button;
+        });
+        elements.expeditionFinaleEvidence.replaceChildren(...cards);
+        const options = OCEAN_CONCLUSIONS.map((conclusion) => {
+            const label = document.createElement('label');
+            const input = document.createElement('input'); input.type = 'radio'; input.name = 'ocean-conclusion';
+            input.value = conclusion.id; input.checked = finaleState.selectedConclusionId === conclusion.id;
+            input.disabled = finaleState.status === 'complete';
+            const text = document.createElement('span'); text.textContent = conclusion.copy[pt ? 'pt' : 'en'];
+            label.append(input, text); return label;
+        });
+        elements.expeditionFinaleOptions.replaceChildren(...options);
+        elements.expeditionFinaleFeedback.className = `expedition-finale-feedback is-${finaleState.status}`;
+        elements.expeditionFinaleFeedback.textContent = finaleState.status === 'retry'
+            ? (pt ? 'Boa hipótese, mas as pistas ainda não provam vida. Revê a diferença entre “pode ter condições” e “tem habitantes”.' : 'Good hypothesis, but the clues do not prove life. Review the difference between “may have conditions” and “is inhabited”.')
+            : finaleState.status === 'complete'
+                ? (pt ? 'Conclusão científica! Habitável não significa habitado; ainda temos muito para descobrir.' : 'Scientific conclusion! Habitable does not mean inhabited; there is much left to discover.')
+                : (pt ? `${finaleState.reviewedIds.length}/4 pistas abertas` : `${finaleState.reviewedIds.length}/4 clues opened`);
+        elements.expeditionFinaleSubmit.textContent = finaleState.status === 'complete'
+            ? (pt ? 'Guardar selo e fechar' : 'Save stamp and close')
+            : (pt ? 'Testar conclusão' : 'Test conclusion');
+        elements.expeditionFinaleSubmit.disabled = finaleState.status !== 'complete'
+            && (finaleState.reviewedIds.length < OCEAN_EVIDENCE.length || !finaleState.selectedConclusionId);
+    }
+
+    function openFinale() {
+        onExpeditionAction(OCEAN_FINALE_ID, 'finale');
+        closeMissionLog(); onMissionLogOpen(); renderFinale(); elements.expeditionFinale.showModal();
+    }
+
+    function closeFinale() {
+        if (elements.expeditionFinale.open) elements.expeditionFinale.close();
+        onMissionLogClose();
+    }
+
     const listeners = [
         [elements.explore, 'click', onExplore],
         [elements.notebookTrigger, 'click', onExplore],
@@ -289,6 +367,50 @@ export function createPreviewUI({
                 closeMissionLog();
                 onStartContract(contractId);
             }
+        }]
+        , [elements.expeditionBoard, 'click', (event) => {
+            const artwork = event.target.closest('[data-expedition-art]');
+            if (artwork) {
+                const chapter = presentExpeditionBoard({}, { language: paperI18n.language })
+                    .chapters.find((item) => item.id === artwork.dataset.expeditionArt);
+                if (!chapter) return;
+                mediaViewer.open({
+                    objectKey: chapter.id,
+                    src: chapter.art,
+                    alt: chapter.title,
+                    caption: chapter.title,
+                    source: null,
+                    trigger: artwork
+                });
+                return;
+            }
+            const action = event.target.closest('[data-expedition-action]');
+            if (!action) return;
+            const chapterId = action.dataset.expeditionChapter;
+            if (action.dataset.expeditionAction === 'finale') {
+                openFinale();
+                return;
+            }
+            if (onExpeditionAction(chapterId, action.dataset.expeditionAction)) closeMissionLog();
+        }]
+        , [elements.expeditionFinaleClose, 'click', closeFinale]
+        , [elements.expeditionFinale, 'cancel', (event) => { event.preventDefault(); closeFinale(); }]
+        , [elements.expeditionFinaleEvidence, 'click', (event) => {
+            const card = event.target.closest('[data-finale-evidence]'); if (!card) return;
+            finaleState = reviewFinaleEvidence(finaleState, card.dataset.finaleEvidence);
+            onExpeditionFinaleChange(finaleState); renderFinale();
+        }]
+        , [elements.expeditionFinaleOptions, 'change', (event) => {
+            if (!event.target.matches('input[name="ocean-conclusion"]')) return;
+            finaleState = selectFinaleConclusion(finaleState, event.target.value);
+            onExpeditionFinaleChange(finaleState); renderFinale();
+        }]
+        , [elements.expeditionFinaleSubmit, 'click', () => {
+            if (finaleState.status === 'complete') { closeFinale(); return; }
+            finaleState = submitFinaleConclusion(finaleState);
+            onExpeditionFinaleChange(finaleState);
+            if (finaleState.status === 'complete') onExpeditionAction(OCEAN_FINALE_ID, 'complete');
+            renderFinale();
         }]
         , [elements.objective, 'click', () => openMissionLog('missions')]
         , [elements.missionCenterTrigger, 'click', () => openMissionLog('missions')]
@@ -343,6 +465,7 @@ export function createPreviewUI({
     }
     const unbindNotebookBackdrop = bindBackdropDismiss(elements.notebook, onCloseNotebook);
     const unbindMissionBackdrop = bindBackdropDismiss(elements.missionLog, closeMissionLog);
+    const unbindFinaleBackdrop = bindBackdropDismiss(elements.expeditionFinale, closeFinale);
 
     function renderTabs(section) {
         elements.tabs.forEach((tab) => {
@@ -637,7 +760,98 @@ export function createPreviewUI({
         return startable;
     }
 
-    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractJourney = null, nearbyContractIds = [] } = {}) {
+    function renderExpeditionBoard(expeditionState, expeditionContext, expeditionJourney, proximity) {
+        const board = presentExpeditionBoard(expeditionState, {
+            context: expeditionContext,
+            journey: expeditionJourney,
+            proximity,
+            language: paperI18n.language
+        });
+        elements.expeditionProgress.textContent = board.progressLabel;
+        elements.expeditionProgressMeter.max = board.evidenceTotal;
+        elements.expeditionProgressMeter.value = board.evidenceCount;
+        elements.expeditionProgressMeter.setAttribute('aria-label', board.progressLabel);
+        elements.expeditionLumiMessage.textContent = board.lumiMessage;
+
+        const cards = board.chapters.map((chapter) => {
+            const item = document.createElement('li');
+            item.className = 'expedition-chapter';
+            item.dataset.status = chapter.status;
+            item.dataset.kind = chapter.kind;
+
+            const step = document.createElement('span');
+            step.className = 'expedition-step';
+            step.textContent = chapter.status === 'completed' ? '✓' : String(chapter.stepNumber);
+
+            const artButton = document.createElement('button');
+            artButton.type = 'button';
+            artButton.className = 'expedition-art-button';
+            artButton.dataset.expeditionArt = chapter.id;
+            artButton.setAttribute('aria-label', paperI18n.t('game.expedition.art.open', { title: chapter.title }));
+            const art = document.createElement('img');
+            art.className = 'expedition-art';
+            art.src = chapter.art;
+            art.alt = '';
+            art.width = 240;
+            art.height = 150;
+            art.loading = 'lazy';
+            art.decoding = 'async';
+            const artHint = document.createElement('span');
+            artHint.className = 'expedition-art-hint';
+            artHint.textContent = paperI18n.t('game.expedition.art.enlarge');
+            artHint.setAttribute('aria-hidden', 'true');
+            artButton.append(art, artHint);
+
+            const copy = document.createElement('div');
+            copy.className = 'expedition-chapter-copy';
+            const header = document.createElement('header');
+            const type = document.createElement('small');
+            type.textContent = chapter.kind === 'finale'
+                ? (paperI18n.language === 'en' ? 'Final evidence map' : 'Mapa final de pistas')
+                : (paperI18n.language === 'en' ? `Clue ${chapter.stepNumber}` : `Pista ${chapter.stepNumber}`);
+            const reward = document.createElement('span');
+            reward.textContent = `+${chapter.xp} XP`;
+            header.append(type, reward);
+            const title = document.createElement('h3');
+            title.textContent = chapter.title;
+            const summary = document.createElement('p');
+            summary.textContent = chapter.summary;
+            const rewardLabel = document.createElement('strong');
+            rewardLabel.className = 'expedition-reward';
+            rewardLabel.textContent = chapter.reward;
+            copy.append(header, title, summary, rewardLabel);
+
+            const action = document.createElement('button');
+            action.type = 'button';
+            action.className = 'expedition-action';
+            action.dataset.expeditionChapter = chapter.id;
+            action.dataset.expeditionAction = chapter.action;
+            action.disabled = chapter.disabled;
+            action.textContent = chapter.actionLabel;
+            item.append(step, artButton, copy, action);
+            return item;
+        });
+        elements.expeditionChapterList.replaceChildren(...cards);
+
+        const evidence = board.chapters.slice(0, board.evidenceTotal).map((chapter) => {
+            const found = chapter.status === 'completed';
+            const card = document.createElement('article');
+            card.className = `expedition-evidence${found ? ' is-found' : ''}`;
+            const mark = document.createElement('span');
+            mark.textContent = found ? '✓' : '?';
+            mark.setAttribute('aria-hidden', 'true');
+            const label = document.createElement('strong');
+            label.textContent = found ? chapter.title : (paperI18n.language === 'en' ? 'Hidden clue' : 'Pista escondida');
+            card.append(mark, label);
+            return card;
+        });
+        elements.expeditionEvidenceGrid.replaceChildren(...evidence);
+        return board;
+    }
+
+    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractJourney = null, nearbyContractIds = [], expeditionState = {}, expeditionContext = {}, expeditionJourney = {}, expeditionFinaleState = {} } = {}) {
+        finaleState = createFinaleState(expeditionFinaleState);
+        if (elements.expeditionFinale.open) renderFinale();
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
             ? chooseNearbyObject(flightState.nearbyPlanetKey, nearbyObjectKey)
@@ -649,6 +863,10 @@ export function createPreviewUI({
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
         const startableContract = renderContracts(state, nearbyContractIds, contractState, contractJourney);
+        renderExpeditionBoard(expeditionState, expeditionContext, expeditionJourney, {
+            objectKey: nearbyObjectKey,
+            planetKey: flightState?.nearbyPlanetKey ?? null
+        });
         if (nearbyPlanet) {
             elements.nearbyPlanetName.textContent = startableContract
                 ? startableContract.copy[paperI18n.language === 'en' ? 'en' : 'pt'].start
@@ -785,6 +1003,7 @@ export function createPreviewUI({
         mediaViewer.destroy();
         unbindNotebookBackdrop();
         unbindMissionBackdrop();
+        unbindFinaleBackdrop();
         for (const [element, eventName, handler] of listeners) {
             element.removeEventListener(eventName, handler);
         }

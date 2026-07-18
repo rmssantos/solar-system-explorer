@@ -246,6 +246,58 @@ export const ORBITAL_MISSION_PROFILES = Object.freeze({
                 keyboardHint: 'Keyboard: left/right curves the route · up/down changes distance · Space starts the boost'
             }
         }
+    }),
+    'moon-seismology': profile({
+        id: 'moon-seismology', gameplay: 'seismic', completionEvent: 'seismic-solved',
+        retryEvents: ['sensor-too-close', 'wrong-pulse'], controls: FLAT_CONTROLS, target: 'moon',
+        metrics: [
+            { field: 'sensorsPlaced', format: 'collection', safeField: 'primarySafe' },
+            { field: 'signalClarity', format: 'percent', safeField: 'secondarySafe' },
+            { field: 'triangulation', format: 'percent', safeField: 'tertiarySafe' }
+        ], initialState: {},
+        copy: {
+            pt: { kicker: 'Investigação lunar · Pista 1', title: 'O eco da Lua', scale: 'Experiência de superfície ampliada — posições e tempos adaptados para poderes investigar.', playfield: 'Rede de sismómetros na superfície da Lua', guidance: 'Coloca três sensores afastados, encontra o pulso comum e marca o impacto.', retry: 'Essa leitura ainda não cruza os três sensores. Experimenta outra posição.', success: 'Impacto localizado!', science: 'Os sismómetros medem vibrações do solo. Vários sensores permitem comparar tempos e localizar a origem.', metricLabels: ['Sensores', 'Clareza', 'Triangulação'], controlLabels: { forward: 'Mover cursor para a direita', reverse: 'Mover cursor para a esquerda', up: 'Mover cursor para cima', down: 'Mover cursor para baixo', stabilize: 'Colocar ou analisar sensor' }, tutorialTitle: 'Aprender a ouvir a Lua', tutorialSteps: ['Move o alvo e coloca três sensores em zonas diferentes.', 'Procura o pulso que aparece nos três rolos e confirma a origem.'], centerControl: 'Colocar / analisar', keyboardHint: 'Teclado: setas movem · Espaço coloca ou analisa' },
+            en: { kicker: 'Lunar investigation · Clue 1', title: 'The Moon echo', scale: 'Magnified surface experiment — positions and timing are adapted so you can investigate.', playfield: 'Seismometer network on the Moon', guidance: 'Place three separated sensors, find their shared pulse and mark the impact.', retry: 'That reading does not cross all three sensors yet. Try another position.', success: 'Impact located!', science: 'Seismometers measure ground vibrations. Several sensors let us compare timing and locate a source.', metricLabels: ['Sensors', 'Clarity', 'Triangulation'], controlLabels: { forward: 'Move cursor right', reverse: 'Move cursor left', up: 'Move cursor up', down: 'Move cursor down', stabilize: 'Place or analyse sensor' }, tutorialTitle: 'Learn to listen to the Moon', tutorialSteps: ['Move the target and place three sensors in different areas.', 'Find the pulse shown on all three rolls and confirm its source.'], centerControl: 'Place / analyse', keyboardHint: 'Keyboard: arrows move · Space places or analyses' }
+        }
+    }),
+    'europa-radar': profile({
+        id: 'europa-radar', gameplay: 'ice-radar', completionEvent: 'ice-map-complete',
+        retryEvents: ['radar-overheat'], controls: FLAT_CONTROLS, target: 'europa',
+        metrics: [
+            { field: 'coverage', format: 'percent', safeField: 'primarySafe' },
+            { field: 'heat', format: 'percent', safeField: 'secondarySafe' },
+            { field: 'echoConfidence', format: 'percent', safeField: 'tertiarySafe' }
+        ], initialState: {},
+        copy: {
+            pt: { kicker: 'Radar de gelo · Pista 2', title: 'Debaixo do gelo', playfield: 'Varredura por radar da superfície de Europa', guidance: 'Desenha três passagens sobre fissuras diferentes e deixa o radar arrefecer entre elas.', retry: 'O radar aqueceu demasiado. Faz uma pausa curta antes da próxima passagem.', success: 'Camada escondida mapeada!', science: 'O radar compara ecos para estimar fronteiras entre camadas de gelo e materiais com propriedades diferentes.', metricLabels: ['Mapa', 'Calor', 'Confiança do eco'], controlLabels: { forward: 'Mover faixa para a direita', reverse: 'Mover faixa para a esquerda', up: 'Aumentar potência do radar', down: 'Reduzir potência do radar', stabilize: 'Iniciar ou pausar passagem' }, tutorialTitle: 'Treino de radar', tutorialSteps: ['Move a faixa sobre uma fissura e inicia a passagem.', 'Mantém o calor na zona segura e cobre três regiões.'], centerControl: 'Radar ligar / pausar', keyboardHint: 'Teclado: setas ajustam faixa e potência · Espaço liga o radar' },
+            en: { kicker: 'Ice radar · Clue 2', title: 'Beneath the ice', playfield: 'Radar survey across Europa', guidance: 'Draw three passes across different cracks and let the radar cool between them.', retry: 'The radar became too hot. Pause briefly before the next pass.', success: 'Hidden layer mapped!', science: 'Radar compares echoes to estimate boundaries between ice and materials with different properties.', metricLabels: ['Map', 'Heat', 'Echo confidence'], controlLabels: { forward: 'Move strip right', reverse: 'Move strip left', up: 'Increase radar power', down: 'Reduce radar power', stabilize: 'Start or pause pass' }, tutorialTitle: 'Radar practice', tutorialSteps: ['Move the strip over a crack and start a pass.', 'Keep heat in the safe zone and cover three regions.'], centerControl: 'Radar on / pause', keyboardHint: 'Keyboard: arrows adjust strip and power · Space turns radar on' }
+        }
+    }),
+    'enceladus-plume': profile({
+        id: 'enceladus-plume', gameplay: 'plume', completionEvent: 'plume-sampled',
+        retryEvents: ['large-grain-hit'], controls: FLAT_CONTROLS, target: 'enceladus',
+        metrics: [
+            { field: 'samples', format: 'collection', safeField: 'primarySafe' },
+            { field: 'purity', format: 'percent', safeField: 'secondarySafe' },
+            { field: 'cooling', format: 'percent', safeField: 'tertiarySafe' }
+        ], initialState: {},
+        copy: {
+            pt: { kicker: 'Voo pela pluma · Pista 3', title: 'A fonte congelada', playfield: 'Recolha de cristais na pluma de Encélado', guidance: 'Abre o coletor nos jatos finos, apanha cristais pequenos e evita blocos grandes.', retry: 'Um bloco grande contaminou a passagem. A Lumi limpou o coletor; tenta outra faixa.', success: 'Amostra fria guardada!', science: 'As plumas de Encélado lançam grãos de gelo do oceano subterrâneo diretamente para o espaço.', metricLabels: ['Cristais', 'Pureza', 'Frio'], controlLabels: { forward: 'Mover para a direita', reverse: 'Mover para a esquerda', up: 'Subir', down: 'Descer', stabilize: 'Abrir ou fechar coletor' }, tutorialTitle: 'Treino de recolha', tutorialSteps: ['Move a nave para uma zona de cristais pequenos.', 'Abre o coletor apenas durante uma passagem limpa.'], centerControl: 'Abrir / fechar', keyboardHint: 'Teclado: setas movem · Espaço abre o coletor' },
+            en: { kicker: 'Plume flight · Clue 3', title: 'The frozen fountain', playfield: 'Collecting crystals in Enceladus’s plume', guidance: 'Open the collector in thin jets, catch small crystals and avoid large chunks.', retry: 'A large chunk spoiled that pass. Lumi cleaned the collector; try another lane.', success: 'Cold sample stored!', science: 'Enceladus’s plumes launch ice grains from its underground ocean directly into space.', metricLabels: ['Crystals', 'Purity', 'Cold'], controlLabels: { forward: 'Move right', reverse: 'Move left', up: 'Move up', down: 'Move down', stabilize: 'Open or close collector' }, tutorialTitle: 'Collection practice', tutorialSteps: ['Move the ship into a stream of small crystals.', 'Open the collector only during a clean pass.'], centerControl: 'Open / close', keyboardHint: 'Keyboard: arrows move · Space opens the collector' }
+        }
+    }),
+    'titan-dragonfly': profile({
+        id: 'titan-dragonfly', gameplay: 'dragonfly', completionEvent: 'dragonfly-landed',
+        retryEvents: ['rough-landing'], controls: FLAT_CONTROLS, target: 'titan',
+        metrics: [
+            { field: 'routeProgress', format: 'percent', safeField: 'primarySafe' },
+            { field: 'stability', format: 'percent', safeField: 'secondarySafe' },
+            { field: 'siteConfidence', format: 'percent', safeField: 'tertiarySafe' }
+        ], initialState: {},
+        copy: {
+            pt: { kicker: 'Libélula de papel · Pista 4', title: 'Chuva de metano', playfield: 'Voo científico sobre dunas e lagos de Titã', guidance: 'Segue os marcos, compensa as rajadas e compara dois locais antes de aterrar.', retry: 'Ainda vais alto ou instável. Desce junto à bandeira, equilibra a libélula e tenta de novo.', success: 'Local científico escolhido!', science: 'Titã tem nuvens, chuva, rios e lagos de metano e etano, além de química orgânica complexa.', metricLabels: ['Rota', 'Estabilidade', 'Local'], controlLabels: { forward: 'Voar para a direita', reverse: 'Voar para a esquerda', up: 'Subir', down: 'Descer', stabilize: 'Analisar ou aterrar' }, tutorialTitle: 'Treino de voo em Titã', tutorialSteps: ['Segue os marcos e usa cima e baixo para compensar o vento.', 'Abranda sobre cada local, analisa e escolhe onde aterrar.'], centerControl: 'Analisar / aterrar', keyboardHint: 'Teclado: setas voam · Espaço analisa ou aterra' },
+            en: { kicker: 'Paper dragonfly · Clue 4', title: 'Methane rain', playfield: 'Science flight above Titan’s dunes and lakes', guidance: 'Follow the markers, correct for gusts and compare two sites before landing.', retry: 'You are still too high or unstable. Descend by the flag, balance the dragonfly and try again.', success: 'Science site selected!', science: 'Titan has methane and ethane clouds, rain, rivers and lakes, plus complex organic chemistry.', metricLabels: ['Route', 'Stability', 'Site'], controlLabels: { forward: 'Fly right', reverse: 'Fly left', up: 'Climb', down: 'Descend', stabilize: 'Analyse or land' }, tutorialTitle: 'Titan flight practice', tutorialSteps: ['Follow the markers and use up and down to correct for wind.', 'Slow over each site, analyse it and choose where to land.'], centerControl: 'Analyse / land', keyboardHint: 'Keyboard: arrows fly · Space analyses or lands' }
+        }
     })
 });
 

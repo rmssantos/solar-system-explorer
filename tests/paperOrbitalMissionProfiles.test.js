@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { getOrbitalMissionProfile, ORBITAL_MISSION_PROFILES } from '../paper-preview/src/minigames/orbitalMissionProfiles.js';
 
 describe('orbital mission profiles', () => {
-    it('defines a five-stop campaign with four distinct game mechanics', () => {
+    it('keeps the five-stop campaign and adds four distinct investigation mechanics', () => {
         expect(Object.keys(ORBITAL_MISSION_PROFILES)).toEqual([
-            'iss-docking', 'hubble-service', 'lunar-sweep', 'mars-relay', 'jupiter-slingshot'
+            'iss-docking', 'hubble-service', 'lunar-sweep', 'mars-relay', 'jupiter-slingshot',
+            'moon-seismology', 'europa-radar', 'enceladus-plume', 'titan-dragonfly'
         ]);
         expect(getOrbitalMissionProfile('iss-docking', 'pt')).toMatchObject({
             target: 'iss', gameplay: 'docking', completionEvent: 'docked', driftAcceleration: 0
@@ -22,6 +23,12 @@ describe('orbital mission profiles', () => {
         expect(getOrbitalMissionProfile('jupiter-slingshot', 'pt')).toMatchObject({
             gameplay: 'slingshot', completionEvent: 'slingshot-complete', title: 'Estilingue de Júpiter'
         });
+        expect([
+            getOrbitalMissionProfile('moon-seismology').gameplay,
+            getOrbitalMissionProfile('europa-radar').gameplay,
+            getOrbitalMissionProfile('enceladus-plume').gameplay,
+            getOrbitalMissionProfile('titan-dragonfly').gameplay
+        ]).toEqual(['seismic', 'ice-radar', 'plume', 'dragonfly']);
     });
 
     it('localizes telemetry and shared controls for each mechanic', () => {

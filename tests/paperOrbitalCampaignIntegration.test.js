@@ -28,8 +28,10 @@ describe('orbital campaign integration', () => {
     it('restores, saves and clears versioned attempts through the shared progress store', () => {
         expect(game).toContain('createContractAttemptState(savedProgress)');
         expect(game).toContain('getContractAttempt(contractAttemptState, contractId)');
-        expect(game).toContain('onAttemptSave: handleContractAttemptSave');
-        expect(game).toContain('onAttemptClear: handleContractAttemptClear');
+        expect(game).toContain('onAttemptSave: handleMissionAttemptSave');
+        expect(game).toContain('onAttemptClear: handleMissionAttemptClear');
+        expect(game).toContain('return handleContractAttemptSave(attempt)');
+        expect(game).toContain('return handleContractAttemptClear(attemptKey)');
         expect(game).toContain('contractAttempts: contractAttemptState.contractAttempts');
     });
 

@@ -1,7 +1,7 @@
 const DAY_MS = 86_400_000;
 
 export const ORBITAL_TIME_SCALES = Object.freeze([0, 1, 10, 100]);
-export const DEFAULT_ORBITAL_TIME_SCALE = 10;
+export const DEFAULT_ORBITAL_TIME_SCALE = 1;
 
 function supportedScale(value) {
     const scale = Number(value);

@@ -1,5 +1,6 @@
 import { getOrbitalMissionProfile } from './orbitalMissionProfiles.js';
 import { getMissionEventCue } from '../audio/missionAudio.js';
+import { loadMissionAssistance, saveMissionAssistance, toggleMissionAssistance } from './missionAssistance.js';
 
 function queryElements(root) {
     return {
@@ -16,6 +17,7 @@ function queryElements(root) {
         keyboardHint: root.querySelector('.docking-keyboard-hint'),
         kicker: root.querySelector('.local-orbit-kicker'),
         title: root.querySelector('#local-orbit-title'),
+        scale: root.querySelector('.local-orbit-scale'),
         playfield: root.querySelector('.local-orbit-playfield'),
         resultTitle: root.querySelector('#local-orbit-result strong'),
         resultScience: root.querySelector('#local-orbit-result p'),
@@ -31,7 +33,10 @@ function queryElements(root) {
         trainingStep: root.querySelector('#local-orbit-training-step'),
         trainingNext: root.querySelector('#local-orbit-training-next'),
         trainingSkip: root.querySelector('#local-orbit-training-skip'),
-        controls: [...root.querySelectorAll('[data-docking-action]')]
+        controls: [...root.querySelectorAll('[data-docking-action]')],
+        assistControls: [...root.querySelectorAll('[data-mission-assist]')],
+        assistsTitle: root.querySelector('#mission-assists-title'),
+        noTimer: root.querySelector('#mission-no-timer')
     };
 }
 
@@ -83,8 +88,8 @@ function formatMetric(metric, telemetry, language = 'pt') {
  *   messages?: { retry?: string, guidance?: string },
  *   onComplete?: (context: object) => void,
  *   onClose?: () => void,
- *   onAttemptSave?: (attempt: { contractId: string, missionId: string, simulation: object }) => void,
- *   onAttemptClear?: (contractId: string) => void
+ *   onAttemptSave?: (attempt: { attemptKey?: string, contractId?: string, missionId: string, simulation: object }) => void,
+ *   onAttemptClear?: (attemptKey: string) => void
  *   onTrainingComplete?: (gameplay: string) => void
  *   onAudioCue?: (cue: string) => void
  * }} options
@@ -107,6 +112,7 @@ export function createLocalOrbitHost({
     let latestTelemetry = null;
     let loadGeneration = 0;
     let trainingStepIndex = 0;
+    let assistance = loadMissionAssistance();
     const listeners = [];
 
     function listen(element, type, handler) {
@@ -147,6 +153,23 @@ export function createLocalOrbitHost({
             : (openOptions.language === 'en' ? 'Next' : 'Seguinte');
     }
 
+    function applyAssistance() {
+        elements.dialog.classList?.toggle('has-large-mission-controls', assistance.largeControls);
+        game?.setTimeScale?.(assistance.calmPace ? 0.62 : 1);
+        for (const control of elements.assistControls ?? []) {
+            const active = Boolean(assistance[control.dataset.missionAssist]);
+            control.setAttribute('aria-pressed', String(active)); control.classList.toggle('is-active', active);
+        }
+        const language = openOptions.language === 'en' ? 'en' : 'pt';
+        if (elements.assistsTitle) elements.assistsTitle.textContent = language === 'en' ? 'Assists · no XP penalty' : 'Ajudas · sem perder XP';
+        if (elements.noTimer) elements.noTimer.textContent = language === 'en' ? 'No time limit' : 'Sem limite de tempo';
+        if (assistance.guide && openOptions.profile?.tutorialSteps?.length) {
+            elements.guidance.textContent = `✦ ${openOptions.profile.tutorialSteps.join(' ')}`;
+        } else if (openOptions.profile) {
+            elements.guidance.textContent = openOptions.profile.guidance ?? messages.guidance ?? elements.guidance.textContent;
+        }
+    }
+
     function finishTraining() {
         if (!elements.training || elements.training.hidden) return;
         elements.training.hidden = true;
@@ -177,6 +200,7 @@ export function createLocalOrbitHost({
                 return;
             }
             game = created;
+            applyAssistance();
             elements.loading.hidden = true;
         } catch {
             if (generation !== loadGeneration) return;
@@ -200,6 +224,7 @@ export function createLocalOrbitHost({
         }
         elements.kicker.textContent = profile.kicker;
         elements.title.textContent = profile.title;
+        if (elements.scale) elements.scale.textContent = profile.scale ?? '';
         elements.resultTitle.textContent = profile.success;
         elements.resultScience.textContent = profile.science;
         elements.playfield.setAttribute?.('aria-label', profile.playfield);
@@ -215,6 +240,7 @@ export function createLocalOrbitHost({
             if (controlLabel) control.setAttribute?.('aria-label', controlLabel);
             if (control.dataset.dockingAction === 'stabilize') control.textContent = profile.centerControl;
         }
+        applyAssistance();
         if (!elements.dialog.open) elements.dialog.showModal();
         if (options.showTraining) {
             loadGeneration += 1;
@@ -254,6 +280,12 @@ export function createLocalOrbitHost({
             listen(control, type, () => setActive(false));
         }
     }
+    for (const control of elements.assistControls ?? []) {
+        listen(control, 'click', () => {
+            assistance = toggleMissionAssistance(assistance, control.dataset.missionAssist);
+            saveMissionAssistance(assistance); applyAssistance();
+        });
+    }
     listen(elements.close, 'click', requestClose);
     listen(elements.finish, 'click', closeImmediately);
     listen(elements.retry, 'click', () => { startGame(); });
@@ -261,9 +293,12 @@ export function createLocalOrbitHost({
     if (elements.leaveContinue) listen(elements.leaveContinue, 'click', () => { elements.leaveConfirm.hidden = true; });
     if (elements.leaveSave) listen(elements.leaveSave, 'click', () => {
         const simulation = game?.getState?.() ?? null;
-        if (!openOptions.trainingMode && simulation && openOptions.contract?.id) {
+        const attemptKey = openOptions.attemptKey ?? openOptions.contract?.id;
+        if (!openOptions.trainingMode && simulation && attemptKey) {
             onAttemptSave({
-                contractId: openOptions.contract.id,
+                ...(openOptions.contract?.id
+                    ? { contractId: openOptions.contract.id }
+                    : { attemptKey }),
                 missionId: openOptions.profile.id,
                 simulation
             });
@@ -271,7 +306,8 @@ export function createLocalOrbitHost({
         closeImmediately();
     });
     if (elements.leaveRestart) listen(elements.leaveRestart, 'click', () => {
-        if (openOptions.contract?.id) onAttemptClear(openOptions.contract.id);
+        const attemptKey = openOptions.attemptKey ?? openOptions.contract?.id;
+        if (attemptKey) onAttemptClear(attemptKey);
         openOptions = { ...openOptions, initialSimulation: null };
         elements.leaveConfirm.hidden = true;
         startGame({ restore: false });

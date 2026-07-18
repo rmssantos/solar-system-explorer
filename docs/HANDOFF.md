@@ -147,3 +147,29 @@ npm run dev
 ```
 
 Abrir `http://localhost:5173/jogo/` e começar pelo botão **Centro de Missões**. Antes de alterar uma mecânica, adicionar primeiro um teste à respetiva simulação. Para problemas visuais, testar pelo menos desktop, `390 × 844` e `844 × 390`, capturando o Canvas e o HUD DOM em conjunto.
+
+## Expansão - O Sinal das Luas (julho de 2026)
+
+A tab **Investigação** complementa - não substitui - as cinco missões Courier. A Lumi conduz uma aventura contínua e local-first:
+
+1. Lua: colocar três sismómetros, alinhar ondas e localizar um impacto.
+2. Europa: mapear três faixas com radar, equilibrando potência e calor.
+3. Encélado: recolher cinco cristais limpos na pluma e evitar blocos grandes.
+4. Titã: pilotar a libélula de papel, compensar o vento e comparar dois locais.
+5. Finale: abrir as quatro pistas e concluir que “potencialmente habitável” não significa “habitado”.
+
+O progresso, tentativas, evidências, instrumentos e finale são persistidos no dispositivo. Todas as atividades têm PT/EN, teclado e touch, repetição livre, ausência de cronómetro e três ajudas sem penalização: Guia Lumi, Ritmo calmo e Controlos XL. Os instrumentos conquistados aparecem fisicamente na Paper Courier.
+
+Arte nova em `paper-preview/public/art/expedition/`: cinco postais WebP 960×600 com brancos neutros, azul-noite, teal e coral; o amarelo é apenas acento. Não aplicar filtros sépia/amarelos globais (“piss filter”).
+
+Arquitetura principal:
+
+- domínio e finale: `paper-preview/src/expedition/`;
+- simulações/renderers: `seismicSimulation.js`, `iceRadarSimulation.js`, `plumeSimulation.js`, `dragonflySimulation.js` e respetivos `create*Game.js`;
+- ajudas: `missionAssistance.js` e `localOrbitHost.js`;
+- upgrades visuais: `createPaperShip.js` e `createPaperScene.js`;
+- integração/persistência: `main.js`, `ui.js` e `missions/progressStore.js`.
+
+O relógio do Observatório do Tempo abre agora em **1×** para todos. `10×` e `100×` continuam disponíveis apenas por escolha explícita.
+
+Verificação desta expansão: **121 ficheiros / 604 testes Vitest**, 34 cenários Playwright aprovados em Chromium e Firefox, lint, TypeScript, build e orçamento de performance aprovados. JavaScript inicial medido: **992 862 bytes**; Phaser permanece num chunk lazy separado.
