@@ -139,7 +139,6 @@ for (const viewport of [
             expect(box.height).toBeGreaterThanOrEqual(44);
         }
         await page.locator('#local-orbit-close').click();
-        await page.locator('#local-orbit-leave-restart').click();
-        await expect(page.locator('#local-orbit-mission')).toBeVisible();
+        await expect(page.locator('#local-orbit-mission')).toBeHidden();
     });
 }

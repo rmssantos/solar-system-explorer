@@ -62,7 +62,8 @@ describe('paper local-orbit mission surface', () => {
 
     it('stacks catalog-driven contract cards and styles their contextual action', () => {
         expect(css).toMatch(/\.contract-list\s*\{[^}]*display:\s*grid/s);
-        expect(css).toMatch(/\.contract-card\s*>\s*button\s*\{[^}]*min-height:\s*46px/s);
+        expect(css).toMatch(/\.contract-actions\s*>\s*button\s*\{[^}]*min-height:\s*46px/s);
+        expect(css).not.toMatch(/\.contract-card\s*>\s*button/);
     });
 
     it('places landscape playfield, telemetry and controls inside the same viewport grid', () => {

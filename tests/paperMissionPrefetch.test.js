@@ -54,4 +54,22 @@ describe('orbital mission idle prefetch', () => {
         prefetch.destroy();
         expect(cancelIdleCallback).toHaveBeenCalledWith(42);
     });
+
+    it('does not mark in-flight work as warmed after teardown', async () => {
+        let finishLoad;
+        const loading = new Promise((resolve) => { finishLoad = resolve; });
+        let idleTask;
+        const prefetch = createMissionPrefetch({
+            loaders: { docking: () => loading },
+            loadRuntime: async () => 'phaser',
+            connection: { saveData: false },
+            requestIdleCallback: (task) => { idleTask = task; return 1; }
+        });
+        prefetch.prefetch('docking');
+        const inFlight = idleTask();
+        prefetch.destroy();
+        finishLoad('dock');
+        await inFlight;
+        expect(prefetch.getState().warmed).toEqual([]);
+    });
 });

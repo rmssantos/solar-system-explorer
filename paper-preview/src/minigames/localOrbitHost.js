@@ -223,7 +223,7 @@ export function createLocalOrbitHost({
 
     function requestClose() {
         const simulation = game?.getState?.() ?? null;
-        if (!completed && simulation && elements.leaveConfirm) {
+        if (!openOptions.trainingMode && !completed && simulation && elements.leaveConfirm) {
             elements.leaveConfirm.hidden = false;
             return;
         }
@@ -248,7 +248,7 @@ export function createLocalOrbitHost({
     if (elements.leaveContinue) listen(elements.leaveContinue, 'click', () => { elements.leaveConfirm.hidden = true; });
     if (elements.leaveSave) listen(elements.leaveSave, 'click', () => {
         const simulation = game?.getState?.() ?? null;
-        if (simulation && openOptions.contract?.id) {
+        if (!openOptions.trainingMode && simulation && openOptions.contract?.id) {
             onAttemptSave({
                 contractId: openOptions.contract.id,
                 missionId: openOptions.profile.id,

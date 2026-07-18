@@ -54,8 +54,8 @@ A nave foi reconstruída para pertencer ao mesmo universo visual dos planetas:
 | Área | Ficheiros principais | Responsabilidade |
 | --- | --- | --- |
 | Catálogo e progressão | `paper-preview/src/contracts/contractCatalog.js`, `contractState.js`, `contractRewards.js` | Cinco contratos, pré-requisitos, estado e recompensas exclusivas |
-| Jornada e persistência | `contractJourney.js`, `missionAttemptState.js` | Aceitar, piloto automático, chegada, guardar/continuar/recomeçar tentativa |
-| Tutoriais | `missionTraining.js`, `orbitalMissionProfiles.js` | Cópia PT/EN, instruções específicas e treino repetível |
+| Jornada e persistência | `contractJourney.js`, `contractAttemptState.js` | Aceitar, piloto automático, chegada, guardar/continuar/recomeçar tentativa |
+| Tutoriais | `missionTrainingState.js`, `orbitalMissionProfiles.js` | Cópia PT/EN, instruções específicas e treino repetível |
 | Domínio da Agência | `paper-preview/src/agency/agencyCatalog.js`, `agencyState.js` | Instrumentos, energia, rotas, sondas e relatórios imutáveis |
 | Operações vivas | `paper-preview/src/agency/operationDirector.js`, `paper-preview/src/data/spaceDataService.js` | Direção diária, NASA DONKI, NeoWs, Horizons, cache e fallback |
 | UI da Agência | `paper-preview/src/agency/agencyUi.js`, `agencyPresentation.js` | Despacho, setup, cronómetros, Sistema Vivo, sondas e arquivo |
@@ -65,7 +65,7 @@ A nave foi reconstruída para pertencer ao mesmo universo visual dos planetas:
 | Varredura lunar | `sweepSimulation.js`, `createSweepGame.js` | Recolha, detritos, escudo e Canvas lunar |
 | Relé de Marte | `signalSimulation.js`, `createSignalGame.js` | Sintonia, bloqueio de sinal e Canvas marciano |
 | Estilingue de Júpiter | `slingshotSimulation.js`, `createSlingshotGame.js` | Assistência gravitacional determinística e renderer Phaser responsivo |
-| Áudio | `paper-preview/src/audio/missionAudio.js`, `paper-preview/public/audio/missions/` | Eventos semânticos, debounce e sete SFX gerados para as mecânicas |
+| Áudio | `paper-preview/src/audio/missionAudio.js`, `paper-preview/public/audio/` | Eventos semânticos, debounce e sete SFX gerados para as mecânicas |
 | Performance | `missionPrefetch.js`, `scripts/verify-paper-build.mjs` | Prefetch idle com opt-out `saveData`, manifest e orçamento inicial |
 | UI responsiva | `paper-preview/jogo/index.html`, `paper-preview/styles.css` | Tabuleiro, controlos, safe areas, resultados e cartões |
 | Arte | `paper-preview/public/art/missions/` | Cinco postais e selos paper-style otimizados |
@@ -96,7 +96,7 @@ npm run verify:paper-build
 npm run test:e2e
 ```
 
-A suíte unitária/integrada cobre 99 ficheiros e 502 testes. O E2E Playwright cobre oito cenários em Chromium e Firefox:
+A suíte unitária/integrada cobre 99 ficheiros e 504 testes. O E2E Playwright cobre oito cenários em Chromium e Firefox:
 
 - campanha completa dos cinco contratos: aceitar, viajar, chegar, iniciar, guardar, recarregar, continuar, concluir e validar a recompensa única;
 - mudança de idioma PT/EN durante a campanha;
@@ -106,7 +106,7 @@ A suíte unitária/integrada cobre 99 ficheiros e 502 testes. O E2E Playwright c
 
 O estilingue de Júpiter foi ainda jogado até ao fim com teclado no desktop e touch em mobile. O playtest visual confirmou nave, HUD, tutorial, resultado e texto científico sem sobreposições.
 
-Na build medida, o JavaScript inicial soma **946 121 bytes**. O Phaser fica num chunk dinâmico separado de cerca de **1 198,78 kB** e não entra no carregamento inicial. O verificador falha acima do orçamento inicial de 1,8 MB ou se encontrar Phaser no grafo inicial.
+Na build medida, o JavaScript inicial soma **946 162 bytes**. O Phaser fica num chunk dinâmico separado de cerca de **1 198,78 kB** e não entra no carregamento inicial. O verificador falha acima do orçamento inicial de 1,8 MB ou se encontrar Phaser no grafo inicial.
 
 Limitação conhecida de QA: a matriz automatizada cobre os viewports e motores acima, mas ainda é recomendável uma passagem manual em hardware iOS e Android real antes de alterações grandes à física ou aos gestos.
 

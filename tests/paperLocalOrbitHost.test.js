@@ -302,6 +302,32 @@ describe('local orbit host', () => {
         expect(elements.dialog.open).toBe(false);
     });
 
+    it('never overwrites a real attempt with replayable training state', async () => {
+        const elements = createElements();
+        const saved = [];
+        const host = createLocalOrbitHost({
+            elements,
+            onAttemptSave: (attempt) => saved.push(attempt),
+            gameFactory: async (options) => {
+                options.onReady();
+                return {
+                    destroy() {}, setAction() {},
+                    getState: () => ({ phase: 'approach', elapsedSeconds: 9 })
+                };
+            }
+        });
+        await host.open({
+            contract: { id: 'iss-delivery' }, missionId: 'iss-docking', trainingMode: true
+        });
+
+        elements.close.emit('click');
+        expect(elements.leaveConfirm.hidden).toBe(true);
+        elements.leaveSave.emit('click');
+
+        expect(saved).toEqual([]);
+        expect(elements.dialog.open).toBe(false);
+    });
+
     it('restores a saved simulation and can clear it before restarting', async () => {
         const elements = createElements();
         const profiles = [];

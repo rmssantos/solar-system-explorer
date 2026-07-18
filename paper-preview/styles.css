@@ -1514,8 +1514,6 @@ html[data-flight-input="touch"] .joystick-label {
 .contract-copy dl { display: flex; flex-wrap: wrap; gap: 7px 16px; margin: 0; }
 .contract-copy dl > div { display: flex; gap: 5px; font-size: .65rem; }
 .contract-copy dt { color: #806137; font-weight: 1000; }.contract-copy dd { margin: 0; }
-.contract-card > button { min-width: 150px; min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
-.contract-card > button:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }
 .contract-actions { display: grid; gap: 7px; min-width: 150px; }
 .contract-actions > button { min-height: 46px; padding: 8px 12px; color: #fff5d9; background: #a95343; border: 3px solid #79382f; border-radius: 8px 11px 7px 10px; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 1000; }
 .contract-actions > button:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; cursor: default; }

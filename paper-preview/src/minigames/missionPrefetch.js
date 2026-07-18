@@ -33,7 +33,7 @@ export function createMissionPrefetch({
             if (destroyed) return;
             try {
                 await Promise.all([loaders[gameplay](), loadRuntime()]);
-                warmed.add(gameplay);
+                if (!destroyed) warmed.add(gameplay);
             } catch {
                 // The regular mission loading surface remains the retry path.
             } finally {

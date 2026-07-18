@@ -564,7 +564,7 @@ async function startContractTraining(contractId) {
 }
 
 function handleOrbitalContractComplete(context) {
-    if (context?.trainingMode) return false;
+    if (activeOrbitTraining || context?.trainingMode) return false;
     if (!activeOrbitContractId) return false;
     const next = completeContract(contractState, activeOrbitContractId);
     if (next === contractState) return false;

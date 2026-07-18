@@ -36,7 +36,7 @@ describe('orbital campaign integration', () => {
         expect(ui).toContain('onTrainContract(contractId)');
         expect(game).toContain('startContractTraining');
         expect(game).toContain('trainingMode: true');
-        expect(game).toContain('if (context?.trainingMode) return false');
+        expect(game).toContain('if (activeOrbitTraining || context?.trainingMode) return false');
         expect(game).toContain('seenMissionTrainingIds: missionTrainingState.seenMissionTrainingIds');
     });
 
