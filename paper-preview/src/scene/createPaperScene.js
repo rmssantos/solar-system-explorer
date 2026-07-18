@@ -9,6 +9,7 @@ import { createPrimarySnapshot } from '../world/orbitalSystem.js';
 import { createOrbitPaths } from './createOrbitPaths.js';
 import { syncSkyDome } from './skyDome.js';
 import { cameraFollowAlpha } from './cameraFollow.js';
+import { createLivingSkyEffects } from './createLivingSkyEffects.js';
 import {
     createOrbitalClock,
     presentOrbitalClock,
@@ -266,7 +267,11 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
     camera.add(cockpit);
     scene.add(camera);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        powerPreference: 'high-performance',
+        preserveDrawingBuffer: true
+    });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.shadowMap.enabled = true;
@@ -337,6 +342,10 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
     });
     const worldObjects = createPaperWorldObjects({ paperTextures: objectSurfaceTextures });
     scene.add(worldObjects.root);
+    const livingSkyEffects = createLivingSkyEffects({
+        reducedMotion: globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
+    });
+    scene.add(livingSkyEffects.root);
 
     const rocket = createPaperShip({ paperTexture: objectSurfaceTextures.craft });
     rocket.position.set(0, 0, 14);
@@ -468,6 +477,10 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         });
         runtime.orbitalObjectElapsed += delta * orbitalTime.satelliteFactor;
         worldObjects.update(runtime.orbitalObjectElapsed, runtime.primarySnapshot);
+        const livingSkyPositions = Object.fromEntries(planets.map((planet) => [planet.userData.key, planet.position]));
+        const halleyPosition = worldObjects.getPosition('halley');
+        if (halleyPosition) livingSkyPositions.halley = new THREE.Vector3(halleyPosition.x, halleyPosition.y, halleyPosition.z);
+        livingSkyEffects.update(runtime.elapsed, livingSkyPositions);
         if (runtime.surpriseRemaining > 0) {
             runtime.surpriseRemaining = Math.max(0, runtime.surpriseRemaining - delta);
             surpriseEffect.position.addScaledVector(runtime.surpriseVelocity, delta);
@@ -606,6 +619,31 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         return [...(Array.isArray(upgradeIds) ? upgradeIds : [])];
     }
 
+    function setOrbitalDate(dateMs) {
+        if (!Number.isFinite(Number(dateMs))) return presentOrbitalClock(runtime.orbitalClock);
+        runtime.orbitalClock = createOrbitalClock({
+            dateMs: Number(dateMs),
+            timeScale: runtime.orbitalClock.timeScale
+        });
+        return presentOrbitalClock(runtime.orbitalClock);
+    }
+
+    function setLivingSkyPresentation(presentation) {
+        const eventIds = Array.isArray(presentation)
+            ? presentation
+            : (presentation?.activeEvents ?? []).map((event) => event.id);
+        livingSkyEffects.setPresentation(eventIds);
+        return eventIds;
+    }
+
+    function getLivingSkyTelemetry(eventId) {
+        return livingSkyEffects.getTelemetry(eventId, camera, runtime.shipPosition);
+    }
+
+    function getCaptureCanvas() {
+        return renderer.domElement;
+    }
+
     function triggerSurprise(effect = 'star') {
         runtime.right.set(1, 0, 0).applyQuaternion(runtime.flightQuaternion);
         surpriseEffect.position.copy(runtime.shipPosition)
@@ -658,6 +696,7 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         renderer.domElement.removeEventListener('pointerup', handlePinchPointer);
         renderer.domElement.removeEventListener('pointercancel', handlePinchPointer);
         window.removeEventListener('keydown', handleZoomKey);
+        livingSkyEffects.destroy();
         scene.traverse((object) => {
             object.geometry?.dispose?.();
             if (Array.isArray(object.material)) object.material.forEach((material) => material.dispose());
@@ -687,7 +726,11 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         toggleOrbits,
         setOrbitalTimeScale,
         resetOrbitalTimeToToday,
+        setOrbitalDate,
         setShipUpgrades,
+        setLivingSkyPresentation,
+        getLivingSkyTelemetry,
+        getCaptureCanvas,
         triggerSurprise,
         destroy
     };

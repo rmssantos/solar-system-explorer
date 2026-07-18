@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createAudioDirector } from '../paper-preview/src/audio/audioDirector.js';
+import { existsSync, statSync } from 'node:fs';
 
 class FakeAudio {
     constructor(src) {
@@ -97,6 +98,18 @@ describe('paper audio director', () => {
         clock += 700;
         expect(director.play('shield-impact')).toBe(true);
         expect(audios.filter((audio) => audio.src.includes('shield-impact')).length).toBe(2);
+    });
+
+    it('plays the four compact language-neutral living-sky cues', async () => {
+        const { director, audios } = createHarness();
+        await director.unlock();
+        for (const cue of ['sky-camera-shutter', 'sky-event-alert', 'sky-focus-lock', 'sky-photo-developed']) {
+            expect(director.play(cue)).toBe(true);
+            expect(audios.at(-1).src).toContain(`${cue}.mp3`);
+            const file = new URL(`../paper-preview/public/audio/${cue}.mp3`, import.meta.url);
+            expect(existsSync(file)).toBe(true);
+            expect(statSync(file).size).toBeGreaterThan(10_000);
+        }
     });
 
     it('pauses while hidden and cleans up all audio', async () => {

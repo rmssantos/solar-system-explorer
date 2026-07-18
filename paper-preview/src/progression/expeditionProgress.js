@@ -1,5 +1,6 @@
 import { getContractReward } from '../contracts/contractRewards.js';
 import { getExpeditionChapter } from '../expedition/expeditionCatalog.js';
+import { getLivingSkyEvent } from '../living-sky/livingSkyCatalog.js';
 
 export const EVENT_XP = Object.freeze({
     discovery: 20,
@@ -8,7 +9,8 @@ export const EVENT_XP = Object.freeze({
     mission: 100,
     contract: 140,
     operation: 90,
-    'expedition-chapter': 100
+    'expedition-chapter': 100,
+    'sky-observation': 100
 });
 
 const LEVELS = Object.freeze([
@@ -107,6 +109,9 @@ export function reconcileExpeditionProgress(progress, snapshot = {}) {
         next = awardExpeditionEvent(next, { type: 'expedition-chapter', id, xp: getExpeditionChapter(id)?.xp });
     }
     for (const id of unique(snapshot.collectedAgencyReportIds)) next = awardExpeditionEvent(next, { type: 'operation', id });
+    for (const id of unique(snapshot.completedSkyEventIds)) {
+        next = awardExpeditionEvent(next, { type: 'sky-observation', id, xp: getLivingSkyEvent(id)?.rewardXp });
+    }
     for (const id of unique(snapshot.seenSurpriseIds)) next = awardExpeditionEvent(next, { type: 'surprise', id });
     return createExpeditionProgress({
         ...next,

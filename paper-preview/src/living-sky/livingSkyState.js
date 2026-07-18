@@ -39,9 +39,13 @@ export function createLivingSkyState(value = {}) {
             bestByEvent.set(record.eventId, record);
         }
     }
-    const photoRecords = [...freePhotos, ...bestByEvent.values()]
+    const eventPhotos = [...bestByEvent.values()];
+    const freeSlots = Math.max(0, MAX_PHOTOS - eventPhotos.length);
+    const newestFreePhotos = freePhotos
         .sort((left, right) => left.capturedAt - right.capturedAt)
-        .slice(-MAX_PHOTOS);
+        .slice(-freeSlots);
+    const photoRecords = [...newestFreePhotos, ...eventPhotos]
+        .sort((left, right) => left.capturedAt - right.capturedAt);
     return Object.freeze({
         version: 1,
         completedEventIds: Object.freeze(completedEventIds),
@@ -64,6 +68,7 @@ export function recordLivingSkyPhoto(state, photo) {
     photoRecords.push(record);
     return createLivingSkyState({
         ...base,
+        introSeen: true,
         completedEventIds: record.qualified
             ? [...base.completedEventIds, record.eventId]
             : base.completedEventIds,

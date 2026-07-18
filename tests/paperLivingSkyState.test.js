@@ -74,6 +74,17 @@ describe('Living Sky observation state', () => {
         expect(state.photoRecords[0].id).toBe('photo-3');
         expect(state.photoRecords.at(-1).id).toBe('photo-14');
         expect(state.completedEventIds).toEqual([]);
+        expect(state.introSeen).toBe(true);
+    });
+
+    it('keeps earned event photographs while rotating older free snapshots', () => {
+        let state = recordLivingSkyPhoto(createLivingSkyState(), photo('event-1', {
+            eventId: 'earth-aurora', filter: 'magnetic', score: 0.9, qualified: true, capturedAt: 1
+        }));
+        for (let index = 2; index <= 20; index += 1) state = recordLivingSkyPhoto(state, photo(`free-${index}`, { capturedAt: index }));
+        expect(state.photoRecords).toHaveLength(12);
+        expect(state.photoRecords.some((record) => record.id === 'event-1')).toBe(true);
+        expect(state.photoRecords.some((record) => record.id === 'free-2')).toBe(false);
     });
 
     it('deletes album metadata without removing an earned observation', () => {
@@ -83,6 +94,7 @@ describe('Living Sky observation state', () => {
         const deleted = deleteLivingSkyPhoto(recorded, 'photo-1');
         expect(deleted.photoRecords).toEqual([]);
         expect(deleted.completedEventIds).toEqual(['io-shadow-transit']);
+        expect(deleted.introSeen).toBe(true);
         expect(deleteLivingSkyPhoto(deleted, 'missing')).toBe(deleted);
     });
 });

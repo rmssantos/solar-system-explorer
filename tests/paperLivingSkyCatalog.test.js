@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { existsSync, statSync } from 'node:fs';
 import {
     LIVING_SKY_EVENTS,
     OBSERVATION_FILTERS,
@@ -31,5 +32,13 @@ describe('Living Sky catalog', () => {
         expect(getLivingSkyEvent('earth-aurora')).toBe(LIVING_SKY_EVENTS[0]);
         expect(getLivingSkyEvent('unknown')).toBeNull();
     });
-});
 
+    it('ships a substantial optimized paper illustration for every observation', () => {
+        for (const event of LIVING_SKY_EVENTS) {
+            const asset = new URL(`../paper-preview/public${event.art}`, import.meta.url);
+            expect(existsSync(asset)).toBe(true);
+            expect(statSync(asset).size).toBeGreaterThan(40_000);
+            expect(statSync(asset).size).toBeLessThan(100_000);
+        }
+    });
+});
