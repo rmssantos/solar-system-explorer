@@ -1,5 +1,8 @@
 import { getLivingSkyEvent } from './livingSkyCatalog.js';
 
+/** DOM selectors are runtime-validated by the page structure and E2E tests. @type {any} */
+const document = globalThis.document;
+
 const COPY = Object.freeze({
     pt: Object.freeze({
         trigger: 'Céu vivo', kicker: 'Diorama de observação', title: 'Céu Vivo',
@@ -48,12 +51,21 @@ const FEEDBACK_KEYS = Object.freeze({
 function languageOf(i18n) { return i18n.language === 'en' ? 'en' : 'pt'; }
 function text(i18n, key) { return COPY[languageOf(i18n)][key] ?? key; }
 
+/**
+ * @param {{
+ *   i18n: any,
+ *   onObserve?: (eventId: string) => boolean,
+ *   onCapture?: (input: { eventId: string | null, filter: string }) => Promise<any>,
+ *   onDeletePhoto?: (photoId: string) => Promise<boolean>,
+ *   getPhotoUrl?: (storageId: string) => Promise<string | null>
+ * }} options
+ */
 export function createLivingSkyUi({
     i18n,
-    onObserve = () => false,
-    onCapture = () => false,
-    onDeletePhoto = () => false,
-    getPhotoUrl = () => null
+    onObserve = (_eventId) => false,
+    onCapture = async (_input) => false,
+    onDeletePhoto = async (_photoId) => false,
+    getPhotoUrl = async (_storageId) => null
 }) {
     const elements = {
         trigger: document.querySelector('#living-sky-trigger'),
