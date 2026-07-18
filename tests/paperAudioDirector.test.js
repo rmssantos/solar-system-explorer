@@ -24,7 +24,7 @@ class FakeAudio {
     removeEventListener(name) { this.listeners.delete(name); }
 }
 
-function createHarness(initialPreference = null) {
+function createHarness(initialPreference = null, now = () => 1_000) {
     const audios = [];
     const values = new Map(initialPreference === null ? [] : [['paper-solar-audio-enabled-v1', initialPreference]]);
     const storage = {
@@ -44,7 +44,8 @@ function createHarness(initialPreference = null) {
             return audio;
         },
         storage,
-        documentRef
+        documentRef,
+        now
     });
     return { director, audios, storage, documentRef, listeners };
 }
@@ -84,6 +85,18 @@ describe('paper audio director', () => {
         expect(director.play('quiz-correct')).toBe(true);
         expect(audios.at(-1).src).toContain('quiz-correct.mp3');
         expect(director.getState()).toMatchObject({ lastCue: 'quiz-correct', activeCueCount: 1 });
+    });
+
+    it('debounces rapid duplicate mission cues without muting different feedback', async () => {
+        let clock = 1_000;
+        const { director, audios } = createHarness(null, () => clock);
+        await director.unlock();
+        expect(director.play('shield-impact')).toBe(true);
+        expect(director.play('shield-impact')).toBe(false);
+        expect(director.play('cargo-capture')).toBe(true);
+        clock += 700;
+        expect(director.play('shield-impact')).toBe(true);
+        expect(audios.filter((audio) => audio.src.includes('shield-impact')).length).toBe(2);
     });
 
     it('pauses while hidden and cleans up all audio', async () => {

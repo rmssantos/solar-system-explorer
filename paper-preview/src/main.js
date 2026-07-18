@@ -679,7 +679,8 @@ localOrbitHost = createLocalOrbitHost({
     onClose: handleLocalOrbitClose,
     onAttemptSave: handleContractAttemptSave,
     onAttemptClear: handleContractAttemptClear,
-    onTrainingComplete: handleMissionTrainingComplete
+    onTrainingComplete: handleMissionTrainingComplete,
+    onAudioCue: (cue) => audioDirector.play(cue)
 });
 
 function interactionRadiusFor(object) {

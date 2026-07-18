@@ -1,4 +1,5 @@
 import { getOrbitalMissionProfile } from './orbitalMissionProfiles.js';
+import { getMissionEventCue } from '../audio/missionAudio.js';
 
 function queryElements(root) {
     return {
@@ -78,6 +79,7 @@ function formatMetric(metric, telemetry) {
  *   onAttemptSave?: (attempt: { contractId: string, missionId: string, simulation: object }) => void,
  *   onAttemptClear?: (contractId: string) => void
  *   onTrainingComplete?: (gameplay: string) => void
+ *   onAudioCue?: (cue: string) => void
  * }} options
  */
 export function createLocalOrbitHost({
@@ -89,7 +91,8 @@ export function createLocalOrbitHost({
     onClose = () => {},
     onAttemptSave = () => {},
     onAttemptClear = () => {},
-    onTrainingComplete = () => {}
+    onTrainingComplete = () => {},
+    onAudioCue = () => {}
 } = {}) {
     let game = null;
     let openOptions = {};
@@ -115,6 +118,8 @@ export function createLocalOrbitHost({
     }
 
     function handleGameEvent(event) {
+        const cue = getMissionEventCue(event);
+        if (cue) onAudioCue(cue);
         if (openOptions.profile?.retryEvents.includes(event)) {
             elements.guidance.textContent = openOptions.profile?.retry ?? messages.retry ?? elements.guidance.textContent;
             return;

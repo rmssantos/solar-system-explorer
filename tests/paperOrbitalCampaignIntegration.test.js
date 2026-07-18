@@ -79,4 +79,8 @@ describe('orbital campaign integration', () => {
         expect(ui).toContain('reward.copy[language].title');
         expect(ui).not.toContain("[paperI18n.t('game.contract.reward'), '+140 XP']");
     });
+
+    it('routes semantic minigame events into the shared audio director', () => {
+        expect(game).toContain('onAudioCue: (cue) => audioDirector.play(cue)');
+    });
 });
