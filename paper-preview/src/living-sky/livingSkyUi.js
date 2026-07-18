@@ -28,6 +28,7 @@ const COPY = Object.freeze({
         trigger: 'Céu vivo', kicker: 'Diorama de observação', title: 'Céu Vivo',
         intro: 'Descobre fenómenos, viaja até ao melhor dia e fotografa-os com o instrumento certo.',
         progress: 'Observações no álbum', active: 'A acontecer', upcoming: 'Próxima janela', complete: 'Fotografado',
+        openAlbum: 'Ver fotografias', enlargeArt: 'Ver ilustração em grande',
         observe: 'Viajar e observar', cameraKicker: 'Instrumento de bordo', cameraTitle: 'Câmara de Explorador',
         visible: 'Visível', infrared: 'Infravermelho', magnetic: 'Campo magnético', closeHint: 'fechar', photoHint: 'fotografia', spaceKey: 'Espaço',
         close: 'Fechar', shutter: 'Tirar fotografia', filterGroup: 'Instrumentos de observação',
@@ -41,6 +42,8 @@ const COPY = Object.freeze({
         moveCloser: 'Ainda estás longe. Avança com W ou empurra o joystick para cima.',
         useInstrument: 'Agora escolhe o instrumento:', outsideWindow: 'Este fenómeno não está ativo neste dia.',
         freePhotoCoach: 'Podes fotografar livremente; só as janelas ativas dão XP.', saved: 'Fotografia guardada no álbum!',
+        resultKicker: 'Fotografia revelada', resultSaved: 'Já está guardada no teu álbum.',
+        viewAlbum: 'Ver no álbum', continuePhoto: 'Continuar a fotografar',
         qualified: 'Descoberta confirmada e guardada!', failed: 'Boa tentativa. Ajusta a mira e repete quando quiseres.',
         unavailable: 'Não foi possível guardar a imagem, mas podes tentar novamente.'
     }),
@@ -48,6 +51,7 @@ const COPY = Object.freeze({
         trigger: 'Living Sky', kicker: 'Observation diorama', title: 'Living Sky',
         intro: 'Find phenomena, travel to the best day and photograph them with the right instrument.',
         progress: 'Observations in album', active: 'Happening now', upcoming: 'Next window', complete: 'Photographed',
+        openAlbum: 'View photos', enlargeArt: 'View illustration larger',
         observe: 'Travel and observe', cameraKicker: 'On-board instrument', cameraTitle: 'Explorer Camera',
         visible: 'Visible', infrared: 'Infrared', magnetic: 'Magnetic field', closeHint: 'close', photoHint: 'photo', spaceKey: 'Space',
         close: 'Close', shutter: 'Take photo', filterGroup: 'Observation instruments',
@@ -61,6 +65,8 @@ const COPY = Object.freeze({
         moveCloser: 'You are still far away. Move with W or push the joystick up.',
         useInstrument: 'Now choose the instrument:', outsideWindow: 'This phenomenon is not active on this day.',
         freePhotoCoach: 'You can take a free photo; only active windows award XP.', saved: 'Photo saved to the album!',
+        resultKicker: 'Photo developed', resultSaved: 'It is already saved in your album.',
+        viewAlbum: 'View in album', continuePhoto: 'Keep taking photos',
         qualified: 'Discovery confirmed and saved!', failed: 'Good try. Adjust the sight and repeat whenever you like.',
         unavailable: 'The image could not be saved, but you can try again.'
     })
@@ -81,6 +87,7 @@ function text(i18n, key) { return COPY[languageOf(i18n)][key] ?? key; }
  *   onObserve?: (eventId: string) => boolean,
  *   onCapture?: (input: { eventId: string | null, filter: string }) => Promise<any>,
  *   onDeletePhoto?: (photoId: string) => Promise<boolean>,
+ *   onOpenAlbum?: () => void,
  *   getPhotoUrl?: (storageId: string) => Promise<string | null>,
  *   revokePhotoUrl?: (storageId: string) => boolean
  * }} options
@@ -90,6 +97,7 @@ export function createLivingSkyUi({
     onObserve = (_eventId) => false,
     onCapture = async (_input) => false,
     onDeletePhoto = async (_photoId) => false,
+    onOpenAlbum = () => {},
     getPhotoUrl = async (_storageId) => null,
     revokePhotoUrl = (_storageId) => false
 }) {
@@ -99,10 +107,16 @@ export function createLivingSkyUi({
         close: requiredElement('#living-sky-close', HTMLButtonElement),
         list: requiredElement('#living-sky-event-list', HTMLElement),
         progress: requiredElement('#living-sky-progress', HTMLElement),
+        albumOpen: requiredElement('#living-sky-album-open', HTMLButtonElement),
         disclosure: requiredElement('#living-sky-disclosure', HTMLElement),
         camera: requiredElement('#explorer-camera', HTMLElement),
         cameraClose: requiredElement('#explorer-camera-close', HTMLButtonElement),
         coach: requiredElement('#explorer-camera-coach', HTMLElement),
+        result: requiredElement('#explorer-camera-result', HTMLElement),
+        resultImage: requiredElement('#explorer-camera-result-image', HTMLImageElement),
+        resultTitle: requiredElement('#explorer-camera-result-title', HTMLElement),
+        viewAlbum: requiredElement('#explorer-camera-view-album', HTMLButtonElement),
+        continuePhoto: requiredElement('#explorer-camera-continue', HTMLButtonElement),
         shutter: requiredElement('#explorer-camera-shutter', HTMLButtonElement),
         filterGroup: requiredElement('.camera-filters', HTMLElement),
         filterButtons: requiredButtons('[data-camera-filter]'),
@@ -121,6 +135,8 @@ export function createLivingSkyUi({
     let selectedEventId = null;
     let cameraOpen = false;
     let busy = false;
+    let reviewingPhoto = false;
+    let reviewedPhoto = null;
     let albumSignature = '';
     let eventSignature = '';
     const photoUrls = new Map();
@@ -137,6 +153,7 @@ export function createLivingSkyUi({
         elements.shutter.setAttribute('aria-label', text(i18n, 'shutter'));
         elements.filterGroup.setAttribute('aria-label', text(i18n, 'filterGroup'));
         elements.viewerClose.setAttribute('aria-label', text(i18n, 'close'));
+        updateReviewCopy();
         eventSignature = '';
         renderEvents();
         albumSignature = '';
@@ -147,6 +164,20 @@ export function createLivingSkyUi({
         elements.panel.hidden = !open;
         elements.trigger.setAttribute('aria-expanded', String(open));
         if (open) renderEvents();
+    }
+
+    function updateReviewCopy() {
+        if (!reviewedPhoto) return;
+        const skyEvent = getLivingSkyEvent(reviewedPhoto.eventId);
+        elements.resultTitle.textContent = text(i18n, reviewedPhoto.qualified ? 'qualified' : 'saved');
+        elements.resultImage.alt = skyEvent?.copy[languageOf(i18n)]?.title ?? text(i18n, 'freePhoto');
+    }
+
+    function setReviewOpen(open) {
+        reviewingPhoto = Boolean(open);
+        elements.result.hidden = !reviewingPhoto;
+        if (!reviewingPhoto) reviewedPhoto = null;
+        return reviewingPhoto;
     }
 
     function setBackgroundInert(inert) {
@@ -180,11 +211,13 @@ export function createLivingSkyUi({
         elements.camera.classList.toggle('is-open', cameraOpen);
         document.body.classList.toggle('is-explorer-camera-open', cameraOpen);
         if (cameraOpen && !wasOpen) {
+            setReviewOpen(false);
             previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : elements.trigger;
             setBackgroundInert(true);
             elements.coach.textContent = text(i18n, 'findTarget');
             elements.cameraClose.focus();
         } else if (!cameraOpen && wasOpen) {
+            setReviewOpen(false);
             setBackgroundInert(false);
             const canRestorePrevious = previousFocus?.isConnected && !elements.panel.contains(previousFocus);
             const focusTarget = canRestorePrevious ? previousFocus : elements.trigger;
@@ -224,7 +257,9 @@ export function createLivingSkyUi({
             const card = document.createElement('article');
             card.className = `living-sky-card${done ? ' is-complete' : ''}`;
             card.style.setProperty('--card-tilt', `${index % 2 ? 0.25 : -0.25}deg`);
-            const img = document.createElement('img'); img.src = event.art; img.alt = ''; img.width = 192; img.height = 192;
+            const artOpen = document.createElement('button'); artOpen.type = 'button'; artOpen.className = 'living-sky-art-open';
+            artOpen.dataset.livingSkyArtOpen = event.id; artOpen.setAttribute('aria-label', `${text(i18n, 'enlargeArt')}: ${event.title}`);
+            const img = document.createElement('img'); img.src = event.art; img.alt = event.title; img.width = 192; img.height = 192; artOpen.append(img);
             const copy = document.createElement('div'); copy.className = 'living-sky-card-copy';
             const kicker = document.createElement('small'); kicker.textContent = event.kicker;
             const title = document.createElement('strong'); title.textContent = event.title;
@@ -236,7 +271,7 @@ export function createLivingSkyUi({
             const xp = document.createElement('span'); xp.textContent = `+${event.rewardXp} XP`;
             meta.append(status, xp);
             const button = document.createElement('button'); button.type = 'button'; button.dataset.livingSkyObserve = event.id; button.textContent = text(i18n, 'observe');
-            copy.append(kicker, title, summary, meta, button); card.append(img, copy); return card;
+            copy.append(kicker, title, summary, meta, button); card.append(artOpen, copy); return card;
         });
         elements.list.replaceChildren(...cards);
     }
@@ -287,8 +322,16 @@ export function createLivingSkyUi({
         renderAlbum();
     }
 
+    function showViewer(src, alt, caption, meta) {
+        elements.viewerImage.src = src;
+        elements.viewerImage.alt = alt;
+        elements.viewerCaption.textContent = caption;
+        elements.viewerMeta.textContent = meta;
+        elements.viewer.showModal();
+    }
+
     function updateTelemetry(assessment) {
-        if (!cameraOpen || busy || !assessment) return;
+        if (!cameraOpen || busy || reviewingPhoto || !assessment) return;
         if (assessment.feedback === 'try-instrument') {
             const preferredFilter = getLivingSkyEvent(assessment.eventId)?.preferredFilter ?? 'visible';
             elements.coach.textContent = `${text(i18n, 'useInstrument')} ${text(i18n, preferredFilter)}.`;
@@ -305,6 +348,16 @@ export function createLivingSkyUi({
         try {
             const result = await onCapture({ eventId: selectedEventId, filter });
             elements.coach.textContent = text(i18n, result?.qualified ? 'qualified' : (result ? 'failed' : 'unavailable'));
+            if (result?.saved && result.storageId) {
+                const url = await getPhotoUrl(result.storageId);
+                const skyEvent = getLivingSkyEvent(result.eventId);
+                elements.resultImage.src = url || skyEvent?.art || '';
+                if (url) photoUrls.set(result.photoId ?? result.storageId, { storageId: result.storageId, url });
+                reviewedPhoto = { eventId: result.eventId, qualified: result.qualified };
+                updateReviewCopy();
+                setReviewOpen(true);
+                elements.viewAlbum.focus();
+            }
             return result;
         } finally {
             busy = false; elements.shutter.disabled = false;
@@ -313,11 +366,26 @@ export function createLivingSkyUi({
 
     elements.trigger.addEventListener('click', () => setOpen(elements.panel.hidden));
     elements.close.addEventListener('click', () => setOpen(false));
+    elements.albumOpen.addEventListener('click', () => { setOpen(false); onOpenAlbum(); });
     elements.cameraClose.addEventListener('click', () => setCameraOpen(false));
+    elements.viewAlbum.addEventListener('click', () => { setCameraOpen(false); onOpenAlbum(); });
+    elements.continuePhoto.addEventListener('click', () => {
+        setReviewOpen(false);
+        elements.coach.textContent = text(i18n, 'findTarget');
+        elements.shutter.focus();
+    });
     elements.shutter.addEventListener('click', capture);
     elements.filterButtons.forEach((button) => button.addEventListener('click', () => setFilter(button.dataset.cameraFilter)));
     elements.list.addEventListener('click', (event) => {
         if (!(event.target instanceof Element)) return;
+        const artOpen = event.target.closest('[data-living-sky-art-open]');
+        if (artOpen instanceof HTMLButtonElement) {
+            const skyEvent = getLivingSkyEvent(artOpen.dataset.livingSkyArtOpen);
+            if (!skyEvent) return;
+            const localized = skyEvent.copy[languageOf(i18n)];
+            showViewer(skyEvent.art, localized.title, localized.title, localized.objective);
+            return;
+        }
         const button = event.target.closest('[data-living-sky-observe]');
         if (!(button instanceof HTMLButtonElement)) return;
         selectedEventId = button.dataset.livingSkyObserve;
@@ -333,11 +401,12 @@ export function createLivingSkyUi({
         const cardImage = open.querySelector('img');
         if (!record || !cardImage) return;
         const skyEvent = getLivingSkyEvent(record.eventId);
-        elements.viewerImage.src = cardImage.src;
-        elements.viewerImage.alt = cardImage.alt;
-        elements.viewerCaption.textContent = skyEvent?.copy[languageOf(i18n)]?.title ?? text(i18n, 'freePhoto');
-        elements.viewerMeta.textContent = `${Math.round(record.score * 100)}% · ${text(i18n, record.filter)}`;
-        elements.viewer.showModal();
+        showViewer(
+            cardImage.src,
+            cardImage.alt,
+            skyEvent?.copy[languageOf(i18n)]?.title ?? text(i18n, 'freePhoto'),
+            `${Math.round(record.score * 100)}% · ${text(i18n, record.filter)}`
+        );
     });
     elements.viewerClose.addEventListener('click', () => elements.viewer.close());
     elements.viewer.addEventListener('click', (event) => { if (event.target === elements.viewer) elements.viewer.close(); });

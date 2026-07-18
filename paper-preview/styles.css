@@ -2580,11 +2580,13 @@ html[data-flight-input="touch"] .joystick-label {
 .sky-photo-viewer button { min-width: 44px; min-height: 44px; border: 2px solid currentColor; border-radius: 50%; background: transparent; font-size: 1.4rem; cursor: pointer; }
 .living-sky-intro { position: relative; margin: 0.8rem 0; line-height: 1.45; }
 .living-sky-progress { position: relative; padding: 0.55rem 0.7rem; color: #f2f0e8; background: #252b3b; border-radius: 0.45rem; }
+.living-sky-progress > span { display: grid; gap: 0.1rem; }
 .living-sky-progress strong { color: #78d7d2; }
+.living-sky-progress button { min-height: 44px; padding: 0.45rem 0.7rem; color: #101936; background: #78d7d2; border: 2px solid #f2f0e8; border-radius: 0.4rem; font: inherit; font-weight: 900; cursor: pointer; }
 .living-sky-event-list { position: relative; display: grid; gap: 0.75rem; margin-top: 0.8rem; }
 .living-sky-card {
   display: grid;
-  grid-template-columns: 5.3rem 1fr;
+  grid-template-columns: 7.2rem 1fr;
   gap: 0.75rem;
   padding: 0.65rem;
   background: #fff;
@@ -2593,14 +2595,16 @@ html[data-flight-input="touch"] .joystick-label {
   transform: rotate(var(--card-tilt, -0.25deg));
 }
 .living-sky-card.is-complete { border-color: #54be9c; }
-.living-sky-card img { width: 5.3rem; aspect-ratio: 1; object-fit: cover; border: 2px solid #252b3b; border-radius: 0.35rem; background: #101936; }
+.living-sky-art-open { position: relative; align-self: start; width: 7.2rem; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
+.living-sky-art-open::after { content: "⌕"; position: absolute; right: 0.35rem; bottom: 0.35rem; display: grid; width: 1.75rem; aspect-ratio: 1; place-items: center; color: #f2f0e8; background: #252b3b; border: 2px solid #f2f0e8; border-radius: 50%; font-size: 1rem; }
+.living-sky-card img { display: block; width: 7.2rem; aspect-ratio: 1; object-fit: cover; border: 2px solid #252b3b; border-radius: 0.35rem; background: #101936; }
 .living-sky-card-copy { min-width: 0; display: grid; gap: 0.24rem; }
 .living-sky-card-copy small { color: #7568a6; font-weight: 900; text-transform: uppercase; }
 .living-sky-card-copy strong { font-size: 1.05rem; }
 .living-sky-card-copy p { margin: 0; font-size: 0.87rem; line-height: 1.35; }
 .living-sky-card-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; font-size: 0.75rem; }
 .living-sky-card-meta span { padding: 0.18rem 0.42rem; border-radius: 999px; background: #e8edf2; }
-.living-sky-card button {
+.living-sky-card-copy > button {
   min-height: 44px;
   margin-top: 0.3rem;
   border: 2px solid #252b3b;
@@ -2641,6 +2645,34 @@ html[data-flight-input="touch"] .joystick-label {
 .camera-reticle::after { width: 2.4rem; height: 2px; }
 .camera-reticle span { position: absolute; inset: 18%; border: 2px solid #54be9c; border-radius: 0.65rem; }
 .explorer-camera-coach { position: absolute; top: 22%; left: 50%; width: min(32rem, calc(100vw - 3rem)); padding: 0.55rem 0.8rem; transform: translateX(-50%); text-align: center; font-weight: 900; color: #252b3b; background: #f2f0e8; border: 2px solid #252b3b; border-radius: 0.45rem; }
+.explorer-camera-result {
+  position: absolute;
+  z-index: 5;
+  top: 48%;
+  left: 50%;
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr);
+  gap: 0.9rem;
+  width: min(34rem, calc(100vw - 2rem));
+  padding: 0.8rem;
+  transform: translate(-50%, -50%) rotate(-0.35deg);
+  color: #252b3b;
+  background: #f2f0e8;
+  border: 3px solid #252b3b;
+  border-radius: 0.45rem 1rem 0.55rem 0.8rem;
+  box-shadow: 9px 10px 0 rgb(16 25 54 / 66%);
+  pointer-events: auto;
+}
+.explorer-camera-result[hidden] { display: none; }
+.explorer-camera-result figure { margin: 0; padding: 0.35rem 0.35rem 1.2rem; background: #fff; border: 1px solid rgb(37 43 59 / 45%); box-shadow: 3px 4px 0 rgb(37 43 59 / 18%); transform: rotate(-1.1deg); }
+.explorer-camera-result img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #101936; }
+.explorer-camera-result > div { display: grid; align-content: center; gap: 0.3rem; }
+.explorer-camera-result small { color: #7568a6; font-weight: 900; letter-spacing: 0.09em; text-transform: uppercase; }
+.explorer-camera-result strong { font-family: var(--font-display, Georgia, serif); font-size: 1.25rem; }
+.explorer-camera-result p { margin: 0; line-height: 1.35; }
+.explorer-camera-result-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.35rem; }
+.explorer-camera-result-actions button { min-height: 44px; padding: 0.5rem 0.7rem; border: 2px solid #252b3b; border-radius: 0.4rem; color: #f2f0e8; background: #7568a6; font: inherit; font-weight: 900; cursor: pointer; }
+.explorer-camera-result-actions button + button { color: #252b3b; background: #e8edf2; }
 .explorer-camera-console {
   position: absolute;
   left: 50%;
@@ -2686,6 +2718,7 @@ html[data-flight-input="touch"] .joystick-label {
 .is-explorer-camera-open .key-hint,
 .is-explorer-camera-open .touch-hint,
 .is-explorer-camera-open .object-hover,
+.is-explorer-camera-open .autopilot-status,
 .is-explorer-camera-open .explore-nearby { display: none !important; }
 .is-explorer-camera-open .flight-controls { z-index: 45; }
 html[data-flight-input="touch"] .is-explorer-camera-open .flight-joystick {
@@ -2696,7 +2729,8 @@ html[data-flight-input="touch"] .is-explorer-camera-open .flight-joystick {
 .explorer-camera.is-flashing .explorer-camera-flash { animation: camera-flash 280ms ease-out; }
 @keyframes camera-flash { 0% { opacity: 0.9; } 100% { opacity: 0; } }
 
-.sky-photo-album { margin-top: 1.5rem; padding: 1rem; color: #252b3b; background: #e8edf2; border: 2px dashed #7568a6; border-radius: 0.7rem; }
+.sky-photo-album { margin: 0.8rem 0 1.25rem; padding: 1rem; color: #252b3b; background: #e8edf2; border: 2px dashed #7568a6; border-radius: 0.7rem; }
+.sky-photo-album:focus-visible { outline: 4px solid #78d7d2; outline-offset: 3px; }
 .sky-photo-album h3 { margin: 0.15rem 0 0; }
 .sky-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 0.8rem; }
 .sky-photo-card { position: relative; margin: 0; padding: 0.4rem; background: #fff; border: 2px solid #252b3b; border-radius: 0.4rem; transform: rotate(var(--photo-tilt, -0.45deg)); }
@@ -2713,14 +2747,18 @@ html[data-flight-input="touch"] .is-explorer-camera-open .flight-joystick {
 
 @media (max-width: 720px) {
   .living-sky-observatory { top: 4.5rem; right: 0.55rem; width: calc(100vw - 1.1rem); max-height: calc(100dvh - 5.2rem - env(safe-area-inset-bottom)); }
-  .living-sky-card { grid-template-columns: 4.5rem 1fr; }
-  .living-sky-card img { width: 4.5rem; }
+  .living-sky-card { grid-template-columns: 5.5rem 1fr; }
+  .living-sky-art-open, .living-sky-card img { width: 5.5rem; }
   .explorer-camera { inset: 3.5rem 0 0; }
   .explorer-camera::before { inset: 0.5rem; border-radius: 1rem; }
   .explorer-camera-heading { top: 0.8rem; left: 0.9rem; right: 0.9rem; }
   .explorer-camera-heading div { max-width: calc(100vw - 5rem); }
   .camera-reticle { top: 42%; width: min(62vw, 18rem); }
   .explorer-camera-coach { top: 18%; font-size: 0.82rem; }
+  .explorer-camera-result { top: 47%; grid-template-columns: 7.2rem minmax(0, 1fr); gap: 0.65rem; padding: 0.6rem; }
+  .explorer-camera-result strong { font-size: 1rem; }
+  .explorer-camera-result p { font-size: 0.78rem; }
+  .explorer-camera-result-actions { display: grid; }
   .explorer-camera-console { bottom: max(0.5rem, env(safe-area-inset-bottom)); width: calc(100vw - 1rem); padding: 0.55rem 4.5rem 0.5rem 0.55rem; }
   .camera-filters button { grid-template-columns: 1fr; justify-items: center; font-size: 0.7rem; }
   .camera-filters kbd { display: none; }
