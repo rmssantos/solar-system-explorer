@@ -29,7 +29,10 @@ function pickBodyColor(style, key, faceIndex, normalizedY) {
     return style.surfaceColors[Math.floor(pattern * style.surfaceColors.length)];
 }
 
-function addSimpleSurfaceDetails(group, style, { includeCraters = true } = {}) {
+function addSimpleSurfaceDetails(group, style, {
+    includeCraters = true,
+    includePolarCaps = true
+} = {}) {
     if (style.features.craters && includeCraters) {
         const craterGroup = new THREE.Group();
         craterGroup.name = `${style.key}-craters`;
@@ -54,7 +57,7 @@ function addSimpleSurfaceDetails(group, style, { includeCraters = true } = {}) {
         group.add(spot);
     }
 
-    if (style.features.polarCaps && style.key !== 'earth') {
+    if (style.features.polarCaps && style.key !== 'earth' && includePolarCaps) {
         [{ x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 }].forEach((direction) => {
             const cap = new THREE.Mesh(
                 new THREE.CircleGeometry(style.radius * 0.28, 12),
@@ -268,7 +271,10 @@ export function createLowPolyPlanet(key, { surfaceTexture = null, cloudTexture =
     group.add(outline, rim, body);
     if (key === 'sun') addSunCorona(group, style);
     if (key === 'earth') addEarthDetails(group, style, cloudTexture);
-    addSimpleSurfaceDetails(group, style, { includeCraters: !surfaceTexture });
+    addSimpleSurfaceDetails(group, style, {
+        includeCraters: !surfaceTexture,
+        includePolarCaps: !surfaceTexture
+    });
     if (style.features.rings) addPlanetRings(group, style);
     return group;
 }
