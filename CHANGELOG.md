@@ -2,6 +2,18 @@
 
 Public changes to the Paper Solar Explorer are maintained automatically by Release Please from Conventional Commits.
 
+## [1.5.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.4.0...v1.5.0) (2026-07-18)
+
+
+### Features
+
+* bring the paper solar system to life ([#48](https://github.com/rmssantos/solar-system-explorer/issues/48)) ([b602a6e](https://github.com/rmssantos/solar-system-explorer/commit/b602a6e9a57b55aba185cf09d80118e609fe32cc))
+
+
+### Bug Fixes
+
+* improve responsive mission postcards ([#47](https://github.com/rmssantos/solar-system-explorer/issues/47)) ([150764b](https://github.com/rmssantos/solar-system-explorer/commit/150764bd0f46bac8ef023c3ec33f7e2652a9f63d))
+
 ## [1.4.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.3.0...v1.4.0) (2026-07-18)
 
 
