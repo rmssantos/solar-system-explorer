@@ -58,11 +58,12 @@ function addSimpleSurfaceDetails(group, style, {
     }
 
     if (style.features.polarCaps && style.key !== 'earth' && includePolarCaps) {
-        [{ x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 }].forEach((direction) => {
+        [{ x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 }].forEach((direction, index) => {
             const cap = new THREE.Mesh(
                 new THREE.CircleGeometry(style.radius * 0.28, 12),
                 standardMaterial({ color: style.surfaceColors.at(-1), side: THREE.DoubleSide })
             );
+            cap.name = `${style.key}-polar-cap-${index === 0 ? 'north' : 'south'}`;
             placeTangent(cap, direction, style.radius * 1.018, 1, 0.65);
             group.add(cap);
         });

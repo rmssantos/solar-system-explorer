@@ -34,8 +34,9 @@ describe('paper time observatory HUD', () => {
         expect(ui).toContain("event.target.closest('[data-orbital-time-scale]')");
         expect(ui).toContain('[elements.timeObservatoryToday, \'click\'');
         expect(ui).toContain('function updateOrbitalClock(clock)');
-        expect(ui).toContain("new Intl.DateTimeFormat(paperI18n.language === 'en' ? 'en-GB' : 'pt-PT'");
-        expect(ui).toContain("paperI18n.t('game.time.daysPerSecond', { days: clock.daysPerSecond })");
+        expect(ui).toContain('let orbitalClockFormatterLanguage = null');
+        expect(ui).toContain('orbitalClockFormatterLanguage !== paperI18n.language');
+        expect(ui).toContain("paperI18n.t('game.time.daysPerSecond', { days: orbitalClockState.daysPerSecond })");
         expect(ui).toMatch(/return\s*\{[^}]*updateOrbitalClock,/s);
     });
 });

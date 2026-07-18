@@ -151,6 +151,8 @@ export function createPreviewUI({
     let activeMedia = null;
     let audioState = { enabled: true, unlocked: false };
     let orbitalClockState = { dateMs: Date.now(), timeScale: 10, paused: false, daysPerSecond: 10 };
+    let orbitalClockFormatterLanguage = null;
+    let orbitalClockFormatter = null;
     const mediaViewer = createMediaViewer(elements.mediaViewer, {
         onImageOpen: (media) => siteAnalytics.track('image_open', { objectKey: media.objectKey, surface: 'game' }),
         onSourceOpen: (media) => siteAnalytics.track('source_open', {
@@ -178,10 +180,14 @@ export function createPreviewUI({
         if (!clock) return orbitalClockState;
         orbitalClockState = { ...orbitalClockState, ...clock };
         const date = new Date(orbitalClockState.dateMs);
-        const formatter = new Intl.DateTimeFormat(paperI18n.language === 'en' ? 'en-GB' : 'pt-PT', {
-            day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'
-        });
-        elements.timeObservatoryDate.textContent = formatter.format(date);
+        if (orbitalClockFormatterLanguage !== paperI18n.language || !orbitalClockFormatter) {
+            orbitalClockFormatterLanguage = paperI18n.language;
+            orbitalClockFormatter = new Intl.DateTimeFormat(
+                orbitalClockFormatterLanguage === 'en' ? 'en-GB' : 'pt-PT',
+                { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }
+            );
+        }
+        elements.timeObservatoryDate.textContent = orbitalClockFormatter.format(date);
         elements.timeObservatoryDate.dateTime = date.toISOString();
         elements.timeObservatoryScale.textContent = orbitalClockState.paused ? 'Ⅱ' : `${orbitalClockState.timeScale}×`;
         elements.timeObservatoryToggle.dataset.timeScale = String(orbitalClockState.timeScale);
@@ -194,7 +200,7 @@ export function createPreviewUI({
         } else if (orbitalClockState.daysPerSecond === 1) {
             elements.timeObservatoryExplanation.textContent = paperI18n.t('game.time.oneDayPerSecond');
         } else {
-            elements.timeObservatoryExplanation.textContent = paperI18n.t('game.time.daysPerSecond', { days: clock.daysPerSecond });
+            elements.timeObservatoryExplanation.textContent = paperI18n.t('game.time.daysPerSecond', { days: orbitalClockState.daysPerSecond });
         }
         return orbitalClockState;
     }

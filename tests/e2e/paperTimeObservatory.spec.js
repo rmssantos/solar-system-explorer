@@ -92,6 +92,7 @@ test('fits below the controls in short landscape screens', async ({ page }) => {
     await page.locator('#time-observatory-toggle').click();
 
     const panel = page.locator('#time-observatory');
+    await expect(panel).toBeVisible();
     const box = await panel.boundingBox();
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.y).toBeGreaterThanOrEqual(50);
