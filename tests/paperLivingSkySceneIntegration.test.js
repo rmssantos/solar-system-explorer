@@ -6,7 +6,7 @@ const scene = readFileSync(new URL('../paper-preview/src/scene/createPaperScene.
 describe('living-sky scene integration', () => {
     it('updates effects in the existing diorama and exposes capture telemetry', () => {
         expect(scene).toContain("import { createLivingSkyEffects } from './createLivingSkyEffects.js'");
-        expect(scene).toContain('livingSkyEffects.update');
+        expect(scene).toContain('livingSkyEffects.update(runtime.elapsed, livingSkyPositions, camera)');
         expect(scene).toContain('setLivingSkyPresentation');
         expect(scene).toContain('getLivingSkyTelemetry');
         expect(scene).toContain('getCaptureCanvas');

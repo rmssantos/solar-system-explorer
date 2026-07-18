@@ -18,6 +18,8 @@ describe('Living Sky catalog', () => {
             expect(event.art).toBe(`/art/living-sky/${event.id}.webp`);
             expect(event.copy.pt.title).toBeTruthy();
             expect(event.copy.en.title).toBeTruthy();
+            expect(event.copy.pt.visualClue.length).toBeGreaterThan(24);
+            expect(event.copy.en.visualClue.length).toBeGreaterThan(24);
             expect(event.copy.pt.simulationNote).toMatch(/simula/i);
             expect(event.copy.en.simulationNote).toMatch(/simulat/i);
             expect(event.source.url).toMatch(/^https:\/\/science\.nasa\.gov\//);

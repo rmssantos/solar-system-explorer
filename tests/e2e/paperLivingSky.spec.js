@@ -21,24 +21,46 @@ test('observes, photographs and archives a living-sky phenomenon', async ({ page
     await expect(observatory).toBeVisible();
     await expect(observatory.locator('.living-sky-card')).toHaveCount(4);
     await expect(observatory.locator('.living-sky-card img').first()).toHaveJSProperty('complete', true);
+    await page.screenshot({ path: '.local/playtest/living-sky-illustrations-observatory.png' });
+    await observatory.locator('[data-living-sky-art-open]').first().click();
+    await expect(page.locator('#sky-photo-viewer')).toBeVisible();
+    await expect(page.locator('#sky-photo-viewer-image')).toHaveAttribute('src', /\/art\/living-sky\/.+\.webp$/);
+    await page.screenshot({ path: '.local/playtest/living-sky-illustration-large.png' });
+    await page.locator('#sky-photo-viewer-close').click();
 
     await observatory.locator('[data-living-sky-observe="earth-aurora"]').click();
     const camera = page.locator('#explorer-camera');
-    await expect(camera).toBeVisible();
+    await expect(camera).toBeHidden();
+    await expect(page.locator('#autopilot-status')).toBeVisible();
+    await expect.poll(async () => {
+        await page.evaluate(() => window.advanceTime(5_000));
+        return camera.isVisible();
+    }, { timeout: 20_000 }).toBe(true);
+    await expect(page.locator('#autopilot-status')).toBeHidden();
     const clock = await page.evaluate(() => window.__paperPreview.getState().scene.orbitalClock);
-    expect(clock.timeScale).toBe(1);
+    expect(clock.timeScale).toBe(0);
     const sky = await page.evaluate(() => window.__paperPreview.getState().livingSky);
     expect(sky.cameraOpen).toBe(true);
     expect(sky.selectedEventId).toBe('earth-aurora');
     expect(sky.activeEventIds).toContain('earth-aurora');
+    await expect(camera.locator('#explorer-camera-target-title')).toHaveText('Aurora da Terra');
+    await expect(camera.locator('#explorer-camera-target-clue')).toContainText('fitas verdes');
+    await expect(camera.locator('#explorer-camera-target-marker')).toBeVisible();
+    await expect(camera.locator('#explorer-camera-target-marker')).toHaveAttribute('data-target-visible', 'true');
+    await page.screenshot({ path: '.local/playtest/living-sky-aurora-viewfinder-desktop.png' });
 
     await camera.locator('[data-camera-filter="magnetic"]').click();
     await camera.locator('#explorer-camera-shutter').click();
     await expect.poll(() => page.evaluate(() => window.__paperPreview.getState().livingSky.photoRecords.length)).toBe(1);
-    await camera.locator('#explorer-camera-close').click();
-
-    await page.locator('#mission-center-trigger').click();
-    await page.locator('[data-passport-section="collection"]').click();
+    const result = camera.locator('#explorer-camera-result');
+    await expect(result).toBeVisible();
+    await expect(camera.locator('.explorer-camera-guidance')).toBeHidden();
+    await expect(result.locator('#explorer-camera-result-image')).toHaveAttribute('src', /^blob:/);
+    await page.screenshot({ path: '.local/playtest/living-sky-photo-developed-desktop.png' });
+    await result.locator('#explorer-camera-view-album').click();
+    await expect(camera).toBeHidden();
+    await expect.poll(() => page.evaluate(() => window.__paperPreview.getState().scene.orbitalClock.timeScale)).toBe(1);
+    await expect(page.locator('[data-passport-section="collection"]')).toHaveAttribute('aria-selected', 'true');
     const album = page.locator('.sky-photo-album');
     await expect(album).toBeVisible();
     await expect(album.locator('.sky-photo-card')).toHaveCount(1);
@@ -63,18 +85,49 @@ test('keeps observatory and camera touch-safe on phone and landscape tablet', as
     expect(panelBox.y + panelBox.height).toBeLessThanOrEqual(844);
 
     await panel.locator('[data-living-sky-observe="mars-dust-front"]').click();
+    const mobileCamera = page.locator('#explorer-camera');
+    await expect(mobileCamera).toBeHidden();
+    await expect.poll(async () => {
+        await page.evaluate(() => window.advanceTime(5_000));
+        return mobileCamera.isVisible();
+    }, { timeout: 20_000 }).toBe(true);
+    await expect(page.locator('#explorer-camera-target-title')).toHaveText('A frente de poeira');
+    await expect(page.locator('#explorer-camera-target-clue')).toContainText('faixa coral');
+    await page.screenshot({ path: '.local/playtest/living-sky-dust-viewfinder-mobile.png' });
     const shutter = page.locator('#explorer-camera-shutter');
     const shutterBox = await shutter.boundingBox();
     expect(shutterBox.width).toBeGreaterThanOrEqual(56);
     expect(shutterBox.height).toBeGreaterThanOrEqual(56);
     await expect(page.locator('.camera-key-hint')).toBeHidden();
 
+    await shutter.click();
+    const result = page.locator('#explorer-camera-result');
+    await expect(result).toBeVisible();
+    await expect(page.locator('.explorer-camera-guidance')).toBeHidden();
+    const resultBox = await result.boundingBox();
+    expect(resultBox.x).toBeGreaterThanOrEqual(0);
+    expect(resultBox.x + resultBox.width).toBeLessThanOrEqual(390);
+    expect(resultBox.y).toBeGreaterThanOrEqual(0);
+    expect(resultBox.y + resultBox.height).toBeLessThanOrEqual(844);
+    await page.screenshot({ path: '.local/playtest/living-sky-photo-developed-mobile.png' });
+
     await page.locator('[data-language-toggle]').click();
     await expect(page.locator('.explorer-camera-heading strong')).toHaveText('Explorer Camera');
+    await expect(result.locator('#explorer-camera-view-album')).toHaveText('View in album');
     await page.setViewportSize({ width: 844, height: 390 });
+    const landscapeResultBox = await result.boundingBox();
+    expect(landscapeResultBox.x).toBeGreaterThanOrEqual(0);
+    expect(landscapeResultBox.x + landscapeResultBox.width).toBeLessThanOrEqual(844);
+    expect(landscapeResultBox.y).toBeGreaterThanOrEqual(0);
+    expect(landscapeResultBox.y + landscapeResultBox.height).toBeLessThanOrEqual(390);
+    await page.screenshot({ path: '.local/playtest/living-sky-photo-developed-landscape.png' });
+    await result.locator('#explorer-camera-continue').click();
     const consoleBox = await page.locator('.explorer-camera-console').boundingBox();
     expect(consoleBox.x).toBeGreaterThanOrEqual(0);
     expect(consoleBox.x + consoleBox.width).toBeLessThanOrEqual(844);
     expect(consoleBox.y + consoleBox.height).toBeLessThanOrEqual(390);
+    const landscapeGuidanceBox = await page.locator('.explorer-camera-guidance').boundingBox();
+    const landscapeMarkerBox = await page.locator('#explorer-camera-target-marker').boundingBox();
+    expect(landscapeGuidanceBox.x + landscapeGuidanceBox.width).toBeLessThan(landscapeMarkerBox.x);
     await page.screenshot({ path: '.local/playtest/living-sky-camera-landscape.png' });
 });

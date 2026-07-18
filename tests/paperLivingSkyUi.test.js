@@ -13,12 +13,23 @@ describe('living-sky observatory and explorer camera UI', () => {
         for (const id of ['living-sky-observatory', 'living-sky-event-list', 'explorer-camera', 'sky-photo-grid']) {
             expect(html).toContain(`id="${id}"`);
         }
+        expect(html).toContain('id="living-sky-album-open"');
+        expect(html.indexOf('class="sky-photo-album"')).toBeLessThan(html.indexOf('id="collection-grid"'));
     });
 
     it('provides explicit touch controls, keyboard hints and an accessible shutter', () => {
         expect(html).toMatch(/id="explorer-camera"[^>]*role="dialog"[^>]*aria-modal="false"[^>]*aria-labelledby="explorer-camera-title"/);
         expect(html).toContain('id="explorer-camera-title"');
         expect(html).toContain('aria-describedby="explorer-camera-coach"');
+        expect(html).toContain('id="explorer-camera-target-title"');
+        expect(html).toContain('id="explorer-camera-target-clue"');
+        expect(html).toContain('id="explorer-camera-target-marker"');
+        expect(html).toContain('data-living-sky-copy="targetMarker"');
+        expect(html).toContain('data-living-sky-copy="targetKicker"');
+        expect(html).toContain('id="explorer-camera-result"');
+        expect(html).toContain('id="explorer-camera-result-image"');
+        expect(html).toContain('id="explorer-camera-view-album"');
+        expect(html).toContain('id="explorer-camera-continue"');
         expect(html).toContain('id="explorer-camera-shutter"');
         expect(html).toContain('data-camera-filter="visible"');
         expect(html).toContain('data-camera-filter="infrared"');
@@ -29,6 +40,9 @@ describe('living-sky observatory and explorer camera UI', () => {
         expect(css).toMatch(/\.explorer-camera-shutter[\s\S]*min-width:\s*56px/);
         expect(css).toContain('@media (max-width: 720px)');
         expect(css).toContain('env(safe-area-inset-bottom)');
+        expect(css).toContain('.is-explorer-camera-open .autopilot-status');
+        expect(css).toContain('.explorer-camera-guidance');
+        expect(css).toContain('.explorer-camera-target-marker');
     });
 
     it('connects observations, saves, photos and the existing flight runtime', () => {
@@ -42,5 +56,6 @@ describe('living-sky observatory and explorer camera UI', () => {
         expect(main).toContain('skyPhotoStore.revokeObjectUrl');
         expect(main).toContain('if (!persistent)');
         expect(main).toContain('livingSkyUi.setOpen(false)');
+        expect(main).toContain("previewUI.openMissionLog('collection')");
     });
 });
