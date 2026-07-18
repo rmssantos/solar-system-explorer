@@ -342,6 +342,7 @@
             </div>
             <nav class="passport-tabs" role="tablist" aria-label="Secções do passaporte">
                 <button type="button" role="tab" data-passport-section="missions" aria-selected="true" data-i18n="game.passport.missions">Missões</button>
+                <button type="button" role="tab" data-passport-section="investigation" aria-selected="false" data-i18n="game.passport.investigation">Investigação</button>
                 <button type="button" role="tab" data-passport-section="collection" aria-selected="false" data-i18n="game.passport.collection">Coleção</button>
                 <button type="button" role="tab" data-passport-section="awards" aria-selected="false" data-i18n="game.passport.awards">Prémios</button>
             </nav>
@@ -362,6 +363,31 @@
                     <figcaption><strong id="apod-title">Céu de hoje</strong><span id="apod-date"></span></figcaption>
                 </figure>
                 <ol id="mission-list" class="mission-list"></ol>
+            </section>
+            <section class="passport-panel" data-passport-panel="investigation" hidden>
+                <div id="expedition-board" class="expedition-board" aria-labelledby="expedition-board-title">
+                    <header class="expedition-heading">
+                        <div>
+                            <p data-i18n="game.expedition.kicker">Arquivo secreto da Lumi</p>
+                            <h2 id="expedition-board-title" data-i18n="game.expedition.title">O Sinal das Luas</h2>
+                            <span data-i18n="game.expedition.copy">Segue quatro pistas científicas e descobre o que se esconde sob mundos gelados.</span>
+                        </div>
+                        <div class="expedition-evidence-meter">
+                            <small data-i18n="game.expedition.evidence">Pistas recolhidas</small>
+                            <strong id="expedition-progress">0 de 4 pistas encontradas</strong>
+                            <progress id="expedition-progress-meter" max="4" value="0" aria-label="Pistas recolhidas"></progress>
+                        </div>
+                    </header>
+                    <aside class="expedition-lumi" aria-live="polite">
+                        <div class="expedition-lumi-avatar" aria-hidden="true"><span>✦</span></div>
+                        <div><small data-i18n="game.lumi.kicker">Lumi · guia de bordo</small><p id="expedition-lumi-message"></p></div>
+                    </aside>
+                    <ol id="expedition-chapter-list" class="expedition-chapter-list" aria-label="Rota da investigação"></ol>
+                    <section class="expedition-evidence-tray" aria-labelledby="expedition-evidence-title">
+                        <h3 id="expedition-evidence-title" data-i18n="game.expedition.evidence">Pistas recolhidas</h3>
+                        <div id="expedition-evidence-grid" class="expedition-evidence-grid"></div>
+                    </section>
+                </div>
             </section>
             <section class="passport-panel" data-passport-panel="collection" hidden>
                 <p class="mission-log-intro" data-i18n="game.passport.collectionCopy">Cada cartão é um lugar ou objeto que encontraste pessoalmente.</p>

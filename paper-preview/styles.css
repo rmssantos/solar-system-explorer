@@ -2484,3 +2484,44 @@ html[data-flight-input="touch"] .joystick-label {
     .agency-science-telemetry i,
     .agency-science-result { animation: none !important; }
 }
+
+/* Signal of the Moons investigation board */
+.expedition-board { display: grid; gap: 16px; container-name: expedition-board; container-type: inline-size; }
+.expedition-heading { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(12rem, auto); gap: 16px; align-items: end; padding: clamp(16px, 3vw, 24px); overflow: hidden; color: #f8edcf; background-color: #172643; background-image: radial-gradient(circle at 82% 22%, rgb(159 213 231 / .18) 0 2px, transparent 3px), radial-gradient(circle at 66% 72%, rgb(244 200 95 / .2) 0 1px, transparent 2px); background-size: 54px 48px, 42px 38px; border: 4px solid #352c31; border-radius: 11px 18px 13px 16px; box-shadow: 6px 8px 0 #c25f4a; }
+.expedition-heading::after { position: absolute; right: -40px; bottom: -48px; width: 160px; aspect-ratio: 1; content: ''; border: 3px dashed rgb(159 213 231 / .35); border-radius: 50%; transform: rotate(-12deg); }
+.expedition-heading > * { position: relative; z-index: 1; }
+.expedition-heading p { margin: 0 0 5px; color: #f4c85f; font-size: .58rem; font-weight: 1000; letter-spacing: .13em; text-transform: uppercase; }
+.expedition-heading h2 { margin: 0 0 6px; font: 850 clamp(1.6rem, 4vw, 2.5rem)/.98 'Paper Fredoka', sans-serif; }
+.expedition-heading > div > span { display: block; max-width: 48ch; color: #cad6e4; font-size: .76rem; line-height: 1.45; }
+.expedition-evidence-meter { display: grid; min-width: 12rem; gap: 6px; padding: 12px; color: #302c34; background: #f7e8b9; border: 3px solid #9d7942; border-radius: 9px 13px 8px 12px; box-shadow: 3px 4px 0 #4d8490; transform: rotate(1deg); }
+.expedition-evidence-meter small { color: #8d493d; font-size: .55rem; font-weight: 1000; letter-spacing: .08em; text-transform: uppercase; }
+.expedition-evidence-meter strong { font-size: .72rem; }.expedition-evidence-meter progress { width: 100%; height: 10px; accent-color: #4f8177; }
+.expedition-lumi { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px 16px; color: #273649; background: #dce7e1; border: 3px solid #4f8177; border-radius: 13px 9px 16px 10px; box-shadow: 4px 5px 0 rgb(49 93 98 / .16); }
+.expedition-lumi-avatar { display: grid; width: 50px; aspect-ratio: 1; place-items: center; color: #fff3cc; background: #4d8490; border: 3px solid #315d62; border-radius: 48% 52% 45% 55%; box-shadow: 2px 3px 0 #d5634d; transform: rotate(-3deg); }
+.expedition-lumi-avatar span { font-size: 1.45rem; animation: expedition-lumi-pulse 2.8s ease-in-out infinite; }
+.expedition-lumi small { color: #315d62; font-size: .54rem; font-weight: 1000; letter-spacing: .1em; text-transform: uppercase; }.expedition-lumi p { margin: 3px 0 0; font-size: .78rem; font-weight: 800; line-height: 1.4; }
+.expedition-chapter-list { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.expedition-chapter { position: relative; display: grid; grid-template-columns: 40px 152px minmax(0, 1fr) minmax(144px, 176px); gap: 14px; align-items: center; padding: 14px; background-color: #fff0c4; background-image: linear-gradient(rgb(255 240 196 / .82), rgb(255 240 196 / .82)), url('/art/textures/paper-craft-surface.webp'); background-size: auto, 380px auto; border: 3px solid #9d7942; border-left: 8px dotted #d5634d; border-radius: 7px 13px 8px 12px; box-shadow: 4px 6px 0 rgb(80 57 31 / .14); }
+.expedition-chapter:nth-child(even) { transform: rotate(-.12deg); }.expedition-chapter[data-status="locked"] { color: #756b5c; background: #ddd2b3; border-color: #9a8d72; border-left-color: #908570; }.expedition-chapter[data-status="completed"] { background-color: #e2e9c4; border-color: #668258; }.expedition-chapter[data-kind="finale"] { border-left-style: solid; border-left-color: #4d8490; }
+.expedition-step { display: grid; width: 38px; aspect-ratio: 1; place-items: center; color: #fff3d1; background: #a95343; border: 3px solid #79382f; border-radius: 50% 45% 53% 47%; font: 1000 .85rem/1 'Paper Fredoka', sans-serif; transform: rotate(-3deg); }.expedition-chapter[data-status="completed"] .expedition-step { background: #4f8177; border-color: #315b55; }
+.expedition-art-button { position: relative; display: block; width: 100%; padding: 0; overflow: visible; background: transparent; border: 0; cursor: zoom-in; transform: rotate(-1deg); }.expedition-art-button:focus-visible { outline: 4px solid #315d62; outline-offset: 4px; }
+.expedition-art { display: block; width: 100%; aspect-ratio: 8 / 5; object-fit: cover; background: #172643; border: 4px solid #fff5d8; border-radius: 4px 9px 5px 8px; box-shadow: 2px 3px 0 #6f5033; }.expedition-chapter[data-status="locked"] .expedition-art { filter: grayscale(.78); opacity: .65; }
+.expedition-art-hint { position: absolute; right: 6px; bottom: 6px; padding: 5px 7px; color: #fff5d8; background: rgb(23 38 67 / .92); border: 2px solid rgb(255 245 216 / .72); border-radius: 5px 7px 5px 6px; font-size: .48rem; font-weight: 1000; opacity: 0; transform: translateY(3px); transition: opacity .18s ease, transform .18s ease; }.expedition-art-button:hover .expedition-art-hint, .expedition-art-button:focus-visible .expedition-art-hint { opacity: 1; transform: none; }
+.expedition-chapter-copy { min-width: 0; }.expedition-chapter-copy header { display: flex; gap: 8px; justify-content: space-between; color: #8d493d; font-size: .55rem; font-weight: 1000; letter-spacing: .07em; text-transform: uppercase; }.expedition-chapter-copy h3 { margin: 3px 0 5px; font: 850 1.15rem/1 'Paper Fredoka', sans-serif; }.expedition-chapter-copy p { margin: 0; color: #665947; font-size: .7rem; line-height: 1.4; }.expedition-reward { display: inline-block; margin-top: 7px; color: #315d62; font-size: .62rem; }
+.expedition-action { min-height: 44px; padding: 9px 11px; color: #fff5d8; background: #a95343; border: 3px solid #79382f; border-radius: 8px 12px 7px 10px; box-shadow: 2px 3px 0 #315d62; cursor: pointer; font: 1000 .68rem/1.2 'Field Nunito', sans-serif; }.expedition-action:disabled { color: #6e6250; background: #d6c69d; border-color: #a79876; box-shadow: none; cursor: default; }
+.expedition-evidence-tray { padding: 16px; background: #efe2be; border: 2px dashed #9d7942; border-radius: 10px 14px 9px 13px; }.expedition-evidence-tray h3 { margin: 0 0 11px; color: #765532; font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; }.expedition-evidence-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.expedition-evidence { display: grid; min-height: 68px; grid-template-columns: auto minmax(0, 1fr); gap: 9px; align-items: center; padding: 10px; color: #746959; background: #d7c9a6; border: 2px dashed #9a8b6e; border-radius: 8px 11px 7px 10px; }.expedition-evidence span { display: grid; width: 32px; aspect-ratio: 1; place-items: center; background: #b4a685; border-radius: 50%; font-weight: 1000; }.expedition-evidence strong { font-size: .6rem; line-height: 1.2; }.expedition-evidence.is-found { color: #273649; background: #dce7e1; border-color: #4f8177; }.expedition-evidence.is-found span { color: #fff5d8; background: #4f8177; }
+@keyframes expedition-lumi-pulse { 50% { opacity: .72; transform: scale(.88) rotate(8deg); } }
+
+@container expedition-board (max-width: 48rem) {
+    .expedition-chapter { grid-template-columns: 40px minmax(120px, 176px) minmax(0, 1fr); }.expedition-action { grid-column: 2 / -1; width: 100%; }.expedition-evidence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container expedition-board (max-width: 36rem) {
+    .expedition-heading { grid-template-columns: 1fr; }.expedition-evidence-meter { min-width: 0; }.expedition-chapter { grid-template-columns: 40px minmax(0, 1fr); }.expedition-art-button { grid-column: 1 / -1; grid-row: 2; width: min(100%, 384px); justify-self: center; }.expedition-chapter-copy, .expedition-action { grid-column: 1 / -1; }.expedition-art-hint { opacity: 1; transform: none; }
+}
+@media (max-width: 600px) {
+    .passport-tabs { overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: thin; }.passport-tabs button { min-width: max-content; min-height: 44px; }.expedition-evidence-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .expedition-lumi-avatar span { animation: none; }.expedition-chapter, .expedition-art-button, .expedition-art-hint { transition: none; transform: none; }
+}

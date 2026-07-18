@@ -12,6 +12,7 @@ import { CONTRACT_CATALOG } from './contracts/contractCatalog.js';
 import { getContractStatus } from './contracts/contractState.js';
 import { getContractJourneyAction } from './contracts/contractJourney.js';
 import { getContractReward } from './contracts/contractRewards.js';
+import { presentExpeditionBoard } from './expedition/expeditionPresentation.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -33,6 +34,7 @@ export function createPreviewUI({
     onTravelContract,
     onTrainContract,
     onStartContract,
+    onExpeditionAction = /** @type {(chapterId: string, action: string) => boolean} */ (() => false),
     onMissionLogOpen,
     onMissionLogClose,
     onDismissSurprise,
@@ -144,6 +146,12 @@ export function createPreviewUI({
         , missionDispatchProgress: document.querySelector('#mission-dispatch-progress')
         , mediaViewer: document.querySelector('#media-viewer')
         , contractList: document.querySelector('#contract-list')
+        , expeditionBoard: document.querySelector('#expedition-board')
+        , expeditionProgress: document.querySelector('#expedition-progress')
+        , expeditionProgressMeter: document.querySelector('#expedition-progress-meter')
+        , expeditionLumiMessage: document.querySelector('#expedition-lumi-message')
+        , expeditionChapterList: document.querySelector('#expedition-chapter-list')
+        , expeditionEvidenceGrid: document.querySelector('#expedition-evidence-grid')
     };
 
     let lumiTimer = null;
@@ -289,6 +297,27 @@ export function createPreviewUI({
                 closeMissionLog();
                 onStartContract(contractId);
             }
+        }]
+        , [elements.expeditionBoard, 'click', (event) => {
+            const artwork = event.target.closest('[data-expedition-art]');
+            if (artwork) {
+                const chapter = presentExpeditionBoard({}, { language: paperI18n.language })
+                    .chapters.find((item) => item.id === artwork.dataset.expeditionArt);
+                if (!chapter) return;
+                mediaViewer.open({
+                    objectKey: chapter.id,
+                    src: chapter.art,
+                    alt: chapter.title,
+                    caption: chapter.title,
+                    source: null,
+                    trigger: artwork
+                });
+                return;
+            }
+            const action = event.target.closest('[data-expedition-action]');
+            if (!action) return;
+            const chapterId = action.dataset.expeditionChapter;
+            if (onExpeditionAction(chapterId, action.dataset.expeditionAction)) closeMissionLog();
         }]
         , [elements.objective, 'click', () => openMissionLog('missions')]
         , [elements.missionCenterTrigger, 'click', () => openMissionLog('missions')]
@@ -637,7 +666,96 @@ export function createPreviewUI({
         return startable;
     }
 
-    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractJourney = null, nearbyContractIds = [] } = {}) {
+    function renderExpeditionBoard(expeditionState, expeditionContext, expeditionJourney, proximity) {
+        const board = presentExpeditionBoard(expeditionState, {
+            context: expeditionContext,
+            journey: expeditionJourney,
+            proximity,
+            language: paperI18n.language
+        });
+        elements.expeditionProgress.textContent = board.progressLabel;
+        elements.expeditionProgressMeter.max = board.evidenceTotal;
+        elements.expeditionProgressMeter.value = board.evidenceCount;
+        elements.expeditionProgressMeter.setAttribute('aria-label', board.progressLabel);
+        elements.expeditionLumiMessage.textContent = board.lumiMessage;
+
+        const cards = board.chapters.map((chapter) => {
+            const item = document.createElement('li');
+            item.className = 'expedition-chapter';
+            item.dataset.status = chapter.status;
+            item.dataset.kind = chapter.kind;
+
+            const step = document.createElement('span');
+            step.className = 'expedition-step';
+            step.textContent = chapter.status === 'completed' ? '✓' : String(chapter.stepNumber);
+
+            const artButton = document.createElement('button');
+            artButton.type = 'button';
+            artButton.className = 'expedition-art-button';
+            artButton.dataset.expeditionArt = chapter.id;
+            artButton.setAttribute('aria-label', paperI18n.t('game.expedition.art.open', { title: chapter.title }));
+            const art = document.createElement('img');
+            art.className = 'expedition-art';
+            art.src = chapter.art;
+            art.alt = '';
+            art.width = 240;
+            art.height = 150;
+            art.loading = 'lazy';
+            art.decoding = 'async';
+            const artHint = document.createElement('span');
+            artHint.className = 'expedition-art-hint';
+            artHint.textContent = paperI18n.t('game.expedition.art.enlarge');
+            artHint.setAttribute('aria-hidden', 'true');
+            artButton.append(art, artHint);
+
+            const copy = document.createElement('div');
+            copy.className = 'expedition-chapter-copy';
+            const header = document.createElement('header');
+            const type = document.createElement('small');
+            type.textContent = chapter.kind === 'finale'
+                ? (paperI18n.language === 'en' ? 'Final evidence map' : 'Mapa final de pistas')
+                : (paperI18n.language === 'en' ? `Clue ${chapter.stepNumber}` : `Pista ${chapter.stepNumber}`);
+            const reward = document.createElement('span');
+            reward.textContent = `+${chapter.xp} XP`;
+            header.append(type, reward);
+            const title = document.createElement('h3');
+            title.textContent = chapter.title;
+            const summary = document.createElement('p');
+            summary.textContent = chapter.summary;
+            const rewardLabel = document.createElement('strong');
+            rewardLabel.className = 'expedition-reward';
+            rewardLabel.textContent = chapter.reward;
+            copy.append(header, title, summary, rewardLabel);
+
+            const action = document.createElement('button');
+            action.type = 'button';
+            action.className = 'expedition-action';
+            action.dataset.expeditionChapter = chapter.id;
+            action.dataset.expeditionAction = chapter.action;
+            action.disabled = chapter.disabled;
+            action.textContent = chapter.actionLabel;
+            item.append(step, artButton, copy, action);
+            return item;
+        });
+        elements.expeditionChapterList.replaceChildren(...cards);
+
+        const evidence = board.chapters.slice(0, board.evidenceTotal).map((chapter) => {
+            const found = chapter.status === 'completed';
+            const card = document.createElement('article');
+            card.className = `expedition-evidence${found ? ' is-found' : ''}`;
+            const mark = document.createElement('span');
+            mark.textContent = found ? '✓' : '?';
+            mark.setAttribute('aria-hidden', 'true');
+            const label = document.createElement('strong');
+            label.textContent = found ? chapter.title : (paperI18n.language === 'en' ? 'Hidden clue' : 'Pista escondida');
+            card.append(mark, label);
+            return card;
+        });
+        elements.expeditionEvidenceGrid.replaceChildren(...evidence);
+        return board;
+    }
+
+    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractJourney = null, nearbyContractIds = [], expeditionState = {}, expeditionContext = {}, expeditionJourney = {} } = {}) {
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
             ? chooseNearbyObject(flightState.nearbyPlanetKey, nearbyObjectKey)
@@ -649,6 +767,10 @@ export function createPreviewUI({
         elements.explore.disabled = state.notebook.open;
         elements.notebookTrigger.disabled = !nearbyPlanet || state.notebook.open;
         const startableContract = renderContracts(state, nearbyContractIds, contractState, contractJourney);
+        renderExpeditionBoard(expeditionState, expeditionContext, expeditionJourney, {
+            objectKey: nearbyObjectKey,
+            planetKey: flightState?.nearbyPlanetKey ?? null
+        });
         if (nearbyPlanet) {
             elements.nearbyPlanetName.textContent = startableContract
                 ? startableContract.copy[paperI18n.language === 'en' ? 'en' : 'pt'].start
