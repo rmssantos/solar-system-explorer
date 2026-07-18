@@ -35,6 +35,14 @@ export function loadProgress(storage = globalThis.localStorage) {
                 : {},
             expeditionFinaleState: value.expeditionFinaleState && typeof value.expeditionFinaleState === 'object'
                 ? value.expeditionFinaleState : {},
+            livingSkyVersion: Number.isFinite(value.livingSkyVersion) ? value.livingSkyVersion : 1,
+            completedSkyEventIds: Array.isArray(value.completedSkyEventIds)
+                ? [...new Set(value.completedSkyEventIds.filter((item) => typeof item === 'string'))]
+                : [],
+            skyPhotoRecords: Array.isArray(value.skyPhotoRecords)
+                ? value.skyPhotoRecords.filter((item) => item && typeof item === 'object')
+                : [],
+            livingSkyIntroSeen: Boolean(value.livingSkyIntroSeen),
             agencyActiveMissions: Array.isArray(value.agencyActiveMissions) ? value.agencyActiveMissions : [],
             agencyReports: Array.isArray(value.agencyReports) ? value.agencyReports : []
         };
@@ -45,6 +53,7 @@ export function loadProgress(storage = globalThis.localStorage) {
             , contractAttempts: {}, seenMissionTrainingIds: []
             , expeditionVersion: 1, acceptedExpeditionChapterIds: [], completedExpeditionChapterIds: []
             , expeditionEvidenceIds: [], expeditionUpgradeIds: [], expeditionAttempts: {}, expeditionFinaleState: {}
+            , livingSkyVersion: 1, completedSkyEventIds: [], skyPhotoRecords: [], livingSkyIntroSeen: false
         };
     }
 }
@@ -73,6 +82,12 @@ export function saveProgress(progress, storage = globalThis.localStorage) {
                 : {},
             expeditionFinaleState: progress.expeditionFinaleState && typeof progress.expeditionFinaleState === 'object'
                 ? progress.expeditionFinaleState : {},
+            livingSkyVersion: Number.isFinite(progress.livingSkyVersion) ? progress.livingSkyVersion : 1,
+            completedSkyEventIds: [...new Set(progress.completedSkyEventIds ?? [])],
+            skyPhotoRecords: Array.isArray(progress.skyPhotoRecords)
+                ? progress.skyPhotoRecords.filter((item) => item && typeof item === 'object')
+                : [],
+            livingSkyIntroSeen: Boolean(progress.livingSkyIntroSeen),
             agencyActiveMissions: Array.isArray(progress.agencyActiveMissions)
                 ? progress.agencyActiveMissions.filter((value) => value && typeof value === 'object')
                 : [],
