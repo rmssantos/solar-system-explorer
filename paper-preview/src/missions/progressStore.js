@@ -39,7 +39,7 @@ export function saveProgress(progress, storage = globalThis.localStorage) {
             seenSurpriseIds: [...new Set(progress.seenSurpriseIds ?? [])],
             acceptedContractIds: [...new Set(progress.acceptedContractIds ?? [])],
             completedContractIds: [...new Set(progress.completedContractIds ?? [])],
-            contractAttempts: progress.contractAttempts && typeof progress.contractAttempts === 'object'
+            contractAttempts: progress.contractAttempts && typeof progress.contractAttempts === 'object' && !Array.isArray(progress.contractAttempts)
                 ? progress.contractAttempts
                 : {},
             seenMissionTrainingIds: [...new Set(progress.seenMissionTrainingIds ?? [])],

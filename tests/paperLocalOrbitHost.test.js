@@ -255,20 +255,51 @@ describe('local orbit host', () => {
     it('shows a first-play tutorial and reports completion or an explicit replay mode', async () => {
         const elements = createElements();
         const completed = [];
+        let gameStarts = 0;
         const host = createLocalOrbitHost({
             elements,
             onTrainingComplete: (gameplay) => completed.push(gameplay),
-            gameFactory: async (options) => { options.onReady(); return { destroy() {}, setAction() {} }; }
+            gameFactory: async (options) => {
+                gameStarts += 1;
+                options.onReady();
+                return { destroy() {}, setAction() {} };
+            }
         });
 
         await host.open({ missionId: 'iss-docking', language: 'en', showTraining: true });
+        expect(gameStarts).toBe(0);
         expect(elements.training.hidden).toBe(false);
         expect(elements.trainingTitle.textContent).toMatch(/practice/i);
         expect(elements.trainingStep.textContent).toMatch(/yellow corridor/i);
         elements.trainingNext.emit('click');
+        expect(gameStarts).toBe(0);
         elements.trainingNext.emit('click');
+        await Promise.resolve();
         expect(completed).toEqual(['docking']);
         expect(elements.training.hidden).toBe(true);
+        expect(gameStarts).toBe(1);
+    });
+
+    it('formats Jupiter telemetry with the selected language', async () => {
+        const elements = createElements();
+        let gameOptions;
+        const host = createLocalOrbitHost({
+            elements,
+            gameFactory: async (options) => {
+                gameOptions = options;
+                options.onReady();
+                return { destroy() {}, setAction() {} };
+            }
+        });
+        await host.open({ missionId: 'jupiter-slingshot', language: 'pt' });
+
+        gameOptions.onTelemetry({
+            routePercent: 0.82, altitudeKm: 480000, speedGain: 12.5,
+            primarySafe: true, secondarySafe: true, tertiarySafe: true
+        });
+
+        expect(elements.speed.textContent).toBe(`${new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 0 }).format(480000)} km`);
+        expect(elements.alignment.textContent).toBe(`+${new Intl.NumberFormat('pt-PT', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(12.5)} km/s`);
     });
 
     it('asks before leaving an incomplete attempt and can save its simulation', async () => {

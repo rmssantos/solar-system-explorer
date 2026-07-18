@@ -498,7 +498,7 @@ function handleTravelContract(contractId) {
     const next = startContractTravel(contractJourney, contractId);
     if (next === contractJourney) return false;
     contractJourney = next;
-    if (!flyToWorldObject(next.targetKey)) {
+    if (!flyToWorldObject(next.targetKey, { allowMissionLog: true })) {
         contractJourney = cancelContractTravel(contractJourney);
         syncUI(true);
         return false;
@@ -711,10 +711,10 @@ function cancelAutopilot() {
     syncUI(true);
 }
 
-function flyToWorldObject(key) {
+function flyToWorldObject(key, { allowMissionLog = false } = {}) {
     const object = getWorldObject(key);
     const target = paperScene.getWorldObjectPosition(key);
-    if (!object || !target || previewState.notebook.open || previewUI.elements.missionLog.open || agencyUi?.elements.dialog.open) return false;
+    if (!object || !target || previewState.notebook.open || (!allowMissionLog && previewUI.elements.missionLog.open) || agencyUi?.elements.dialog.open) return false;
     flightInput.reset();
     autoPilotState = createAutopilot(key, flightState.position, target, interactionRadiusFor(object));
     audioDirector.play('autopilot-start');

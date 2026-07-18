@@ -55,6 +55,12 @@ describe('paper progress store contract migration', () => {
         expect(loadProgress(storage).contractAttempts).toEqual(contractAttempts);
     });
 
+    it('does not serialize arrays as contract attempt maps', () => {
+        const storage = createMemoryStorage();
+        saveProgress({ contractAttempts: [] }, storage);
+        expect(JSON.parse(storage.read()).contractAttempts).toEqual({});
+    });
+
     it('round-trips completed mission training families', () => {
         const storage = createMemoryStorage();
         saveProgress({ seenMissionTrainingIds: ['docking', 'signal', 'docking'] }, storage);

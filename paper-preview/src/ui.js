@@ -219,8 +219,7 @@ export function createPreviewUI({
             const contractId = action.dataset.contractId;
             if (action.dataset.contractAction === 'accept') onAcceptContract(contractId);
             else if (action.dataset.contractAction === 'travel') {
-                closeMissionLog();
-                onTravelContract(contractId);
+                if (onTravelContract(contractId)) closeMissionLog();
             }
             else if (action.dataset.contractAction === 'start') {
                 closeMissionLog();
@@ -483,7 +482,7 @@ export function createPreviewUI({
             const stamp = document.createElement('img');
             stamp.className = 'contract-reward-stamp';
             stamp.src = reward.art;
-            stamp.alt = reward.copy[language].title;
+            stamp.alt = '';
             stamp.width = 54;
             stamp.height = 54;
             stamp.loading = 'lazy';

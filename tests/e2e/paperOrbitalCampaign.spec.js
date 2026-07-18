@@ -51,6 +51,7 @@ async function dismissTraining(page) {
         await page.locator('#local-orbit-training-next').click();
     }
     await expect(training).toBeHidden();
+    await page.locator('#local-orbit-loading').waitFor({ state: 'hidden' });
 }
 
 async function acceptTravelAndOpen(page, contract) {

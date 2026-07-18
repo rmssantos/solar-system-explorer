@@ -12,7 +12,7 @@ describe('orbital campaign integration', () => {
         expect(ui).toContain('CONTRACT_CATALOG');
         expect(ui).toContain('data-contract-id');
         expect(ui).toContain('onAcceptContract(contractId)');
-        expect(ui).toContain('onTravelContract(contractId)');
+        expect(ui).toContain('if (onTravelContract(contractId)) closeMissionLog()');
         expect(ui).toContain('onStartContract(contractId)');
         expect(ui).not.toContain('issContractAction');
     });
@@ -20,6 +20,7 @@ describe('orbital campaign integration', () => {
     it('connects accepted contracts to the existing paper autopilot and arrival flow', () => {
         expect(game).toContain('handleTravelContract');
         expect(game).toContain('startContractTravel');
+        expect(game).toContain('flyToWorldObject(next.targetKey, { allowMissionLog: true })');
         expect(game).toContain('arriveContractTravel');
         expect(game).toContain('previewUI.openMissionLog(\'missions\')');
     });
@@ -77,6 +78,7 @@ describe('orbital campaign integration', () => {
     it('renders each contract unique stamp and XP instead of a shared placeholder reward', () => {
         expect(ui).toContain('getContractReward(contract.id)');
         expect(ui).toContain('reward.copy[language].title');
+        expect(ui).toContain("stamp.alt = ''");
         expect(ui).not.toContain("[paperI18n.t('game.contract.reward'), '+140 XP']");
     });
 

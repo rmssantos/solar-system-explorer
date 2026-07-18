@@ -1,4 +1,4 @@
-# Handoff — Sistema Solar Paper
+# Handoff: Sistema Solar Paper
 
 Atualizado em 18 de julho de 2026. Este documento é o ponto de partida recomendado para continuar o desenvolvimento noutra sessão.
 
@@ -27,11 +27,11 @@ O separador **Sistema Vivo** explica os sinais que originaram cada operação. O
 
 A campanha tem cinco contratos sequenciais e quatro mecânicas:
 
-1. **Correio para a ISS** — aproximação e acoplagem.
-2. **Manutenção do Hubble** — fotografia e acoplagem com deriva orbital adicional.
-3. **Varredura lunar** — recolha de quatro transmissores, desvio de detritos e escudo assistido.
-4. **Relé de Marte** — calibração guiada de ângulo e frequência, seguida de bloqueio do sinal.
-5. **Estilingue de Júpiter** — assistência gravitacional: controlar direção e impulso para entrar na janela segura, contornar Júpiter e ganhar velocidade.
+1. **Correio para a ISS**: aproximação e acoplagem.
+2. **Manutenção do Hubble**: fotografia e acoplagem com deriva orbital adicional.
+3. **Varredura lunar**: recolha de quatro transmissores, desvio de detritos e escudo assistido.
+4. **Relé de Marte**: calibração guiada de ângulo e frequência, seguida de bloqueio do sinal.
+5. **Estilingue de Júpiter**: assistência gravitacional: controlar direção e impulso para entrar na janela segura, contornar Júpiter e ganhar velocidade.
 
 O fluxo de cada contrato é agora explícito: **aceitar → viajar em piloto automático → chegar → abrir missão → tutorial/treino → concluir → receber selo e XP próprios**. Os desbloqueios dependem das descobertas do destino e da conclusão do contrato anterior.
 
@@ -74,14 +74,14 @@ As simulações são imutáveis e determinísticas. A renderização Phaser fica
 
 ## Alterações mais recentes
 
-- `d1ca665` — viagem em piloto automático ligada aos contratos.
-- `e809e18` — guardar, continuar e recomeçar tentativas orbitais.
-- `e9a9185` — tutoriais e treino específicos por missão.
-- `f5d4a5e` — recompensas e selos exclusivos por contrato.
-- `9f71262` — feedback audiovisual tátil com sete SFX.
-- `a06a604` — reconstrução visual Paper Courier 2.0.
-- `b36ef42` — quinta missão: estilingue gravitacional de Júpiter.
-- `fdddc09` — fronteiras dinâmicas e prefetch da missão selecionada.
+- `d1ca665`: viagem em piloto automático ligada aos contratos.
+- `e809e18`: guardar, continuar e recomeçar tentativas orbitais.
+- `e9a9185`: tutoriais e treino específicos por missão.
+- `f5d4a5e`: recompensas e selos exclusivos por contrato.
+- `9f71262`: feedback audiovisual tátil com sete SFX.
+- `a06a604`: reconstrução visual Paper Courier 2.0.
+- `b36ef42`: quinta missão: estilingue gravitacional de Júpiter.
+- `fdddc09`: fronteiras dinâmicas e prefetch da missão selecionada.
 
 ## Verificação realizada
 
@@ -96,7 +96,7 @@ npm run verify:paper-build
 npm run test:e2e
 ```
 
-A suíte unitária/integrada cobre 99 ficheiros e 504 testes. O E2E Playwright cobre oito cenários em Chromium e Firefox:
+A suíte unitária/integrada cobre 99 ficheiros e 506 testes. O E2E Playwright cobre oito cenários em Chromium e Firefox:
 
 - campanha completa dos cinco contratos: aceitar, viajar, chegar, iniciar, guardar, recarregar, continuar, concluir e validar a recompensa única;
 - mudança de idioma PT/EN durante a campanha;
@@ -106,7 +106,7 @@ A suíte unitária/integrada cobre 99 ficheiros e 504 testes. O E2E Playwright c
 
 O estilingue de Júpiter foi ainda jogado até ao fim com teclado no desktop e touch em mobile. O playtest visual confirmou nave, HUD, tutorial, resultado e texto científico sem sobreposições.
 
-Na build medida, o JavaScript inicial soma **946 162 bytes**. O Phaser fica num chunk dinâmico separado de cerca de **1 198,78 kB** e não entra no carregamento inicial. O verificador falha acima do orçamento inicial de 1,8 MB ou se encontrar Phaser no grafo inicial.
+Na build medida, o JavaScript inicial soma **946 551 bytes**. O Phaser fica num chunk dinâmico separado de cerca de **1 198,78 kB** e não entra no carregamento inicial. O verificador falha acima do orçamento inicial de 1,8 MB ou se encontrar Phaser no grafo inicial.
 
 Limitação conhecida de QA: a matriz automatizada cobre os viewports e motores acima, mas ainda é recomendável uma passagem manual em hardware iOS e Android real antes de alterações grandes à física ou aos gestos.
 

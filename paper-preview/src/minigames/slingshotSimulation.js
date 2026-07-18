@@ -75,7 +75,7 @@ export function getSlingshotTelemetry(state) {
 
 export function stepSlingshot(state, input = {}, deltaSeconds = 0) {
     const base = createSlingshotState(state);
-    if (base.phase === 'complete') return base;
+    if (base.phase === 'complete') return createSlingshotState({ ...base, event: null });
     const delta = clamp(finite(deltaSeconds, 0), 0, SLINGSHOT_LIMITS.maxDeltaSeconds);
     const horizontal = clamp(finite(input.horizontal, 0), -1, 1);
     const vertical = clamp(finite(input.vertical, 0), -1, 1);

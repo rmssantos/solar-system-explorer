@@ -10,6 +10,8 @@
 
 ---
 
+## Implementation tasks
+
 ### Task 1: Contract travel journey
 
 **Files:**
@@ -175,4 +177,3 @@
 3. Publish the branch and open a ready-for-review PR with the complete validation evidence.
 4. Wait for CodeRabbit, validate every actionable comment against the code, add RED regressions before fixes, reply in-thread, and resolve.
 5. Repeat verification and review cycles until CodeRabbit is successful and no actionable thread remains.
-

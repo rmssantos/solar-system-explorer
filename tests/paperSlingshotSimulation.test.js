@@ -59,5 +59,8 @@ describe('Jupiter gravitational slingshot simulation', () => {
         expect(result.phase).toBe('complete');
         expect(result.event).toBe('slingshot-complete');
         expect(getSlingshotTelemetry(result)).toMatchObject({ speedGain: 14, tertiarySafe: true });
+        expect(stepSlingshot(result, {}, 0.05)).toMatchObject({
+            phase: 'complete', event: null
+        });
     });
 });

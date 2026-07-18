@@ -45,16 +45,21 @@ function setSafetyClass(element, safe) {
     element.classList.toggle('is-warning', !safe);
 }
 
-function formatMetric(metric, telemetry) {
+function formatMetric(metric, telemetry, language = 'pt') {
     const value = Number(telemetry[metric.field] ?? 0);
+    const locale = language === 'en' ? 'en-GB' : 'pt-PT';
     if (metric.format === 'distance') return `${value.toFixed(1)} m`;
     if (metric.format === 'speed') return `${value.toFixed(2)} m/s`;
     if (metric.format === 'degrees') return `${value.toFixed(1)}°`;
     if (metric.format === 'collection') return `${Math.round(value)}/${Math.round(telemetry.total ?? 0)}`;
     if (metric.format === 'shield') return `${Math.round(value)}/3`;
     if (metric.format === 'percent') return `${Math.round(value * 100)}%`;
-    if (metric.format === 'kilometers') return `${Math.round(value).toLocaleString()} km`;
-    if (metric.format === 'speed-gain') return `+${value.toFixed(1)} km/s`;
+    if (metric.format === 'kilometers') {
+        return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value)} km`;
+    }
+    if (metric.format === 'speed-gain') {
+        return `+${new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)} km/s`;
+    }
     return String(value);
 }
 
@@ -114,7 +119,7 @@ export function createLocalOrbitHost({
         const values = [elements.distance, elements.speed, elements.alignment];
         const metrics = openOptions.profile?.metrics ?? [];
         metrics.forEach((metric, index) => {
-            values[index].textContent = formatMetric(metric, telemetry);
+            values[index].textContent = formatMetric(metric, telemetry, openOptions.language);
             setSafetyClass(values[index], Boolean(telemetry[metric.safeField]));
         });
     }
@@ -146,6 +151,7 @@ export function createLocalOrbitHost({
         if (!elements.training || elements.training.hidden) return;
         elements.training.hidden = true;
         onTrainingComplete(openOptions.profile?.gameplay);
+        void startGame();
     }
 
     async function startGame({ restore = true } = {}) {
@@ -210,7 +216,14 @@ export function createLocalOrbitHost({
             if (control.dataset.dockingAction === 'stabilize') control.textContent = profile.centerControl;
         }
         if (!elements.dialog.open) elements.dialog.showModal();
-        await startGame();
+        if (options.showTraining) {
+            loadGeneration += 1;
+            game?.destroy?.();
+            game = null;
+            elements.loading.hidden = true;
+        } else {
+            await startGame();
+        }
     }
 
     function closeImmediately() {
