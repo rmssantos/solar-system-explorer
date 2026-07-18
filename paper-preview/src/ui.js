@@ -207,6 +207,22 @@ export function createPreviewUI({
         [elements.quizOptions, 'click', handleQuizClick],
         [elements.quizRetry, 'click', onRetryQuiz]
         , [elements.contractList, 'click', (event) => {
+            const artwork = event.target.closest('[data-contract-art]');
+            if (artwork) {
+                const contract = CONTRACT_CATALOG.find((item) => item.id === artwork.dataset.contractArt);
+                if (!contract) return;
+                const language = paperI18n.language === 'en' ? 'en' : 'pt';
+                const copy = contract.copy[language];
+                mediaViewer.open({
+                    objectKey: contract.id,
+                    src: contract.art,
+                    alt: copy.title,
+                    caption: copy.title,
+                    source: null,
+                    trigger: artwork
+                });
+                return;
+            }
             const training = event.target.closest('[data-contract-training]');
             if (training) {
                 const contractId = training.dataset.contractTraining;
@@ -445,6 +461,11 @@ export function createPreviewUI({
             card.dataset.status = status;
             if (contractJourney?.activeContractId === contract.id) card.dataset.journey = contractJourney.phase;
 
+            const artButton = document.createElement('button');
+            artButton.type = 'button';
+            artButton.className = 'contract-art-button';
+            artButton.dataset.contractArt = contract.id;
+            artButton.setAttribute('aria-label', paperI18n.t('game.contract.art.open', { title: copy.title }));
             const art = document.createElement('img');
             art.className = 'contract-art';
             art.src = contract.art;
@@ -452,6 +473,12 @@ export function createPreviewUI({
             art.width = 176;
             art.height = 132;
             art.loading = 'lazy';
+            art.decoding = 'async';
+            const artHint = document.createElement('span');
+            artHint.className = 'contract-art-hint';
+            artHint.setAttribute('aria-hidden', 'true');
+            artHint.textContent = paperI18n.t('game.contract.art.enlarge');
+            artButton.append(art, artHint);
 
             const body = document.createElement('div');
             body.className = 'contract-copy';
@@ -518,7 +545,7 @@ export function createPreviewUI({
                 training.textContent = paperI18n.t('game.contract.training.open');
                 actions.append(training);
             }
-            card.append(art, body, actions);
+            card.append(artButton, body, actions);
             return card;
         });
         elements.contractList.replaceChildren(...cards);
