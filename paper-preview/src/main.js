@@ -141,6 +141,7 @@ let activeOrbitContractId = null;
 let contractJourney = createContractJourney();
 let activeOrbitTraining = false;
 let agencyUiElapsed = 0;
+let orbitalClockUiElapsed = 0;
 let lastInput = {
     forward: 0,
     strafe: 0,
@@ -152,7 +153,8 @@ let lastInput = {
     brake: false
 };
 
-const paperScene = createPaperScene(stage);
+const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+const paperScene = createPaperScene(stage, { timeScale: prefersReducedMotion ? 1 : 10 });
 const audioDirector = createAudioDirector();
 const missionPrefetch = createMissionPrefetch();
 const spaceData = createSpaceDataService();
@@ -626,12 +628,14 @@ const previewUI = createPreviewUI({
         direction === 'cockpit' ? -100 : (direction === 'in' ? -0.9 : 0.9)
     ),
     onToggleOrbits: () => paperScene.toggleOrbits(),
+    onOrbitalTimeScale: (timeScale) => paperScene.setOrbitalTimeScale(timeScale),
     onSoundToggle: () => {
         audioDirector.toggle();
         return audioDirector.getState();
     }
 });
 previewUI.updateAudioState(audioDirector.getState());
+previewUI.updateOrbitalClock(paperScene.getState().orbitalClock);
 
 agencyUi = createAgencyUi({
     i18n: paperI18n,
@@ -861,6 +865,11 @@ function step(seconds) {
         flightState = stepFlight(flightState, lastInput, seconds, paperScene.getPrimaryBodies());
     }
     paperScene.update(seconds);
+    orbitalClockUiElapsed += seconds;
+    if (orbitalClockUiElapsed >= 0.25) {
+        previewUI.updateOrbitalClock(paperScene.getState().orbitalClock);
+        orbitalClockUiElapsed = 0;
+    }
     nearbyWorldObjectKey = paperScene.findNearbyWorldObject(flightState.position);
     paperScene.setFlightSnapshot(flightState, seconds);
     const surpriseResult = stepSurpriseDirector(surpriseState, {
@@ -990,6 +999,7 @@ window.render_game_to_text = () => {
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
         autopilot: autoPilotState ? { ...autoPilotState } : null,
         audio: audioDirector.getState(),
+        orbitalClock: paperScene.getState().orbitalClock,
         scene: paperScene.getState()
     });
 };
@@ -1027,6 +1037,11 @@ window.__paperPreview = {
     openAgency: () => agencyUi.open(),
     launchAgencyOperation,
     collectAgencyOperationReport,
+    setOrbitalTimeScale: (timeScale) => {
+        const clock = paperScene.setOrbitalTimeScale(timeScale);
+        previewUI.updateOrbitalClock(clock);
+        return clock;
+    },
     advanceAgencyTime: (milliseconds) => {
         deterministicMode = true;
         agencyNowMs += Math.max(0, Number(milliseconds) || 0);
