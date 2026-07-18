@@ -88,6 +88,31 @@ describe('paper progress store contract migration', () => {
         });
     });
 
+    it('round-trips Living Sky metadata without storing photograph pixels', () => {
+        const storage = createMemoryStorage();
+        const skyPhotoRecords = [{
+            id: 'sky-1', storageId: 'sky-blob-1', eventId: 'earth-aurora', targetKey: 'earth',
+            filter: 'magnetic', capturedAt: 123, orbitDate: '2026-07-18T00:00:00.000Z',
+            score: 0.91, qualified: true
+        }];
+        saveProgress({
+            livingSkyVersion: 1,
+            completedSkyEventIds: ['earth-aurora', 'earth-aurora'],
+            skyPhotoRecords,
+            livingSkyIntroSeen: true,
+            skyPhotoPixels: 'data:image/webp;base64,never-store-this'
+        }, storage);
+
+        const raw = storage.read();
+        expect(raw).not.toContain('data:image');
+        expect(loadProgress(storage)).toMatchObject({
+            livingSkyVersion: 1,
+            completedSkyEventIds: ['earth-aurora'],
+            skyPhotoRecords,
+            livingSkyIntroSeen: true
+        });
+    });
+
     it('discards malformed agency collections while keeping other progress', () => {
         const storage = createMemoryStorage(JSON.stringify({
             xp: 90,
@@ -118,6 +143,7 @@ describe('paper progress store contract migration', () => {
             agencyReports: []
             , acceptedExpeditionChapterIds: [], completedExpeditionChapterIds: []
             , expeditionEvidenceIds: [], expeditionUpgradeIds: [], expeditionAttempts: {}
+            , completedSkyEventIds: [], skyPhotoRecords: [], livingSkyIntroSeen: false
         });
     });
 });

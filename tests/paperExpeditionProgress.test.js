@@ -11,6 +11,7 @@ import {
 } from '../paper-preview/src/progression/expeditionProgress.js';
 import { AWARD_ART } from '../paper-preview/src/progression/awardArt.js';
 import { getContractReward } from '../paper-preview/src/contracts/contractRewards.js';
+import { getLivingSkyEvent } from '../paper-preview/src/living-sky/livingSkyCatalog.js';
 
 describe('paper expedition progression', () => {
     it('awards discoveries, quizzes, surprises and missions only once', () => {
@@ -57,6 +58,22 @@ describe('paper expedition progression', () => {
 
         expect(first.xp).toBe(80);
         expect(first.awardedEventIds).toEqual(['expedition-chapter:moon-seismology']);
+        expect(second).toEqual(first);
+    });
+
+    it('awards each completed living-sky observation at its catalog value only once', () => {
+        const snapshot = { completedSkyEventIds: ['earth-aurora', 'earth-aurora', 'halley-2061'] };
+        const first = reconcileExpeditionProgress(createExpeditionProgress(), snapshot);
+        const second = reconcileExpeditionProgress(first, snapshot);
+
+        expect(first.xp).toBe(
+            getLivingSkyEvent('earth-aurora').rewardXp
+            + getLivingSkyEvent('halley-2061').rewardXp
+        );
+        expect(first.awardedEventIds).toEqual([
+            'sky-observation:earth-aurora',
+            'sky-observation:halley-2061'
+        ]);
         expect(second).toEqual(first);
     });
 

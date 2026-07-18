@@ -192,7 +192,8 @@ function createExhaust(side, x) {
 }
 
 const SHIP_UPGRADE_IDS = Object.freeze([
-    'paper-seismometer', 'ice-radar', 'plume-collector', 'atmosphere-lab', 'guardian-ocean-seal'
+    'paper-seismometer', 'ice-radar', 'plume-collector', 'atmosphere-lab', 'guardian-ocean-seal',
+    'sky-camera-rig', 'living-sky-lens'
 ]);
 
 function upgradeMesh(geometry, color, paperTexture) {
@@ -225,7 +226,24 @@ function createShipUpgrades(paperTexture) {
     const badge = upgradeMesh(new THREE.CylinderGeometry(0.17, 0.17, 0.035, 10), '#4d8490', paperTexture); badge.rotation.x = Math.PI / 2; badge.position.set(0, -0.07, -0.99);
     const badgeCore = upgradeMesh(new THREE.CircleGeometry(0.095, 8), '#f4c85f', paperTexture); badgeCore.position.set(0, -0.07, -1.014); badgeCore.rotation.y = Math.PI; seal.add(badge, badgeCore);
 
-    root.add(seismometer, radar, collector, lab, seal);
+    const skyCamera = new THREE.Group(); skyCamera.name = 'upgrade-sky-camera-rig';
+    const cameraBody = upgradeMesh(new THREE.BoxGeometry(0.28, 0.18, 0.2), '#f2f0e8', paperTexture);
+    cameraBody.name = 'courier-sky-camera-body'; cameraBody.position.set(0, 0.42, 0.05);
+    const cameraMount = upgradeMesh(new THREE.CylinderGeometry(0.025, 0.04, 0.3, 5), '#252b3b', paperTexture);
+    cameraMount.name = 'courier-sky-camera-mount'; cameraMount.position.set(0, 0.27, 0.05);
+    skyCamera.add(cameraBody, cameraMount);
+
+    const livingSkyLens = new THREE.Group(); livingSkyLens.name = 'upgrade-living-sky-lens';
+    const lensRim = upgradeMesh(new THREE.TorusGeometry(0.09, 0.025, 5, 9), '#54be9c', paperTexture);
+    lensRim.name = 'courier-living-sky-lens-rim'; lensRim.position.set(0, 0.42, 0.16);
+    const lensGlass = new THREE.Mesh(
+        new THREE.CircleGeometry(0.072, 9),
+        new THREE.MeshBasicMaterial({ color: '#78d7d2', transparent: true, opacity: 0.8, side: THREE.DoubleSide })
+    );
+    lensGlass.name = 'courier-living-sky-lens-glass'; lensGlass.position.set(0, 0.42, 0.161);
+    livingSkyLens.add(lensRim, lensGlass);
+
+    root.add(seismometer, radar, collector, lab, seal, skyCamera, livingSkyLens);
     root.children.forEach((group) => { group.visible = false; });
     return root;
 }

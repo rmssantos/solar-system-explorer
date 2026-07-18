@@ -76,4 +76,23 @@ describe('Low-poly paper courier ship', () => {
         expect(ship.getObjectByName('upgrade-plume-collector').visible).toBe(true);
         expect(ship.getObjectByName('upgrade-atmosphere-lab').visible).toBe(false);
     });
+
+    it('adds the explorer camera and unlocks its living-sky lens separately', () => {
+        const ship = createPaperShip();
+        const rig = ship.getObjectByName('upgrade-sky-camera-rig');
+        const lens = ship.getObjectByName('upgrade-living-sky-lens');
+
+        expect(rig).toBeTruthy();
+        expect(lens).toBeTruthy();
+        expect(rig.visible).toBe(false);
+        expect(lens.visible).toBe(false);
+
+        setPaperShipUpgrades(ship, ['sky-camera-rig']);
+        expect(rig.visible).toBe(true);
+        expect(lens.visible).toBe(false);
+
+        setPaperShipUpgrades(ship, ['sky-camera-rig', 'living-sky-lens']);
+        expect(rig.visible).toBe(true);
+        expect(lens.visible).toBe(true);
+    });
 });

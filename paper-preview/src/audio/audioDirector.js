@@ -16,7 +16,11 @@ const CUES = Object.freeze({
     'docking-clamp': { file: 'docking-clamp.mp3', volume: 0.4, cooldownMs: 600 },
     'signal-lock': { file: 'signal-lock.mp3', volume: 0.4, cooldownMs: 600 },
     'slingshot-boost': { file: 'slingshot-boost.mp3', volume: 0.4, cooldownMs: 600 },
-    'mission-celebration': { file: 'mission-celebration.mp3', volume: 0.42, cooldownMs: 800 }
+    'mission-celebration': { file: 'mission-celebration.mp3', volume: 0.42, cooldownMs: 800 },
+    'sky-camera-shutter': { file: 'sky-camera-shutter.mp3', volume: 0.34, cooldownMs: 240 },
+    'sky-event-alert': { file: 'sky-event-alert.mp3', volume: 0.3, cooldownMs: 900 },
+    'sky-focus-lock': { file: 'sky-focus-lock.mp3', volume: 0.28, cooldownMs: 850 },
+    'sky-photo-developed': { file: 'sky-photo-developed.mp3', volume: 0.36, cooldownMs: 500 }
 });
 
 function safeReadPreference(storage) {

@@ -92,6 +92,12 @@ import {
 } from './expedition/expeditionJourney.js';
 import { isExpeditionDestinationNearby } from './expedition/expeditionDirector.js';
 import { createFinaleState } from './expedition/finaleState.js';
+import { createLivingSkyState, deleteLivingSkyPhoto, recordLivingSkyPhoto } from './living-sky/livingSkyState.js';
+import { createLivingSkyUi } from './living-sky/livingSkyUi.js';
+import { assessLivingSkyObservation, getNextLivingSkyObservationDate, presentLivingSky } from './living-sky/livingSkyDirector.js';
+import { getLivingSkyEvent } from './living-sky/livingSkyCatalog.js';
+import { captureSkyPhoto } from './living-sky/photoCapture.js';
+import { createSkyPhotoStore } from './living-sky/photoStore.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -127,6 +133,13 @@ let agencyState = reconcileAgencyState(createAgencyState({
     agencyReports: savedProgress.agencyReports,
     reports: savedProgress.agencyReports
 }), Date.now());
+let livingSkyState = createLivingSkyState({
+    completedEventIds: savedProgress.completedSkyEventIds,
+    photoRecords: savedProgress.skyPhotoRecords,
+    introSeen: savedProgress.livingSkyIntroSeen
+});
+const skyPhotoStore = createSkyPhotoStore();
+let livingSkyUi = null;
 let livingOperations = createLivingOperations();
 let agencyNowMs = Date.now();
 let agencyUi = null;
@@ -135,7 +148,8 @@ let expeditionProgress = reconcileExpeditionProgress(createExpeditionProgress(sa
     completedMissionIds: evaluateMissions(previewState.learning, paperI18n.language).completedIds,
     completedContractIds: contractState.completedContractIds,
     completedExpeditionChapterIds: expeditionState.completedChapterIds,
-    collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id)
+    collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id),
+    completedSkyEventIds: livingSkyState.completedEventIds
 });
 let surpriseState = createSurpriseState({ seenIds: savedProgress.seenSurpriseIds });
 let trackedMissionIds = new Set(evaluateMissions(previewState.learning, paperI18n.language).completedIds);
@@ -146,7 +160,8 @@ function currentProgressSnapshot() {
         seenSurpriseIds: surpriseState.seenIds,
         completedContractIds: contractState.completedContractIds,
         completedExpeditionChapterIds: expeditionState.completedChapterIds,
-        collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id)
+        collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id),
+        completedSkyEventIds: livingSkyState.completedEventIds
     };
 }
 let progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
@@ -166,6 +181,7 @@ let expeditionJourney = createExpeditionJourney();
 let activeOrbitTraining = false;
 let agencyUiElapsed = 0;
 let orbitalClockUiElapsed = 0;
+let livingSkyFocusLocked = false;
 let lastInput = {
     forward: 0,
     strafe: 0,
@@ -178,7 +194,16 @@ let lastInput = {
 };
 
 const paperScene = createPaperScene(stage, { timeScale: 1 });
-paperScene.setShipUpgrades(expeditionState.upgradeIds);
+function currentShipUpgradeIds() {
+    return [
+        ...expeditionState.upgradeIds,
+        ...(livingSkyState.introSeen ? ['sky-camera-rig'] : []),
+        ...(livingSkyState.completedEventIds.length === 4 ? ['living-sky-lens'] : [])
+    ];
+}
+paperScene.setShipUpgrades(currentShipUpgradeIds());
+let livingSkyPresentation = presentLivingSky(paperScene.getState().orbitalClock.dateMs, paperI18n.language);
+paperScene.setLivingSkyPresentation(livingSkyPresentation);
 const audioDirector = createAudioDirector();
 const missionPrefetch = createMissionPrefetch();
 const spaceData = createSpaceDataService();
@@ -431,10 +456,11 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
         seenSurpriseIds: surpriseState.seenIds,
         completedContractIds: contractState.completedContractIds,
         completedExpeditionChapterIds: expeditionState.completedChapterIds,
-        collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id)
+        collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id),
+        completedSkyEventIds: livingSkyState.completedEventIds
     });
     progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
-    paperScene.setShipUpgrades(expeditionState.upgradeIds);
+    paperScene.setShipUpgrades(currentShipUpgradeIds());
     saveProgress({
         ...previewState.learning,
         ...expeditionProgress,
@@ -447,6 +473,10 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
         expeditionUpgradeIds: expeditionState.upgradeIds,
         expeditionAttempts: expeditionAttemptState.contractAttempts,
         expeditionFinaleState,
+        livingSkyVersion: livingSkyState.version,
+        completedSkyEventIds: livingSkyState.completedEventIds,
+        skyPhotoRecords: livingSkyState.photoRecords,
+        livingSkyIntroSeen: livingSkyState.introSeen,
         seenMissionTrainingIds: missionTrainingState.seenMissionTrainingIds,
         agencyActiveMissions: agencyState.activeMissions,
         agencyReports: agencyState.reports
@@ -792,6 +822,104 @@ function handleLocalOrbitClose() {
     syncUI(true);
 }
 
+function refreshLivingSkyPresentation() {
+    const dateMs = paperScene.getState().orbitalClock.dateMs;
+    livingSkyPresentation = presentLivingSky(dateMs, paperI18n.language);
+    paperScene.setLivingSkyPresentation(livingSkyPresentation);
+    livingSkyUi?.update(livingSkyPresentation, livingSkyState);
+    return livingSkyPresentation;
+}
+
+function currentLivingSkyAssessment(eventId, filter) {
+    const skyEvent = getLivingSkyEvent(eventId);
+    const sceneTelemetry = skyEvent
+        ? paperScene.getLivingSkyTelemetry(skyEvent.id)
+        : { visible: true, screenDistance: 0, worldDistance: 10 };
+    const speed = Math.hypot(flightState.velocity.x, flightState.velocity.y, flightState.velocity.z);
+    return assessLivingSkyObservation(skyEvent?.id ?? null, {
+        ...sceneTelemetry,
+        filter,
+        active: Boolean(livingSkyPresentation.activeEvents.some((event) => event.id === skyEvent?.id)),
+        stability: Math.max(0, Math.min(1, 1 - speed / 3.2))
+    });
+}
+
+function observeLivingSkyEvent(eventId) {
+    const skyEvent = getLivingSkyEvent(eventId);
+    if (!skyEvent) return false;
+    const dateMs = getNextLivingSkyObservationDate(eventId, paperScene.getState().orbitalClock.dateMs);
+    if (dateMs) {
+        const clock = paperScene.setOrbitalDate(dateMs);
+        previewUI.updateOrbitalClock(clock);
+        paperScene.update(0);
+        refreshLivingSkyPresentation();
+    }
+    siteAnalytics.track('living_sky_event', { eventId, state: 'observe' });
+    audioDirector.play('sky-event-alert');
+    return flyToWorldObject(skyEvent.targetKey, { allowMissionLog: true });
+}
+
+async function captureLivingSkyObservation({ eventId, filter }) {
+    const assessment = currentLivingSkyAssessment(eventId, filter);
+    audioDirector.play('sky-camera-shutter');
+    let captured;
+    try {
+        captured = await captureSkyPhoto(paperScene.getCaptureCanvas(), { filter });
+    } catch {
+        return false;
+    }
+    const storageId = globalThis.crypto?.randomUUID?.() ?? `sky-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const persistent = await skyPhotoStore.put(storageId, captured.blob);
+    if (!persistent) {
+        await skyPhotoStore.delete(storageId);
+        return false;
+    }
+    const skyEvent = getLivingSkyEvent(eventId);
+    const record = {
+        id: storageId,
+        storageId,
+        eventId: skyEvent?.id ?? null,
+        targetKey: skyEvent?.targetKey ?? nearbyWorldObjectKey ?? flightState.nearbyPlanetKey ?? 'deep-space',
+        filter,
+        capturedAt: Date.now(),
+        orbitDate: paperScene.getState().orbitDate,
+        score: assessment.score,
+        qualified: assessment.qualified
+    };
+    const next = recordLivingSkyPhoto(livingSkyState, record);
+    const saved = next !== livingSkyState;
+    if (!saved) {
+        await skyPhotoStore.delete(storageId);
+    } else {
+        const retainedStorageIds = new Set(next.photoRecords.map((photo) => photo.storageId).filter(Boolean));
+        const evictedStorageIds = livingSkyState.photoRecords
+            .map((photo) => photo.storageId)
+            .filter((id) => id && !retainedStorageIds.has(id));
+        livingSkyState = next;
+        await Promise.all(evictedStorageIds.map((id) => skyPhotoStore.delete(id)));
+        audioDirector.play('sky-photo-developed');
+        if (assessment.qualified) audioDirector.play('reward-chime');
+        siteAnalytics.track('living_sky_event', {
+            eventId: skyEvent?.id ?? 'free-photo',
+            state: assessment.qualified ? 'complete' : 'photo',
+            filter
+        });
+        reconcileAndSaveProgress({ feedback: assessment.qualified });
+        livingSkyUi?.update(livingSkyPresentation, livingSkyState);
+    }
+    return { ...assessment, qualified: assessment.qualified && saved, saved };
+}
+
+async function deleteLivingSkyPhotoRecord(photoId) {
+    const record = livingSkyState.photoRecords.find((candidate) => candidate.id === photoId);
+    if (!record) return false;
+    livingSkyState = deleteLivingSkyPhoto(livingSkyState, photoId);
+    if (record.storageId) await skyPhotoStore.delete(record.storageId);
+    reconcileAndSaveProgress({ feedback: false });
+    livingSkyUi?.update(livingSkyPresentation, livingSkyState);
+    return true;
+}
+
 const previewUI = createPreviewUI({
     learningCatalog: learningCatalogView,
     onExplore: handleExplore,
@@ -824,6 +952,16 @@ const previewUI = createPreviewUI({
 });
 previewUI.updateAudioState(audioDirector.getState());
 previewUI.updateOrbitalClock(paperScene.getState().orbitalClock);
+
+livingSkyUi = createLivingSkyUi({
+    i18n: paperI18n,
+    onObserve: observeLivingSkyEvent,
+    onCapture: captureLivingSkyObservation,
+    onDeletePhoto: deleteLivingSkyPhotoRecord,
+    getPhotoUrl: (storageId) => skyPhotoStore.getObjectUrl(storageId),
+    revokePhotoUrl: (storageId) => skyPhotoStore.revokeObjectUrl(storageId)
+});
+livingSkyUi.update(livingSkyPresentation, livingSkyState);
 
 agencyUi = createAgencyUi({
     i18n: paperI18n,
@@ -859,6 +997,7 @@ paperI18n.subscribe(() => {
         ).name;
     }
     updateAutopilotDisplay();
+    refreshLivingSkyPresentation();
 });
 paperI18n.apply();
 
@@ -1077,6 +1216,7 @@ function step(seconds) {
     orbitalClockUiElapsed += seconds;
     if (orbitalClockUiElapsed >= 0.25) {
         previewUI.updateOrbitalClock(paperScene.getState().orbitalClock);
+        refreshLivingSkyPresentation();
         orbitalClockUiElapsed = 0;
     }
     nearbyWorldObjectKey = paperScene.findNearbyWorldObject(flightState.position);
@@ -1100,6 +1240,15 @@ function step(seconds) {
         createCockpitTelemetry(flightState, currentNavigation, paperScene.getState().cameraMode),
         currentNavigation
     );
+    const cameraState = livingSkyUi?.getState();
+    if (cameraState?.cameraOpen) {
+        const assessment = currentLivingSkyAssessment(cameraState.selectedEventId, cameraState.filter);
+        livingSkyUi.updateTelemetry(assessment);
+        if (assessment.qualified && !livingSkyFocusLocked) audioDirector.play('sky-focus-lock');
+        livingSkyFocusLocked = assessment.qualified;
+    } else {
+        livingSkyFocusLocked = false;
+    }
     syncUI();
 }
 
@@ -1120,6 +1269,31 @@ async function toggleFullscreen() {
 
 function handleKeydown(event) {
     if (localOrbitOpen) return;
+    const cameraState = livingSkyUi?.getState();
+    if (cameraState?.cameraOpen) {
+        if (event.code === 'KeyK' || event.key === 'Escape') {
+            event.preventDefault();
+            livingSkyUi.setCameraOpen(false);
+            return;
+        }
+        if (event.code === 'Space') {
+            event.preventDefault();
+            livingSkyUi.capture();
+            return;
+        }
+        const filterByCode = { Digit1: 'visible', Digit2: 'infrared', Digit3: 'magnetic' };
+        if (filterByCode[event.code]) {
+            event.preventDefault();
+            livingSkyUi.setFilter(filterByCode[event.code]);
+            return;
+        }
+    }
+    if (event.code === 'KeyK' && !previewState.notebook.open && !previewUI.elements.missionLog.open && !agencyUi?.elements.dialog.open) {
+        event.preventDefault();
+        livingSkyUi.setOpen(false);
+        livingSkyUi.setCameraOpen(true, livingSkyPresentation.activeEvents[0]?.id ?? null);
+        return;
+    }
     if (event.code === 'KeyG') {
         event.preventDefault();
         toggleFullscreen().catch(() => {});
@@ -1205,6 +1379,12 @@ window.render_game_to_text = () => {
             })),
             science: agencyUi?.getScienceState() ?? null
         },
+        livingSky: {
+            ...livingSkyUi?.getState(),
+            completedEventIds: [...livingSkyState.completedEventIds],
+            photoCount: livingSkyState.photoRecords.length,
+            activeEventIds: livingSkyPresentation.activeEvents.map((event) => event.id)
+        },
         orbitalMission: localOrbitHost?.getState() ?? null,
         surprise: { activeId: surpriseState.activeId, seenIds: [...surpriseState.seenIds] },
         autopilot: autoPilotState ? { ...autoPilotState } : null,
@@ -1230,7 +1410,7 @@ window.advanceTime = (milliseconds) => {
 };
 
 window.__paperPreview = {
-    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, attempts: contractAttemptState.contractAttempts, localOrbitOpen, activeOrbitContractId }, expedition: { ...expeditionState, journey: expeditionJourney, attempts: expeditionAttemptState.contractAttempts, activeExpeditionChapterId }, agency: { ...agencyState, operations: livingOperations }, scene: paperScene.getState() }),
+    getState: () => ({ preview: { ...previewState }, flight: { ...flightState }, progression: progressPresentation, contract: { ...contractState, attempts: contractAttemptState.contractAttempts, localOrbitOpen, activeOrbitContractId }, expedition: { ...expeditionState, journey: expeditionJourney, attempts: expeditionAttemptState.contractAttempts, activeExpeditionChapterId }, agency: { ...agencyState, operations: livingOperations }, livingSky: { ...livingSkyState, ...livingSkyUi?.getState(), activeEventIds: livingSkyPresentation.activeEvents.map((event) => event.id) }, scene: paperScene.getState() }),
     explore: handleExplore,
     closeNotebook: handleCloseNotebook,
     selectSection: handleSelectSection,
@@ -1249,6 +1429,10 @@ window.__paperPreview = {
     startIssDelivery: () => startOrbitalContract(ISS_DELIVERY_CONTRACT_ID),
     completeIssDelivery: handleOrbitalContractComplete,
     openAgency: () => agencyUi.open(),
+    openLivingSky: () => livingSkyUi.setOpen(true),
+    observeLivingSkyEvent,
+    openExplorerCamera: (eventId) => livingSkyUi.setCameraOpen(true, eventId),
+    captureLivingSkyObservation,
     launchAgencyOperation,
     collectAgencyOperationReport,
     setOrbitalTimeScale: (timeScale) => {
@@ -1319,6 +1503,8 @@ window.addEventListener('beforeunload', () => {
     localOrbitHost?.destroy();
     missionPrefetch.destroy();
     agencyUi?.destroy();
+    livingSkyUi?.destroy();
+    skyPhotoStore.destroy();
     previewUI.destroy();
     audioDirector.destroy();
     paperScene.destroy();

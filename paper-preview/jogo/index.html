@@ -27,6 +27,10 @@
                     <span class="agency-trigger-mark" aria-hidden="true">✦</span>
                     <span data-i18n="game.agency.open">Agência</span>
                 </button>
+                <button id="living-sky-trigger" class="mission-center-trigger living-sky-trigger" type="button" aria-expanded="false" aria-controls="living-sky-observatory">
+                    <span class="living-sky-trigger-mark" aria-hidden="true">◉</span>
+                    <span data-living-sky-copy="trigger">Céu vivo</span>
+                </button>
                 <button class="game-language-toggle" type="button" data-language-toggle aria-label="Mudar para English">EN</button>
                 <button id="notebook-trigger" class="notebook-trigger" type="button" aria-haspopup="dialog" aria-label="Caderno" data-i18n-aria="game.notebook">
                     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 3.5h11.5A2.5 2.5 0 0 1 19 6v14.5H7.5A2.5 2.5 0 0 1 5 18V3.5Zm2 2v12.4c.16-.04.33-.05.5-.05H17V6a.5.5 0 0 0-.5-.5H7Z"/></svg>
@@ -125,6 +129,37 @@
              </div>
              <small class="time-observatory-note" data-i18n="game.time.note">Pausa apenas o céu. A tua nave continua pronta.</small>
          </aside>
+
+         <aside id="living-sky-observatory" class="living-sky-observatory" aria-labelledby="living-sky-title" hidden>
+            <header class="living-sky-heading">
+                <div><small data-living-sky-copy="kicker">Diorama de observação</small><strong id="living-sky-title" data-living-sky-copy="title">Céu Vivo</strong></div>
+                <button id="living-sky-close" type="button" aria-label="Fechar Céu Vivo">×</button>
+            </header>
+            <p class="living-sky-intro" data-living-sky-copy="intro">Descobre fenómenos, viaja até ao melhor dia e fotografa-os com o instrumento certo.</p>
+            <div class="living-sky-progress"><span data-living-sky-copy="progress">Observações no álbum</span><strong id="living-sky-progress">0/4</strong></div>
+            <div id="living-sky-event-list" class="living-sky-event-list" aria-live="polite"></div>
+            <small id="living-sky-disclosure" class="living-sky-disclosure"></small>
+         </aside>
+
+         <section id="explorer-camera" class="explorer-camera" role="dialog" aria-modal="false" aria-labelledby="explorer-camera-title" aria-describedby="explorer-camera-coach" tabindex="-1" hidden>
+            <div class="camera-iris" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <header class="explorer-camera-heading">
+                <div><small data-living-sky-copy="cameraKicker">Instrumento de bordo</small><strong id="explorer-camera-title" data-living-sky-copy="cameraTitle">Câmara de Explorador</strong></div>
+                <button id="explorer-camera-close" type="button" aria-label="Fechar Câmara">×</button>
+            </header>
+            <div class="camera-reticle" aria-hidden="true"><i></i><span></span></div>
+            <div id="explorer-camera-coach" class="explorer-camera-coach" role="status" aria-live="polite"></div>
+            <footer class="explorer-camera-console">
+                <div class="camera-filters" role="group" aria-label="Instrumentos de observação">
+                    <button type="button" data-camera-filter="visible" aria-pressed="true"><span aria-hidden="true">◉</span><b data-living-sky-copy="visible">Visível</b><kbd>1</kbd></button>
+                    <button type="button" data-camera-filter="infrared" aria-pressed="false"><span aria-hidden="true">≈</span><b data-living-sky-copy="infrared">Infravermelho</b><kbd>2</kbd></button>
+                    <button type="button" data-camera-filter="magnetic" aria-pressed="false"><span aria-hidden="true">⌁</span><b data-living-sky-copy="magnetic">Campo magnético</b><kbd>3</kbd></button>
+                </div>
+                <button id="explorer-camera-shutter" class="explorer-camera-shutter" type="button" aria-label="Tirar fotografia"><span aria-hidden="true"></span></button>
+                 <p class="camera-key-hint"><kbd>K</kbd> · <span data-living-sky-copy="closeHint">fechar</span> &nbsp; <kbd data-living-sky-copy="spaceKey">Espaço</kbd> · <span data-living-sky-copy="photoHint">fotografia</span></p>
+            </footer>
+            <div id="explorer-camera-flash" class="explorer-camera-flash" aria-hidden="true"></div>
+         </section>
 
          <section id="cockpit-instruments" class="cockpit-instruments" aria-label="Instrumentos do cockpit" hidden>
             <div class="cockpit-module speed-module">
@@ -392,12 +427,21 @@
             <section class="passport-panel" data-passport-panel="collection" hidden>
                 <p class="mission-log-intro" data-i18n="game.passport.collectionCopy">Cada cartão é um lugar ou objeto que encontraste pessoalmente.</p>
                 <div id="collection-grid" class="collection-grid"></div>
+                <section class="sky-photo-album" aria-labelledby="sky-photo-album-title">
+                    <header><div><small data-living-sky-copy="albumKicker">Câmara de Explorador</small><h3 id="sky-photo-album-title" data-living-sky-copy="albumTitle">Álbum do Céu Vivo</h3></div><strong id="sky-photo-count">0/12</strong></header>
+                    <p id="sky-photo-empty" data-living-sky-copy="albumEmpty">Ainda não há fotografias. Abre o Céu Vivo e escolhe uma observação.</p>
+                    <div id="sky-photo-grid" class="sky-photo-grid"></div>
+                </section>
             </section>
             <section class="passport-panel" data-passport-panel="awards" hidden>
                 <p class="mission-log-intro" data-i18n="game.passport.awardsCopy">Medalhas por curiosidade; troféus por viagens extraordinárias.</p>
                 <div id="awards-grid" class="awards-grid"></div>
             </section>
         </article>
+    </dialog>
+
+    <dialog id="sky-photo-viewer" class="sky-photo-viewer" aria-labelledby="sky-photo-viewer-caption">
+        <article><button id="sky-photo-viewer-close" type="button" aria-label="Fechar fotografia">×</button><img id="sky-photo-viewer-image" alt=""><footer><strong id="sky-photo-viewer-caption"></strong><span id="sky-photo-viewer-meta"></span></footer></article>
     </dialog>
 
     <dialog id="expedition-finale" class="expedition-finale" aria-labelledby="expedition-finale-title">
