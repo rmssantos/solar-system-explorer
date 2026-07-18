@@ -91,6 +91,7 @@ import {
     startExpeditionTravel
 } from './expedition/expeditionJourney.js';
 import { isExpeditionDestinationNearby } from './expedition/expeditionDirector.js';
+import { createFinaleState } from './expedition/finaleState.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -115,6 +116,7 @@ let previewState = createPreviewState(savedProgress);
 let contractState = createContractState(savedProgress);
 let contractAttemptState = createContractAttemptState(savedProgress);
 let expeditionState = createExpeditionState(savedProgress);
+let expeditionFinaleState = createFinaleState(savedProgress.expeditionFinaleState);
 let expeditionAttemptState = createContractAttemptState({
     contractAttempts: savedProgress.expeditionAttempts
 });
@@ -442,6 +444,7 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
         expeditionEvidenceIds: expeditionState.evidenceIds,
         expeditionUpgradeIds: expeditionState.upgradeIds,
         expeditionAttempts: expeditionAttemptState.contractAttempts,
+        expeditionFinaleState,
         seenMissionTrainingIds: missionTrainingState.seenMissionTrainingIds,
         agencyActiveMissions: agencyState.activeMissions,
         agencyReports: agencyState.reports
@@ -556,6 +559,26 @@ function handleTravelContract(contractId) {
 }
 
 function handleExpeditionAction(chapterId, action) {
+    if (action === 'finale') {
+        const next = acceptExpeditionChapter(expeditionState, chapterId, currentExpeditionContext());
+        if (next !== expeditionState) {
+            expeditionState = next;
+            siteAnalytics.track('expedition_event', { chapterId, state: 'accept' });
+            reconcileAndSaveProgress({ feedback: false });
+            syncUI(true);
+        }
+        return false;
+    }
+    if (action === 'complete') {
+        const next = completeExpeditionChapter(expeditionState, chapterId);
+        if (next === expeditionState) return false;
+        expeditionState = next;
+        siteAnalytics.track('expedition_event', { chapterId, state: 'complete' });
+        audioDirector.play('reward-chime');
+        reconcileAndSaveProgress();
+        syncUI(true);
+        return false;
+    }
     if (action === 'accept') {
         const next = acceptExpeditionChapter(
             expeditionState,
@@ -779,6 +802,10 @@ const previewUI = createPreviewUI({
     onTrainContract: startContractTraining,
     onStartContract: startOrbitalContract,
     onExpeditionAction: handleExpeditionAction,
+    onExpeditionFinaleChange: (nextState) => {
+        expeditionFinaleState = createFinaleState(nextState);
+        reconcileAndSaveProgress({ feedback: false });
+    },
     onMissionLogOpen: () => flightInput.setEnabled(false),
     onMissionLogClose: () => flightInput.setEnabled(true),
     onDismissSurprise: handleDismissSurprise,
@@ -939,6 +966,8 @@ function syncUI(force = false) {
         expeditionState.completedChapterIds.join(','),
         expeditionJourney.activeChapterId ?? 'none',
         expeditionJourney.phase,
+        expeditionFinaleState.status,
+        expeditionFinaleState.reviewedIds.join(','),
         localOrbitOpen
     ].join(':');
     if (!force && signature === lastUiSignature) return;
@@ -952,6 +981,7 @@ function syncUI(force = false) {
         expeditionState,
         expeditionContext: currentExpeditionContext(),
         expeditionJourney,
+        expeditionFinaleState,
         nearbyContractIds: CONTRACT_CATALOG.filter((contract) => isOrbitalContractDestinationNearby(contract.id))
             .map((contract) => contract.id)
     });

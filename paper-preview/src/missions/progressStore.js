@@ -33,6 +33,8 @@ export function loadProgress(storage = globalThis.localStorage) {
             expeditionAttempts: value.expeditionAttempts && typeof value.expeditionAttempts === 'object' && !Array.isArray(value.expeditionAttempts)
                 ? value.expeditionAttempts
                 : {},
+            expeditionFinaleState: value.expeditionFinaleState && typeof value.expeditionFinaleState === 'object'
+                ? value.expeditionFinaleState : {},
             agencyActiveMissions: Array.isArray(value.agencyActiveMissions) ? value.agencyActiveMissions : [],
             agencyReports: Array.isArray(value.agencyReports) ? value.agencyReports : []
         };
@@ -42,7 +44,7 @@ export function loadProgress(storage = globalThis.localStorage) {
             acceptedContractIds: [], completedContractIds: [], agencyActiveMissions: [], agencyReports: []
             , contractAttempts: {}, seenMissionTrainingIds: []
             , expeditionVersion: 1, acceptedExpeditionChapterIds: [], completedExpeditionChapterIds: []
-            , expeditionEvidenceIds: [], expeditionUpgradeIds: [], expeditionAttempts: {}
+            , expeditionEvidenceIds: [], expeditionUpgradeIds: [], expeditionAttempts: {}, expeditionFinaleState: {}
         };
     }
 }
@@ -69,6 +71,8 @@ export function saveProgress(progress, storage = globalThis.localStorage) {
             expeditionAttempts: progress.expeditionAttempts && typeof progress.expeditionAttempts === 'object' && !Array.isArray(progress.expeditionAttempts)
                 ? progress.expeditionAttempts
                 : {},
+            expeditionFinaleState: progress.expeditionFinaleState && typeof progress.expeditionFinaleState === 'object'
+                ? progress.expeditionFinaleState : {},
             agencyActiveMissions: Array.isArray(progress.agencyActiveMissions)
                 ? progress.agencyActiveMissions.filter((value) => value && typeof value === 'object')
                 : [],

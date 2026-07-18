@@ -13,6 +13,9 @@ import { getContractStatus } from './contracts/contractState.js';
 import { getContractJourneyAction } from './contracts/contractJourney.js';
 import { getContractReward } from './contracts/contractRewards.js';
 import { presentExpeditionBoard } from './expedition/expeditionPresentation.js';
+import { OCEAN_CONCLUSIONS, OCEAN_EVIDENCE } from './expedition/evidenceCatalog.js';
+import { createFinaleState, reviewFinaleEvidence, selectFinaleConclusion, submitFinaleConclusion } from './expedition/finaleState.js';
+import { OCEAN_FINALE_ID } from './expedition/expeditionCatalog.js';
 
 /** DOM selectors are runtime-validated by the page structure tests. @type {any} */
 const document = globalThis.document;
@@ -35,6 +38,7 @@ export function createPreviewUI({
     onTrainContract,
     onStartContract,
     onExpeditionAction = /** @type {(chapterId: string, action: string) => boolean} */ (() => false),
+    onExpeditionFinaleChange = /** @type {(state: object) => void} */ (() => {}),
     onMissionLogOpen,
     onMissionLogClose,
     onDismissSurprise,
@@ -152,6 +156,16 @@ export function createPreviewUI({
         , expeditionLumiMessage: document.querySelector('#expedition-lumi-message')
         , expeditionChapterList: document.querySelector('#expedition-chapter-list')
         , expeditionEvidenceGrid: document.querySelector('#expedition-evidence-grid')
+        , expeditionFinale: document.querySelector('#expedition-finale')
+        , expeditionFinaleClose: document.querySelector('#expedition-finale-close')
+        , expeditionFinaleKicker: document.querySelector('#expedition-finale-kicker')
+        , expeditionFinaleTitle: document.querySelector('#expedition-finale-title')
+        , expeditionFinaleIntro: document.querySelector('#expedition-finale-intro')
+        , expeditionFinaleEvidence: document.querySelector('#expedition-finale-evidence')
+        , expeditionFinaleQuestion: document.querySelector('#expedition-finale-question')
+        , expeditionFinaleOptions: document.querySelector('#expedition-finale-options')
+        , expeditionFinaleFeedback: document.querySelector('#expedition-finale-feedback')
+        , expeditionFinaleSubmit: document.querySelector('#expedition-finale-submit')
     };
 
     let lumiTimer = null;
@@ -161,6 +175,7 @@ export function createPreviewUI({
     let orbitalClockState = { dateMs: Date.now(), timeScale: 1, paused: false, daysPerSecond: 1 };
     let orbitalClockFormatterLanguage = null;
     let orbitalClockFormatter = null;
+    let finaleState = createFinaleState();
     const mediaViewer = createMediaViewer(elements.mediaViewer, {
         onImageOpen: (media) => siteAnalytics.track('image_open', { objectKey: media.objectKey, surface: 'game' }),
         onSourceOpen: (media) => siteAnalytics.track('source_open', {
@@ -251,6 +266,61 @@ export function createPreviewUI({
         onMissionLogClose();
     }
 
+    function renderFinale() {
+        const pt = paperI18n.language !== 'en';
+        elements.expeditionFinaleKicker.textContent = pt ? 'ARQUIVO SECRETO · CONCLUSÃO' : 'SECRET ARCHIVE · CONCLUSION';
+        elements.expeditionFinaleTitle.textContent = pt ? 'O mapa invisível' : 'The invisible map';
+        elements.expeditionFinaleIntro.textContent = pt
+            ? 'Abre as quatro pistas, separa o que sabemos do que ainda procuramos e escolhe uma conclusão.'
+            : 'Open all four clues, separate what we know from what we still seek, then choose a conclusion.';
+        elements.expeditionFinaleQuestion.textContent = pt ? 'O que podemos concluir com estas pistas?' : 'What can we conclude from these clues?';
+        elements.expeditionFinaleClose.setAttribute('aria-label', pt ? 'Fechar mapa' : 'Close map');
+        const cards = OCEAN_EVIDENCE.map((evidence) => {
+            const copy = evidence.copy[pt ? 'pt' : 'en'];
+            const reviewed = finaleState.reviewedIds.includes(evidence.id);
+            const button = document.createElement('button');
+            button.type = 'button'; button.className = `finale-evidence-card${reviewed ? ' is-reviewed' : ''}`;
+            button.dataset.finaleEvidence = evidence.id; button.setAttribute('aria-expanded', String(reviewed));
+            const icon = document.createElement('span'); icon.textContent = evidence.icon; icon.setAttribute('aria-hidden', 'true');
+            const title = document.createElement('strong'); title.textContent = copy.title;
+            const prompt = document.createElement('small'); prompt.textContent = reviewed ? (pt ? 'Pista analisada' : 'Clue analysed') : (pt ? 'Abrir pista' : 'Open clue');
+            const detail = document.createElement('span'); detail.className = 'finale-evidence-detail';
+            detail.textContent = reviewed ? `${copy.known} ${copy.search}` : '•••';
+            button.append(icon, title, prompt, detail); return button;
+        });
+        elements.expeditionFinaleEvidence.replaceChildren(...cards);
+        const options = OCEAN_CONCLUSIONS.map((conclusion) => {
+            const label = document.createElement('label');
+            const input = document.createElement('input'); input.type = 'radio'; input.name = 'ocean-conclusion';
+            input.value = conclusion.id; input.checked = finaleState.selectedConclusionId === conclusion.id;
+            input.disabled = finaleState.status === 'complete';
+            const text = document.createElement('span'); text.textContent = conclusion.copy[pt ? 'pt' : 'en'];
+            label.append(input, text); return label;
+        });
+        elements.expeditionFinaleOptions.replaceChildren(...options);
+        elements.expeditionFinaleFeedback.className = `expedition-finale-feedback is-${finaleState.status}`;
+        elements.expeditionFinaleFeedback.textContent = finaleState.status === 'retry'
+            ? (pt ? 'Boa hipótese, mas as pistas ainda não provam vida. Revê a diferença entre “pode ter condições” e “tem habitantes”.' : 'Good hypothesis, but the clues do not prove life. Review the difference between “may have conditions” and “is inhabited”.')
+            : finaleState.status === 'complete'
+                ? (pt ? 'Conclusão científica! Habitável não significa habitado — ainda temos muito para descobrir.' : 'Scientific conclusion! Habitable does not mean inhabited — there is much left to discover.')
+                : (pt ? `${finaleState.reviewedIds.length}/4 pistas abertas` : `${finaleState.reviewedIds.length}/4 clues opened`);
+        elements.expeditionFinaleSubmit.textContent = finaleState.status === 'complete'
+            ? (pt ? 'Guardar selo e fechar' : 'Save stamp and close')
+            : (pt ? 'Testar conclusão' : 'Test conclusion');
+        elements.expeditionFinaleSubmit.disabled = finaleState.status !== 'complete'
+            && (finaleState.reviewedIds.length < OCEAN_EVIDENCE.length || !finaleState.selectedConclusionId);
+    }
+
+    function openFinale() {
+        onExpeditionAction(OCEAN_FINALE_ID, 'finale');
+        closeMissionLog(); onMissionLogOpen(); renderFinale(); elements.expeditionFinale.showModal();
+    }
+
+    function closeFinale() {
+        if (elements.expeditionFinale.open) elements.expeditionFinale.close();
+        onMissionLogClose();
+    }
+
     const listeners = [
         [elements.explore, 'click', onExplore],
         [elements.notebookTrigger, 'click', onExplore],
@@ -317,7 +387,30 @@ export function createPreviewUI({
             const action = event.target.closest('[data-expedition-action]');
             if (!action) return;
             const chapterId = action.dataset.expeditionChapter;
+            if (action.dataset.expeditionAction === 'finale') {
+                openFinale();
+                return;
+            }
             if (onExpeditionAction(chapterId, action.dataset.expeditionAction)) closeMissionLog();
+        }]
+        , [elements.expeditionFinaleClose, 'click', closeFinale]
+        , [elements.expeditionFinale, 'cancel', (event) => { event.preventDefault(); closeFinale(); }]
+        , [elements.expeditionFinaleEvidence, 'click', (event) => {
+            const card = event.target.closest('[data-finale-evidence]'); if (!card) return;
+            finaleState = reviewFinaleEvidence(finaleState, card.dataset.finaleEvidence);
+            onExpeditionFinaleChange(finaleState); renderFinale();
+        }]
+        , [elements.expeditionFinaleOptions, 'change', (event) => {
+            if (!event.target.matches('input[name="ocean-conclusion"]')) return;
+            finaleState = selectFinaleConclusion(finaleState, event.target.value);
+            onExpeditionFinaleChange(finaleState); renderFinale();
+        }]
+        , [elements.expeditionFinaleSubmit, 'click', () => {
+            if (finaleState.status === 'complete') { closeFinale(); return; }
+            finaleState = submitFinaleConclusion(finaleState);
+            onExpeditionFinaleChange(finaleState);
+            if (finaleState.status === 'complete') onExpeditionAction(OCEAN_FINALE_ID, 'complete');
+            renderFinale();
         }]
         , [elements.objective, 'click', () => openMissionLog('missions')]
         , [elements.missionCenterTrigger, 'click', () => openMissionLog('missions')]
@@ -372,6 +465,7 @@ export function createPreviewUI({
     }
     const unbindNotebookBackdrop = bindBackdropDismiss(elements.notebook, onCloseNotebook);
     const unbindMissionBackdrop = bindBackdropDismiss(elements.missionLog, closeMissionLog);
+    const unbindFinaleBackdrop = bindBackdropDismiss(elements.expeditionFinale, closeFinale);
 
     function renderTabs(section) {
         elements.tabs.forEach((tab) => {
@@ -755,7 +849,9 @@ export function createPreviewUI({
         return board;
     }
 
-    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractJourney = null, nearbyContractIds = [], expeditionState = {}, expeditionContext = {}, expeditionJourney = {} } = {}) {
+    function update(state, { flightState = null, nearbyObjectKey = null, missions = null, expeditionProgress = null, contractState = null, contractJourney = null, nearbyContractIds = [], expeditionState = {}, expeditionContext = {}, expeditionJourney = {}, expeditionFinaleState = {} } = {}) {
+        finaleState = createFinaleState(expeditionFinaleState);
+        if (elements.expeditionFinale.open) renderFinale();
         const fallbackPlanet = PLANETS[state.activeIndex];
         const nearbyKey = flightState
             ? chooseNearbyObject(flightState.nearbyPlanetKey, nearbyObjectKey)
@@ -907,6 +1003,7 @@ export function createPreviewUI({
         mediaViewer.destroy();
         unbindNotebookBackdrop();
         unbindMissionBackdrop();
+        unbindFinaleBackdrop();
         for (const [element, eventName, handler] of listeners) {
             element.removeEventListener(eventName, handler);
         }
