@@ -69,10 +69,17 @@ describe('orbital campaign integration', () => {
         expect(ui).not.toContain('destinationNearby, contractState');
     });
 
-    it('renders mission artwork as accessible decorative postcards', () => {
+    it('turns mission artwork into an accessible full-size postcard viewer', () => {
+        expect(ui).toContain("artButton.className = 'contract-art-button'");
+        expect(ui).toContain('artButton.dataset.contractArt = contract.id');
+        expect(ui).toContain("paperI18n.t('game.contract.art.open', { title: copy.title })");
         expect(ui).toContain("art.className = 'contract-art'");
         expect(ui).toContain('art.src = contract.art');
         expect(ui).toContain("art.alt = ''");
+        expect(ui).toContain("const artwork = event.target.closest('[data-contract-art]')");
+        expect(ui).toContain('mediaViewer.open({');
+        expect(ui).toContain('src: contract.art');
+        expect(ui).toContain('alt: copy.title');
     });
 
     it('renders each contract unique stamp and XP instead of a shared placeholder reward', () => {

@@ -12,7 +12,7 @@ describe('Paper Solar Explorer PT/EN i18n', () => {
             'game.objective.kicker', 'game.notebook', 'game.tabs.discover', 'game.passport.missions',
             'game.collection.locked', 'game.quiz.correct', 'game.lumi.kicker',
             'game.contract.iss.title', 'game.contract.iss.accept', 'game.contract.iss.start',
-            'game.contract.training.title',
+            'game.contract.training.title', 'game.contract.art.open', 'game.contract.art.enlarge',
             'game.docking.scale', 'game.docking.guidance', 'game.docking.keys', 'game.docking.stabilize',
             'game.docking.success', 'game.docking.retry', 'game.docking.loadError'
         ];
@@ -51,5 +51,14 @@ describe('Paper Solar Explorer PT/EN i18n', () => {
         expect(i18n.t('library.results.one')).toBe('1 objeto');
         i18n.setLanguage('en');
         expect(i18n.t('library.results.one')).toBe('1 object');
+    });
+
+    it('localizes and interpolates the mission postcard zoom control', () => {
+        const i18n = createPaperI18n({ storage: null, document: null });
+        expect(i18n.t('game.contract.art.open', { title: 'Júpiter' })).toContain('Júpiter');
+        expect(i18n.t('game.contract.art.enlarge')).toBe('Ver em grande');
+        i18n.setLanguage('en');
+        expect(i18n.t('game.contract.art.open', { title: 'Jupiter' })).toContain('Jupiter');
+        expect(i18n.t('game.contract.art.enlarge')).toBe('View full size');
     });
 });
