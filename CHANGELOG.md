@@ -2,6 +2,13 @@
 
 Public changes to the Paper Solar Explorer are maintained automatically by Release Please from Conventional Commits.
 
+## [1.7.1](https://github.com/rmssantos/solar-system-explorer/compare/v1.7.0...v1.7.1) (2026-07-18)
+
+
+### Bug Fixes
+
+* make Explorer photos visible and discoverable ([#54](https://github.com/rmssantos/solar-system-explorer/issues/54)) ([d1c021c](https://github.com/rmssantos/solar-system-explorer/commit/d1c021cc4f9a4551ba6e24aaab6cc7908553b5cb))
+
 ## [1.7.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.6.0...v1.7.0) (2026-07-18)
 
 
