@@ -83,8 +83,8 @@ function formatMetric(metric, telemetry, language = 'pt') {
  *   messages?: { retry?: string, guidance?: string },
  *   onComplete?: (context: object) => void,
  *   onClose?: () => void,
- *   onAttemptSave?: (attempt: { contractId: string, missionId: string, simulation: object }) => void,
- *   onAttemptClear?: (contractId: string) => void
+ *   onAttemptSave?: (attempt: { attemptKey?: string, contractId?: string, missionId: string, simulation: object }) => void,
+ *   onAttemptClear?: (attemptKey: string) => void
  *   onTrainingComplete?: (gameplay: string) => void
  *   onAudioCue?: (cue: string) => void
  * }} options
@@ -261,9 +261,12 @@ export function createLocalOrbitHost({
     if (elements.leaveContinue) listen(elements.leaveContinue, 'click', () => { elements.leaveConfirm.hidden = true; });
     if (elements.leaveSave) listen(elements.leaveSave, 'click', () => {
         const simulation = game?.getState?.() ?? null;
-        if (!openOptions.trainingMode && simulation && openOptions.contract?.id) {
+        const attemptKey = openOptions.attemptKey ?? openOptions.contract?.id;
+        if (!openOptions.trainingMode && simulation && attemptKey) {
             onAttemptSave({
-                contractId: openOptions.contract.id,
+                ...(openOptions.contract?.id
+                    ? { contractId: openOptions.contract.id }
+                    : { attemptKey }),
                 missionId: openOptions.profile.id,
                 simulation
             });
@@ -271,7 +274,8 @@ export function createLocalOrbitHost({
         closeImmediately();
     });
     if (elements.leaveRestart) listen(elements.leaveRestart, 'click', () => {
-        if (openOptions.contract?.id) onAttemptClear(openOptions.contract.id);
+        const attemptKey = openOptions.attemptKey ?? openOptions.contract?.id;
+        if (attemptKey) onAttemptClear(attemptKey);
         openOptions = { ...openOptions, initialSimulation: null };
         elements.leaveConfirm.hidden = true;
         startGame({ restore: false });

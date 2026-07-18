@@ -386,4 +386,32 @@ describe('local orbit host', () => {
         expect(profiles.at(-1).initialState).not.toHaveProperty('elapsedSeconds', 12);
         expect(elements.dialog.open).toBe(true);
     });
+
+    it('saves and clears a non-contract mission through a stable attempt key', async () => {
+        const elements = createElements();
+        const saved = [];
+        const cleared = [];
+        const host = createLocalOrbitHost({
+            elements,
+            onAttemptSave: (attempt) => saved.push(attempt),
+            onAttemptClear: (attemptKey) => cleared.push(attemptKey),
+            gameFactory: async (options) => {
+                options.onReady();
+                return { destroy() {}, setAction() {}, getState: () => ({ phase: 'listening' }) };
+            }
+        });
+
+        await host.open({ attemptKey: 'moon-seismology', missionId: 'moon-seismology' });
+        elements.close.emit('click');
+        elements.leaveSave.emit('click');
+        expect(saved).toEqual([{
+            attemptKey: 'moon-seismology', missionId: 'moon-seismology',
+            simulation: { phase: 'listening' }
+        }]);
+
+        await host.open({ attemptKey: 'moon-seismology', missionId: 'moon-seismology' });
+        elements.close.emit('click');
+        elements.leaveRestart.emit('click');
+        expect(cleared).toEqual(['moon-seismology']);
+    });
 });
