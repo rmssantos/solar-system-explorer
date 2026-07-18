@@ -24,7 +24,7 @@ export const PRIMARY_WORLDS = Object.freeze([
 ]);
 
 const MOONS = [
-    ['moon', 'Lua', 'earth', 5.4, 0.42, 'A Lua estabiliza a inclinação da Terra e é o único mundo além da Terra visitado por humanos.'],
+    ['moon', 'Lua', 'earth', 5.4, 0.42, 'A Lua estabiliza a inclinação da Terra e é o único mundo além da Terra visitado por humanos.', 27.322],
     ['phobos', 'Fobos', 'mars', 3.1, 0.18, 'Fobos orbita Marte tão depressa que nasce no oeste e põe-se no leste do céu marciano.'],
     ['deimos', 'Deimos', 'mars', 3.75, 0.14, 'Deimos é uma pequena lua irregular de Marte coberta por uma espessa camada de poeira.'],
     ['io', 'Io', 'jupiter', 5.4, 0.35, 'Io é o mundo com maior atividade vulcânica conhecida no Sistema Solar.'],
@@ -38,8 +38,8 @@ const MOONS = [
     ['titania', 'Titânia', 'uranus', 4.7, 0.34, 'Titânia é a maior lua de Urano e apresenta grandes falhas e desfiladeiros.'],
     ['oberon', 'Oberon', 'uranus', 5.8, 0.31, 'Oberon é uma lua gelada e craterada que orbita longe das nuvens de Urano.'],
     ['triton', 'Tritão', 'neptune', 5.1, 0.4, 'Tritão orbita Neptuno ao contrário e possui géiseres de azoto na superfície gelada.']
-].map(([key, name, parentKey, orbitRadius, scale, fact], index) => entry({
-    key, name, type: 'moon', parentKey, orbitRadius, scale, orbitSpeed: 0.008 + (index % 5) * 0.003,
+].map(([key, name, parentKey, orbitRadius, scale, fact, orbitPeriodDays], index) => entry({
+    key, name, type: 'moon', parentKey, orbitRadius, scale, orbitPeriodDays, orbitSpeed: 0.008 + (index % 5) * 0.003,
     orbitPhase: index * 1.71, fact, source: NASA
 }));
 

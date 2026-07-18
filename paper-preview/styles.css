@@ -599,6 +599,129 @@ html[data-flight-input="touch"] .joystick-label {
 .zoom-controls button:focus-visible { outline: 3px solid #76b5c4; }
 .zoom-controls button:hover { color: #2c2630; background: #f1e3b9; }
 
+.zoom-controls .time-observatory-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    color: #2c2630;
+    background: #f1e3b9;
+    border-color: #d5634d;
+    box-shadow: 2px 3px 0 #d5634d, 0 7px 18px rgb(0 0 0 / .28);
+}
+.time-orbit-icon {
+    position: relative;
+    display: block;
+    width: 1.2rem;
+    aspect-ratio: 1.55;
+    border: 1px dashed #315d62;
+    border-radius: 50%;
+    animation: time-orbit-turn 4s linear infinite;
+}
+.time-orbit-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: .35rem;
+    aspect-ratio: 1;
+    background: #f2bd4f;
+    border: 1px solid #2c2630;
+    border-radius: 48% 52% 46% 54%;
+    transform: translate(-50%, -50%);
+}
+.time-orbit-icon i {
+    position: absolute;
+    top: -.16rem;
+    left: 50%;
+    width: .3rem;
+    aspect-ratio: 1;
+    background: #d5634d;
+    border: 1px solid #2c2630;
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+.time-observatory-toggle.is-paused .time-orbit-icon { animation-play-state: paused; opacity: .68; }
+@keyframes time-orbit-turn { to { transform: rotate(360deg); } }
+
+.time-observatory {
+    position: fixed;
+    z-index: 11;
+    top: 50%;
+    right: 6.25rem;
+    width: min(18rem, calc(100vw - 7rem));
+    padding: 1rem 1rem .9rem;
+    color: #302d31;
+    background: repeating-linear-gradient(8deg, rgb(116 87 45 / .035) 0 1px, transparent 1px 8px), #f4e7bd;
+    border: 3px solid #352c31;
+    border-radius: .75rem 1rem .7rem 1.15rem;
+    box-shadow: 5px 7px 0 #d5634d, 0 15px 30px rgb(0 0 0 / .35), inset 0 0 0 2px rgb(255 250 229 / .55);
+    transform: translateY(-50%) rotate(-.35deg);
+}
+.time-observatory[hidden] { display: none; }
+.time-observatory::before {
+    content: '';
+    position: absolute;
+    top: -.55rem;
+    left: 2rem;
+    width: 4.5rem;
+    height: .9rem;
+    background: rgb(231 201 138 / .78);
+    border-inline: 1px solid rgb(107 79 48 / .2);
+    transform: rotate(2deg);
+}
+.time-observatory header { display: grid; gap: .15rem; padding-right: 2.3rem; }
+.time-observatory header small { color: #a14f42; font-size: .58rem; font-weight: 1000; letter-spacing: .12em; text-transform: uppercase; }
+.time-observatory header strong { font: 1000 1.05rem/1.05 'Paper Fredoka', sans-serif; }
+.time-observatory time { color: #315d62; font: 900 .76rem/1.2 var(--font-body, system-ui); text-transform: capitalize; }
+.time-observatory-date-row { display: flex; gap: .55rem; align-items: center; justify-content: space-between; }
+.time-observatory-date-row button {
+    min-height: 44px;
+    padding: .3rem .75rem;
+    color: #302d31;
+    background: #f4c85f;
+    border: 2px solid #8d6c2d;
+    border-radius: .5rem .38rem .55rem .42rem;
+    font: 1000 .65rem/1 var(--font-body, system-ui);
+    cursor: pointer;
+}
+.time-observatory > p { margin: .7rem 0 .6rem; color: #625747; font-size: .72rem; line-height: 1.35; }
+.time-observatory-close {
+    position: absolute;
+    z-index: 2;
+    top: .45rem;
+    right: .45rem;
+    width: 44px;
+    min-height: 44px;
+    color: #f7ebc8;
+    background: #a14f42;
+    border: 2px solid #753d36;
+    border-radius: 50% 45% 52% 48%;
+    font-size: 1.1rem;
+    font-weight: 1000;
+    cursor: pointer;
+}
+.orbital-time-controls { display: grid; grid-template-columns: 1.35fr repeat(3, 1fr); gap: .35rem; }
+.orbital-time-controls button {
+    display: grid;
+    min-width: 0;
+    min-height: 44px;
+    padding: .3rem .22rem;
+    place-content: center;
+    color: #453c38;
+    background: #fff3ca;
+    border: 2px solid #8d7a57;
+    border-radius: .55rem .42rem .6rem .45rem;
+    font: 1000 .68rem/1 var(--font-body, system-ui);
+    cursor: pointer;
+}
+.orbital-time-controls button:first-child { gap: .12rem; font-size: .56rem; }
+.orbital-time-controls button[aria-pressed="true"] { color: #f8edcb; background: #315d62; border-color: #213f43; box-shadow: 2px 3px 0 #d5634d; transform: translateY(-1px); }
+.orbital-time-controls button:focus-visible,
+.time-observatory-date-row button:focus-visible,
+.time-observatory-close:focus-visible { outline: 3px solid #76b5c4; outline-offset: 2px; }
+.time-observatory-note { display: block; margin-top: .65rem; color: #776b5b; font-size: .59rem; line-height: 1.35; }
+
 .objective-chip { text-align: left; cursor: pointer; }
 .objective-chip:focus-visible { outline: 3px solid #76b5c4; outline-offset: 3px; }
 
@@ -719,6 +842,7 @@ html[data-flight-input="touch"] .joystick-label {
     .zoom-controls button { min-width: 2rem; min-height: 2rem; padding: .25rem .4rem; }
     .zoom-controls #zoom-cockpit,
     .zoom-controls #orbit-toggle { font-size: .62rem; }
+    .time-observatory { right: 5.1rem; width: min(17rem, calc(100vw - 5.25rem)); }
     .mission-log > article { padding: 1.15rem; }
     .mission-dispatch { padding: .82rem; }.mission-dispatch-copy h2 { font-size: 1.2rem; }.mission-route { grid-template-columns: 1fr; }
     .passport-heading { display: grid; padding-right: 2.8rem; }
@@ -1373,9 +1497,19 @@ html[data-flight-input="touch"] .joystick-label {
         gap: .28rem;
         transform: translateX(50%);
     }
+    .time-observatory {
+        top: max(7rem, calc(env(safe-area-inset-top) + 6.6rem));
+        right: 50%;
+        width: min(25rem, calc(100vw - 2rem));
+        padding-block: .7rem;
+        transform: translateX(50%) rotate(-.2deg);
+    }
+    .time-observatory > p { margin-block: .35rem; }
+    .time-observatory-note { margin-top: .35rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .time-orbit-icon { animation: none !important; }
     .mission-center-trigger { animation: none !important; }
     *,
     *::before,

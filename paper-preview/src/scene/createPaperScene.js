@@ -9,10 +9,15 @@ import { createPrimarySnapshot } from '../world/orbitalSystem.js';
 import { createOrbitPaths } from './createOrbitPaths.js';
 import { syncSkyDome } from './skyDome.js';
 import { cameraFollowAlpha } from './cameraFollow.js';
+import {
+    createOrbitalClock,
+    presentOrbitalClock,
+    resetOrbitalClockToToday,
+    setOrbitalTimeScale as setOrbitalTimeScaleState,
+    stepOrbitalClock
+} from '../world/orbitalClock.js';
 
 const PLANET_KEYS = PRIMARY_WORLDS.map((world) => world.key);
-const ORBIT_DAYS_PER_SECOND = 0.35;
-const DAY_MS = 86_400_000;
 export const CHASE_CAMERA_LAYOUT = Object.freeze({ distance: 6.4, verticalOffset: 0.9 });
 
 export const PAPER_COCKPIT_STYLE = Object.freeze({
@@ -248,7 +253,11 @@ function createSurpriseEffect() {
     return root;
 }
 
-export function createPaperScene(stage) {
+/**
+ * @param {HTMLElement} stage
+ * @param {{ initialDate?: Date, timeScale?: number }} [options]
+ */
+export function createPaperScene(stage, { initialDate = new Date(), timeScale } = {}) {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#101936');
     const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 360);
@@ -308,8 +317,8 @@ export function createPaperScene(stage) {
     keyLight.shadow.camera.bottom = -10;
     scene.add(keyLight, keyLight.target);
 
-    const initialDate = new Date();
-    const initialSnapshot = createPrimarySnapshot(initialDate);
+    const orbitalClock = createOrbitalClock({ dateMs: new Date(initialDate).getTime(), timeScale });
+    const initialSnapshot = createPrimarySnapshot(new Date(orbitalClock.dateMs));
     const planets = PLANET_KEYS.map((key) => {
         const world = PRIMARY_WORLDS.find((candidate) => candidate.key === key);
         const planet = createLowPolyPlanet(key, {
@@ -337,7 +346,8 @@ export function createPaperScene(stage) {
 
     const runtime = {
         elapsed: 0,
-        simulationDateMs: initialDate.getTime(),
+        orbitalClock,
+        orbitalObjectElapsed: 0,
         primarySnapshot: initialSnapshot,
         activeIndex: -1,
         contextLost: false,
@@ -446,16 +456,18 @@ export function createPaperScene(stage) {
     function update(deltaSeconds) {
         const delta = Math.min(Math.max(deltaSeconds, 0), 0.1);
         runtime.elapsed += delta;
-        runtime.simulationDateMs += delta * ORBIT_DAYS_PER_SECOND * DAY_MS;
-        runtime.primarySnapshot = createPrimarySnapshot(new Date(runtime.simulationDateMs));
+        runtime.orbitalClock = stepOrbitalClock(runtime.orbitalClock, delta);
+        const orbitalTime = presentOrbitalClock(runtime.orbitalClock);
+        runtime.primarySnapshot = createPrimarySnapshot(new Date(orbitalTime.dateMs));
         planets.forEach((planet, index) => {
             const position = runtime.primarySnapshot[planet.userData.key].position;
             planet.position.set(position.x, position.y, position.z);
-            planet.rotation.y += delta * (0.035 + index * 0.008);
+            planet.rotation.y += delta * 0.12 * orbitalTime.rotationFactor * (0.85 + index * 0.04);
             const selectedScale = planet.userData.baseScale * (index === runtime.activeIndex ? 1.045 : 1);
             planet.scale.lerp(new THREE.Vector3(selectedScale, selectedScale, selectedScale), Math.min(1, delta * 4));
         });
-        worldObjects.update(runtime.elapsed, runtime.primarySnapshot);
+        runtime.orbitalObjectElapsed += delta * orbitalTime.satelliteFactor;
+        worldObjects.update(runtime.orbitalObjectElapsed, runtime.primarySnapshot);
         if (runtime.surpriseRemaining > 0) {
             runtime.surpriseRemaining = Math.max(0, runtime.surpriseRemaining - delta);
             surpriseEffect.position.addScaledVector(runtime.surpriseVelocity, delta);
@@ -506,7 +518,8 @@ export function createPaperScene(stage) {
             ),
             cameraMode: cameraModeForDistance(runtime.cameraDistance),
             cameraDistance: Number(runtime.cameraDistance.toFixed(2)),
-            orbitDate: new Date(runtime.simulationDateMs).toISOString(),
+            orbitDate: new Date(runtime.orbitalClock.dateMs).toISOString(),
+            orbitalClock: presentOrbitalClock(runtime.orbitalClock),
             orbitsVisible: orbitPaths.visible,
             cameraForward: Object.fromEntries(
                 Object.entries(getNavigationBasis().forward)
@@ -576,6 +589,16 @@ export function createPaperScene(stage) {
     function toggleOrbits(force) {
         orbitPaths.visible = typeof force === 'boolean' ? force : !orbitPaths.visible;
         return orbitPaths.visible;
+    }
+
+    function setOrbitalTimeScale(timeScale) {
+        runtime.orbitalClock = setOrbitalTimeScaleState(runtime.orbitalClock, timeScale);
+        return presentOrbitalClock(runtime.orbitalClock);
+    }
+
+    function resetOrbitalTimeToToday(dateMs = Date.now()) {
+        runtime.orbitalClock = resetOrbitalClockToToday(runtime.orbitalClock, dateMs);
+        return presentOrbitalClock(runtime.orbitalClock);
     }
 
     function triggerSurprise(effect = 'star') {
@@ -657,6 +680,8 @@ export function createPaperScene(stage) {
         getState,
         adjustZoom,
         toggleOrbits,
+        setOrbitalTimeScale,
+        resetOrbitalTimeToToday,
         triggerSurprise,
         destroy
     };

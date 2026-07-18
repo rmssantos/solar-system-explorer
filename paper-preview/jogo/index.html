@@ -95,14 +95,38 @@
             <button id="zoom-out" type="button" aria-label="Afastar câmara">−</button>
             <button id="zoom-cockpit" type="button" aria-label="Entrar no cockpit" data-i18n="game.cockpit">Cockpit</button>
             <button id="zoom-in" type="button" aria-label="Aproximar câmara">+</button>
-            <button id="orbit-toggle" type="button" aria-pressed="true" data-i18n="game.orbits">Órbitas</button>
-            <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="Desligar som">
+             <button id="orbit-toggle" type="button" aria-pressed="true" data-i18n="game.orbits">Órbitas</button>
+             <button id="time-observatory-toggle" class="time-observatory-toggle" type="button" aria-expanded="false" aria-controls="time-observatory" aria-label="Abrir Observatório do Tempo" data-i18n-aria="game.time.open">
+                 <span class="time-orbit-icon" aria-hidden="true"><i></i></span>
+                 <span id="time-observatory-scale">10×</span>
+             </button>
+             <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="Desligar som">
                 <span class="sound-radio" aria-hidden="true"><i></i><i></i><i></i></span>
                 <span data-i18n="game.audio.sound">Som</span>
             </button>
-        </div>
+         </div>
 
-        <section id="cockpit-instruments" class="cockpit-instruments" aria-label="Instrumentos do cockpit" hidden>
+         <aside id="time-observatory" class="time-observatory" aria-labelledby="time-observatory-title" hidden>
+             <button id="time-observatory-close" class="time-observatory-close" type="button" aria-label="Fechar Observatório do Tempo" data-i18n-aria="game.time.close">×</button>
+             <header>
+                 <small data-i18n="game.time.kicker">Relógio orbital</small>
+                 <strong id="time-observatory-title" data-i18n="game.time.title">Observatório do Tempo</strong>
+                 <div class="time-observatory-date-row">
+                     <time id="time-observatory-date" datetime=""></time>
+                     <button id="time-observatory-today" type="button" data-i18n="game.time.today">Hoje</button>
+                 </div>
+             </header>
+             <p id="time-observatory-explanation" aria-live="polite">1 segundo = 10 dias no Sistema Solar</p>
+             <div class="orbital-time-controls" role="group" aria-label="Velocidade do céu" data-i18n-aria="game.time.speedGroup">
+                 <button type="button" data-orbital-time-scale="0" aria-pressed="false"><span aria-hidden="true">Ⅱ</span><span data-i18n="game.time.pause">Pausa</span></button>
+                 <button type="button" data-orbital-time-scale="1" aria-pressed="false">1×</button>
+                 <button type="button" data-orbital-time-scale="10" aria-pressed="true">10×</button>
+                 <button type="button" data-orbital-time-scale="100" aria-pressed="false">100×</button>
+             </div>
+             <small class="time-observatory-note" data-i18n="game.time.note">Pausa apenas o céu. A tua nave continua pronta.</small>
+         </aside>
+
+         <section id="cockpit-instruments" class="cockpit-instruments" aria-label="Instrumentos do cockpit" hidden>
             <div class="cockpit-module speed-module">
                 <small data-i18n="game.cockpit.speed">Velocidade</small>
                 <div class="speed-dial" aria-hidden="true"><i id="cockpit-speed-needle"></i><span></span></div>

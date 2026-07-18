@@ -24,8 +24,9 @@ describe('heliocentric orbital system', () => {
         for (const world of PRIMARY_WORLDS.filter((entry) => entry.type === 'planet')) {
             const body = snapshot[world.key];
             const radius = Math.hypot(body.position.x, body.position.y, body.position.z);
-            const periapsis = compressAu(world.orbit.semiMajorAxisAu * (1 - world.orbit.eccentricity));
-            const apoapsis = compressAu(world.orbit.semiMajorAxisAu * (1 + world.orbit.eccentricity));
+            const compressedSemiMajor = compressAu(world.orbit.semiMajorAxisAu);
+            const periapsis = compressedSemiMajor * (1 - world.orbit.eccentricity);
+            const apoapsis = compressedSemiMajor * (1 + world.orbit.eccentricity);
             expect(radius).toBeGreaterThanOrEqual(periapsis - 0.001);
             expect(radius).toBeLessThanOrEqual(apoapsis + 0.001);
         }
@@ -46,5 +47,21 @@ describe('heliocentric orbital system', () => {
         const earth = positionAtDate(byKey('earth').orbit, new Date('2026-04-18T00:00:00Z'));
         expect(Math.abs(mercury.y)).toBeGreaterThan(0.05);
         expect(Math.abs(earth.y)).toBeLessThan(Math.abs(mercury.y));
+    });
+
+    it('keeps Mercury’s eccentric orbit smooth through perihelion', () => {
+        const mercury = byKey('mercury');
+        const epoch = Date.parse('2000-01-01T12:00:00Z');
+        const radii = Array.from({ length: 360 }, (_, index) => {
+            const date = new Date(epoch + (index / 360) * mercury.orbit.periodDays * 86_400_000);
+            const position = positionAtDate(mercury.orbit, date);
+            return Math.hypot(position.x, position.y, position.z);
+        });
+        const minimum = Math.min(...radii);
+        const nearMinimumSamples = radii.filter((radius) => radius < minimum + 0.01);
+
+        expect(minimum).toBeLessThan(10);
+        expect(Math.max(...radii)).toBeGreaterThan(12.5);
+        expect(nearMinimumSamples.length).toBeLessThan(10);
     });
 });

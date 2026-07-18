@@ -42,7 +42,8 @@ export function positionAtDate(orbit, date = new Date()) {
         * Math.sqrt(1 - orbit.eccentricity ** 2)
         * Math.sin(eccentricAnomaly);
     const actualRadius = Math.hypot(trueX, trueZ);
-    const compressedRadius = compressAu(actualRadius);
+    const compressedSemiMajor = compressAu(orbit.semiMajorAxisAu);
+    const compressedRadius = compressedSemiMajor * (actualRadius / orbit.semiMajorAxisAu);
     const planeAngle = Math.atan2(trueZ, trueX) + orbit.argumentPeriapsisDeg * DEG_TO_RAD;
     const inclination = orbit.inclinationDeg * DEG_TO_RAD;
     const ascendingNode = orbit.ascendingNodeDeg * DEG_TO_RAD;

@@ -98,6 +98,16 @@ describe('Low-poly paper planet mesh', () => {
         expect(fallbackMars.getObjectByName('mars-craters')).toBeTruthy();
     });
 
+    it('does not float flat polar-cap discs above a textured Mars surface', () => {
+        const texturedMars = createLowPolyPlanet('mars', { surfaceTexture: new THREE.Texture() });
+        const fallbackMars = createLowPolyPlanet('mars');
+
+        expect(texturedMars.getObjectByName('mars-polar-cap-north')).toBeFalsy();
+        expect(texturedMars.getObjectByName('mars-polar-cap-south')).toBeFalsy();
+        expect(fallbackMars.getObjectByName('mars-polar-cap-north')).toBeTruthy();
+        expect(fallbackMars.getObjectByName('mars-polar-cap-south')).toBeTruthy();
+    });
+
     it('ships a distinct optimized paper texture for every primary world', () => {
         for (const key of Object.keys(PLANET_STYLES)) {
             const asset = new URL(`../paper-preview/public/art/textures/paper-${key}-surface.webp`, import.meta.url);
