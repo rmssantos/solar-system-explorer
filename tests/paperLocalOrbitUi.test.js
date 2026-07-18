@@ -37,7 +37,7 @@ describe('paper local-orbit mission surface', () => {
         expect(css).toMatch(/\.local-orbit-mission\s*\{[^}]*width:\s*100dvw[^}]*height:\s*100dvh[^}]*max-height:\s*none/s);
         expect(css).toMatch(/\.local-orbit-sheet\s*\{[^}]*position:\s*relative[^}]*height:\s*100dvh[^}]*overflow:\s*hidden/s);
         expect(css).toMatch(/\.local-orbit-playfield\s*\{[^}]*position:\s*absolute[^}]*inset:\s*0[^}]*height:\s*100%[^}]*aspect-ratio:\s*auto/s);
-        expect(css).toMatch(/\.local-orbit-result p\s*\{[^}]*display:\s*none/s);
+        expect(css).toMatch(/\.local-orbit-result p\s*\{[^}]*display:\s*block[^}]*max-width:\s*32ch/s);
     });
 
     it('gives touch players large controls over the fullscreen playfield', () => {

@@ -1,140 +1,140 @@
 # Handoff — Sistema Solar Paper
 
-Atualizado em 16 de julho de 2026. Este documento é o ponto de partida recomendado para continuar o desenvolvimento noutra sessão.
+Atualizado em 18 de julho de 2026. Este documento é o ponto de partida recomendado para continuar o desenvolvimento noutra sessão.
 
 ## Estado atual
 
-- A aplicação principal é a versão Paper em `paper-preview/`.
-- `npm run dev` e `npm run dev:paper` arrancam esta versão.
+- A aplicação principal é a versão Paper em `paper-preview/`; `npm run dev` e `npm run dev:paper` arrancam esta versão.
 - A experiência antiga está preservada em `arquivo/jogo-antigo/` e pode ser aberta com `npm run dev:archive`.
-- O jogo principal está em `/jogo/`; a nova **Agência** abre pelo botão amarelo no topo e dá acesso à campanha orbital em **Contratos orbitais**.
+- O jogo principal está em `/jogo/`. O botão **Centro de Missões** abre a campanha orbital; a **Agência** continua disponível como experiência complementar e não substitui os minijogos.
 - O progresso é local ao dispositivo, em `paperSolarExplorer:progress:v1` no `localStorage`.
-- A interface, as operações e os relatórios têm texto em português e inglês.
+- A experiência, tutoriais, treino, recompensas e instruções têm suporte PT/EN.
+- Desktop, tablet, telefone em retrato e telefone em paisagem curta usam o mesmo fluxo, com controlos próprios para teclado, rato e touch.
 
 ## Agência Espacial de Papel e Sistema Vivo
 
 A Agência acrescenta um ciclo científico persistente à exploração livre:
 
 1. O **Despacho** apresenta três operações diárias: clima solar, aproximação de um objeto próximo da Terra e ligação rádio a Marte.
-2. O jogador escolhe **instrumento**, **perfil de energia** e **trajetória**, com recomendações científicas próprias de cada operação.
+2. Cada operação explica o objetivo e recomenda instrumento, energia e trajetória numa linguagem adequada a crianças dos 8 aos 10 anos.
 3. A sonda continua em viagem mesmo que o site seja fechado; até três operações podem decorrer em paralelo.
 4. Quando chega, produz um relatório com qualidade calculada pela configuração escolhida.
-5. Recolher o relatório arquiva a descoberta, atribui **90 XP** uma única vez e atualiza imediatamente a patente.
+5. Recolher o relatório arquiva a descoberta, atribui XP uma única vez e atualiza imediatamente a patente. A operação pode ser repetida para treinar e rever a experiência.
 
-O separador **Sistema Vivo** mostra os sinais que originaram cada operação. Os dados vêm de NASA DONKI, NeoWs e JPL Horizons, com cache local e um conjunto completo de fallbacks quando a rede ou um fornecedor falha. O estado exposto a analytics é deliberadamente amplo (`family` e `state`), sem identificadores, timestamps, respostas ou movimentos.
+O separador **Sistema Vivo** explica os sinais que originaram cada operação. Os dados vêm de NASA DONKI, NeoWs e JPL Horizons, com cache local e fallbacks completos quando a rede ou um fornecedor falha. O estado exposto a analytics é deliberadamente amplo (`family` e `state`), sem identificadores, timestamps, respostas ou movimentos.
 
 ## Campanha orbital implementada
 
-A campanha tem quatro contratos sequenciais e três mecânicas de jogo:
+A campanha tem cinco contratos sequenciais e quatro mecânicas:
 
 1. **Correio para a ISS** — aproximação e acoplagem.
-2. **Manutenção do Hubble** — acoplagem com deriva orbital adicional.
+2. **Manutenção do Hubble** — fotografia e acoplagem com deriva orbital adicional.
 3. **Varredura lunar** — recolha de quatro transmissores, desvio de detritos e escudo assistido.
-4. **Relé de Marte** — calibração de ângulo e frequência, seguida de bloqueio do sinal.
+4. **Relé de Marte** — calibração guiada de ângulo e frequência, seguida de bloqueio do sinal.
+5. **Estilingue de Júpiter** — assistência gravitacional: controlar direção e impulso para entrar na janela segura, contornar Júpiter e ganhar velocidade.
 
-Os desbloqueios dependem das descobertas do destino e da conclusão do contrato anterior. O Centro de Missões apresenta a rota completa, o estado de cada contrato, progresso `n/4`, ações contextuais e quatro postais WebP no estilo paper.
+O fluxo de cada contrato é agora explícito: **aceitar → viajar em piloto automático → chegar → abrir missão → tutorial/treino → concluir → receber selo e XP próprios**. Os desbloqueios dependem das descobertas do destino e da conclusão do contrato anterior.
+
+As tentativas incompletas são guardadas. Ao reabrir, o jogador pode **Continuar** do ponto guardado ou **Recomeçar**. O treino é repetível e não remove recompensas já conquistadas.
+
+O Centro de Missões apresenta a rota completa, estado `n/5`, ações contextuais e cinco postais WebP paper-style. Cada contrato tem um selo, nome e valor de XP exclusivos.
+
+## Paper Courier 2.0
+
+A nave foi reconstruída para pertencer ao mesmo universo visual dos planetas:
+
+- silhueta inspirada num vaivém de papel, composta por 28 meshes;
+- bordas cartoon escuras por peça, painéis facetados e cores limpas sem filtro amarelo/sépia;
+- canopy, motores, insígnia e volumes laterais legíveis a várias distâncias;
+- exaustão em camadas e resposta visual ao impulso;
+- geometria leve, sem introduzir um asset 3D pesado no carregamento inicial.
 
 ## Arquitetura relevante
 
 | Área | Ficheiros principais | Responsabilidade |
 | --- | --- | --- |
-| Catálogo e progressão | `paper-preview/src/contracts/contractCatalog.js`, `contractState.js` | Contratos, pré-requisitos, estado e proximidade do destino |
-| Domínio da Agência | `paper-preview/src/agency/agencyCatalog.js`, `agencyState.js` | Instrumentos, energia, rotas, limite de capacidade, sondas e relatórios imutáveis |
+| Catálogo e progressão | `paper-preview/src/contracts/contractCatalog.js`, `contractState.js`, `contractRewards.js` | Cinco contratos, pré-requisitos, estado e recompensas exclusivas |
+| Jornada e persistência | `contractJourney.js`, `missionAttemptState.js` | Aceitar, piloto automático, chegada, guardar/continuar/recomeçar tentativa |
+| Tutoriais | `missionTraining.js`, `orbitalMissionProfiles.js` | Cópia PT/EN, instruções específicas e treino repetível |
+| Domínio da Agência | `paper-preview/src/agency/agencyCatalog.js`, `agencyState.js` | Instrumentos, energia, rotas, sondas e relatórios imutáveis |
 | Operações vivas | `paper-preview/src/agency/operationDirector.js`, `paper-preview/src/data/spaceDataService.js` | Direção diária, NASA DONKI, NeoWs, Horizons, cache e fallback |
-| UI da Agência | `paper-preview/src/agency/agencyUi.js`, `agencyPresentation.js` | Despacho, setup, cronómetros incrementais, Sistema Vivo, sondas e arquivo |
-| Integração da aplicação | `paper-preview/src/main.js`, `paper-preview/src/ui.js` | Aceitar/iniciar/concluir, persistência e renderização do Centro de Missões |
-| Perfis das missões | `paper-preview/src/minigames/orbitalMissionProfiles.js` | Texto, métricas, controlos, evento de conclusão e tipo de gameplay |
-| Router e host | `createOrbitalMissionGame.js`, `localOrbitHost.js` | Lazy loading do jogo correto e adaptação do modal, HUD e controlos |
+| UI da Agência | `paper-preview/src/agency/agencyUi.js`, `agencyPresentation.js` | Despacho, setup, cronómetros, Sistema Vivo, sondas e arquivo |
+| Integração | `paper-preview/src/main.js`, `paper-preview/src/ui.js` | Jornada, persistência, progressão e Centro de Missões |
+| Router e host | `missionAdapterLoaders.js`, `createOrbitalMissionGame.js`, `localOrbitHost.js` | Fronteiras dinâmicas, jogo correto, modal, HUD e controlos |
 | Acoplagem | `dockingSimulation.js`, `createDockingGame.js` | Física determinística e Canvas da ISS/Hubble |
 | Varredura lunar | `sweepSimulation.js`, `createSweepGame.js` | Recolha, detritos, escudo e Canvas lunar |
 | Relé de Marte | `signalSimulation.js`, `createSignalGame.js` | Sintonia, bloqueio de sinal e Canvas marciano |
-| UI responsiva | `paper-preview/jogo/index.html`, `paper-preview/styles.css` | Modal fullscreen, D-pad, telemetria, safe areas e cartões |
-| Arte | `paper-preview/public/art/missions/` | Quatro postais paper-style otimizados |
+| Estilingue de Júpiter | `slingshotSimulation.js`, `createSlingshotGame.js` | Assistência gravitacional determinística e renderer Phaser responsivo |
+| Áudio | `paper-preview/src/audio/missionAudio.js`, `paper-preview/public/audio/missions/` | Eventos semânticos, debounce e sete SFX gerados para as mecânicas |
+| Performance | `missionPrefetch.js`, `scripts/verify-paper-build.mjs` | Prefetch idle com opt-out `saveData`, manifest e orçamento inicial |
+| UI responsiva | `paper-preview/jogo/index.html`, `paper-preview/styles.css` | Tabuleiro, controlos, safe areas, resultados e cartões |
+| Arte | `paper-preview/public/art/missions/` | Cinco postais e selos paper-style otimizados |
 
-As simulações são imutáveis e determinísticas. A renderização Phaser fica separada da lógica, permitindo testes Vitest sem browser. O Phaser e cada adaptador de missão são carregados dinamicamente.
+As simulações são imutáveis e determinísticas. A renderização Phaser fica separada da lógica, permitindo testes Vitest sem browser. O Phaser e cada adaptador são carregados dinamicamente; a missão selecionada é pre-carregada durante tempo ocioso, exceto quando o dispositivo indica economia de dados.
 
 ## Alterações mais recentes
 
-- `264dc79` — botão visível do Centro de Missões e rota da campanha.
-- `d0834ab` — quatro contratos, desbloqueios, postais e proximidade individual.
-- `270984b` — jogo de varredura lunar.
-- `4c9884d` — jogo de calibração do relé de Marte.
-- `a3a076a` — router, host genérico, telemetria e controlos por perfil.
-- `279f531` — correções de proximidade da Lua e robustez em vários viewports.
-
-Também foram incluídos nesta linha de trabalho:
-
-- Agência fullscreen com quatro áreas, setup de sonda e arquivo científico responsivo em desktop, tablet, telefone e paisagem curta.
-- Três fornecedores científicos reais com cache/fallback, cópia dinâmica PT/EN e links para a fonte original.
-- Sondas e relatórios persistentes, conclusão offline, recolha idempotente e integração com o XP já existente.
-- Atualização incremental dos cronómetros para não reconstruir botões durante uma interação.
-- Application Insights opcional e tolerante a bloqueadores; o vocabulário obrigatório saiu do caminho `/analytics/`.
-- Deteção separada de rato e touch, evitando joystick em desktop e em máquinas híbridas quando o rato está ativo.
-- Remoção do marcador/cometa que aparecia ao clicar em objetos.
-- Scroll do Passaporte sobre cartões de missão em rato e touch.
-- Modal de jogo fullscreen em mobile e em paisagens curtas, incluindo janelas sem touch.
+- `d1ca665` — viagem em piloto automático ligada aos contratos.
+- `e809e18` — guardar, continuar e recomeçar tentativas orbitais.
+- `e9a9185` — tutoriais e treino específicos por missão.
+- `f5d4a5e` — recompensas e selos exclusivos por contrato.
+- `9f71262` — feedback audiovisual tátil com sete SFX.
+- `a06a604` — reconstrução visual Paper Courier 2.0.
+- `b36ef42` — quinta missão: estilingue gravitacional de Júpiter.
+- `fdddc09` — fronteiras dinâmicas e prefetch da missão selecionada.
 
 ## Verificação realizada
 
-Na `main` integrada foram executados com sucesso:
+Comandos de qualidade:
 
 ```powershell
 npm test
 npm run lint
 npm run typecheck
 npm run build:paper
+npm run verify:paper-build
+npm run test:e2e
 ```
 
-Resultado final desta feature: **90 ficheiros de teste, 460 testes aprovados**, lint e TypeScript sem erros e build de produção concluído.
+A suíte unitária/integrada cobre 99 ficheiros e 502 testes. O E2E Playwright cobre oito cenários em Chromium e Firefox:
 
-O playtest no browser cobriu:
+- campanha completa dos cinco contratos: aceitar, viajar, chegar, iniciar, guardar, recarregar, continuar, concluir e validar a recompensa única;
+- mudança de idioma PT/EN durante a campanha;
+- tablet retrato `820 × 1180`;
+- telefone retrato `390 × 844`;
+- telefone paisagem `844 × 390`.
 
-- Ciclo Agência completo: configurar, lançar, esperar, receber, recolher, ganhar XP e confirmar persistência após reload.
-- Dados reais/cache dos três fornecedores e fallback coberto por testes automatizados.
-- Agência em `390 × 844`, `820 × 1180`, desktop e paisagem curta `844 × 390`, em PT e EN.
-- Centro de Missões em desktop e mobile.
-- Scroll com o ponteiro sobre os cartões.
-- Lua e Marte em `390 × 844`.
-- Marte em paisagem curta `844 × 390`.
-- Teclado, controlos DOM, telemetria dinâmica e consola sem erros.
+O estilingue de Júpiter foi ainda jogado até ao fim com teclado no desktop e touch em mobile. O playtest visual confirmou nave, HUD, tutorial, resultado e texto científico sem sobreposições.
+
+Na build medida, o JavaScript inicial soma **946 121 bytes**. O Phaser fica num chunk dinâmico separado de cerca de **1 198,78 kB** e não entra no carregamento inicial. O verificador falha acima do orçamento inicial de 1,8 MB ou se encontrar Phaser no grafo inicial.
+
+Limitação conhecida de QA: a matriz automatizada cobre os viewports e motores acima, mas ainda é recomendável uma passagem manual em hardware iOS e Android real antes de alterações grandes à física ou aos gestos.
 
 Avisos atuais do build, não bloqueantes:
 
-- Anotações `/*#__PURE__*/` dentro da dependência Application Insights que o Rolldown ignora.
-- Chunk do Phaser acima de 750 kB após minificação. O Phaser já está isolado e só é pedido ao abrir um minijogo.
+- anotações `/*#__PURE__*/` dentro da dependência Application Insights que o bundler ignora;
+- aviso de chunk grande para Phaser, esperado porque permanece isolado e lazy-loaded.
 
 ## Decisões e cuidados importantes
 
 - Não voltar a representar ISS/Hubble em distância real dentro do diorama 3D. Os minijogos usam uma folha 2D ampliada separada.
-- Preservar o estilo de recortes de papel, sombras físicas, paleta creme/coral/azul-marinho/verde-rádio/amarelo-sinal.
+- Preservar recortes de papel, bordas cartoon, sombras físicas e paleta creme/coral/azul-marinho/verde-rádio/amarelo-sinal; evitar o “piss filter” sépia.
+- Manter linguagem direta e visual para 8–10 anos: cada controlo deve dizer o que altera e porquê.
 - Não assumir que `pointer: coarse` significa ausência de rato. Há suporte explícito para equipamentos híbridos.
-- Em mobile, o tabuleiro deve ocupar o viewport e os controlos devem respeitar `env(safe-area-inset-*)`.
+- Em mobile, o tabuleiro deve ocupar o viewport, os controlos devem respeitar `env(safe-area-inset-*)` e a ação principal nunca pode depender apenas de teclado.
 - A Lua é um objeto com `parentKey: earth`; a proximidade de contratos precisa comparar planeta, objeto próximo e objeto-pai.
 - Não guardar respostas de quiz, posições ou movimentos em analytics. O consentimento continua opcional.
-- Não remover os fallbacks da Agência nem bloquear o Despacho à espera da rede; cada operação deve existir sempre.
-- Não reconstruir a árvore interativa da Agência a cada frame/segundo. Os cronómetros atualizam os nós existentes e só há render completo quando o estado muda.
-- Os contratos concluídos são persistidos, mas o estado intermédio da simulação reinicia ao fechar um minijogo.
+- Não remover os fallbacks da Agência nem bloquear o Despacho à espera da rede.
+- Não reconstruir a árvore interativa da Agência a cada frame/segundo.
+- Preservar a escolha **Continuar/Recomeçar** nas tentativas guardadas e a possibilidade de repetir treino/missões.
+- Manter Phaser fora do bundle inicial e respeitar `navigator.connection.saveData` no prefetch.
 
-## Próximos passos sugeridos
+## Próximos passos depois desta roadmap
 
-### Prioridade alta
-
-1. **Jogar a campanha completa sem atalhos de QA** em Android, iPhone/iPad, Firefox e Chrome, afinando aceleração, deriva, colisões e duração do bloqueio.
-2. **Melhorar a viagem para contratos aceites**: o cartão apresenta a intenção “Viajar até…”, mas deve poder iniciar o piloto automático diretamente para o destino.
-3. **Rever acessibilidade específica por missão**: substituir rótulos genéricos como “Avançar/Recuar” por “Aumentar/diminuir ângulo” ou frequência no relé de Marte.
-4. **Dar feedback mais rico às novas mecânicas**: som de transmissor recolhido, impacto de escudo, janela de sintonia, sinal perdido e celebração final.
-
-### Prioridade média
-
-5. Guardar opcionalmente o progresso parcial do minijogo ao fechar, ou comunicar claramente que a tentativa será reiniciada.
-6. Criar selos/recompensas visuais exclusivos por contrato e deixar de mostrar a mesma recompensa `+140 XP` em todos.
-7. Adicionar uma introdução curta à primeira missão de cada mecânica e uma página de treino acessível pelo Centro de Missões.
-8. Completar testes end-to-end da campanha, incluindo aceitar, viajar, iniciar, concluir, recarregar e mudar de idioma.
-
-### Exploração futura
-
-9. Quinta missão educativa: assistência gravitacional, montagem de rover, recolha de amostras ou triangulação de um sinal.
-10. Otimizar o peso inicial e avaliar uma build Phaser mais reduzida se o carregamento do primeiro minijogo for lento em telemóveis modestos.
+1. Validar a campanha em iPhone/iPad e Android físicos, com atenção a áudio desbloqueado por gesto, safe areas e desempenho do primeiro minijogo.
+2. Afinar dificuldade com sessões de crianças dos 8 aos 10 anos: tempo até compreender o objetivo, número de tentativas e pontos de abandono.
+3. Considerar um modo de acessibilidade adicional para contraste, velocidade reduzida e instruções narradas, preservando PT/EN.
+4. Monitorizar peso e cache do Phaser em produção; só trocar de runtime se medições reais mostrarem benefício material.
 
 ## Como retomar noutra sessão
 
@@ -146,6 +146,4 @@ npm test
 npm run dev
 ```
 
-Abrir `http://localhost:5173/jogo/` e começar pelo botão **Agência**.
-
-Antes de alterar uma mecânica, adicionar primeiro um teste à respetiva simulação. Para problemas visuais, testar pelo menos desktop, `390 × 844` e `844 × 390`, capturando o Canvas e o HUD DOM em conjunto.
+Abrir `http://localhost:5173/jogo/` e começar pelo botão **Centro de Missões**. Antes de alterar uma mecânica, adicionar primeiro um teste à respetiva simulação. Para problemas visuais, testar pelo menos desktop, `390 × 844` e `844 × 390`, capturando o Canvas e o HUD DOM em conjunto.
