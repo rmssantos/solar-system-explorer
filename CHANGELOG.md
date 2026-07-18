@@ -2,6 +2,13 @@
 
 Public changes to the Paper Solar Explorer are maintained automatically by Release Please from Conventional Commits.
 
+## [1.7.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.6.0...v1.7.0) (2026-07-18)
+
+
+### Features
+
+* launch Living Sky and Explorer Camera ([#52](https://github.com/rmssantos/solar-system-explorer/issues/52)) ([17e7f2a](https://github.com/rmssantos/solar-system-explorer/commit/17e7f2ad743d8747f5d56b6f0244d9ec179afbfa))
+
 ## [1.6.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.5.0...v1.6.0) (2026-07-18)
 
 
