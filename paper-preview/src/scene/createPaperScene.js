@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { createLowPolyPlanet } from './createLowPolyPlanet.js';
-import { createPaperShip, updatePaperShipThrust } from './createPaperShip.js';
+import { createPaperShip, setPaperShipUpgrades, updatePaperShipThrust } from './createPaperShip.js';
 import { createPaperTextures } from './paperTextures.js';
 import { PRIMARY_WORLDS, getWorldObject } from '../world/worldCatalog.js';
 import { adjustCameraDistance, cameraModeForDistance } from './cameraZoom.js';
@@ -601,6 +601,11 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         return presentOrbitalClock(runtime.orbitalClock);
     }
 
+    function setShipUpgrades(upgradeIds) {
+        setPaperShipUpgrades(rocket, upgradeIds);
+        return [...(Array.isArray(upgradeIds) ? upgradeIds : [])];
+    }
+
     function triggerSurprise(effect = 'star') {
         runtime.right.set(1, 0, 0).applyQuaternion(runtime.flightQuaternion);
         surpriseEffect.position.copy(runtime.shipPosition)
@@ -682,6 +687,7 @@ export function createPaperScene(stage, { initialDate = new Date(), timeScale } 
         toggleOrbits,
         setOrbitalTimeScale,
         resetOrbitalTimeToToday,
+        setShipUpgrades,
         triggerSurprise,
         destroy
     };

@@ -9,6 +9,12 @@ describe('orbital mission audio feedback', () => {
         expect(getMissionEventCue('unsafe-contact')).toBe('soft-impact');
         expect(getMissionEventCue('docked')).toBe('docking-clamp');
         expect(getMissionEventCue('signal-complete')).toBe('signal-lock');
+        expect(getMissionEventCue('seismic-solved')).toBe('signal-lock');
+        expect(getMissionEventCue('ice-map-complete')).toBe('signal-lock');
+        expect(getMissionEventCue('radar-overheat')).toBe('soft-impact');
+        expect(getMissionEventCue('plume-sampled')).toBe('cargo-capture');
+        expect(getMissionEventCue('large-grain-hit')).toBe('soft-impact');
+        expect(getMissionEventCue('dragonfly-landed')).toBe('mission-celebration');
         expect(getMissionEventCue('unknown')).toBeNull();
     });
 

@@ -191,6 +191,45 @@ function createExhaust(side, x) {
     return group;
 }
 
+const SHIP_UPGRADE_IDS = Object.freeze([
+    'paper-seismometer', 'ice-radar', 'plume-collector', 'atmosphere-lab', 'guardian-ocean-seal'
+]);
+
+function upgradeMesh(geometry, color, paperTexture) {
+    const mesh = new THREE.Mesh(geometry, paperMaterial(color, { side: THREE.DoubleSide }, paperTexture));
+    mesh.castShadow = true;
+    return mesh;
+}
+
+function createShipUpgrades(paperTexture) {
+    const root = new THREE.Group(); root.name = 'courier-investigation-upgrades';
+
+    const seismometer = new THREE.Group(); seismometer.name = 'upgrade-paper-seismometer';
+    const sensor = upgradeMesh(new THREE.CylinderGeometry(0.09, 0.12, 0.16, 6), '#f4c85f', paperTexture);
+    const sensorMast = upgradeMesh(new THREE.CylinderGeometry(0.018, 0.018, 0.3, 5), '#273649', paperTexture);
+    sensor.position.set(-0.34, 0.13, 0.1); sensorMast.position.set(-0.34, 0.34, 0.1); seismometer.add(sensor, sensorMast);
+
+    const radar = new THREE.Group(); radar.name = 'upgrade-ice-radar';
+    const dish = upgradeMesh(new THREE.CircleGeometry(0.18, 8), '#4d8490', paperTexture); dish.position.set(0.31, 0.26, -0.08); dish.rotation.set(-0.7, 0, 0.2);
+    const dishArm = upgradeMesh(new THREE.CylinderGeometry(0.02, 0.025, 0.3, 5), '#273649', paperTexture); dishArm.position.set(0.31, 0.13, -0.02); radar.add(dish, dishArm);
+
+    const collector = new THREE.Group(); collector.name = 'upgrade-plume-collector';
+    const ring = upgradeMesh(new THREE.TorusGeometry(0.18, 0.035, 5, 9), '#f4c85f', paperTexture); ring.position.set(-0.42, -0.08, -0.47); ring.rotation.x = Math.PI / 2;
+    const collectorArm = upgradeMesh(new THREE.CylinderGeometry(0.025, 0.025, 0.38, 5), '#4d8490', paperTexture); collectorArm.position.set(-0.3, -0.07, -0.33); collectorArm.rotation.z = -0.75; collector.add(ring, collectorArm);
+
+    const lab = new THREE.Group(); lab.name = 'upgrade-atmosphere-lab';
+    const box = upgradeMesh(new THREE.BoxGeometry(0.28, 0.22, 0.32), '#d5634d', paperTexture); box.position.set(0.32, -0.05, 0.32);
+    const vane = upgradeMesh(extrudedShape([[-0.18, 0], [0, 0.09], [0.18, 0], [0, -0.09]], 0.025), '#d9f4ed', paperTexture); vane.position.set(0.32, 0.16, 0.28); lab.add(box, vane);
+
+    const seal = new THREE.Group(); seal.name = 'upgrade-guardian-ocean-seal';
+    const badge = upgradeMesh(new THREE.CylinderGeometry(0.17, 0.17, 0.035, 10), '#4d8490', paperTexture); badge.rotation.x = Math.PI / 2; badge.position.set(0, -0.07, -0.99);
+    const badgeCore = upgradeMesh(new THREE.CircleGeometry(0.095, 8), '#f4c85f', paperTexture); badgeCore.position.set(0, -0.07, -1.014); badgeCore.rotation.y = Math.PI; seal.add(badge, badgeCore);
+
+    root.add(seismometer, radar, collector, lab, seal);
+    root.children.forEach((group) => { group.visible = false; });
+    return root;
+}
+
 export function createPaperShip({ paperTexture = null } = {}) {
     const ship = new THREE.Group();
     ship.name = 'paper-courier-ship';
@@ -230,8 +269,18 @@ export function createPaperShip({ paperTexture = null } = {}) {
         createEngine('left', -0.22, paperTexture),
         createEngine('right', 0.22, paperTexture),
         createRearPaperDetails(paperTexture),
+        createShipUpgrades(paperTexture),
         exhaust
     );
+    return ship;
+}
+
+export function setPaperShipUpgrades(ship, upgradeIds = []) {
+    const active = new Set(Array.isArray(upgradeIds) ? upgradeIds : []);
+    SHIP_UPGRADE_IDS.forEach((id) => {
+        const group = ship.getObjectByName(`upgrade-${id}`);
+        if (group) group.visible = active.has(id);
+    });
     return ship;
 }
 

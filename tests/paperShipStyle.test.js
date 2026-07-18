@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
     PAPER_SHIP_STYLE,
     createPaperShip,
+    setPaperShipUpgrades,
     updatePaperShipThrust
 } from '../paper-preview/src/scene/createPaperShip.js';
 
@@ -49,7 +50,7 @@ describe('Low-poly paper courier ship', () => {
         required.forEach((name) => expect(ship.getObjectByName(name)).toBeTruthy());
         expect(ship.getObjectByName('courier-fuselage').userData.closedVolume).toBe(true);
         expect(ship.getObjectByName('courier-outline').material.side).toBe(1);
-        expect(meshes.length).toBeLessThanOrEqual(32);
+        expect(meshes.length).toBeLessThanOrEqual(48);
         expect(meshes.filter((mesh) => mesh.material?.roughness !== undefined)
             .every((mesh) => mesh.material.roughness >= 0.85)).toBe(true);
     });
@@ -65,5 +66,14 @@ describe('Low-poly paper courier ship', () => {
         expect(exhaust.visible).toBe(true);
         expect(exhaust.scale.z).toBeGreaterThan(1);
         expect(ship.getObjectByName('courier-exhaust-core-left').scale.y).toBeGreaterThan(1);
+    });
+
+    it('shows only the investigation instruments earned by the explorer', () => {
+        const ship = createPaperShip();
+        expect(ship.getObjectByName('upgrade-ice-radar').visible).toBe(false);
+        setPaperShipUpgrades(ship, ['ice-radar', 'plume-collector']);
+        expect(ship.getObjectByName('upgrade-ice-radar').visible).toBe(true);
+        expect(ship.getObjectByName('upgrade-plume-collector').visible).toBe(true);
+        expect(ship.getObjectByName('upgrade-atmosphere-lab').visible).toBe(false);
     });
 });

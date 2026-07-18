@@ -178,6 +178,7 @@ let lastInput = {
 };
 
 const paperScene = createPaperScene(stage, { timeScale: 1 });
+paperScene.setShipUpgrades(expeditionState.upgradeIds);
 const audioDirector = createAudioDirector();
 const missionPrefetch = createMissionPrefetch();
 const spaceData = createSpaceDataService();
@@ -433,6 +434,7 @@ function reconcileAndSaveProgress({ feedback = true } = {}) {
         collectedAgencyReportIds: agencyState.reports.filter((report) => report.collected).map((report) => report.id)
     });
     progressPresentation = presentProgress(expeditionProgress, currentProgressSnapshot(), paperI18n.language);
+    paperScene.setShipUpgrades(expeditionState.upgradeIds);
     saveProgress({
         ...previewState.learning,
         ...expeditionProgress,
