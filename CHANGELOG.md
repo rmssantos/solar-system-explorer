@@ -2,6 +2,13 @@
 
 Public changes to the Paper Solar Explorer are maintained automatically by Release Please from Conventional Commits.
 
+## [1.6.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.5.0...v1.6.0) (2026-07-18)
+
+
+### Features
+
+* launch The Signal of the Moons expedition ([#50](https://github.com/rmssantos/solar-system-explorer/issues/50)) ([1796658](https://github.com/rmssantos/solar-system-explorer/commit/1796658cd6f625c2d4281de347dbae828de33bbd))
+
 ## [1.5.0](https://github.com/rmssantos/solar-system-explorer/compare/v1.4.0...v1.5.0) (2026-07-18)
 
 
