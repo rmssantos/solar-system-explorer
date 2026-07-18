@@ -205,6 +205,7 @@ export async function createIceRadarGame({
     const phaserModule = await import('phaser');
     const Phaser = phaserModule.default ?? phaserModule;
     const actions = createIceRadarInputState();
+    let timeScale = 1;
     let layout = createIceRadarLayout(parent.clientWidth || 960, parent.clientHeight || 540);
     let resolveReady;
     const ready = new Promise((resolve) => { resolveReady = resolve; });
@@ -241,7 +242,7 @@ export async function createIceRadarGame({
                 horizontal: Math.max(-1, Math.min(1, touch.horizontal + keyboard.horizontal)),
                 vertical: Math.max(-1, Math.min(1, touch.vertical + keyboard.vertical)),
                 scan: touch.scan || keyboard.scan
-            }, deltaMilliseconds / 1000);
+            }, (deltaMilliseconds / 1000) * timeScale);
             const position = mapIceRadarPosition(this.simulation.position, layout);
             this.cart.setPosition(position.x, position.y);
             drawRadar(this.radarGraphics, this.simulation, layout);
@@ -276,6 +277,7 @@ export async function createIceRadarGame({
     observer.observe(parent);
     return Object.freeze({
         setAction: (action, active) => setIceRadarAction(actions, action, active),
+        setTimeScale: (value) => { timeScale = Math.max(0.4, Math.min(1, Number(value) || 1)); },
         getState: () => {
             const state = game.scene.getScene(sceneKey)?.simulation;
             return state ? structuredClone(state) : null;

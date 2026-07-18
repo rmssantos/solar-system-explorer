@@ -1,5 +1,6 @@
 import { getOrbitalMissionProfile } from './orbitalMissionProfiles.js';
 import { getMissionEventCue } from '../audio/missionAudio.js';
+import { loadMissionAssistance, saveMissionAssistance, toggleMissionAssistance } from './missionAssistance.js';
 
 function queryElements(root) {
     return {
@@ -32,7 +33,10 @@ function queryElements(root) {
         trainingStep: root.querySelector('#local-orbit-training-step'),
         trainingNext: root.querySelector('#local-orbit-training-next'),
         trainingSkip: root.querySelector('#local-orbit-training-skip'),
-        controls: [...root.querySelectorAll('[data-docking-action]')]
+        controls: [...root.querySelectorAll('[data-docking-action]')],
+        assistControls: [...root.querySelectorAll('[data-mission-assist]')],
+        assistsTitle: root.querySelector('#mission-assists-title'),
+        noTimer: root.querySelector('#mission-no-timer')
     };
 }
 
@@ -108,6 +112,7 @@ export function createLocalOrbitHost({
     let latestTelemetry = null;
     let loadGeneration = 0;
     let trainingStepIndex = 0;
+    let assistance = loadMissionAssistance();
     const listeners = [];
 
     function listen(element, type, handler) {
@@ -148,6 +153,23 @@ export function createLocalOrbitHost({
             : (openOptions.language === 'en' ? 'Next' : 'Seguinte');
     }
 
+    function applyAssistance() {
+        elements.dialog.classList?.toggle('has-large-mission-controls', assistance.largeControls);
+        game?.setTimeScale?.(assistance.calmPace ? 0.62 : 1);
+        for (const control of elements.assistControls ?? []) {
+            const active = Boolean(assistance[control.dataset.missionAssist]);
+            control.setAttribute('aria-pressed', String(active)); control.classList.toggle('is-active', active);
+        }
+        const language = openOptions.language === 'en' ? 'en' : 'pt';
+        if (elements.assistsTitle) elements.assistsTitle.textContent = language === 'en' ? 'Assists · no XP penalty' : 'Ajudas · sem perder XP';
+        if (elements.noTimer) elements.noTimer.textContent = language === 'en' ? 'No time limit' : 'Sem limite de tempo';
+        if (assistance.guide && openOptions.profile?.tutorialSteps?.length) {
+            elements.guidance.textContent = `✦ ${openOptions.profile.tutorialSteps.join(' ')}`;
+        } else if (openOptions.profile) {
+            elements.guidance.textContent = openOptions.profile.guidance ?? messages.guidance ?? elements.guidance.textContent;
+        }
+    }
+
     function finishTraining() {
         if (!elements.training || elements.training.hidden) return;
         elements.training.hidden = true;
@@ -178,6 +200,7 @@ export function createLocalOrbitHost({
                 return;
             }
             game = created;
+            applyAssistance();
             elements.loading.hidden = true;
         } catch {
             if (generation !== loadGeneration) return;
@@ -217,6 +240,7 @@ export function createLocalOrbitHost({
             if (controlLabel) control.setAttribute?.('aria-label', controlLabel);
             if (control.dataset.dockingAction === 'stabilize') control.textContent = profile.centerControl;
         }
+        applyAssistance();
         if (!elements.dialog.open) elements.dialog.showModal();
         if (options.showTraining) {
             loadGeneration += 1;
@@ -255,6 +279,12 @@ export function createLocalOrbitHost({
         for (const type of ['pointerup', 'pointercancel', 'pointerleave']) {
             listen(control, type, () => setActive(false));
         }
+    }
+    for (const control of elements.assistControls ?? []) {
+        listen(control, 'click', () => {
+            assistance = toggleMissionAssistance(assistance, control.dataset.missionAssist);
+            saveMissionAssistance(assistance); applyAssistance();
+        });
     }
     listen(elements.close, 'click', requestClose);
     listen(elements.finish, 'click', closeImmediately);

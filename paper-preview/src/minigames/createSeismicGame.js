@@ -246,6 +246,7 @@ export async function createSeismicGame({
     const phaserModule = await import('phaser');
     const Phaser = /** @type {any} */ (phaserModule.default ?? phaserModule);
     const actions = createSeismicInputState();
+    let timeScale = 1;
     let layout = createSeismicLayout(parent.clientWidth || 960, parent.clientHeight || 540);
     let resolveReady;
     const ready = new Promise((resolve) => { resolveReady = resolve; });
@@ -289,7 +290,7 @@ export async function createSeismicGame({
                 vertical: Math.max(-1, Math.min(1, touch.vertical + keyboard.vertical)),
                 activate: touch.activate || keyboard.activate
             };
-            this.simulation = stepSeismic(this.simulation, input, deltaMilliseconds / 1000);
+            this.simulation = stepSeismic(this.simulation, input, (deltaMilliseconds / 1000) * timeScale);
             const cursorPosition = mapSeismicPosition(this.simulation.cursor, layout);
             const cursorValid = !this.simulation.sensors.some((sensor) => (
                 Math.hypot(sensor.x - this.simulation.cursor.x, sensor.y - this.simulation.cursor.y)
@@ -355,6 +356,7 @@ export async function createSeismicGame({
 
     return Object.freeze({
         setAction: (action, active) => setSeismicAction(actions, action, active),
+        setTimeScale: (value) => { timeScale = Math.max(0.4, Math.min(1, Number(value) || 1)); },
         getState() {
             const scene = game.scene.getScene(sceneKey);
             return scene?.simulation ? structuredClone(scene.simulation) : null;
