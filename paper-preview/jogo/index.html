@@ -136,7 +136,10 @@
                 <button id="living-sky-close" type="button" aria-label="Fechar Céu Vivo">×</button>
             </header>
             <p class="living-sky-intro" data-living-sky-copy="intro">Descobre fenómenos, viaja até ao melhor dia e fotografa-os com o instrumento certo.</p>
-            <div class="living-sky-progress"><span data-living-sky-copy="progress">Observações no álbum</span><strong id="living-sky-progress">0/4</strong></div>
+            <div class="living-sky-progress">
+                <span><span data-living-sky-copy="progress">Observações no álbum</span><strong id="living-sky-progress">0/4</strong></span>
+                <button id="living-sky-album-open" type="button" data-living-sky-copy="openAlbum">Ver fotografias</button>
+            </div>
             <div id="living-sky-event-list" class="living-sky-event-list" aria-live="polite"></div>
             <small id="living-sky-disclosure" class="living-sky-disclosure"></small>
          </aside>
@@ -149,6 +152,18 @@
             </header>
             <div class="camera-reticle" aria-hidden="true"><i></i><span></span></div>
             <div id="explorer-camera-coach" class="explorer-camera-coach" role="status" aria-live="polite"></div>
+            <section id="explorer-camera-result" class="explorer-camera-result" aria-live="polite" hidden>
+                <figure><img id="explorer-camera-result-image" alt=""></figure>
+                <div>
+                    <small data-living-sky-copy="resultKicker">Fotografia revelada</small>
+                    <strong id="explorer-camera-result-title"></strong>
+                    <p data-living-sky-copy="resultSaved">Já está guardada no teu álbum.</p>
+                    <span class="explorer-camera-result-actions">
+                        <button id="explorer-camera-view-album" type="button" data-living-sky-copy="viewAlbum">Ver no álbum</button>
+                        <button id="explorer-camera-continue" type="button" data-living-sky-copy="continuePhoto">Continuar a fotografar</button>
+                    </span>
+                </div>
+            </section>
             <footer class="explorer-camera-console">
                 <div class="camera-filters" role="group" aria-label="Instrumentos de observação">
                     <button type="button" data-camera-filter="visible" aria-pressed="true"><span aria-hidden="true">◉</span><b data-living-sky-copy="visible">Visível</b><kbd>1</kbd></button>
@@ -426,12 +441,12 @@
             </section>
             <section class="passport-panel" data-passport-panel="collection" hidden>
                 <p class="mission-log-intro" data-i18n="game.passport.collectionCopy">Cada cartão é um lugar ou objeto que encontraste pessoalmente.</p>
-                <div id="collection-grid" class="collection-grid"></div>
-                <section class="sky-photo-album" aria-labelledby="sky-photo-album-title">
+                <section class="sky-photo-album" aria-labelledby="sky-photo-album-title" tabindex="-1">
                     <header><div><small data-living-sky-copy="albumKicker">Câmara de Explorador</small><h3 id="sky-photo-album-title" data-living-sky-copy="albumTitle">Álbum do Céu Vivo</h3></div><strong id="sky-photo-count">0/12</strong></header>
                     <p id="sky-photo-empty" data-living-sky-copy="albumEmpty">Ainda não há fotografias. Abre o Céu Vivo e escolhe uma observação.</p>
                     <div id="sky-photo-grid" class="sky-photo-grid"></div>
                 </section>
+                <div id="collection-grid" class="collection-grid"></div>
             </section>
             <section class="passport-panel" data-passport-panel="awards" hidden>
                 <p class="mission-log-intro" data-i18n="game.passport.awardsCopy">Medalhas por curiosidade; troféus por viagens extraordinárias.</p>

@@ -907,7 +907,13 @@ async function captureLivingSkyObservation({ eventId, filter }) {
         reconcileAndSaveProgress({ feedback: assessment.qualified });
         livingSkyUi?.update(livingSkyPresentation, livingSkyState);
     }
-    return { ...assessment, qualified: assessment.qualified && saved, saved };
+    return {
+        ...assessment,
+        qualified: assessment.qualified && saved,
+        saved,
+        photoId: saved ? storageId : null,
+        storageId: saved ? storageId : null
+    };
 }
 
 async function deleteLivingSkyPhotoRecord(photoId) {
@@ -958,6 +964,16 @@ livingSkyUi = createLivingSkyUi({
     onObserve: observeLivingSkyEvent,
     onCapture: captureLivingSkyObservation,
     onDeletePhoto: deleteLivingSkyPhotoRecord,
+    onOpenAlbum: () => {
+        livingSkyUi?.setOpen(false);
+        livingSkyUi?.setCameraOpen(false);
+        previewUI.openMissionLog('collection');
+        window.requestAnimationFrame(() => {
+            const album = document.querySelector('.sky-photo-album');
+            album?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+            album?.focus?.({ preventScroll: true });
+        });
+    },
     getPhotoUrl: (storageId) => skyPhotoStore.getObjectUrl(storageId),
     revokePhotoUrl: (storageId) => skyPhotoStore.revokeObjectUrl(storageId)
 });
