@@ -38,6 +38,7 @@ export function createPreviewUI({
     onDismissSurprise,
     onZoom,
     onToggleOrbits,
+    onOrbitalTimeScale,
     onSoundToggle
 }) {
     const elements = {
@@ -94,6 +95,13 @@ export function createPreviewUI({
         , zoomCockpit: document.querySelector('#zoom-cockpit')
         , zoomIn: document.querySelector('#zoom-in')
         , orbitToggle: document.querySelector('#orbit-toggle')
+        , timeObservatoryToggle: document.querySelector('#time-observatory-toggle')
+        , timeObservatory: document.querySelector('#time-observatory')
+        , timeObservatoryClose: document.querySelector('#time-observatory-close')
+        , timeObservatoryScale: document.querySelector('#time-observatory-scale')
+        , timeObservatoryDate: document.querySelector('#time-observatory-date')
+        , timeObservatoryExplanation: document.querySelector('#time-observatory-explanation')
+        , orbitalTimeControls: [...document.querySelectorAll('[data-orbital-time-scale]')]
         , soundToggle: document.querySelector('#sound-toggle')
         , passportLevel: document.querySelector('#passport-level')
         , passportXp: document.querySelector('#passport-xp')
@@ -140,6 +148,7 @@ export function createPreviewUI({
     let rewardTimer = null;
     let activeMedia = null;
     let audioState = { enabled: true, unlocked: false };
+    let orbitalClockState = { dateMs: Date.now(), timeScale: 10, paused: false, daysPerSecond: 10 };
     const mediaViewer = createMediaViewer(elements.mediaViewer, {
         onImageOpen: (media) => siteAnalytics.track('image_open', { objectKey: media.objectKey, surface: 'game' }),
         onSourceOpen: (media) => siteAnalytics.track('source_open', {
@@ -153,9 +162,40 @@ export function createPreviewUI({
         elements.languageToggle.textContent = paperI18n.language === 'pt' ? 'EN' : 'PT';
         elements.languageToggle.setAttribute('aria-label', paperI18n.t('shared.switchTo'));
         updateAudioState(audioState);
+        updateOrbitalClock(orbitalClockState);
     }
     const unsubscribeLanguage = paperI18n.subscribe(renderLanguageToggle);
     renderLanguageToggle();
+
+    function setTimeObservatoryOpen(open) {
+        elements.timeObservatory.hidden = !open;
+        elements.timeObservatoryToggle.setAttribute('aria-expanded', String(open));
+    }
+
+    function updateOrbitalClock(clock) {
+        if (!clock) return orbitalClockState;
+        orbitalClockState = { ...orbitalClockState, ...clock };
+        const date = new Date(orbitalClockState.dateMs);
+        const formatter = new Intl.DateTimeFormat(paperI18n.language === 'en' ? 'en-GB' : 'pt-PT', {
+            day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'
+        });
+        elements.timeObservatoryDate.textContent = formatter.format(date);
+        elements.timeObservatoryDate.dateTime = date.toISOString();
+        elements.timeObservatoryScale.textContent = orbitalClockState.paused ? 'Ⅱ' : `${orbitalClockState.timeScale}×`;
+        elements.timeObservatoryToggle.dataset.timeScale = String(orbitalClockState.timeScale);
+        elements.timeObservatoryToggle.classList.toggle('is-paused', orbitalClockState.paused);
+        elements.orbitalTimeControls.forEach((control) => {
+            control.setAttribute('aria-pressed', String(Number(control.dataset.orbitalTimeScale) === orbitalClockState.timeScale));
+        });
+        if (orbitalClockState.paused) {
+            elements.timeObservatoryExplanation.textContent = paperI18n.t('game.time.paused');
+        } else if (orbitalClockState.daysPerSecond === 1) {
+            elements.timeObservatoryExplanation.textContent = paperI18n.t('game.time.oneDayPerSecond');
+        } else {
+            elements.timeObservatoryExplanation.textContent = paperI18n.t('game.time.daysPerSecond', { days: clock.daysPerSecond });
+        }
+        return orbitalClockState;
+    }
 
     function hideSurprise() {
         if (lumiTimer) window.clearTimeout(lumiTimer);
@@ -237,6 +277,21 @@ export function createPreviewUI({
         , [elements.orbitToggle, 'click', () => {
             const visible = onToggleOrbits();
             elements.orbitToggle.setAttribute('aria-pressed', String(visible));
+        }]
+        , [elements.timeObservatoryToggle, 'click', () => setTimeObservatoryOpen(elements.timeObservatory.hidden)]
+        , [elements.timeObservatoryClose, 'click', () => {
+            setTimeObservatoryOpen(false);
+            elements.timeObservatoryToggle.focus({ preventScroll: true });
+        }]
+        , [elements.timeObservatory, 'click', (event) => {
+            const control = event.target.closest('[data-orbital-time-scale]');
+            if (!control) return;
+            updateOrbitalClock(onOrbitalTimeScale(Number(control.dataset.orbitalTimeScale)));
+        }]
+        , [document, 'keydown', (event) => {
+            if (event.key !== 'Escape' || elements.timeObservatory.hidden) return;
+            setTimeObservatoryOpen(false);
+            elements.timeObservatoryToggle.focus({ preventScroll: true });
         }]
         , [elements.soundToggle, 'click', () => updateAudioState(onSoundToggle())]
         , [elements.passportTabs[0].parentElement, 'click', (event) => {
@@ -699,5 +754,5 @@ export function createPreviewUI({
         }
     }
 
-    return { update, updateNavigation, updateCockpitTelemetry, updateAudioState, setApod, showSurprise, showProgressFeedback, openMissionLog, closeMissionLog, markReady, destroy, elements };
+    return { updateOrbitalClock, update, updateNavigation, updateCockpitTelemetry, updateAudioState, setApod, showSurprise, showProgressFeedback, openMissionLog, closeMissionLog, markReady, destroy, elements };
 }
