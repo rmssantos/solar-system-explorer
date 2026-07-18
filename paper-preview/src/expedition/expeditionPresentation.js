@@ -41,6 +41,7 @@ const BOARD_COPY = Object.freeze({
         })
     })
 });
+const PLAYABLE_EVIDENCE = new Set(PLAYABLE_EXPEDITION_CHAPTERS.map((chapter) => chapter.evidenceId));
 
 function lumiMessage(chapters, copy) {
     const finale = chapters.at(-1);
@@ -89,9 +90,8 @@ export function presentExpeditionBoard(state = {}, {
             disabled: journeyAction.disabled
         });
     });
-    const playableEvidence = new Set(PLAYABLE_EXPEDITION_CHAPTERS.map((chapter) => chapter.evidenceId));
     const evidenceCount = (state.evidenceIds ?? state.expeditionEvidenceIds ?? [])
-        .filter((id) => playableEvidence.has(id)).length;
+        .filter((id) => PLAYABLE_EVIDENCE.has(id)).length;
 
     return Object.freeze({
         title: boardCopy.title,

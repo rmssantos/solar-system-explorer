@@ -43,6 +43,16 @@ describe('Europa ice radar simulation', () => {
         expect(cooled.passProgress).toEqual(hot.passProgress);
     });
 
+    it('cannot finish the final radar pass on the frame that overheats', () => {
+        const state = createIceRadarState({
+            position: 0.62, power: 1, heat: 0.94, passProgress: [1, 1, 0.99]
+        });
+        const hot = stepIceRadar(state, { scan: true }, 0.25);
+        expect(hot.phase).toBe('scanning');
+        expect(hot.event).toBe('radar-overheat');
+        expect(hot.passProgress).toEqual([1, 1, 0.99]);
+    });
+
     it('completes after all three echoes are mapped', () => {
         const state = createIceRadarState({
             position: 0.62, power: 0.8, heat: 0.2, passProgress: [1, 1, 0.94]

@@ -15,6 +15,10 @@ describe('Paper Solar Explorer PT/EN i18n', () => {
             'game.contract.training.title', 'game.contract.art.open', 'game.contract.art.enlarge',
             'game.passport.investigation', 'game.expedition.kicker', 'game.expedition.title',
             'game.expedition.copy', 'game.expedition.evidence', 'game.expedition.art.open',
+            'game.expedition.progressAria', 'game.expedition.routeAria',
+            'game.expedition.finale.close', 'game.expedition.finale.evidenceAria',
+            'game.mission.assists.aria', 'game.mission.assists.title', 'game.mission.assists.guide',
+            'game.mission.assists.calmPace', 'game.mission.assists.largeControls', 'game.mission.assists.noTimer',
             'game.time.open', 'game.time.title', 'game.time.pause', 'game.time.today', 'game.time.daysPerSecond',
             'game.docking.scale', 'game.docking.guidance', 'game.docking.keys', 'game.docking.stabilize',
             'game.docking.success', 'game.docking.retry', 'game.docking.loadError'

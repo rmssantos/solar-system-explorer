@@ -98,7 +98,7 @@
              <button id="orbit-toggle" type="button" aria-pressed="true" data-i18n="game.orbits">Órbitas</button>
              <button id="time-observatory-toggle" class="time-observatory-toggle" type="button" aria-expanded="false" aria-controls="time-observatory" aria-label="Abrir Observatório do Tempo" data-i18n-aria="game.time.open">
                  <span class="time-orbit-icon" aria-hidden="true"><i></i></span>
-                 <span id="time-observatory-scale">10×</span>
+                 <span id="time-observatory-scale">1×</span>
              </button>
              <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="Desligar som">
                 <span class="sound-radio" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -116,11 +116,11 @@
                      <button id="time-observatory-today" type="button" data-i18n="game.time.today">Hoje</button>
                  </div>
              </header>
-             <p id="time-observatory-explanation" aria-live="polite">1 segundo = 10 dias no Sistema Solar</p>
+             <p id="time-observatory-explanation" aria-live="polite">1 segundo = 1 dia no Sistema Solar</p>
              <div class="orbital-time-controls" role="group" aria-label="Velocidade do céu" data-i18n-aria="game.time.speedGroup">
                  <button type="button" data-orbital-time-scale="0" aria-pressed="false"><span aria-hidden="true">Ⅱ</span><span data-i18n="game.time.pause">Pausa</span></button>
-                 <button type="button" data-orbital-time-scale="1" aria-pressed="false">1×</button>
-                 <button type="button" data-orbital-time-scale="10" aria-pressed="true">10×</button>
+                 <button type="button" data-orbital-time-scale="1" aria-pressed="true">1×</button>
+                 <button type="button" data-orbital-time-scale="10" aria-pressed="false">10×</button>
                  <button type="button" data-orbital-time-scale="100" aria-pressed="false">100×</button>
              </div>
              <small class="time-observatory-note" data-i18n="game.time.note">Pausa apenas o céu. A tua nave continua pronta.</small>
@@ -375,14 +375,14 @@
                         <div class="expedition-evidence-meter">
                             <small data-i18n="game.expedition.evidence">Pistas recolhidas</small>
                             <strong id="expedition-progress">0 de 4 pistas encontradas</strong>
-                            <progress id="expedition-progress-meter" max="4" value="0" aria-label="Pistas recolhidas"></progress>
+                            <progress id="expedition-progress-meter" max="4" value="0" aria-label="Pistas recolhidas" data-i18n-aria="game.expedition.progressAria"></progress>
                         </div>
                     </header>
                     <aside class="expedition-lumi" aria-live="polite">
                         <div class="expedition-lumi-avatar" aria-hidden="true"><span>✦</span></div>
                         <div><small data-i18n="game.lumi.kicker">Lumi · guia de bordo</small><p id="expedition-lumi-message"></p></div>
                     </aside>
-                    <ol id="expedition-chapter-list" class="expedition-chapter-list" aria-label="Rota da investigação"></ol>
+                    <ol id="expedition-chapter-list" class="expedition-chapter-list" aria-label="Rota da investigação" data-i18n-aria="game.expedition.routeAria"></ol>
                     <section class="expedition-evidence-tray" aria-labelledby="expedition-evidence-title">
                         <h3 id="expedition-evidence-title" data-i18n="game.expedition.evidence">Pistas recolhidas</h3>
                         <div id="expedition-evidence-grid" class="expedition-evidence-grid"></div>
@@ -402,13 +402,13 @@
 
     <dialog id="expedition-finale" class="expedition-finale" aria-labelledby="expedition-finale-title">
         <article class="expedition-finale-sheet">
-            <button id="expedition-finale-close" class="expedition-finale-close" type="button" aria-label="Fechar">×</button>
+            <button id="expedition-finale-close" class="expedition-finale-close" type="button" aria-label="Fechar mapa de pistas" data-i18n-aria="game.expedition.finale.close">×</button>
             <header>
                 <p id="expedition-finale-kicker"></p>
                 <h1 id="expedition-finale-title"></h1>
                 <span id="expedition-finale-intro"></span>
             </header>
-            <section id="expedition-finale-evidence" class="expedition-finale-evidence" aria-label="Pistas científicas"></section>
+            <section id="expedition-finale-evidence" class="expedition-finale-evidence" aria-label="Pistas científicas" data-i18n-aria="game.expedition.finale.evidenceAria"></section>
             <fieldset class="expedition-finale-conclusions">
                 <legend id="expedition-finale-question"></legend>
                 <div id="expedition-finale-options"></div>
@@ -471,14 +471,14 @@
 
             <p id="docking-guidance" class="docking-guidance" aria-live="polite" data-i18n="game.docking.guidance">Entra devagar no corredor amarelo e alinha o nariz da nave com a porta da ISS.</p>
             <p class="docking-keyboard-hint" data-i18n="game.docking.keys">Teclado: WASD ou setas · Q/E roda · Espaço estabiliza</p>
-            <section class="mission-assists" aria-label="Ajudas de missão">
-                <strong id="mission-assists-title">Ajudas · sem perder XP</strong>
+            <section class="mission-assists" aria-label="Ajudas de missão" data-i18n-aria="game.mission.assists.aria">
+                <strong id="mission-assists-title" data-i18n="game.mission.assists.title">Ajudas · sem perder XP</strong>
                 <div>
-                    <button type="button" data-mission-assist="guide" aria-pressed="false">✦ Guia Lumi</button>
-                    <button type="button" data-mission-assist="calmPace" aria-pressed="false">◷ Ritmo calmo</button>
-                    <button type="button" data-mission-assist="largeControls" aria-pressed="false">＋ Controlos XL</button>
+                    <button type="button" data-mission-assist="guide" aria-pressed="false" data-i18n="game.mission.assists.guide">✦ Guia Lumi</button>
+                    <button type="button" data-mission-assist="calmPace" aria-pressed="false" data-i18n="game.mission.assists.calmPace">◷ Ritmo calmo</button>
+                    <button type="button" data-mission-assist="largeControls" aria-pressed="false" data-i18n="game.mission.assists.largeControls">＋ Controlos XL</button>
                 </div>
-                <small id="mission-no-timer">Sem limite de tempo</small>
+                <small id="mission-no-timer" data-i18n="game.mission.assists.noTimer">Sem limite de tempo</small>
             </section>
 
             <section class="docking-controls" aria-label="Propulsores da nave" data-i18n-aria="game.docking.controls">

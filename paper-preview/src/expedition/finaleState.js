@@ -8,6 +8,36 @@ export function createFinaleState(value = {}) {
     const status = value.status === 'complete' ? 'complete' : (value.status === 'retry' ? 'retry' : 'investigating');
     return Object.freeze({ reviewedIds: Object.freeze(reviewedIds), selectedConclusionId, status, attempts: Math.max(0, Math.round(Number.isFinite(value.attempts) ? value.attempts : 0)), feedback: typeof value.feedback === 'string' ? value.feedback : null });
 }
-export function reviewFinaleEvidence(state, evidenceId) { const base = createFinaleState(state); if (!evidenceIds.has(evidenceId) || base.reviewedIds.includes(evidenceId)) return state; return createFinaleState({ ...base, reviewedIds: [...base.reviewedIds, evidenceId] }); }
-export function selectFinaleConclusion(state, conclusionId) { const base = createFinaleState(state); if (!conclusionIds.has(conclusionId) || base.status === 'complete') return state; return createFinaleState({ ...base, selectedConclusionId: conclusionId, status: 'investigating', feedback: null }); }
-export function submitFinaleConclusion(state) { const base = createFinaleState(state); if (base.status === 'complete' || base.reviewedIds.length < OCEAN_EVIDENCE.length || !base.selectedConclusionId) return state; const correct = OCEAN_CONCLUSIONS.find((item) => item.id === base.selectedConclusionId)?.correct; return createFinaleState({ ...base, status: correct ? 'complete' : 'retry', attempts: base.attempts + 1, feedback: correct ? 'correct' : 'try-again' }); }
+export function reviewFinaleEvidence(state, evidenceId) {
+    const base = createFinaleState(state);
+    if (!evidenceIds.has(evidenceId) || base.reviewedIds.includes(evidenceId)) return state;
+    return createFinaleState({
+        ...base,
+        reviewedIds: [...base.reviewedIds, evidenceId]
+    });
+}
+
+export function selectFinaleConclusion(state, conclusionId) {
+    const base = createFinaleState(state);
+    if (!conclusionIds.has(conclusionId) || base.status === 'complete') return state;
+    return createFinaleState({
+        ...base,
+        selectedConclusionId: conclusionId,
+        status: 'investigating',
+        feedback: null
+    });
+}
+
+export function submitFinaleConclusion(state) {
+    const base = createFinaleState(state);
+    if (base.status === 'complete'
+        || base.reviewedIds.length < OCEAN_EVIDENCE.length
+        || !base.selectedConclusionId) return state;
+    const correct = OCEAN_CONCLUSIONS.find((item) => item.id === base.selectedConclusionId)?.correct;
+    return createFinaleState({
+        ...base,
+        status: correct ? 'complete' : 'retry',
+        attempts: base.attempts + 1,
+        feedback: correct ? 'correct' : 'try-again'
+    });
+}

@@ -4,6 +4,7 @@ export const DRAGONFLY_SITES = Object.freeze([
 ]);
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const finite = (value, fallback) => Number.isFinite(value) ? value : fallback;
+const MAX_LANDING_ALTITUDE = 0.32;
 
 export function createDragonflyState(value = {}) {
     const analysedSites = [...new Set((Array.isArray(value.analysedSites) ? value.analysedSites : []).filter((id) => DRAGONFLY_SITES.some((site) => site.id === id)))];
@@ -36,7 +37,10 @@ export function stepDragonfly(state, input = {}, deltaSeconds = 0) {
     if (pressed) {
         const site = DRAGONFLY_SITES.find((candidate) => !analysedSites.includes(candidate.id) && Math.abs(routeProgress - candidate.routeProgress) <= 0.12);
         if (site) {
-            if (site.id === 'lake-shore' && stability < 0.55) { event = 'rough-landing'; stability = Math.max(0.5, stability); }
+            if (site.id === 'lake-shore' && (stability < 0.55 || altitude > MAX_LANDING_ALTITUDE)) {
+                event = 'rough-landing';
+                stability = Math.max(0.5, stability);
+            }
             else analysedSites.push(site.id);
         }
     }

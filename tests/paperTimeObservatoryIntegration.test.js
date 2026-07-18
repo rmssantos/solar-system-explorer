@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const main = readFileSync(new URL('../paper-preview/src/main.js', import.meta.url), 'utf8');
+const html = readFileSync(new URL('../paper-preview/jogo/index.html', import.meta.url), 'utf8');
 
 describe('time observatory game integration', () => {
     it('starts at real-time speed for every visitor', () => {
         expect(main).toMatch(/createPaperScene\(stage,\s*\{\s*timeScale:\s*1\s*\}\)/s);
+        expect(html).toContain('<span id="time-observatory-scale">1×</span>');
+        expect(html).toContain('data-orbital-time-scale="1" aria-pressed="true"');
+        expect(html).toContain('1 segundo = 1 dia no Sistema Solar');
     });
 
     it('connects the HUD to the scene and refreshes the clock without coupling flight time', () => {

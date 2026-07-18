@@ -224,7 +224,7 @@ export function createLocalOrbitHost({
         }
         elements.kicker.textContent = profile.kicker;
         elements.title.textContent = profile.title;
-        if (elements.scale && profile.scale) elements.scale.textContent = profile.scale;
+        if (elements.scale) elements.scale.textContent = profile.scale ?? '';
         elements.resultTitle.textContent = profile.success;
         elements.resultScience.textContent = profile.science;
         elements.playfield.setAttribute?.('aria-label', profile.playfield);

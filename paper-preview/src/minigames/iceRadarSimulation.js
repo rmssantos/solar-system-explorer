@@ -110,7 +110,7 @@ export function stepIceRadar(state, input = {}, deltaSeconds = 0) {
     const justOverheated = scanning && heat >= ICE_RADAR_LIMITS.overheat;
     const overheated = justOverheated || (base.overheated && heat > ICE_RADAR_LIMITS.restartHeat);
     const passProgress = [...base.passProgress];
-    if (scanning) {
+    if (scanning && !justOverheated) {
         const nearest = nearestPassIndex(position);
         if (nearest.distance <= ICE_RADAR_LIMITS.passRadius) {
             const alignment = 1 - nearest.distance / ICE_RADAR_LIMITS.passRadius;

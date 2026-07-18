@@ -28,6 +28,16 @@ describe('Signal of the Moons investigation board UI', () => {
         expect(ui).toContain('src: chapter.art');
     });
 
+    it('localizes investigation, finale and assistance accessibility labels', () => {
+        for (const key of [
+            'game.expedition.progressAria', 'game.expedition.routeAria',
+            'game.expedition.finale.close', 'game.expedition.finale.evidenceAria',
+            'game.mission.assists.aria', 'game.mission.assists.title',
+            'game.mission.assists.guide', 'game.mission.assists.calmPace',
+            'game.mission.assists.largeControls', 'game.mission.assists.noTimer'
+        ]) expect(html).toContain(`data-i18n${key.includes('Aria') || key.endsWith('.aria') || key.endsWith('.close') ? '-aria' : ''}="${key}"`);
+    });
+
     it('stays readable and touch-safe on phones and reduced-motion devices', () => {
         expect(css).toMatch(/\.expedition-action\s*\{[^}]*min-height:\s*44px/s);
         expect(css).toMatch(/@container\s+expedition-board\s*\(max-width:\s*36rem\)/);

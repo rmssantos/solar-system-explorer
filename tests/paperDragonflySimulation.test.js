@@ -16,13 +16,22 @@ describe('Titan dragonfly simulation', () => {
         const first = stepDragonfly(createDragonflyState({ routeProgress: 0.45 }), { action: true }, 0.1);
         expect(first.analysedSites).toEqual(['dunes']);
         const released = stepDragonfly(first, { action: false }, 0.1);
-        const second = stepDragonfly(createDragonflyState({ ...released, routeProgress: 0.84 }), { action: true }, 0.1);
+        const second = stepDragonfly(createDragonflyState({ ...released, routeProgress: 0.84, altitude: 0.18 }), { action: true }, 0.1);
         expect(second.analysedSites).toEqual(['dunes', 'lake-shore']);
         expect(second.phase).toBe('complete');
         expect(second.event).toBe('dragonfly-landed');
     });
     it('turns an unsafe landing into corrective feedback', () => {
         const state = createDragonflyState({ routeProgress: 0.84, stability: 0.3, analysedSites: ['dunes'] });
+        const next = stepDragonfly(state, { action: true }, 0.1);
+        expect(next.event).toBe('rough-landing');
+        expect(next.phase).toBe('flying');
+        expect(next.analysedSites).toEqual(['dunes']);
+    });
+    it('does not land at the lake shore while the dragonfly is still too high', () => {
+        const state = createDragonflyState({
+            routeProgress: 0.84, altitude: 0.8, stability: 0.9, analysedSites: ['dunes']
+        });
         const next = stepDragonfly(state, { action: true }, 0.1);
         expect(next.event).toBe('rough-landing');
         expect(next.phase).toBe('flying');

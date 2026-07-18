@@ -70,6 +70,21 @@ describe('local orbit host', () => {
         expect(elements.resultTitle.textContent).toMatch(/Hubble/);
     });
 
+    it('clears a scale note left by the previous mission profile', async () => {
+        const elements = createElements();
+        const host = createLocalOrbitHost({
+            elements,
+            gameFactory: async (options) => {
+                options.onReady();
+                return { destroy() {}, setAction() {} };
+            }
+        });
+        await host.open({ missionId: 'moon-seismology' });
+        expect(elements.scale.textContent).not.toBe('');
+        await host.open({ missionId: 'iss-docking' });
+        expect(elements.scale.textContent).toBe('');
+    });
+
     it('renders telemetry and its safe or warning state', async () => {
         const elements = createElements();
         let gameOptions;

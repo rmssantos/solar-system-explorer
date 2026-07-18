@@ -302,7 +302,7 @@ export function createPreviewUI({
         elements.expeditionFinaleFeedback.textContent = finaleState.status === 'retry'
             ? (pt ? 'Boa hipótese, mas as pistas ainda não provam vida. Revê a diferença entre “pode ter condições” e “tem habitantes”.' : 'Good hypothesis, but the clues do not prove life. Review the difference between “may have conditions” and “is inhabited”.')
             : finaleState.status === 'complete'
-                ? (pt ? 'Conclusão científica! Habitável não significa habitado — ainda temos muito para descobrir.' : 'Scientific conclusion! Habitable does not mean inhabited — there is much left to discover.')
+                ? (pt ? 'Conclusão científica! Habitável não significa habitado; ainda temos muito para descobrir.' : 'Scientific conclusion! Habitable does not mean inhabited; there is much left to discover.')
                 : (pt ? `${finaleState.reviewedIds.length}/4 pistas abertas` : `${finaleState.reviewedIds.length}/4 clues opened`);
         elements.expeditionFinaleSubmit.textContent = finaleState.status === 'complete'
             ? (pt ? 'Guardar selo e fechar' : 'Save stamp and close')

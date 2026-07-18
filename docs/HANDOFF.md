@@ -148,9 +148,9 @@ npm run dev
 
 Abrir `http://localhost:5173/jogo/` e começar pelo botão **Centro de Missões**. Antes de alterar uma mecânica, adicionar primeiro um teste à respetiva simulação. Para problemas visuais, testar pelo menos desktop, `390 × 844` e `844 × 390`, capturando o Canvas e o HUD DOM em conjunto.
 
-## Expansão — O Sinal das Luas (julho de 2026)
+## Expansão - O Sinal das Luas (julho de 2026)
 
-A tab **Investigação** complementa — não substitui — as cinco missões Courier. A Lumi conduz uma aventura contínua e local-first:
+A tab **Investigação** complementa - não substitui - as cinco missões Courier. A Lumi conduz uma aventura contínua e local-first:
 
 1. Lua: colocar três sismómetros, alinhar ondas e localizar um impacto.
 2. Europa: mapear três faixas com radar, equilibrando potência e calor.
