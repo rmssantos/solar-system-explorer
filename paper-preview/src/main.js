@@ -67,6 +67,7 @@ import {
 } from './contracts/missionTrainingState.js';
 import { createLocalOrbitHost } from './minigames/localOrbitHost.js';
 import { ORBITAL_MISSION_PROFILES } from './minigames/orbitalMissionProfiles.js';
+import { createMissionPrefetch } from './minigames/missionPrefetch.js';
 import { createAgencyUi } from './agency/agencyUi.js';
 import { createLivingOperations } from './agency/operationDirector.js';
 import {
@@ -153,6 +154,7 @@ let lastInput = {
 
 const paperScene = createPaperScene(stage);
 const audioDirector = createAudioDirector();
+const missionPrefetch = createMissionPrefetch();
 const spaceData = createSpaceDataService();
 const NASA_SEARCH_TERMS = Object.freeze({
     sun: 'Sun solar observatory', mercury: 'Mercury planet', venus: 'Venus planet',
@@ -481,6 +483,8 @@ function handleAcceptContract(contractId) {
     );
     if (next === contractState) return false;
     contractState = next;
+    const contract = getContract(contractId);
+    if (contract) missionPrefetch.prefetch(getOrbitalGameplay(contract.activity));
     siteAnalytics.track('contract_event', { contractId, state: 'start' });
     reconcileAndSaveProgress({ feedback: false });
     audioDirector.play('paper-fold');
@@ -489,6 +493,8 @@ function handleAcceptContract(contractId) {
 }
 
 function handleTravelContract(contractId) {
+    const contract = getContract(contractId);
+    if (contract) missionPrefetch.prefetch(getOrbitalGameplay(contract.activity));
     const next = startContractTravel(contractJourney, contractId);
     if (next === contractJourney) return false;
     contractJourney = next;
@@ -1077,6 +1083,7 @@ window.addEventListener('beforeunload', () => {
     flightInputMode.destroy();
     flightInput.destroy();
     localOrbitHost?.destroy();
+    missionPrefetch.destroy();
     agencyUi?.destroy();
     previewUI.destroy();
     audioDirector.destroy();

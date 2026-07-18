@@ -9,6 +9,7 @@
         "dev:archive": "vite --host --open /arquivo/jogo-antigo/index.html",
         "build": "vite build paper-preview --outDir ../dist --emptyOutDir",
         "build:paper": "vite build paper-preview --outDir ../dist-paper-preview --emptyOutDir",
+        "verify:paper-build": "node scripts/verify-paper-build.mjs dist-paper-preview",
         "preview": "vite preview paper-preview --outDir ../dist",
         "preview:paper": "vite preview paper-preview --outDir ../dist-paper-preview",
         "test": "vitest run",
