@@ -1,6 +1,6 @@
 {
     "name": "solar-system-explorer",
-    "version": "1.7.1",
+    "version": "1.7.2",
     "type": "module",
     "description": "Interactive 3D Solar System Explorer for kids - Educational game with Three.js",
     "scripts": {
