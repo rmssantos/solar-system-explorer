@@ -1,3 +1,5 @@
+@import url('./tokens.css');
+
 @font-face {
     font-family: 'Paper Fredoka';
     src: url('/fonts/fredoka-latin.woff2') format('woff2');
@@ -14,13 +16,13 @@
     color-scheme: dark;
     --night-card: #101936;
     --ink-blue: #23345f;
-    --notebook-paper: #f3e6be;
-    --sun-pulp: #f5b83d;
+    --notebook-paper: var(--brand-paper);
+    --sun-pulp: var(--brand-sun);
     --ocean-gouache: #4388b8;
     --leaf-cutout: #6b985b;
-    --coral-pencil: #d85d4a;
-    --graphite: #2b2f3a;
-    --chalk: #fff8df;
+    --coral-pencil: var(--brand-coral);
+    --graphite: var(--brand-ink);
+    --chalk: var(--brand-paper-bright);
     --touch-target-min: 44px;
     font-family: 'Field Nunito', 'Trebuchet MS', sans-serif;
 }
@@ -46,6 +48,19 @@ button:focus-visible {
     outline: 4px solid var(--sun-pulp);
     outline-offset: 4px;
 }
+
+progress {
+    --progress-fill: #4c8375;
+    overflow: hidden;
+    appearance: none;
+    background: #d8c89e;
+    border: 1px solid #8f7952;
+    border-radius: 999px;
+}
+
+progress::-webkit-progress-bar { background: #d8c89e; }
+progress::-webkit-progress-value { background: var(--progress-fill); border-radius: 999px; }
+progress::-moz-progress-bar { background: var(--progress-fill); border-radius: 999px; }
 
 .visually-hidden {
     position: absolute;
@@ -266,7 +281,7 @@ button:focus-visible {
     pointer-events: auto;
     cursor: pointer;
 }
-.rank-chip-heading { display: flex; justify-content: space-between; gap: .5rem; color: #9a4f42; font-size: .57rem; font-weight: 1000; letter-spacing: .08em; text-transform: uppercase; }
+.rank-chip-heading { display: flex; justify-content: space-between; gap: .5rem; color: #9a4f42; font-size: var(--font-label-min); font-weight: 1000; letter-spacing: .08em; text-transform: uppercase; }
 .rank-chip-heading b { color: #315d62; white-space: nowrap; }
 .rank-chip > strong { overflow: hidden; font: 750 .78rem/1.15 'Paper Fredoka', sans-serif; text-overflow: ellipsis; white-space: nowrap; }
 .rank-chip progress { width: 100%; height: .42rem; accent-color: #4c8375; }
@@ -294,6 +309,7 @@ body:has(.local-orbit-mission[open]) .reward-toast { display: none; }
     cursor: pointer;
     font-weight: 900;
     transform: rotate(0.8deg);
+    transition: filter .16s ease, transform .16s ease, box-shadow .16s ease;
 }
 
 .notebook-trigger svg {
@@ -302,8 +318,14 @@ body:has(.local-orbit-mission[open]) .reward-toast { display: none; }
 }
 
 .notebook-trigger:disabled {
-    opacity: 0.48;
-    cursor: default;
+    opacity: 0.52;
+    cursor: not-allowed;
+}
+
+.notebook-trigger:not(:disabled):hover {
+    filter: brightness(1.08);
+    box-shadow: 3px 5px 0 rgba(4, 8, 22, 0.35);
+    transform: translate(2px, 2px) rotate(0.8deg);
 }
 
 .paper-stage {
@@ -833,9 +855,9 @@ html[data-flight-input="touch"] .joystick-label {
 .award-card.is-unlocked > img { border-color: #b67935; box-shadow: 0 4px 0 #c16b50; }
 
 @media (max-width: 600px) {
-    .nav-beacon { top: 5.5rem; min-width: 7.7rem; padding: .45rem .7rem; }
+    .nav-beacon { min-width: 7.7rem; padding: .45rem .7rem; }
     .rank-chip { top: max(84px, calc(env(safe-area-inset-top) + 70px)); left: 14px; width: 172px; padding: .48rem .58rem .55rem; }
-    .rank-chip > strong { font-size: .66rem; }.rank-chip-heading { font-size: .48rem; }
+    .rank-chip > strong { font-size: .66rem; }.rank-chip-heading { font-size: var(--font-label-min); }
     .nav-beacon { top: 9.6rem; }
     .reward-toast { top: auto; right: 14px; bottom: max(138px, calc(env(safe-area-inset-bottom) + 132px)); left: 14px; width: auto; }
     .zoom-controls { right: .65rem; top: 42%; }
@@ -853,7 +875,7 @@ html[data-flight-input="touch"] .joystick-label {
     .autopilot-status { bottom: 12rem; grid-template-columns: auto minmax(0, 1fr) auto; min-width: calc(100vw - 1.5rem); }
     .autopilot-status progress { grid-column: 1 / -1; grid-row: 2; }
     .cockpit-instruments { bottom: .8rem; grid-template-columns: 3.9rem minmax(0, 1fr); gap: .25rem; width: min(10.625rem, calc(100vw - 13.25rem)); min-height: 5.6rem; padding: .3rem; }
-    .cockpit-module { padding: .28rem; }.attitude-module { display: none; }.speed-module { grid-template-columns: 1fr; justify-items: center; }.speed-module > strong { font-size: .68rem; }.speed-dial { width: 2.45rem; }.speed-dial i { height: .86rem; }.cockpit-radar { width: 4.7rem; height: 2.7rem; }.cockpit-coordinates { font-size: .31rem; }.radar-heading > span { max-width: 3.2rem; overflow: hidden; font-size: .43rem; text-overflow: ellipsis; white-space: nowrap; }
+    .cockpit-module { padding: .28rem; }.attitude-module { display: none; }.speed-module { grid-template-columns: 1fr; justify-items: center; }.speed-module > strong { font-size: .68rem; }.speed-dial { width: 2.45rem; }.speed-dial i { height: .86rem; }.cockpit-radar { width: 4.7rem; height: 2.35rem; }.cockpit-coordinates { display: grid; gap: 1px; font-size: var(--font-label-min); }.cockpit-coordinates span { display: flex; justify-content: space-between; }.radar-heading > span { max-width: 3.2rem; overflow: hidden; font-size: var(--font-label-min); text-overflow: ellipsis; white-space: nowrap; }
 }
 
 .field-notebook {
@@ -1109,7 +1131,10 @@ html[data-flight-input="touch"] .joystick-label {
     cursor: pointer;
     font: inherit;
     font-weight: 850;
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
 }
+
+.quiz-options button:not(:disabled):hover { background: #fff7dc; border-color: #806d48; transform: translateY(-1px); }
 
 .quiz-options button.is-selected { border-color: var(--coral-pencil); }
 .quiz-options button.is-correct { background: rgba(111, 144, 100, 0.27); border-color: #6f9064; }
@@ -1414,7 +1439,7 @@ html[data-flight-input="touch"] .joystick-label {
         box-shadow: 3px 4px 0 rgb(213 99 77 / .7);
     }
 
-    .rank-chip-heading { font-size: .44rem; }
+    .rank-chip-heading { font-size: var(--font-label-min); }
     .rank-chip > strong { font-size: .61rem; }
     .rank-chip progress { height: .32rem; }
 
@@ -1611,7 +1636,9 @@ html[data-flight-input="touch"] .joystick-label {
     font: 1000 1.05rem/1 'Paper Nunito', sans-serif;
     touch-action: none;
     user-select: none;
+    transition: background-color .14s ease, transform .14s ease, box-shadow .14s ease;
 }
+.docking-control:hover { background: #41777c; }
 .docking-control:active, .docking-control.is-active { transform: translate(1px, 2px); box-shadow: 1px 1px 0 #d5634d; }
 .docking-stabilize { color: #302c34; background: var(--sun-pulp); border-color: #98743a; font-size: .68rem; }
 
@@ -1710,7 +1737,7 @@ html[data-flight-input="touch"] .joystick-label {
     }
     .local-orbit-heading > div { max-width: calc(100% - 58px); padding: 6px 10px 7px; background: rgb(246 231 186 / .92); border: 2px solid #b8965d; border-radius: 7px 10px 6px 9px; box-shadow: 3px 4px 0 rgb(5 9 26 / .28); }
     .local-orbit-heading h1 { overflow: hidden; font-size: clamp(1.02rem, 5.6vw, 1.42rem); text-overflow: ellipsis; white-space: nowrap; }
-    .local-orbit-kicker { margin-bottom: 1px; font-size: .42rem; }
+    .local-orbit-kicker { margin-bottom: 1px; font-size: var(--font-label-min); }
     .local-orbit-scale { display: none; }
     .local-orbit-close { width: 48px; min-height: 48px; font-size: 1.1rem; pointer-events: auto; }
     .local-orbit-playfield {
@@ -1741,7 +1768,7 @@ html[data-flight-input="touch"] .joystick-label {
         pointer-events: none;
     }
     .docking-instruments > div { min-width: 0; min-height: 44px; align-content: center; gap: 1px; padding: 4px 6px; background: rgb(255 249 222 / .9); box-shadow: 2px 3px 0 rgb(5 9 26 / .24); }
-    .docking-instruments small { overflow: hidden; font-size: .43rem; letter-spacing: .025em; text-overflow: ellipsis; white-space: nowrap; }
+    .docking-instruments small { overflow: hidden; font-size: var(--font-functional-min); letter-spacing: .025em; text-overflow: ellipsis; white-space: nowrap; }
     .docking-instruments strong { font-size: .8rem; white-space: nowrap; }
     .docking-guidance { display: none; }
     .docking-controls {
@@ -1792,14 +1819,14 @@ html[data-flight-input="touch"] .joystick-label {
     .local-orbit-heading { right: max(8px, env(safe-area-inset-right)); }
     .local-orbit-heading > div { max-width: calc(68% - 58px); padding: 4px 8px 5px; }
     .local-orbit-heading h1 { font-size: clamp(.94rem, 3vw, 1.2rem); }
-    .local-orbit-kicker { font-size: .36rem; }
+    .local-orbit-kicker { font-size: var(--font-label-min); }
     .docking-instruments {
         top: max(66px, calc(env(safe-area-inset-top) + 58px));
         right: calc(min(230px, 32vw) + max(18px, env(safe-area-inset-right)));
         gap: 4px;
     }
     .docking-instruments > div { min-height: 40px; padding: 3px 4px; }
-    .docking-instruments small { font-size: .34rem; letter-spacing: 0; }
+    .docking-instruments small { font-size: var(--font-functional-min); letter-spacing: 0; }
     .docking-instruments strong { font-size: .68rem; }
     .docking-controls {
         right: max(8px, env(safe-area-inset-right));
@@ -2221,7 +2248,7 @@ html[data-flight-input="touch"] .joystick-label {
 .agency-choice-copy small { font-size: .62rem; font-weight: 800; line-height: 1.25; }
 .agency-choice-consequence { color: #765532; font-size: .56rem; font-style: normal; line-height: 1.25; }
 .agency-choice[aria-pressed="true"] .agency-choice-consequence { color: #d9eccb; }
-.agency-choice-recommended { position: absolute; top: -7px; right: 7px; padding: 2px 6px; color: #302b32; background: #f5b83d; border: 1px solid #9d7533; border-radius: 999px; font-size: .48rem; letter-spacing: .04em; text-transform: uppercase; }
+.agency-choice-recommended { position: absolute; top: -7px; right: 7px; padding: 2px 6px; color: #302b32; background: var(--sun-pulp); border: 1px solid #9d7533; border-radius: 999px; font-size: var(--font-label-min); letter-spacing: .04em; text-transform: uppercase; }
 .agency-setup-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 9px; }
 
 .agency-science-console {

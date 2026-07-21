@@ -1,3 +1,5 @@
+@import url('./tokens.css');
+
 @font-face {
     font-family: 'Paper Fredoka';
     src: url('/fonts/fredoka-latin.woff2') format('woff2');
@@ -12,14 +14,14 @@
 
 :root {
     color-scheme: dark;
-    --space: #0b132b;
-    --space-light: #16264a;
-    --paper: #f1e4bb;
-    --paper-light: #fff6d8;
-    --sun: #f4bd4f;
-    --coral: #e7634f;
+    --space: var(--brand-space);
+    --space-light: var(--brand-space-raised);
+    --paper: var(--brand-paper);
+    --paper-light: var(--brand-paper-bright);
+    --sun: var(--brand-sun);
+    --coral: var(--brand-coral);
     --sea: #72aaa2;
-    --ink: #272c3a;
+    --ink: var(--brand-ink);
     --line: rgba(241, 228, 187, 0.24);
     font-family: 'Field Nunito', 'Trebuchet MS', sans-serif;
     background: var(--space);
@@ -156,8 +158,9 @@ h2 { margin: 0; font-size: clamp(2.6rem, 5vw, 5.8rem); line-height: .94; letter-
 .footer-legal { grid-column: 1/-1; display: flex; gap: 28px; align-items: center; justify-content: space-between; padding-top: 27px; border-top: 1px dashed var(--line); }.footer-legal p { margin: 0; }.footer-legal span { display: flex; gap: 24px; align-items: center; }.footer-legal a,.footer-legal button { min-height: 44px; padding: 0; color: rgba(255,246,216,.72); background: transparent; border: 0; font: 850 .72rem/1 'Field Nunito',sans-serif; text-decoration: underline; text-underline-offset: 5px; cursor: pointer; }
 .build-version { color: rgba(255,246,216,.48); font: 800 .65rem/1 'Field Nunito',sans-serif; letter-spacing: .04em; white-space: nowrap; }
 
-[data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
-[data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+[data-reveal] { opacity: 1; transform: translateY(0); }
+[data-reveal].is-revealable { opacity: 0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
+[data-reveal].is-revealable.is-visible { opacity: 1; transform: translateY(0); }
 
 @media (max-width: 1050px) {
     .site-header { grid-template-columns: 1fr auto; }.site-header nav { display: none; }

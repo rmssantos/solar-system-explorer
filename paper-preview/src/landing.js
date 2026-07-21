@@ -8,6 +8,7 @@ const revealTargets = document.querySelectorAll('[data-reveal]');
 if (reducedMotion || !('IntersectionObserver' in window)) {
     revealTargets.forEach((target) => target.classList.add('is-visible'));
 } else {
+    revealTargets.forEach((target) => target.classList.add('is-revealable'));
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
             if (!entry.isIntersecting) return;
