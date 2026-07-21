@@ -23,7 +23,7 @@ describe('validated design-audit corrections', () => {
         expect(tokensCss).toContain('--brand-coral:');
 
         for (const css of [gameCss, landingCss, libraryCss, privacyCss, sharedHeaderCss]) {
-            expect(css).toMatch(/^@import url\(['"]\.\/tokens\.css['"]\);/);
+            expect(css).toMatch(/^@import url\(['"]\.\/tokens\.css['"]\);/m);
         }
 
         expect(gameCss).toContain('--notebook-paper: var(--brand-paper);');
@@ -46,10 +46,10 @@ describe('validated design-audit corrections', () => {
     });
 
     it('raises the one audited secondary-text color that actually fails AA', () => {
-        expect(privacyCss).toContain('color:var(--text-on-space-muted)');
-        expect(privacyCss).not.toContain('color:#fff6d866');
-        expect(libraryCss).toContain('color:var(--text-on-space-muted)');
-        expect(libraryCss).not.toContain('color:#fff6d866');
+        expect(privacyCss).toMatch(/color:\s*var\(--text-on-space-muted\)/);
+        expect(privacyCss).not.toMatch(/color:\s*#fff6d866/);
+        expect(libraryCss).toMatch(/color:\s*var\(--text-on-space-muted\)/);
+        expect(libraryCss).not.toMatch(/color:\s*#fff6d866/);
     });
 
     it('gives key game controls hover feedback and paper-styled progress bars', () => {
