@@ -1,0 +1,15 @@
+:root {
+    --brand-space: #0b132b;
+    --brand-space-raised: #16264a;
+    --brand-paper: #f1e4bb;
+    --brand-paper-bright: #fff6d8;
+    --brand-sun: #f4bd4f;
+    --brand-coral: #e7634f;
+    --brand-sea: #315d62;
+    --brand-ink: #272c3a;
+    --text-on-space-muted: #fff6d8b8;
+    --focus-ring-on-dark: var(--brand-sun);
+    --focus-ring-on-paper: var(--brand-sea);
+    --font-label-min: .6875rem;
+    --font-functional-min: .75rem;
+}
