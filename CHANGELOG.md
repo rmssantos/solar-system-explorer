@@ -2,6 +2,13 @@
 
 Public changes to the Paper Solar Explorer are maintained automatically by Release Please from Conventional Commits.
 
+## [1.7.2](https://github.com/rmssantos/solar-system-explorer/compare/v1.7.1...v1.7.2) (2026-07-21)
+
+
+### Bug Fixes
+
+* address validated design audit findings ([#56](https://github.com/rmssantos/solar-system-explorer/issues/56)) ([707ba40](https://github.com/rmssantos/solar-system-explorer/commit/707ba40e6b081706c10a1c84496663c70801a987))
+
 ## [1.7.1](https://github.com/rmssantos/solar-system-explorer/compare/v1.7.0...v1.7.1) (2026-07-18)
 
 
